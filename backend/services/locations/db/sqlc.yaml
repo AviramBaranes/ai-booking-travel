@@ -1,0 +1,28 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries:
+      - "query/locations_query.sql"
+      - "query/location_supplier_codes_query.sql"
+    schema: "./migrations"
+    gen:
+      go:
+        package: "db"
+        out: "."
+        sql_package: "pgx/v5"
+        emit_interface: true
+
+        overrides:
+          - db_type: "text"
+            go_type: "string"
+
+          - db_type: "text"
+            go_type: "string"
+            nullable: true
+
+          - db_type: "pg_catalog.bpchar"
+            go_type: "string"
+
+          - db_type: "pg_catalog.bpchar"
+            go_type: "string"
+            nullable: true

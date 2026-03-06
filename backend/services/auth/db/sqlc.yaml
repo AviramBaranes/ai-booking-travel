@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries:
+      - "query/users_query.sql"
+      - "query/refresh_tokens_query.sql"
+    schema: "./migrations"
+    gen:
+      go:
+        package: "db"
+        out: "."
+        sql_package: "pgx/v5"
+        emit_interface: true

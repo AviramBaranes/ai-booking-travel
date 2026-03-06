@@ -1,0 +1,66 @@
+package auth
+
+import (
+	"context"
+	"errors"
+	"time"
+
+	"encore.app/internal/api_errors"
+	"encore.app/services/auth/db"
+	"encore.app/services/auth/jwt"
+	"encore.dev/rlog"
+)
+
+// RefreshTokensParams defines the parameters required for refreshing tokens.
+type RefreshTokensParams struct {
+	RefreshToken string `header:"Authorization"`
+}
+
+// encore:api public method=POST path=/refresh
+func (s *Service) RefreshTokens(ctx context.Context, p RefreshTokensParams) (*LoginResponse, error) {
+	claims, err := jwt.ValidateRefreshToken(p.RefreshToken)
+	if err != nil {
+		rlog.Error("failed to validate refresh token", "error", err)
+		return nil, ErrInvalidRefreshToken
+	}
+
+	savedToken, err := s.query.GetRefreshToken(ctx, claims.ID)
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return nil, ErrInvalidRefreshToken
+		}
+		rlog.Error("failed to get refresh token from database", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	if savedToken.ExpiresAt.Time.Before(time.Now()) {
+		return nil, ErrExpiredRefreshToken
+	}
+
+	if err := s.query.DeleteRefreshToken(ctx, claims.ID); err != nil {
+		rlog.Error("failed to delete refresh token from database", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	user, err := s.query.GetUserById(ctx, claims.UserID)
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return nil, ErrInvalidRefreshToken
+		}
+		rlog.Error("failed to get user by ID", "user_id", claims.UserID, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	accessToken, refreshToken, err := s.generateTokens(ctx, user)
+	if err != nil {
+		rlog.Error("failed to generate new tokens", "user_id", user.ID, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	return &LoginResponse{AccessToken: accessToken, RefreshToken: refreshToken,
+		Username:    user.Username,
+		PhoneNumber: user.PhoneNumber.String,
+		OfficeCode:  user.OfficeCode.String,
+		AgentCode:   user.AgentCode.String,
+	}, nil
+}
