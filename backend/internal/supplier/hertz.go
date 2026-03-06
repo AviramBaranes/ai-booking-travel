@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 )
 
 type Hertz struct {
@@ -34,7 +35,8 @@ func (h Hertz) GetLocationsPage(cursor string) (LocationPage, error) {
 		return LocationPage{}, err
 	}
 
-	if len(records) == 0 || len(records[0]) != 3 || records[0][0] != "location_id" || records[0][1] != "country_code" || records[0][2] != "location_name" {
+	expectedHeader := []string{"location_id", "country_code", "country", "location_name"}
+	if len(records) == 0 || !slices.Equal(records[0], expectedHeader) {
 		return LocationPage{}, errors.New("invalid CSV format for Hertz locations")
 	}
 
@@ -42,15 +44,17 @@ func (h Hertz) GetLocationsPage(cursor string) (LocationPage, error) {
 	for i, record := range records[1:] {
 		locationID := record[0]
 		countryCode := record[1]
-		locationName := record[2]
+		country := record[2]
+		locationName := record[3]
 
-		if locationID == "" || countryCode == "" || locationName == "" {
+		if locationID == "" || countryCode == "" || country == "" || locationName == "" {
 			return LocationPage{}, fmt.Errorf("missing required fields in CSV at line %d", i+2)
 		}
 
 		locations = append(locations, Location{
 			ID:          locationID,
 			CountryCode: countryCode,
+			Country:     country,
 			Name:        locationName,
 		})
 	}
