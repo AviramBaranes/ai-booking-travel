@@ -7,9 +7,11 @@ import (
 	"testing"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/password"
+	"encore.app/internal/validation"
 	"encore.app/services/auth/db"
 	"encore.app/services/auth/mocks"
-	"encore.app/services/auth/password"
+	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
 )
 
@@ -28,9 +30,9 @@ func TestRegisterAgent(t *testing.T) {
 
 			for _, p := range cases {
 				err := p.Validate()
-				expectedErr := api_errors.WithDetail(err, api_errors.ErrorDetails{
-					Field: "username",
+				expectedErr := api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
 					Code:  api_errors.CodeInvalidValue,
+					Field: "username",
 				})
 
 				t.Log("Testing with username:", p.Username)
@@ -41,13 +43,13 @@ func TestRegisterAgent(t *testing.T) {
 		t.Run("Weak password", func(t *testing.T) {
 			tests := []struct {
 				password string
-				code     string
+				error    error
 			}{
-				{"Short1!", password.CodePasswordTooShort},
-				{"missing_capital1", password.CodePasswordNoUpper},
-				{"MISSING_LOWER1", password.CodePasswordNoLower},
-				{"missingNumber!", password.CodePasswordNoNumber},
-				{"MissingSymbol1", password.CodePasswordNoSymbol},
+				{"Short1!", ErrPasswordTooShort},
+				{"missing_capital1", ErrPasswordNoUpper},
+				{"MISSING_LOWER1", ErrPasswordNoLower},
+				{"missingNumber!", ErrPasswordNoNumber},
+				{"MissingSymbol1", ErrPasswordNoSymbol},
 			}
 			for _, tt := range tests {
 				t.Run(tt.password, func(t *testing.T) {
@@ -58,11 +60,7 @@ func TestRegisterAgent(t *testing.T) {
 						AgentCode:  "67890",
 					}
 					err := p.Validate()
-					expected := api_errors.WithDetail(err, api_errors.ErrorDetails{
-						Field: "password",
-						Code:  tt.code,
-					})
-					api_errors.AssertApiError(t, expected, err)
+					api_errors.AssertApiError(t, tt.error, err)
 				})
 			}
 		})
@@ -75,9 +73,9 @@ func TestRegisterAgent(t *testing.T) {
 				AgentCode:  "67890",
 			}
 			err := p.Validate()
-			expectedErr := api_errors.WithDetail(err, api_errors.ErrorDetails{
-				Field: "office_code",
+			expectedErr := api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
 				Code:  api_errors.CodeInvalidValue,
+				Field: "office_code",
 			})
 			api_errors.AssertApiError(t, expectedErr, err)
 		})
@@ -90,9 +88,9 @@ func TestRegisterAgent(t *testing.T) {
 				AgentCode:  "",
 			}
 			err := p.Validate()
-			expectedErr := api_errors.WithDetail(err, api_errors.ErrorDetails{
-				Field: "agent_code",
+			expectedErr := api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
 				Code:  api_errors.CodeInvalidValue,
+				Field: "agent_code",
 			})
 			api_errors.AssertApiError(t, expectedErr, err)
 		})

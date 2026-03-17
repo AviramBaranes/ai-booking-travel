@@ -7,24 +7,20 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/jwt"
 	"encore.app/services/auth/db"
-	"encore.app/services/auth/jwt"
 	"encore.app/services/auth/mocks"
 	"go.uber.org/mock/gomock"
 )
 
-// We need to redefine hybridQuerier here since it's not exported in login_test.go
-// and we want to avoid modifying login_test.go if possible.
 type refreshHybridQuerier struct {
 	*mocks.MockQuerier
 }
 
-// Delegate GetRefreshToken to real DB
 func (hq *refreshHybridQuerier) GetRefreshToken(ctx context.Context, id string) (db.RefreshToken, error) {
 	return query.GetRefreshToken(ctx, id)
 }
 
-// Delegate GetUserById to real DB
 func (hq *refreshHybridQuerier) GetUserById(ctx context.Context, id int32) (db.User, error) {
 	return query.GetUserById(ctx, id)
 }
@@ -51,14 +47,10 @@ func TestRefreshTokens(t *testing.T) {
 	})
 
 	t.Run("Query refresh token failed", func(t *testing.T) {
-		// Mock GetRefreshToken failure
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		q := mocks.NewMockQuerier(ctrl)
-		// We can't easily generate a valid JWT that matches a specific ID without signing it.
-		// But RefreshTokens validates JWT first.
-		// So we need a valid JWT.
 		token, jti, _, err := jwt.SignRefreshToken(123)
 		if err != nil {
 			t.Fatalf("failed to sign refresh token: %v", err)
@@ -96,8 +88,7 @@ func TestRefreshTokens(t *testing.T) {
 		if err := query.SaveRefreshToken(ctx, p); err != nil {
 			t.Fatalf("failed to save expired token: %v", err)
 		}
-		// No need to defer delete, user deletion cascades? Or we should delete it.
-		// Refresh tokens are usually cascaded or we can manually delete.
+
 		defer query.DeleteRefreshToken(ctx, jti)
 
 		_, err = RefreshTokens(ctx, RefreshTokensParams{RefreshToken: token})
@@ -111,7 +102,6 @@ func TestRefreshTokens(t *testing.T) {
 		}
 		defer del()
 
-		// Login to get a valid refresh token saved in DB
 		loginResp, err := Login(ctx, LoginParams{Username: "del_refresh_fail_user", Password: testPassword})
 		if err != nil {
 			t.Fatalf("failed to login: %v", err)
@@ -125,7 +115,6 @@ func TestRefreshTokens(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		// Use hybrid querier to allow GetRefreshToken to succeed (real DB) but fail DeleteRefreshToken
 		hq := &refreshHybridQuerier{
 			MockQuerier: mocks.NewMockQuerier(ctrl),
 		}
@@ -140,7 +129,6 @@ func TestRefreshTokens(t *testing.T) {
 	})
 
 	t.Run("User not found", func(t *testing.T) {
-		// Create user, login, then delete user
 		_, del, err := registerAdmin(ctx, "missing_user_refresh", testPassword)
 		if err != nil {
 			t.Fatalf("failed to register user: %v", err)
@@ -152,19 +140,7 @@ func TestRefreshTokens(t *testing.T) {
 			t.Fatalf("failed to login: %v", err)
 		}
 
-		// Delete user now.
-		// Note: If foreign keys cascade, the refresh token might be deleted too.
-		// If so, we'll get "Invalid refresh token" (not found) instead of "User not found".
-		// Let's check if we can simulate this without deleting user, maybe by manually inserting a token for a non-existent user ID?
-		// But UserID is FK.
-		// If we use mocks, we can simulate GetUserById returning ErrNoRows.
-
-		del() // Delete user
-
-		// If cascading delete happens, the token is gone.
-		// Let's assume we want to test the code path where token exists but user doesn't.
-		// This happens if data integrity is broken or if we mock.
-		// Let's use mock.
+		del()
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -173,9 +149,6 @@ func TestRefreshTokens(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to sign: %v", err)
 		}
-
-		// We need GetRefreshToken to return a token.
-		// Since we can't save it to real DB with invalid UserID (FK constraint), we must mock GetRefreshToken too.
 
 		q := mocks.NewMockQuerier(ctrl)
 		q.EXPECT().
@@ -281,8 +254,6 @@ func TestRefreshTokens(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to validate login refresh token: %v", err)
 		}
-
-		// Wait a bit to ensure timestamps are different if needed, but not strictly necessary
 
 		resp, err := RefreshTokens(ctx, RefreshTokensParams{RefreshToken: loginResp.RefreshToken})
 		if err != nil {

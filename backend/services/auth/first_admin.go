@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"encore.app/internal/password"
 	"encore.app/services/auth/db"
-	"encore.app/services/auth/password"
 	"encore.dev/rlog"
 )
 
@@ -16,7 +16,7 @@ var secrets struct {
 
 func createFirstAdmin(query db.Querier) {
 	if secrets.FirstAdminUsername == "" || secrets.FirstAdminPassword == "" {
-		return
+		panic("secrets for first admin not set")
 	}
 
 	ctx := context.Background()
@@ -32,7 +32,7 @@ func createFirstAdmin(query db.Querier) {
 	hashed, err := password.HashPassword(secrets.FirstAdminPassword)
 	if err != nil {
 		rlog.Error("failed to hash first admin password", "error", err)
-		return
+		panic(err)
 	}
 
 	_, err = query.RegisterAdmin(ctx, db.RegisterAdminParams{
@@ -41,7 +41,7 @@ func createFirstAdmin(query db.Querier) {
 	})
 	if err != nil {
 		rlog.Error("failed to create first admin user", "error", err)
-		return
+		panic(err)
 	}
 	rlog.Info("created first admin user", "username", secrets.FirstAdminUsername)
 }

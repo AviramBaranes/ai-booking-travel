@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/jwt"
 	"encore.app/services/auth/db"
-	"encore.app/services/auth/jwt"
 	jwtgo "github.com/golang-jwt/jwt/v4"
 	"github.com/jackc/pgx/v5/pgtype"
 )

@@ -3,12 +3,13 @@ package auth
 import (
 	"context"
 	"errors"
-	"strings"
 	"testing"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/validation"
 	"encore.app/services/auth/db"
 	"encore.app/services/auth/mocks"
+	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
 )
 
@@ -24,9 +25,9 @@ func TestChangePassword(t *testing.T) {
 
 			for _, p := range cases {
 				err := p.Validate()
-				expectedErr := api_errors.WithDetail(err, api_errors.ErrorDetails{
-					Field: "id",
+				expectedErr := api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
 					Code:  api_errors.CodeInvalidValue,
+					Field: "id",
 				})
 
 				api_errors.AssertApiError(t, expectedErr, err)
@@ -34,19 +35,22 @@ func TestChangePassword(t *testing.T) {
 		})
 
 		t.Run("Invalid password", func(t *testing.T) {
-			cases := []ChangePasswordParams{
-				{ID: 1, NewPassword: ""},
-				{ID: 1, NewPassword: "short"},
-				{ID: 1, NewPassword: strings.Repeat("a", 7)},
+			tests := []struct {
+				password string
+				error    error
+			}{
+				{"Short1!", ErrPasswordTooShort},
+				{"missing_capital1", ErrPasswordNoUpper},
+				{"MISSING_LOWER1", ErrPasswordNoLower},
+				{"missingNumber!", ErrPasswordNoNumber},
+				{"MissingSymbol1", ErrPasswordNoSymbol},
 			}
-
-			for _, p := range cases {
-				err := p.Validate()
-				// Just check that validation fails for invalid passwords
-				// The specific error code can vary (required, password_too_short, etc.)
-				if err == nil {
-					t.Errorf("Expected error for password '%s', got nil", p.NewPassword)
-				}
+			for _, tt := range tests {
+				t.Run(tt.password, func(t *testing.T) {
+					p := RegisterAdminParams{Username: generateTestUsername(), Password: tt.password}
+					err := p.Validate()
+					api_errors.AssertApiError(t, tt.error, err)
+				})
 			}
 		})
 	})

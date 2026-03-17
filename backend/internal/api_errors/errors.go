@@ -16,7 +16,7 @@ var (
 			Err()
 
 	ErrUnauthorized = errs.B().
-			Code(errs.Unauthenticated).
+			Code(errs.PermissionDenied).
 			Msg("Unauthorized access").
 			Details(UnauthorizedDetails).
 			Err()

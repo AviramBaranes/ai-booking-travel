@@ -5,9 +5,9 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/password"
 	"encore.app/internal/validation"
 	"encore.app/services/auth/db"
-	"encore.app/services/auth/password"
 	"encore.dev/rlog"
 )
 
@@ -26,11 +26,15 @@ type RegisterAdminResponse struct {
 
 // Validate performs basic validation of the registration params.
 func (p RegisterAdminParams) Validate() error {
-	if err := password.ValidatePassword(p.Password); err != nil {
+	if err := validatePasswordForAPI(p.Password); err != nil {
 		return err
 	}
 	return validation.ValidateStruct(p)
 }
+
+var (
+	ErrOfficeAgentCodeMismatch = api_errors.NewValidationError("office code and agent code must be provided together")
+)
 
 // RegisterAdmin registers a new admin user.
 // encore:api auth path=/register-admin method=POST tag:admin
@@ -52,7 +56,7 @@ func (s *Service) RegisterAdmin(ctx context.Context, params RegisterAdminParams)
 
 	if (params.OfficeCode != nil && params.AgentCode == nil) || (params.OfficeCode == nil && params.AgentCode != nil) {
 		rlog.Warn("office code and agent code must be provided together", "username", params.Username)
-		return nil, validation.NewValidationError("office code and agent code must be provided together")
+		return nil, ErrOfficeAgentCodeMismatch
 	}
 
 	row, err := s.query.RegisterAdmin(ctx, db.RegisterAdminParams{

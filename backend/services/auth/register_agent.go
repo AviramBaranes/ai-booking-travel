@@ -5,9 +5,9 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/password"
 	"encore.app/internal/validation"
 	"encore.app/services/auth/db"
-	"encore.app/services/auth/password"
 	"encore.dev/rlog"
 )
 
@@ -26,7 +26,7 @@ type RegisterAgentResponse struct {
 
 // Validate performs basic validation of the registration params.
 func (p RegisterAgentParams) Validate() error {
-	if err := password.ValidatePassword(p.Password); err != nil {
+	if err := validatePasswordForAPI(p.Password); err != nil {
 		return err
 	}
 	return validation.ValidateStruct(p)

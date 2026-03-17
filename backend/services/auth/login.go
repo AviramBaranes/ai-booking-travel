@@ -5,10 +5,10 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/jwt"
+	"encore.app/internal/password"
 	"encore.app/internal/validation"
 	"encore.app/services/auth/db"
-	"encore.app/services/auth/jwt"
-	"encore.app/services/auth/password"
 	"encore.dev/beta/errs"
 	"encore.dev/rlog"
 )

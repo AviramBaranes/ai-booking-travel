@@ -8,9 +8,11 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/jwt"
+	"encore.app/internal/validation"
 	"encore.app/services/auth/db"
-	"encore.app/services/auth/jwt"
 	"encore.app/services/auth/mocks"
+	"encore.dev/beta/errs"
 
 	"go.uber.org/mock/gomock"
 )
@@ -42,9 +44,9 @@ func TestLogin(t *testing.T) {
 
 		for _, p := range cases {
 			err := p.Validate()
-			expectedErr := api_errors.WithDetail(err, api_errors.ErrorDetails{
-				Field: "username",
+			expectedErr := api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
 				Code:  api_errors.CodeInvalidValue,
+				Field: "username",
 			})
 
 			t.Log("Testing with username:", p.Username)
@@ -57,9 +59,9 @@ func TestLogin(t *testing.T) {
 			Username: testUsername,
 		}
 		err := p.Validate()
-		expectedErr := api_errors.WithDetail(err, api_errors.ErrorDetails{
-			Field: "password",
+		expectedErr := api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
 			Code:  api_errors.CodeInvalidValue,
+			Field: "password",
 		})
 
 		api_errors.AssertApiError(t, expectedErr, err)

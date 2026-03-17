@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"encore.app/internal/jwt"
 	"encore.app/services/auth/db"
-	"encore.app/services/auth/jwt"
 	"encore.dev/storage/sqldb"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
