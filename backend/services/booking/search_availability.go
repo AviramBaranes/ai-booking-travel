@@ -31,7 +31,7 @@ func (p SearchAvailabilityRequest) Validate() error {
 
 // SearchAvailabilityResponse represents the response for searching availability of vehicles.
 type SearchAvailabilityResponse struct {
-	AvailableVehicles []broker.AvailableVehicle `json:"availableVehicles"`
+	AvailableVehicles []AvailableVehicle `json:"availableVehicles"`
 }
 
 // SearchAvailability handles the http request for searching availability of vehicles.
@@ -88,7 +88,7 @@ func (s *Service) SearchAvailability(ctx context.Context, params SearchAvailabil
 	})
 
 	return &SearchAvailabilityResponse{
-		AvailableVehicles: vs,
+		AvailableVehicles: []AvailableVehicle{},
 	}, nil
 }
 

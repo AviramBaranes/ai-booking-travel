@@ -60,47 +60,105 @@ type hertzSearchAvailabilityTourInfo struct {
 	TourNumber string `xml:"TourNumber,attr"`
 }
 
-type hertzCarAvailabilityResponse struct {
-	Cars         []hertzCar        `xml:"VehAvailRSCore>VehVendorAvails>VehVendorAvail>VehAvails>VehAvail"`
-	LocationInfo hertzLocationInfo `xml:"VehAvailRSCore>VehVendorAvails>VehVendorAvail>Info"`
+type hertzCarAvailabilityXML struct {
+	Cars []hertzCarXML    `xml:"VehAvailRSCore>VehVendorAvails>VehVendorAvail>VehAvails>VehAvail"`
+	Info hertzLocationXML `xml:"VehAvailRSCore>VehVendorAvails>VehVendorAvail>Info"`
 }
 
-type hertzLocationInfo struct {
-	LocationDetails struct {
-		AdditionalInfo struct {
-			ParkLocation struct {
-				LocationType string `xml:"Location,attr"`
-			} `xml:"ParkLocation"`
-		} `xml:"AdditionalInfo"`
-	} `xml:"LocationDetails"`
+type hertzLocationXML struct {
+	LocationDetails hertzLocationDetailsXML `xml:"LocationDetails"`
+}
+
+type hertzLocationDetailsXML struct {
+	AdditionalInfo hertzAdditionalInfoXML `xml:"AdditionalInfo"`
+}
+
+type hertzAdditionalInfoXML struct {
+	ParkLocation hertzParkLocationXML `xml:"ParkLocation"`
+}
+
+type hertzParkLocationXML struct {
+	Location string `xml:"Location,attr"`
+}
+
+type hertzCarXML struct {
+	Core hertzVehAvailCoreXML `xml:"VehAvailCore"`
+}
+
+type hertzVehAvailCoreXML struct {
+	Reference  hertzReferenceXML  `xml:"Reference"`
+	Vehicle    hertzVehicleXML    `xml:"Vehicle"`
+	RentalRate hertzRentalRateXML `xml:"RentalRate"`
+}
+
+type hertzReferenceXML struct {
+	ID string `xml:"ID,attr"`
+}
+
+type hertzVehicleXML struct {
+	ImageURL         string               `xml:"PictureURL"`
+	Acriss           string               `xml:"Code,attr"`
+	HasAC            bool                 `xml:"AirConditionInd,attr"`
+	TransmissionType string               `xml:"TransmissionType,attr"`
+	Seats            int                  `xml:"PassengerQuantity,attr"`
+	Doors            int                  `xml:"Doors,attr"`
+	Bags             int                  `xml:"BaggageQuantity,attr"`
+	VehType          hertzVehTypeXML      `xml:"VehType"`
+	VehMakeModel     hertzVehMakeModelXML `xml:"VehMakeModel"`
+}
+
+type hertzVehTypeXML struct {
+	CarType string `xml:"VehicleCategory,attr"`
+}
+
+type hertzVehMakeModelXML struct {
+	Model string `xml:"Name,attr"`
+}
+
+type hertzRentalRateXML struct {
+	Charges []hertzCharge `xml:"VehicleCharges>VehicleCharge"`
+}
+
+func (x hertzCarAvailabilityXML) toResponse() hertzCarAvailabilityResponse {
+	resp := hertzCarAvailabilityResponse{
+		LocationType: x.Info.LocationDetails.AdditionalInfo.ParkLocation.Location,
+		Cars:         make([]hertzCar, 0, len(x.Cars)),
+	}
+	for _, c := range x.Cars {
+		resp.Cars = append(resp.Cars, hertzCar{
+			ID:               c.Core.Reference.ID,
+			Model:            c.Core.Vehicle.VehMakeModel.Model,
+			ImageURL:         c.Core.Vehicle.ImageURL,
+			CarType:          c.Core.Vehicle.VehType.CarType,
+			Acriss:           c.Core.Vehicle.Acriss,
+			HasAC:            c.Core.Vehicle.HasAC,
+			TransmissionType: c.Core.Vehicle.TransmissionType,
+			Seats:            c.Core.Vehicle.Seats,
+			Doors:            c.Core.Vehicle.Doors,
+			Bags:             c.Core.Vehicle.Bags,
+			Charges:          c.Core.RentalRate.Charges,
+		})
+	}
+	return resp
+}
+
+type hertzCarAvailabilityResponse struct {
+	Cars         []hertzCar
+	LocationType string
 }
 
 type hertzCar struct {
-	VehAvailCore hertzVehAvailCore `xml:"VehAvailCore"`
-}
-
-type hertzVehAvailCore struct {
-	Reference struct {
-		ID string `xml:"ID,attr"`
-	} `xml:"Reference"`
-	Vehicle struct {
-		ImageURL         string `xml:"PictureURL"`
-		Acriss           string `xml:"Code,attr"`
-		HasAC            bool   `xml:"AirConditionInd,attr"`
-		TransmissionType string `xml:"TransmissionType,attr"`
-		Seats            int    `xml:"PassengerQuantity,attr"`
-		Doors            int    `xml:"Doors,attr"`
-		Bags             int    `xml:"BaggageQuantity,attr"`
-		VehType          struct {
-			CarType string `xml:"VehicleCategory,attr"`
-		} `xml:"VehType"`
-		VehMakeModel struct {
-			Model string `xml:"Name,attr"`
-		} `xml:"VehMakeModel"`
-	} `xml:"Vehicle"`
-	RentalRate struct {
-		Charges []hertzCharge `xml:"VehicleCharges>VehicleCharge"`
-	} `xml:"RentalRate"`
+	ID               string
+	Model            string
+	ImageURL         string
+	CarType          string
+	Acriss           string
+	HasAC            bool
+	TransmissionType string
+	Seats            int
+	Doors            int
+	Bags             int
+	Charges          []hertzCharge
 }
 
 type hertzCharge struct {

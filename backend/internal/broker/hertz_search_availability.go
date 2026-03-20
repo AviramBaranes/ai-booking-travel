@@ -10,13 +10,14 @@ import (
 	"encore.dev/rlog"
 )
 
+// hertzRequestParams identifies one Hertz plan lookup to perform.
 type hertzRequestParams struct {
 	brandID  hertzBrand
 	planName string
 	planCode string
 }
 
-// SearchAvailability searches for available vehicles based on the provided search parameters. It returns a slice of AvailableVehicle structs containing details about the available vehicles, or an error if the search fails.
+// SearchAvailability fetches and merges Hertz vehicle availability results.
 func (h Hertz) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle, error) {
 	dayCount, err := calculateDaysCount(p.PickupDate, p.PickupTime, p.DropoffDate, p.DropoffTime)
 	if err != nil {
@@ -64,13 +65,14 @@ func (h Hertz) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicl
 				return
 			}
 
-			var resp hertzCarAvailabilityResponse
-			if err := xml.Unmarshal(body, &resp); err != nil {
+			var raw hertzCarAvailabilityXML
+			if err := xml.Unmarshal(body, &raw); err != nil {
 				errOnce.Do(func() {
 					firstErr = fmt.Errorf("hertz SearchAvailability unmarshal response: %w", err)
 				})
 				return
 			}
+			resp := raw.toResponse()
 
 			availableVehicles := h.mapHertzResponseToAvailableVehicles(p, resp, rp.brandID, rp.planName, dayCount)
 
@@ -112,63 +114,39 @@ const (
 	hertzImageBaseURL = "https://images.hertz.com/vehicles/152x88/"
 )
 
-// mapHertzResponseToAvailableVehicles maps the Hertz API response to a slice of AvailableVehicle structs, extracting relevant details about each available vehicle and its rental plans.
+// mapHertzResponseToAvailableVehicles converts a Hertz response into available vehicles.
 func (h Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, resp hertzCarAvailabilityResponse, brandID hertzBrand, planName string, dayCount int) []AvailableVehicle {
 	availableVehicles := make([]AvailableVehicle, 0, len(resp.Cars))
 
 	inclusions := getPlanInclusions(p.CountryCode, planName)
 	locationType := "Shuttle"
-	if resp.LocationInfo.LocationDetails.AdditionalInfo.ParkLocation.LocationType == "1" {
+	if resp.LocationType == "1" {
 		locationType = "Airport"
 	}
 
 	for _, car := range resp.Cars {
-		if car.VehAvailCore.Vehicle.VehMakeModel.Model == "" || car.VehAvailCore.Vehicle.VehMakeModel.Model == "DESCRIPTION NOT AVAILABLE" {
+		if car.Model == "" || car.Model == "DESCRIPTION NOT AVAILABLE" {
 			continue
 		}
 
-		parts := strings.SplitN(car.VehAvailCore.Vehicle.VehMakeModel.Model, " ", 2)
+		parts := strings.SplitN(car.Model, " ", 2)
 		if len(parts) != 2 {
-			rlog.Warn("unexpected car model format in Hertz response, skipping vehicle", "car_model", car.VehAvailCore.Vehicle.VehMakeModel.Model)
+			rlog.Warn("unexpected car model format in Hertz response, skipping vehicle", "car_model", car.Model)
 			continue
 		}
 
 		carGroup := parts[0]
 		model := parts[1]
 
-		var (
-			price               float64
-			currency            string
-			dropCharge          float64
-			dropChargeCurrency  string
-			payAtPickup         float64
-			payAtPickupCurrency string
-		)
+		chargeDetails := extractHertzChargeDetails(car.Charges)
 
-		for _, charge := range car.VehAvailCore.RentalRate.Charges {
-
-			switch charge.Purpose {
-			case "1":
-				if charge.GuaranteedInd {
-					price = charge.Amount
-					currency = charge.CurrencyCode
-				}
-			case "2":
-				dropCharge = charge.Amount
-				dropChargeCurrency = charge.CurrencyCode
-			case "23":
-				payAtPickup = charge.Amount
-				payAtPickupCurrency = charge.CurrencyCode
-			}
-		}
-
-		if price == 0 {
+		if chargeDetails.price == 0 {
 			continue
 		}
 
 		info := getInfo(p.DriverAge, dayCount, p.CountryCode, planName)
-		if payAtPickup > 0 {
-			info = append([]string{fmt.Sprintf("PayAtPickup:%d:%s", roundToInt(payAtPickup), payAtPickupCurrency)}, info...)
+		if chargeDetails.payAtPickup > 0 {
+			info = append([]string{fmt.Sprintf("PayAtPickup:%d:%s", roundToInt(chargeDetails.payAtPickup), chargeDetails.payAtPickupCurrency)}, info...)
 		}
 
 		availableVehicles = append(availableVehicles, AvailableVehicle{
@@ -176,36 +154,35 @@ func (h Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, r
 			CarDetails: CarDetails{
 				Model:        model,
 				CarGroup:     carGroup,
-				ImageURL:     hertzImageBaseURL + strings.TrimSpace(car.VehAvailCore.Vehicle.ImageURL),
+				ImageURL:     hertzImageBaseURL + strings.TrimSpace(car.ImageURL),
 				SupplierName: mapBrandIDToSupplierName(brandID),
-				CarType:      mapCarTypeCodeToCarType(car.VehAvailCore.Vehicle.VehType.CarType),
-				Acriss:       car.VehAvailCore.Vehicle.Acriss,
-				HasAC:        car.VehAvailCore.Vehicle.HasAC,
-				IsAutoGear:   strings.EqualFold(car.VehAvailCore.Vehicle.TransmissionType, "Automatic"),
-				Seats:        car.VehAvailCore.Vehicle.Seats,
-				Bags:         car.VehAvailCore.Vehicle.Bags,
-				Doors:        car.VehAvailCore.Vehicle.Doors,
+				CarType:      mapCarTypeCodeToCarType(car.CarType),
+				Acriss:       car.Acriss,
+				HasAC:        car.HasAC,
+				IsAutoGear:   strings.EqualFold(car.TransmissionType, "Automatic"),
+				Seats:        car.Seats,
+				Bags:         car.Bags,
+				Doors:        car.Doors,
 			},
 			Plans: []Plan{
 				{
-					PlanName:       planName,
-					FullPrice:      roundToInt(price),
-					Discount:       p.DiscountPercentage,
-					Price:          roundToInt(price),
-					PlanInclusions: inclusions,
-					Info:           info,
-					ErpPrice:       roundToInt(getERPPrice(dayCount, p.CountryCode)),
-					RateQualifier:  car.VehAvailCore.Reference.ID,
-					SupplierCode:   string(brandID),
+					PlanName:        planName,
+					Price:           chargeDetails.price,
+					PlanInclusions:  inclusions,
+					Info:            info,
+					BrokerErpPrice:  0,
+					ChargedErpPrice: getInsuranceExtraCost(dayCount),
+					RateQualifier:   car.ID,
+					SupplierCode:    string(brandID),
 				},
 			},
 			LocationDetails: LocationDetails{
 				LocationType: locationType,
 			},
 			PriceDetails: PriceDetails{
-				Currency:           currency,
-				DropCharge:         roundToInt(dropCharge),
-				DropChargeCurrency: dropChargeCurrency,
+				Currency:           chargeDetails.currency,
+				DropCharge:         roundToInt(chargeDetails.dropCharge),
+				DropChargeCurrency: chargeDetails.dropChargeCurrency,
 			},
 		})
 	}
@@ -213,19 +190,21 @@ func (h Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, r
 	return availableVehicles
 }
 
-func getERPPrice(dayCount int, countryCode string) float32 {
-	const US_ERP_DAY_CHARGE float32 = 2.56
-	const CA_ERP_DAY_CHARGE float32 = 5.98
+// getERPPrice returns the ERP surcharge for the market and rental length.
+func getERPPrice(dayCount int, countryCode string) float64 {
+	const US_ERP_DAY_CHARGE float64 = 2.56
+	const CA_ERP_DAY_CHARGE float64 = 5.98
 
 	if countryCode == "US" {
-		return US_ERP_DAY_CHARGE * float32(dayCount)
+		return US_ERP_DAY_CHARGE * float64(dayCount)
 	}
 	if countryCode == "CA" {
-		return CA_ERP_DAY_CHARGE * float32(dayCount)
+		return CA_ERP_DAY_CHARGE * float64(dayCount)
 	}
 	return 0
 }
 
+// getPlanInclusions returns a copy of the inclusions for a Hertz plan.
 func getPlanInclusions(countryCode, planName string) []string {
 	var incs []string
 	if countryCode == "US" {
@@ -240,6 +219,7 @@ func getPlanInclusions(countryCode, planName string) []string {
 	return out
 }
 
+// getInfo builds plan notes for the driver, market, and rental length.
 func getInfo(driverAge, dayCount int, countryCode, planName string) []string {
 	info, _ := hertzTermsMap[planName]
 	infoCopy := make([]string, len(info))
@@ -257,4 +237,37 @@ func getInfo(driverAge, dayCount int, countryCode, planName string) []string {
 	}
 
 	return infoCopy
+}
+
+// hertzChargeDetails holds the price-related values parsed from Hertz charges.
+type hertzChargeDetails struct {
+	price               float64
+	currency            string
+	dropCharge          float64
+	dropChargeCurrency  string
+	payAtPickup         float64
+	payAtPickupCurrency string
+}
+
+// extractHertzChargeDetails pulls pricing fields from Hertz charge entries.
+func extractHertzChargeDetails(charges []hertzCharge) hertzChargeDetails {
+	var details hertzChargeDetails
+
+	for _, charge := range charges {
+		switch charge.Purpose {
+		case "1":
+			if charge.GuaranteedInd {
+				details.price = charge.Amount
+				details.currency = charge.CurrencyCode
+			}
+		case "2":
+			details.dropCharge = charge.Amount
+			details.dropChargeCurrency = charge.CurrencyCode
+		case "23":
+			details.payAtPickup = charge.Amount
+			details.payAtPickupCurrency = charge.CurrencyCode
+		}
+	}
+
+	return details
 }

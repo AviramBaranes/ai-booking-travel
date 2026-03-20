@@ -185,16 +185,15 @@ func getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDetails, disc
 		}
 
 		plans = append(plans, Plan{
-			PlanID:         planID,
-			PlanName:       p.Product,
-			PlanInclusions: planInclusions,
-			FullPrice:      roundToInt(p.Price),
-			Discount:       discount,
-			Price:          roundToInt(p.Price),
-			ErpPrice:       roundToInt(c.ERP + getInsuranceExtraCost(dayCount)),
-			Info:           c.Information,
-			RateQualifier:  c.RateQualifier,
-			SupplierCode:   c.SupplierCode,
+			PlanID:          planID,
+			PlanName:        p.Product,
+			PlanInclusions:  planInclusions,
+			Price:           p.Price,
+			BrokerErpPrice:  c.ERP,
+			ChargedErpPrice: getInsuranceExtraCost(dayCount),
+			Info:            c.Information,
+			RateQualifier:   c.RateQualifier,
+			SupplierCode:    c.SupplierCode,
 		})
 	}
 
