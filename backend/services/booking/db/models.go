@@ -53,6 +53,31 @@ func (ns NullBroker) Value() (driver.Value, error) {
 	return string(ns.Broker), nil
 }
 
+type Coupon struct {
+	ID        int32
+	Name      string
+	Code      string
+	Discount  int32
+	IsEnabled bool
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+type HertzMarkupRate struct {
+	ID                  int64
+	Country             string
+	Brand               string
+	PickupDateFrom      pgtype.Date
+	PickupDateTo        pgtype.Date
+	CarGroup            string
+	NumOfRentalDaysFrom int32
+	NumOfRentalDaysTo   int32
+	MarkUpGross         float64
+	MarkUpNet           float64
+	CreatedAt           pgtype.Timestamptz
+	UpdatedAt           pgtype.Timestamptz
+}
+
 type Location struct {
 	ID          int64
 	Country     string

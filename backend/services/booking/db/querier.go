@@ -9,15 +9,27 @@ import (
 )
 
 type Querier interface {
+	CreateCoupon(ctx context.Context, arg CreateCouponParams) (Coupon, error)
+	DeleteCoupon(ctx context.Context, id int32) error
+	DeleteHertzMarkupRate(ctx context.Context, id int64) (int64, error)
 	DisableLocationBrokerCode(ctx context.Context, id int64) error
 	EnableLocationBrokerCode(ctx context.Context, id int64) error
+	FindCouponByCode(ctx context.Context, code string) (Coupon, error)
 	GetAllLocationBrokerCodesByLocationIDs(ctx context.Context, locationIds []int64) ([]GetAllLocationBrokerCodesByLocationIDsRow, error)
+	// Used by the markup logic to fetch rates for a given search.
+	GetHertzMarkupRates(ctx context.Context, arg GetHertzMarkupRatesParams) ([]GetHertzMarkupRatesRow, error)
 	GetLocationBrokerCode(ctx context.Context, arg GetLocationBrokerCodeParams) (LocationBrokerCode, error)
 	GetLocationById(ctx context.Context, id int64) (Location, error)
+	InsertHertzMarkupRate(ctx context.Context, arg InsertHertzMarkupRateParams) (HertzMarkupRate, error)
 	InsertLocation(ctx context.Context, arg InsertLocationParams) (Location, error)
 	InsertLocationBrokerCode(ctx context.Context, arg InsertLocationBrokerCodeParams) (LocationBrokerCode, error)
 	InsertManyLocation(ctx context.Context, arg InsertManyLocationParams) ([]int64, error)
+	ListCoupons(ctx context.Context) ([]Coupon, error)
+	// Admin listing with pagination, optional filtering, and sorting.
+	ListHertzMarkupRates(ctx context.Context, arg ListHertzMarkupRatesParams) ([]HertzMarkupRate, error)
 	SearchLocations(ctx context.Context, search string) ([]Location, error)
+	UpdateCoupon(ctx context.Context, arg UpdateCouponParams) (Coupon, error)
+	UpdateHertzMarkupRate(ctx context.Context, arg UpdateHertzMarkupRateParams) (HertzMarkupRate, error)
 	UpsertLocationByCountryCodeName(ctx context.Context, arg UpsertLocationByCountryCodeNameParams) (int64, error)
 	UpsertLocationByIATA(ctx context.Context, arg UpsertLocationByIATAParams) (int64, error)
 }

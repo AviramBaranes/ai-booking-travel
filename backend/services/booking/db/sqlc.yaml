@@ -4,6 +4,8 @@ sql:
     queries:
       - "query/locations_query.sql"
       - "query/location_broker_codes_query.sql"
+      - "query/hertz_markup_rates_query.sql"
+      - "query/coupons_query.sql"
     schema: "./migrations"
     gen:
       go:

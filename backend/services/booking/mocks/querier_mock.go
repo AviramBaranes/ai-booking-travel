@@ -41,6 +41,50 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 	return m.recorder
 }
 
+// CreateCoupon mocks base method.
+func (m *MockQuerier) CreateCoupon(ctx context.Context, arg db.CreateCouponParams) (db.Coupon, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateCoupon", ctx, arg)
+	ret0, _ := ret[0].(db.Coupon)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateCoupon indicates an expected call of CreateCoupon.
+func (mr *MockQuerierMockRecorder) CreateCoupon(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCoupon", reflect.TypeOf((*MockQuerier)(nil).CreateCoupon), ctx, arg)
+}
+
+// DeleteCoupon mocks base method.
+func (m *MockQuerier) DeleteCoupon(ctx context.Context, id int32) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCoupon", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCoupon indicates an expected call of DeleteCoupon.
+func (mr *MockQuerierMockRecorder) DeleteCoupon(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCoupon", reflect.TypeOf((*MockQuerier)(nil).DeleteCoupon), ctx, id)
+}
+
+// DeleteHertzMarkupRate mocks base method.
+func (m *MockQuerier) DeleteHertzMarkupRate(ctx context.Context, id int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteHertzMarkupRate", ctx, id)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteHertzMarkupRate indicates an expected call of DeleteHertzMarkupRate.
+func (mr *MockQuerierMockRecorder) DeleteHertzMarkupRate(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteHertzMarkupRate", reflect.TypeOf((*MockQuerier)(nil).DeleteHertzMarkupRate), ctx, id)
+}
+
 // DisableLocationBrokerCode mocks base method.
 func (m *MockQuerier) DisableLocationBrokerCode(ctx context.Context, id int64) error {
 	m.ctrl.T.Helper()
@@ -69,6 +113,21 @@ func (mr *MockQuerierMockRecorder) EnableLocationBrokerCode(ctx, id any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnableLocationBrokerCode", reflect.TypeOf((*MockQuerier)(nil).EnableLocationBrokerCode), ctx, id)
 }
 
+// FindCouponByCode mocks base method.
+func (m *MockQuerier) FindCouponByCode(ctx context.Context, code string) (db.Coupon, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindCouponByCode", ctx, code)
+	ret0, _ := ret[0].(db.Coupon)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindCouponByCode indicates an expected call of FindCouponByCode.
+func (mr *MockQuerierMockRecorder) FindCouponByCode(ctx, code any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCouponByCode", reflect.TypeOf((*MockQuerier)(nil).FindCouponByCode), ctx, code)
+}
+
 // GetAllLocationBrokerCodesByLocationIDs mocks base method.
 func (m *MockQuerier) GetAllLocationBrokerCodesByLocationIDs(ctx context.Context, locationIds []int64) ([]db.GetAllLocationBrokerCodesByLocationIDsRow, error) {
 	m.ctrl.T.Helper()
@@ -82,6 +141,21 @@ func (m *MockQuerier) GetAllLocationBrokerCodesByLocationIDs(ctx context.Context
 func (mr *MockQuerierMockRecorder) GetAllLocationBrokerCodesByLocationIDs(ctx, locationIds any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllLocationBrokerCodesByLocationIDs", reflect.TypeOf((*MockQuerier)(nil).GetAllLocationBrokerCodesByLocationIDs), ctx, locationIds)
+}
+
+// GetHertzMarkupRates mocks base method.
+func (m *MockQuerier) GetHertzMarkupRates(ctx context.Context, arg db.GetHertzMarkupRatesParams) ([]db.GetHertzMarkupRatesRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHertzMarkupRates", ctx, arg)
+	ret0, _ := ret[0].([]db.GetHertzMarkupRatesRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetHertzMarkupRates indicates an expected call of GetHertzMarkupRates.
+func (mr *MockQuerierMockRecorder) GetHertzMarkupRates(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHertzMarkupRates", reflect.TypeOf((*MockQuerier)(nil).GetHertzMarkupRates), ctx, arg)
 }
 
 // GetLocationBrokerCode mocks base method.
@@ -112,6 +186,21 @@ func (m *MockQuerier) GetLocationById(ctx context.Context, id int64) (db.Locatio
 func (mr *MockQuerierMockRecorder) GetLocationById(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLocationById", reflect.TypeOf((*MockQuerier)(nil).GetLocationById), ctx, id)
+}
+
+// InsertHertzMarkupRate mocks base method.
+func (m *MockQuerier) InsertHertzMarkupRate(ctx context.Context, arg db.InsertHertzMarkupRateParams) (db.HertzMarkupRate, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertHertzMarkupRate", ctx, arg)
+	ret0, _ := ret[0].(db.HertzMarkupRate)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InsertHertzMarkupRate indicates an expected call of InsertHertzMarkupRate.
+func (mr *MockQuerierMockRecorder) InsertHertzMarkupRate(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertHertzMarkupRate", reflect.TypeOf((*MockQuerier)(nil).InsertHertzMarkupRate), ctx, arg)
 }
 
 // InsertLocation mocks base method.
@@ -159,6 +248,36 @@ func (mr *MockQuerierMockRecorder) InsertManyLocation(ctx, arg any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertManyLocation", reflect.TypeOf((*MockQuerier)(nil).InsertManyLocation), ctx, arg)
 }
 
+// ListCoupons mocks base method.
+func (m *MockQuerier) ListCoupons(ctx context.Context) ([]db.Coupon, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListCoupons", ctx)
+	ret0, _ := ret[0].([]db.Coupon)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListCoupons indicates an expected call of ListCoupons.
+func (mr *MockQuerierMockRecorder) ListCoupons(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCoupons", reflect.TypeOf((*MockQuerier)(nil).ListCoupons), ctx)
+}
+
+// ListHertzMarkupRates mocks base method.
+func (m *MockQuerier) ListHertzMarkupRates(ctx context.Context, arg db.ListHertzMarkupRatesParams) ([]db.HertzMarkupRate, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListHertzMarkupRates", ctx, arg)
+	ret0, _ := ret[0].([]db.HertzMarkupRate)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListHertzMarkupRates indicates an expected call of ListHertzMarkupRates.
+func (mr *MockQuerierMockRecorder) ListHertzMarkupRates(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListHertzMarkupRates", reflect.TypeOf((*MockQuerier)(nil).ListHertzMarkupRates), ctx, arg)
+}
+
 // SearchLocations mocks base method.
 func (m *MockQuerier) SearchLocations(ctx context.Context, search string) ([]db.Location, error) {
 	m.ctrl.T.Helper()
@@ -172,6 +291,36 @@ func (m *MockQuerier) SearchLocations(ctx context.Context, search string) ([]db.
 func (mr *MockQuerierMockRecorder) SearchLocations(ctx, search any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchLocations", reflect.TypeOf((*MockQuerier)(nil).SearchLocations), ctx, search)
+}
+
+// UpdateCoupon mocks base method.
+func (m *MockQuerier) UpdateCoupon(ctx context.Context, arg db.UpdateCouponParams) (db.Coupon, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateCoupon", ctx, arg)
+	ret0, _ := ret[0].(db.Coupon)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateCoupon indicates an expected call of UpdateCoupon.
+func (mr *MockQuerierMockRecorder) UpdateCoupon(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCoupon", reflect.TypeOf((*MockQuerier)(nil).UpdateCoupon), ctx, arg)
+}
+
+// UpdateHertzMarkupRate mocks base method.
+func (m *MockQuerier) UpdateHertzMarkupRate(ctx context.Context, arg db.UpdateHertzMarkupRateParams) (db.HertzMarkupRate, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateHertzMarkupRate", ctx, arg)
+	ret0, _ := ret[0].(db.HertzMarkupRate)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateHertzMarkupRate indicates an expected call of UpdateHertzMarkupRate.
+func (mr *MockQuerierMockRecorder) UpdateHertzMarkupRate(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateHertzMarkupRate", reflect.TypeOf((*MockQuerier)(nil).UpdateHertzMarkupRate), ctx, arg)
 }
 
 // UpsertLocationByCountryCodeName mocks base method.
