@@ -2,10 +2,8 @@ package booking
 
 import (
 	"context"
-	"math"
 
 	"encore.app/services/booking/db"
-	"encore.dev/config"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -16,10 +14,8 @@ type MarkupProvider interface {
 }
 
 func applyMarkup(basePrice, markupPct float64) float64 {
-	return math.Round(basePrice*(1+markupPct/100)*100) / 100
+	return basePrice * (1 + markupPct/100)
 }
-
-// --- Hertz ---
 
 type hertzMarkupKey struct {
 	CarGroup string
@@ -37,12 +33,11 @@ type HertzMarkupProvider struct {
 	rates map[hertzMarkupKey]markupRates
 }
 
-func NewHertzMarkupProvider(ctx context.Context, q db.Querier, country, pickupDate string, rentalDays int, brands, carGroups []string) (*HertzMarkupProvider, error) {
+func NewHertzMarkupProvider(ctx context.Context, q db.Querier, country, pickupDate string, rentalDays int, carGroups []string) (*HertzMarkupProvider, error) {
 	rows, err := q.GetHertzMarkupRates(ctx, db.GetHertzMarkupRatesParams{
 		Country:    country,
 		PickupDate: pgtype.Date{Time: parseDate(pickupDate).Time, Valid: true},
 		RentalDays: int32(rentalDays),
-		Brands:     brands,
 		CarGroups:  carGroups,
 	})
 	if err != nil {
@@ -73,21 +68,16 @@ func (h *HertzMarkupProvider) CalculateMarkup(isAgent bool, basePrice float64, c
 
 // --- Flex ---
 
-type FlexMarkupConfig struct {
-	MarkUpGross config.Float64
-	MarkUpNet   config.Float64
-}
-
 // FlexMarkupProvider uses config-driven markup percentages.
 type FlexMarkupProvider struct {
 	markUpGross float64
 	markUpNet   float64
 }
 
-func NewFlexMarkupProvider(cfg *FlexMarkupConfig) *FlexMarkupProvider {
+func NewFlexMarkupProvider(MarkUpGross, MarkUpNet float64) *FlexMarkupProvider {
 	return &FlexMarkupProvider{
-		markUpGross: cfg.MarkUpGross(),
-		markUpNet:   cfg.MarkUpNet(),
+		markUpGross: MarkUpGross,
+		markUpNet:   MarkUpNet,
 	}
 }
 

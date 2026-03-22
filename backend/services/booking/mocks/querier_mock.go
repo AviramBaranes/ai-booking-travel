@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	db "encore.app/services/booking/db"
+	pgtype "github.com/jackc/pgx/v5/pgtype"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -56,6 +57,21 @@ func (mr *MockQuerierMockRecorder) CreateCoupon(ctx, arg any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCoupon", reflect.TypeOf((*MockQuerier)(nil).CreateCoupon), ctx, arg)
 }
 
+// CreateCurrency mocks base method.
+func (m *MockQuerier) CreateCurrency(ctx context.Context, arg db.CreateCurrencyParams) (db.Currency, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateCurrency", ctx, arg)
+	ret0, _ := ret[0].(db.Currency)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateCurrency indicates an expected call of CreateCurrency.
+func (mr *MockQuerierMockRecorder) CreateCurrency(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCurrency", reflect.TypeOf((*MockQuerier)(nil).CreateCurrency), ctx, arg)
+}
+
 // DeleteCoupon mocks base method.
 func (m *MockQuerier) DeleteCoupon(ctx context.Context, id int32) error {
 	m.ctrl.T.Helper()
@@ -68,6 +84,20 @@ func (m *MockQuerier) DeleteCoupon(ctx context.Context, id int32) error {
 func (mr *MockQuerierMockRecorder) DeleteCoupon(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCoupon", reflect.TypeOf((*MockQuerier)(nil).DeleteCoupon), ctx, id)
+}
+
+// DeleteCurrency mocks base method.
+func (m *MockQuerier) DeleteCurrency(ctx context.Context, id int32) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCurrency", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCurrency indicates an expected call of DeleteCurrency.
+func (mr *MockQuerierMockRecorder) DeleteCurrency(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCurrency", reflect.TypeOf((*MockQuerier)(nil).DeleteCurrency), ctx, id)
 }
 
 // DeleteHertzMarkupRate mocks base method.
@@ -83,6 +113,20 @@ func (m *MockQuerier) DeleteHertzMarkupRate(ctx context.Context, id int64) (int6
 func (mr *MockQuerierMockRecorder) DeleteHertzMarkupRate(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteHertzMarkupRate", reflect.TypeOf((*MockQuerier)(nil).DeleteHertzMarkupRate), ctx, id)
+}
+
+// DeleteOldAvailablePlansSnapshots mocks base method.
+func (m *MockQuerier) DeleteOldAvailablePlansSnapshots(ctx context.Context, createdAt pgtype.Timestamptz) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOldAvailablePlansSnapshots", ctx, createdAt)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOldAvailablePlansSnapshots indicates an expected call of DeleteOldAvailablePlansSnapshots.
+func (mr *MockQuerierMockRecorder) DeleteOldAvailablePlansSnapshots(ctx, createdAt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOldAvailablePlansSnapshots", reflect.TypeOf((*MockQuerier)(nil).DeleteOldAvailablePlansSnapshots), ctx, createdAt)
 }
 
 // DisableLocationBrokerCode mocks base method.
@@ -126,6 +170,21 @@ func (m *MockQuerier) FindCouponByCode(ctx context.Context, code string) (db.Cou
 func (mr *MockQuerierMockRecorder) FindCouponByCode(ctx, code any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCouponByCode", reflect.TypeOf((*MockQuerier)(nil).FindCouponByCode), ctx, code)
+}
+
+// FindCurrencyByISOName mocks base method.
+func (m *MockQuerier) FindCurrencyByISOName(ctx context.Context, currencyIsoName string) (db.Currency, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindCurrencyByISOName", ctx, currencyIsoName)
+	ret0, _ := ret[0].(db.Currency)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindCurrencyByISOName indicates an expected call of FindCurrencyByISOName.
+func (mr *MockQuerierMockRecorder) FindCurrencyByISOName(ctx, currencyIsoName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCurrencyByISOName", reflect.TypeOf((*MockQuerier)(nil).FindCurrencyByISOName), ctx, currencyIsoName)
 }
 
 // GetAllLocationBrokerCodesByLocationIDs mocks base method.
@@ -186,6 +245,36 @@ func (m *MockQuerier) GetLocationById(ctx context.Context, id int64) (db.Locatio
 func (mr *MockQuerierMockRecorder) GetLocationById(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLocationById", reflect.TypeOf((*MockQuerier)(nil).GetLocationById), ctx, id)
+}
+
+// GetSnapshotByID mocks base method.
+func (m *MockQuerier) GetSnapshotByID(ctx context.Context, id int64) (db.AvailablePlansSnapshot, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSnapshotByID", ctx, id)
+	ret0, _ := ret[0].(db.AvailablePlansSnapshot)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSnapshotByID indicates an expected call of GetSnapshotByID.
+func (mr *MockQuerierMockRecorder) GetSnapshotByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSnapshotByID", reflect.TypeOf((*MockQuerier)(nil).GetSnapshotByID), ctx, id)
+}
+
+// InsertAvailablePlansSnapshot mocks base method.
+func (m *MockQuerier) InsertAvailablePlansSnapshot(ctx context.Context, plans []byte) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertAvailablePlansSnapshot", ctx, plans)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InsertAvailablePlansSnapshot indicates an expected call of InsertAvailablePlansSnapshot.
+func (mr *MockQuerierMockRecorder) InsertAvailablePlansSnapshot(ctx, plans any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertAvailablePlansSnapshot", reflect.TypeOf((*MockQuerier)(nil).InsertAvailablePlansSnapshot), ctx, plans)
 }
 
 // InsertHertzMarkupRate mocks base method.
@@ -263,6 +352,21 @@ func (mr *MockQuerierMockRecorder) ListCoupons(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCoupons", reflect.TypeOf((*MockQuerier)(nil).ListCoupons), ctx)
 }
 
+// ListCurrencies mocks base method.
+func (m *MockQuerier) ListCurrencies(ctx context.Context) ([]db.Currency, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListCurrencies", ctx)
+	ret0, _ := ret[0].([]db.Currency)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListCurrencies indicates an expected call of ListCurrencies.
+func (mr *MockQuerierMockRecorder) ListCurrencies(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCurrencies", reflect.TypeOf((*MockQuerier)(nil).ListCurrencies), ctx)
+}
+
 // ListHertzMarkupRates mocks base method.
 func (m *MockQuerier) ListHertzMarkupRates(ctx context.Context, arg db.ListHertzMarkupRatesParams) ([]db.HertzMarkupRate, error) {
 	m.ctrl.T.Helper()
@@ -306,6 +410,21 @@ func (m *MockQuerier) UpdateCoupon(ctx context.Context, arg db.UpdateCouponParam
 func (mr *MockQuerierMockRecorder) UpdateCoupon(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCoupon", reflect.TypeOf((*MockQuerier)(nil).UpdateCoupon), ctx, arg)
+}
+
+// UpdateCurrency mocks base method.
+func (m *MockQuerier) UpdateCurrency(ctx context.Context, arg db.UpdateCurrencyParams) (db.Currency, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateCurrency", ctx, arg)
+	ret0, _ := ret[0].(db.Currency)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateCurrency indicates an expected call of UpdateCurrency.
+func (mr *MockQuerierMockRecorder) UpdateCurrency(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCurrency", reflect.TypeOf((*MockQuerier)(nil).UpdateCurrency), ctx, arg)
 }
 
 // UpdateHertzMarkupRate mocks base method.
