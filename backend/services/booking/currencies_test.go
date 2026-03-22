@@ -244,15 +244,15 @@ func TestUpdateCurrency(t *testing.T) {
 	})
 
 	t.Run("partial update only changes provided fields", func(t *testing.T) {
-		created := createTestCurrency(t, s, "PARTIAL-CUR", "Partial Currency")
+		created := createTestCurrency(t, s, "PRTL", "Partial Currency")
 
-		newCode := "PARTIAL-NEW"
+		newCode := "PRTL-NEW"
 		resp, err := s.UpdateCurrency(ctx, created.ID, UpdateCurrencyRequest{CurrencyCode: &newCode})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if resp.CurrencyCode != "PARTIAL-NEW" {
-			t.Fatalf("expected currency code 'PARTIAL-NEW', got %q", resp.CurrencyCode)
+		if resp.CurrencyCode != "PRTL-NEW" {
+			t.Fatalf("expected currency code 'PRTL-NEW', got %q", resp.CurrencyCode)
 		}
 		// Other fields should remain unchanged
 		if resp.CurrencyISOName != "Partial Currency" {

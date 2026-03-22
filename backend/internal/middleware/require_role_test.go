@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	"encore.app/internal/api_errors"
+	"encore.app/services/auth"
 	a "encore.app/services/auth"
-	"encore.app/services/auth/db"
 	encore "encore.dev"
 	"encore.dev/et"
 	mw "encore.dev/middleware"
 )
 
-func runRequireRoleTests(t *testing.T, mwFunc func(mw.Request, mw.Next) mw.Response, role db.UserRole) {
+func runRequireRoleTests(t *testing.T, mwFunc func(mw.Request, mw.Next) mw.Response, role auth.UserRole) {
 	ctx := context.Background()
 	req := mw.NewRequest(ctx, &encore.Request{})
 
@@ -30,9 +30,9 @@ func runRequireRoleTests(t *testing.T, mwFunc func(mw.Request, mw.Next) mw.Respo
 
 	t.Run("Wrong Role", func(t *testing.T) {
 		nextCalled := false
-		otherRole := db.UserRoleAdmin
-		if role == db.UserRoleAdmin {
-			otherRole = db.UserRoleCustomer
+		otherRole := auth.UserRoleAdmin
+		if role == auth.UserRoleAdmin {
+			otherRole = auth.UserRoleCustomer
 		}
 		et.OverrideAuthInfo("1", &a.AuthData{UserID: 1, Role: otherRole})
 		defer et.OverrideAuthInfo("", nil)
@@ -64,13 +64,13 @@ func runRequireRoleTests(t *testing.T, mwFunc func(mw.Request, mw.Next) mw.Respo
 }
 
 func TestRequireAdmin(t *testing.T) {
-	runRequireRoleTests(t, RequireAdminMiddleware, db.UserRoleAdmin)
+	runRequireRoleTests(t, RequireAdminMiddleware, auth.UserRoleAdmin)
 }
 
 func TestRequireCustomer(t *testing.T) {
-	runRequireRoleTests(t, RequireCustomerMiddleware, db.UserRoleCustomer)
+	runRequireRoleTests(t, RequireCustomerMiddleware, auth.UserRoleCustomer)
 }
 
 func TestRequireAgent(t *testing.T) {
-	runRequireRoleTests(t, RequireAgentMiddleware, db.UserRoleAgent)
+	runRequireRoleTests(t, RequireAgentMiddleware, auth.UserRoleAgent)
 }
