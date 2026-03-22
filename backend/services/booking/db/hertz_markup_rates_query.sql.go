@@ -31,15 +31,13 @@ WHERE country = $1
   AND pickup_date_to >= $2::date
   AND num_of_rental_days_from <= $3::int
   AND num_of_rental_days_to >= $3::int
-  AND brand = ANY($4::text[])
-  AND car_group = ANY($5::text[])
+  AND car_group = ANY($4::text[])
 `
 
 type GetHertzMarkupRatesParams struct {
 	Country    string
 	PickupDate pgtype.Date
 	RentalDays int32
-	Brands     []string
 	CarGroups  []string
 }
 
@@ -56,7 +54,6 @@ func (q *Queries) GetHertzMarkupRates(ctx context.Context, arg GetHertzMarkupRat
 		arg.Country,
 		arg.PickupDate,
 		arg.RentalDays,
-		arg.Brands,
 		arg.CarGroups,
 	)
 	if err != nil {

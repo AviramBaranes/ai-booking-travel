@@ -53,6 +53,12 @@ func (ns NullBroker) Value() (driver.Value, error) {
 	return string(ns.Broker), nil
 }
 
+type AvailablePlansSnapshot struct {
+	ID        int64
+	CreatedAt pgtype.Timestamptz
+	Plans     []byte
+}
+
 type Coupon struct {
 	ID        int32
 	Name      string
@@ -61,6 +67,15 @@ type Coupon struct {
 	IsEnabled bool
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
+}
+
+type Currency struct {
+	ID              int32
+	CurrencyCode    string
+	CurrencyIsoName string
+	Rate            pgtype.Numeric
+	CreatedAt       pgtype.Timestamptz
+	UpdatedAt       pgtype.Timestamptz
 }
 
 type HertzMarkupRate struct {

@@ -7,7 +7,6 @@ WHERE country = $1
   AND pickup_date_to >= sqlc.arg(pickup_date)::date
   AND num_of_rental_days_from <= sqlc.arg(rental_days)::int
   AND num_of_rental_days_to >= sqlc.arg(rental_days)::int
-  AND brand = ANY(sqlc.arg(brands)::text[])
   AND car_group = ANY(sqlc.arg(car_groups)::text[]);
 
 -- name: ListHertzMarkupRates :many
