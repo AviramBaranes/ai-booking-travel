@@ -11,8 +11,8 @@ func roundToInt[T float32 | float64](f T) int {
 	return int(math.Round(float64(f)))
 }
 
-// calculateDaysCount calculates the number of days between pickup and dropoff dates, inclusive, it adds a day if the dropoff time is after the pickup time to account for partial days.
-func calculateDaysCount(pickupDate, pickupTime, dropoffDate, dropoffTime string) (int, error) {
+// CalculateDaysCount calculates the number of days between pickup and dropoff dates, inclusive, it adds a day if the dropoff time is after the pickup time to account for partial days.
+func CalculateDaysCount(pickupDate, pickupTime, dropoffDate, dropoffTime string) (int, error) {
 	pickupDateTime, err := time.Parse("2006-01-02 15:04", pickupDate+" "+pickupTime)
 	if err != nil {
 		return 0, fmt.Errorf("invalid pickup datetime: %s %s: %w", pickupDate, pickupTime, err)

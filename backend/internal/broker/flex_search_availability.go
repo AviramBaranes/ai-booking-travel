@@ -27,7 +27,7 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 	form.Set("DropoffTime", p.DropoffTime)
 	form.Set("DriversAge", strconv.Itoa(p.DriverAge))
 
-	dayCount, err := calculateDaysCount(p.PickupDate, p.PickupTime, p.DropoffDate, p.DropoffTime)
+	dayCount, err := CalculateDaysCount(p.PickupDate, p.PickupTime, p.DropoffDate, p.DropoffTime)
 	if err != nil {
 		return nil, fmt.Errorf("failed to calculate rental days count: %w", err)
 	}
@@ -75,7 +75,7 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 			addOns = []AddOn{}
 		}
 
-		plans := getPlans(c, dayCount, supplierDetails, p.DiscountPercentage)
+		plans := f.getPlans(c, dayCount, supplierDetails, p.DiscountPercentage)
 		if len(plans) == 0 {
 			rlog.Warn("no valid plans found for car in CarAvailability response, skipping vehicle", "car_name", c.Name)
 			continue
@@ -162,13 +162,12 @@ var flexProductMap = map[string]int{
 }
 
 // getInsuranceExtraCost calculates the extra insurance cost based on the number of rental days, using a fixed daily rate.
-func getInsuranceExtraCost(days int) float64 {
-	const GLOBAL_CUSTOM_INSURANCE_PER_DAY = 2.56
-	return float64(days) * GLOBAL_CUSTOM_INSURANCE_PER_DAY
+func (f Flex) getInsuranceExtraCost(days int) int {
+	return days * f.erpDayCharge
 }
 
 // getPlans returns the list of plans for a given car
-func getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDetails, discount int) []Plan {
+func (f Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDetails, discount int) []Plan {
 	plans := make([]Plan, 0, len(c.Costs))
 	for _, p := range c.Costs {
 		planID, ok := flexProductMap[p.Product]
@@ -185,15 +184,15 @@ func getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDetails, disc
 		}
 
 		plans = append(plans, Plan{
-			PlanID:          planID,
-			PlanName:        p.Product,
-			PlanInclusions:  planInclusions,
-			Price:           p.Price,
-			BrokerErpPrice:  c.ERP,
-			ChargedErpPrice: getInsuranceExtraCost(dayCount),
-			Info:            c.Information,
-			RateQualifier:   c.RateQualifier,
-			SupplierCode:    c.SupplierCode,
+			PlanID:                 planID,
+			PlanName:               p.Product,
+			PlanInclusions:         planInclusions,
+			Price:                  p.Price,
+			BrokerErpPrice:         c.ERP,
+			ChargedErpPriceWithVat: f.getInsuranceExtraCost(dayCount),
+			Info:                   c.Information,
+			RateQualifier:          c.RateQualifier,
+			SupplierCode:           c.SupplierCode,
 		})
 	}
 

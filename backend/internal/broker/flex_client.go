@@ -13,9 +13,18 @@ import (
 type Flex struct {
 	httpClient     *http.Client
 	countriesCache []flexCountry
+	erpDayCharge   int
 }
 
 const defaultTimeout = 5 * time.Minute
+
+// NewFlexWithErpCfg creates a new instance of the Flex broker with a default HTTP client and timeout.
+func NewFlexWithErpCfg(erpDayCharge int) Flex {
+	return Flex{
+		erpDayCharge: erpDayCharge,
+		httpClient:   &http.Client{Timeout: defaultTimeout},
+	}
+}
 
 // NewFlex creates a new instance of the Flex broker with a default HTTP client and timeout.
 func NewFlex() Flex {

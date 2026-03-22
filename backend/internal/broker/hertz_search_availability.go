@@ -19,7 +19,7 @@ type hertzRequestParams struct {
 
 // SearchAvailability fetches and merges Hertz vehicle availability results.
 func (h Hertz) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle, error) {
-	dayCount, err := calculateDaysCount(p.PickupDate, p.PickupTime, p.DropoffDate, p.DropoffTime)
+	dayCount, err := CalculateDaysCount(p.PickupDate, p.PickupTime, p.DropoffDate, p.DropoffTime)
 	if err != nil {
 		return nil, fmt.Errorf("calculate days count %w", err)
 	}
@@ -166,14 +166,14 @@ func (h Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, r
 			},
 			Plans: []Plan{
 				{
-					PlanName:        planName,
-					Price:           chargeDetails.price,
-					PlanInclusions:  inclusions,
-					Info:            info,
-					BrokerErpPrice:  0,
-					ChargedErpPrice: getInsuranceExtraCost(dayCount),
-					RateQualifier:   car.ID,
-					SupplierCode:    string(brandID),
+					PlanName:               planName,
+					Price:                  chargeDetails.price,
+					PlanInclusions:         inclusions,
+					Info:                   info,
+					BrokerErpPrice:         0,
+					ChargedErpPriceWithVat: h.getERPPrice(dayCount, p.CountryCode),
+					RateQualifier:          car.ID,
+					SupplierCode:           string(brandID),
 				},
 			},
 			LocationDetails: LocationDetails{
@@ -191,15 +191,12 @@ func (h Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, r
 }
 
 // getERPPrice returns the ERP surcharge for the market and rental length.
-func getERPPrice(dayCount int, countryCode string) float64 {
-	const US_ERP_DAY_CHARGE float64 = 2.56
-	const CA_ERP_DAY_CHARGE float64 = 5.98
-
+func (h Hertz) getERPPrice(dayCount int, countryCode string) int {
 	if countryCode == "US" {
-		return US_ERP_DAY_CHARGE * float64(dayCount)
+		return h.usErpDayCharge * dayCount
 	}
 	if countryCode == "CA" {
-		return CA_ERP_DAY_CHARGE * float64(dayCount)
+		return h.caErpDayCharge * dayCount
 	}
 	return 0
 }

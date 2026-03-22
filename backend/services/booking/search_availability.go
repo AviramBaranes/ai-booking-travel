@@ -2,16 +2,32 @@ package booking
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"math"
 	"sort"
 	"sync"
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	"encore.app/internal/validation"
+	"encore.app/services/auth"
 	"encore.app/services/booking/db"
 	"encore.dev/beta/errs"
+	"encore.dev/config"
 	"encore.dev/rlog"
 )
+
+type AvailableVehiclesConfig struct {
+	HertzErpDayChargeUS config.Int
+	HertzErpDayChargeCA config.Int
+	FlexErpDayCharge    config.Int
+	MarkUpGross         config.Float64
+	MarkUpNet           config.Float64
+}
+
+var avCfg = config.Load[*AvailableVehiclesConfig]()
 
 // SearchAvailabilityRequest represents the request for searching availability of vehicles.
 type SearchAvailabilityRequest struct {
@@ -31,15 +47,22 @@ func (p SearchAvailabilityRequest) Validate() error {
 
 // SearchAvailabilityResponse represents the response for searching availability of vehicles.
 type SearchAvailabilityResponse struct {
+	planDetailsID     int64
 	AvailableVehicles []AvailableVehicle `json:"availableVehicles"`
 }
 
 // SearchAvailability handles the http request for searching availability of vehicles.
 // encore:api public method=GET path=/booking/availability
-func (s *Service) SearchAvailability(ctx context.Context, params SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
-	availableLocs, err := getLocations(ctx, s.query, params)
+func (s *Service) SearchAvailability(ctx context.Context, p SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
+	availableLocs, err := getLocations(ctx, s.query, p)
 	if err != nil {
 		return nil, err
+	}
+
+	coupon, err := s.query.FindCouponByCode(ctx, p.CouponCode)
+	if err != nil && !errors.Is(err, db.ErrNoRows) {
+		rlog.Error("failed to find coupon by code", "error", err, "code", p.CouponCode)
+		return nil, api_errors.ErrInternalError
 	}
 
 	vs := make([]broker.AvailableVehicle, 0)
@@ -63,7 +86,7 @@ func (s *Service) SearchAvailability(ctx context.Context, params SearchAvailabil
 				return
 			}
 
-			result, err := searchCars(b, params, loc.pickupBrokerLocationID, loc.dropoffBrokerLocationID, loc.pickupCountryCode)
+			result, err := searchCars(b, p, loc.pickupBrokerLocationID, loc.dropoffBrokerLocationID, loc.pickupCountryCode)
 			if err != nil {
 				errOnce.Do(func() {
 					firstErr = err
@@ -83,12 +106,42 @@ func (s *Service) SearchAvailability(ctx context.Context, params SearchAvailabil
 		return nil, firstErr
 	}
 
+	if len(vs) == 0 {
+		return &SearchAvailabilityResponse{AvailableVehicles: []AvailableVehicle{}}, nil
+	}
+
 	sort.Slice(vs, func(i, j int) bool {
 		return vs[i].Plans[0].Price < vs[j].Plans[0].Price
 	})
 
+	daysCount, err := broker.CalculateDaysCount(p.PickupDate, p.PickupTime, p.DropoffDate, p.DropoffTime)
+	mp, err := getMarkupProviderMap(ctx, availableLocs, s.query, daysCount, p.PickupDate, extractCarGroups(vs))
+	if err != nil {
+		rlog.Error("failed to get markup provider map", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	authData := auth.GetAuthData()
+	isAgent := authData != nil && (authData.Role == auth.UserRoleAgent)
+	currenciesMap, err := buildCurrencyMap(s.query)
+	if err != nil {
+		rlog.Error("failed to build currency map", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+	artifacts := buildAvailabilityArtifacts(vs, mp, coupon.Discount, isAgent, currenciesMap)
+	if len(artifacts.plansDetails) == 0 {
+		return &SearchAvailabilityResponse{AvailableVehicles: []AvailableVehicle{}}, nil
+	}
+
+	plansDetailsRowID, err := storePlansDetails(ctx, s.query, artifacts.plansDetails)
+	if err != nil {
+		rlog.Error("failed to store plans details", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
 	return &SearchAvailabilityResponse{
-		AvailableVehicles: []AvailableVehicle{},
+		planDetailsID:     plansDetailsRowID,
+		AvailableVehicles: artifacts.availableCars,
 	}, nil
 }
 
@@ -115,10 +168,10 @@ func searchCars(b broker.Broker, params SearchAvailabilityRequest, plID, dlID, c
 func getBrokerByName(name broker.Name) (broker.Broker, error) {
 	switch name {
 	case broker.BrokerFlex:
-		f := broker.NewFlex()
+		f := broker.NewFlexWithErpCfg(avCfg.FlexErpDayCharge())
 		return &f, nil
 	case broker.BrokerHertz:
-		return broker.NewHertz(), nil
+		return broker.NewHertz(avCfg.HertzErpDayChargeUS(), avCfg.HertzErpDayChargeCA()), nil
 	default:
 		return nil, api_errors.ErrInternalError
 	}
@@ -236,15 +289,178 @@ func buildAvailabilityLocations(pickupsByBroker, dropoffsByBroker map[db.Broker]
 	return al
 }
 
+func getMarkupProviderMap(ctx context.Context, locs availabilityLocations, q db.Querier, rentalDays int, pickupDate string, carGroups []string) (map[broker.Name]MarkupProvider, error) {
+	markupProviderMap := make(map[broker.Name]MarkupProvider)
+	for brokerName := range locs {
+		var provider MarkupProvider
+		switch brokerName {
+		case broker.BrokerFlex:
+			provider = NewFlexMarkupProvider(avCfg.MarkUpGross(), avCfg.MarkUpNet())
+		case broker.BrokerHertz:
+			hp, err := NewHertzMarkupProvider(ctx, q, locs[brokerName].pickupCountryCode, pickupDate, rentalDays, carGroups)
+			if err != nil {
+				return nil, fmt.Errorf("initializing hertz markup provider: %w", err)
+			}
+			provider = hp
+		default:
+			return nil, fmt.Errorf("unsupported broker: %s", brokerName)
+		}
+		markupProviderMap[broker.Name(brokerName)] = provider
+	}
+
+	return markupProviderMap, nil
+}
+
+func extractCarGroups(vs []broker.AvailableVehicle) []string {
+	carGroupSet := make(map[string]struct{})
+	for _, v := range vs {
+		carGroupSet[v.CarDetails.CarGroup] = struct{}{}
+	}
+
+	carGroups := make([]string, 0, len(carGroupSet))
+	for cg := range carGroupSet {
+		carGroups = append(carGroups, cg)
+	}
+
+	return carGroups
+}
+
 type planPriceDetails struct {
-	planID                string
-	rateQualifier         string
-	supplierCode          string
-	originalPrice         float64
-	priceWithMarkup       float64
-	priceAfterDiscount    float64
-	erpOriginalPrice      float64
-	erpPriceWithMarkup    float64
-	erpPriceWithVAT       float64
-	erpPriceAfterDiscount float64
+	PlanID                    int         `json:"planId"`
+	CarModel                  string      `json:"carModel"`
+	Broker                    broker.Name `json:"broker"`
+	RateQualifier             string      `json:"rateQualifier"`
+	SupplierCode              string      `json:"supplierCode"`
+	CurrencyCode              string      `json:"currencyCode"`
+	CurrencyRate              float64     `json:"currencyRate"`
+	CarPurchasePrice          float64     `json:"carPurchasePrice"`
+	CarSellPriceWithVat       int         `json:"carSellPriceWithVat"`
+	CarPurchasePriceWithErp   float64     `json:"carPurchasePriceWithErp"`
+	CarSellPriceWithErpAndVat int         `json:"carSellPriceWithErpAndVat"`
+	DiscountPercentage        int         `json:"discountPercentage"`
+	ChargedERPPriceWithVat    int         `json:"chargedErpPriceWithVat"`
+}
+
+type availabilityArtifacts struct {
+	availableCars []AvailableVehicle
+	plansDetails  []planPriceDetails
+}
+
+func buildAvailabilityArtifacts(
+	availableVehicles []broker.AvailableVehicle,
+	markupProviderMap map[broker.Name]MarkupProvider,
+	couponDiscount int32,
+	isAgent bool,
+	currenciesMap map[string]float64) availabilityArtifacts {
+	artifacts := availabilityArtifacts{
+		availableCars: make([]AvailableVehicle, 0, len(availableVehicles)),
+		plansDetails:  make([]planPriceDetails, 0, len(availableVehicles)*2), //most cars have 1-2 plans
+	}
+
+	for _, v := range availableVehicles {
+		mp, ok := markupProviderMap[v.Broker]
+		if !ok {
+			rlog.Warn("no markup provider found for broker, skipping applying markup", "broker", v.Broker)
+			mp = NewFlexMarkupProvider(avCfg.MarkUpGross(), avCfg.MarkUpNet()) // default to flex markup provider with 0% markup
+		}
+
+		av := AvailableVehicle{
+			CarDetails:      v.CarDetails,
+			Broker:          v.Broker,
+			AddOns:          v.AddOns,
+			LocationDetails: v.LocationDetails,
+			PriceDetails:    v.PriceDetails,
+		}
+		avPlans := make([]Plan, 0, len(v.Plans))
+
+		for _, p := range v.Plans {
+			carPriceWithMarkup := mp.CalculateMarkup(isAgent, p.Price, v.CarDetails.CarGroup, p.SupplierCode)
+			if carPriceWithMarkup <= 0 {
+				rlog.Warn("calculated car price with markup is less than or equal to 0, skipping plan", "carGroup", v.CarDetails.CarGroup, "brand", p.SupplierCode)
+				continue
+			}
+
+			carPriceWithErpWithMarkup := carPriceWithMarkup
+			if p.BrokerErpPrice > 0 {
+				carPriceWithErpWithMarkup = mp.CalculateMarkup(isAgent, p.Price+p.BrokerErpPrice, v.CarDetails.CarGroup, p.SupplierCode)
+			}
+
+			pd := planPriceDetails{
+				PlanID:                    p.PlanID,
+				RateQualifier:             p.RateQualifier,
+				SupplierCode:              p.SupplierCode,
+				CarModel:                  v.CarDetails.Model,
+				Broker:                    v.Broker,
+				CarPurchasePrice:          p.Price,
+				CarSellPriceWithVat:       calculateDiscountedPrice(carPriceWithMarkup, couponDiscount),
+				CarPurchasePriceWithErp:   p.Price + p.BrokerErpPrice,
+				CarSellPriceWithErpAndVat: calculateDiscountedPrice(carPriceWithErpWithMarkup, couponDiscount),
+				ChargedERPPriceWithVat:    p.ChargedErpPriceWithVat,
+				DiscountPercentage:        int(couponDiscount),
+				CurrencyCode:              v.PriceDetails.Currency,
+				CurrencyRate:              currenciesMap[v.PriceDetails.Currency],
+			}
+
+			artifacts.plansDetails = append(artifacts.plansDetails, pd)
+
+			avPlan := Plan{
+				PlanID:         p.PlanID,
+				PlanName:       p.PlanName,
+				FullPrice:      roundToInt(carPriceWithMarkup),
+				Discount:       int(couponDiscount),
+				Price:          calculateDiscountedPrice(carPriceWithMarkup, couponDiscount),
+				ErpPrice:       roundToInt(carPriceWithErpWithMarkup-carPriceWithMarkup) + p.ChargedErpPriceWithVat,
+				PlanInclusions: p.PlanInclusions,
+				Info:           p.Info,
+				RateQualifier:  p.RateQualifier,
+				SupplierCode:   p.SupplierCode,
+			}
+			avPlans = append(avPlans, avPlan)
+		}
+
+		av.Plans = avPlans
+		artifacts.availableCars = append(artifacts.availableCars, av)
+	}
+
+	return artifacts
+}
+
+// storePlansDetails stores the given plan details in the database and returns the ID of the inserted snapshot.
+func storePlansDetails(ctx context.Context, q db.Querier, plans []planPriceDetails) (int64, error) {
+	plansJson, err := json.Marshal(plans)
+	if err != nil {
+		return 0, fmt.Errorf("marshaling plans details: %w", err)
+	}
+
+	ID, err := q.InsertAvailablePlansSnapshot(ctx, plansJson)
+	if err != nil {
+		return 0, fmt.Errorf("inserting available plans snapshot: %w", err)
+	}
+
+	return ID, nil
+}
+
+// roundToInt rounds a number to the nearest integer.
+func roundToInt[T float32 | float64](f T) int {
+	return int(math.Round(float64(f)))
+}
+
+// calculateDiscountedPrice calculates the price after applying a discount percentage.
+func calculateDiscountedPrice(priceBeforeDesc float64, discountPercentage int32) int {
+	discountAmount := priceBeforeDesc * float64(discountPercentage) / 100
+	return roundToInt(priceBeforeDesc - discountAmount)
+}
+
+// buildCurrencyMap query all currencies and returns a map of currency code to currency rates
+func buildCurrencyMap(q db.Querier) (map[string]float64, error) {
+	currencyMap := make(map[string]float64)
+	rows, err := q.ListCurrencies(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range rows {
+		currencyMap[r.CurrencyIsoName] = db.NumericToFloat64(r.Rate)
+	}
+
+	return currencyMap, nil
 }

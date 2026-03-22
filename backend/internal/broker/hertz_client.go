@@ -10,14 +10,18 @@ import (
 
 // Hertz is a struct that implements the Broker interface for the Hertz car rental service
 type Hertz struct {
-	httpClient *http.Client
-	r          io.Reader
+	usErpDayCharge int
+	caErpDayCharge int
+	httpClient     *http.Client
+	r              io.Reader
 }
 
 // NewHertz creates a new instance of the Hertz broker with a default reader that is not initialized.
-func NewHertz() Hertz {
+func NewHertz(usErpDayCharge, caErpDayCharge int) Hertz {
 	return Hertz{
-		httpClient: &http.Client{Timeout: 10 * time.Second},
+		usErpDayCharge: usErpDayCharge,
+		caErpDayCharge: caErpDayCharge,
+		httpClient:     &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
