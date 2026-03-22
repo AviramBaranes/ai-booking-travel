@@ -41,8 +41,8 @@ func TestAuthHandler(t *testing.T) {
 		if authData.UserID != user.ID {
 			t.Errorf("Expected UserID %d, got %d", user.ID, authData.UserID)
 		}
-		if authData.Role != user.Role {
-			t.Errorf("Expected Role %s, got %s", user.Role, authData.Role)
+		if authData.Role != UserRoleAdmin {
+			t.Errorf("Expected Role %s, got %s", UserRoleAdmin, authData.Role)
 		}
 		if authData.Username != user.Username {
 			t.Errorf("Expected Username %s, got %s", user.Username, authData.Username)
