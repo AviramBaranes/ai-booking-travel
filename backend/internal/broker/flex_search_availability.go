@@ -4,7 +4,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/url"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -84,9 +83,6 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 		carMapID := fmt.Sprintf("%s-%s-%s", c.Name, s.code, c.Code)
 		if car, ok := carsMap[carMapID]; ok {
 			car.Plans = append(car.Plans, plans...)
-			sort.Slice(car.Plans, func(i, j int) bool {
-				return car.Plans[i].Price < car.Plans[j].Price
-			})
 			carsMap[carMapID] = car
 			continue
 		}

@@ -3,7 +3,6 @@ package broker
 import (
 	"encoding/xml"
 	"fmt"
-	"sort"
 	"strings"
 	"sync"
 
@@ -93,9 +92,6 @@ func (h Hertz) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicl
 		key := fmt.Sprintf("%s-%s-%s", v.CarDetails.Model, v.CarDetails.SupplierName, v.CarDetails.Acriss)
 		if existing, ok := avMap[key]; ok {
 			existing.Plans = append(existing.Plans, v.Plans...)
-			sort.Slice(existing.Plans, func(i, j int) bool {
-				return existing.Plans[i].Price < existing.Plans[j].Price
-			})
 			avMap[key] = existing
 		} else {
 			avMap[key] = v
