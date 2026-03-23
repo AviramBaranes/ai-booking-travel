@@ -151,10 +151,15 @@ type BookingResponse struct {
 
 // BookingParams represents the parameters required to book a rental
 type BookingParams struct {
+	// snapshot plan details:
 	RateQualifier   string
 	SupplierCode    string
 	Acriss          string
 	PlanID          string
+	PickupLocation  string
+	DropoffLocation string
+
+	// request:
 	IncludeERP      bool
 	SelectedAddOns  []SelectAddOn
 	DriverTitle     string
@@ -162,13 +167,13 @@ type BookingParams struct {
 	DriverLastName  string
 	DriverAge       string
 	FlightNumber    string
-	PickUpDate      string
-	PickUpTime      string
-	ReturnTime      string
-	ReturnDate      string
-	PickupLocation  string
-	DropoffLocation string
-	CountryCode     string
+
+	// snapshot columns:
+	PickupDate  string
+	DropoffDate string
+	PickupTime  string
+	DropoffTime string
+	CountryCode string
 }
 
 // SelectAddOn represents an add-on selected by the user during the booking process, including its ID and quantity.

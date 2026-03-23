@@ -52,8 +52,8 @@ func (h Hertz) buildBookingRequest(p BookingParams) (string, error) {
 		VehResRQCore: hertzBookingCore{
 			Status: "All",
 			VehRentalCore: hertzVehRentalCore{
-				PickUpDateTime: h.formatDateTime(p.PickUpDate, p.PickUpTime),
-				ReturnDateTime: h.formatDateTime(p.ReturnDate, p.ReturnTime),
+				PickUpDateTime: h.formatDateTime(p.PickupDate, p.PickupTime),
+				ReturnDateTime: h.formatDateTime(p.DropoffDate, p.DropoffTime),
 				PickUpLocation: hertzLocation{LocationCode: p.PickupLocation},
 				ReturnLocation: hertzLocation{LocationCode: p.DropoffLocation},
 			},

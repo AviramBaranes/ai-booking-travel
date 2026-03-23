@@ -27,10 +27,10 @@ func (f Flex) Book(p BookingParams) (BookingResponse, error) {
 
 	form.Set("PickupLocationID", p.PickupLocation)
 	form.Set("DropoffLocationID", p.DropoffLocation)
-	form.Set("PickupDate", p.PickUpDate)
-	form.Set("DropoffDate", p.ReturnDate)
-	form.Set("PickUpTime", p.PickUpTime)
-	form.Set("DropoffTime", p.ReturnTime)
+	form.Set("PickupDate", formatDate(p.PickupDate))
+	form.Set("DropoffDate", formatDate(p.DropoffDate))
+	form.Set("PickUpTime", p.PickupTime)
+	form.Set("DropoffTime", p.DropoffTime)
 
 	form.Set("FlightNumber", p.FlightNumber)
 	form.Set("ERPRequired", getERPRequiredString(p.IncludeERP))
