@@ -71,6 +71,12 @@ func (h Hertz) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicl
 				})
 				return
 			}
+			if len(raw.Errors) > 0 {
+				errOnce.Do(func() {
+					firstErr = fmt.Errorf("hertz SearchAvailability response errors: %+v", raw.Errors[0].ShortText)
+				})
+				return
+			}
 			resp := raw.toResponse()
 
 			availableVehicles := h.mapHertzResponseToAvailableVehicles(p, resp, rp.brandID, rp.planName, dayCount)
