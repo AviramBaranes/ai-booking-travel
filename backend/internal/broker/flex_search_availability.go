@@ -42,6 +42,10 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 		return nil, fmt.Errorf("flex CarAvailability unmarshal response: %w", err)
 	}
 
+	if resp.ReturnCode != 0 {
+		return nil, fmt.Errorf("CarAvailability API returned error code %d with message: %s", resp.ReturnCode, resp.ErrorMessage)
+	}
+
 	if len(resp.Cars) == 0 {
 		rlog.Info("no cars found in CarAvailability response", "pickup_location", p.PickupLocation, "dropoff_location", p.DropoffLocation, "pickup_date", p.PickupDate, "dropoff_date", p.DropoffDate)
 		return []AvailableVehicle{}, nil

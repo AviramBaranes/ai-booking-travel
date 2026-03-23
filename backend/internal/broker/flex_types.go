@@ -2,6 +2,8 @@ package broker
 
 // flexCarAvailabilityResponse is the top-level XML response for the Flex CarAvailability API.
 type flexCarAvailabilityResponse struct {
+	ReturnCode      int                   `xml:"ReturnCode"`
+	ErrorMessage    string                `xml:"ErrorMessage"`
 	Cars            []flexCar             `xml:"CarSet>Car"`
 	SupplierDetails []flexSupplierDetails `xml:"SupplierInfo>Details"`
 }
