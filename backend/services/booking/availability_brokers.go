@@ -54,7 +54,7 @@ func searchAvailabilityAcrossBrokers(p SearchAvailabilityRequest, locs availabil
 }
 
 // searchCars calls the given broker to search for available vehicles with the supplied location and date parameters.
-func searchCars(b broker.Broker, params SearchAvailabilityRequest, plID, dlID, countryCode string) ([]broker.AvailableVehicle, error) {
+func searchCars(b broker.AvailabilitySearcher, params SearchAvailabilityRequest, plID, dlID, countryCode string) ([]broker.AvailableVehicle, error) {
 	vs, err := b.SearchAvailability(broker.SearchAvailabilityParams{
 		CountryCode:        countryCode,
 		PickupLocation:     plID,
@@ -75,7 +75,7 @@ func searchCars(b broker.Broker, params SearchAvailabilityRequest, plID, dlID, c
 }
 
 // getBrokerByName returns an initialised Broker for the given broker name.
-func getBrokerByName(name broker.Name) (broker.Broker, error) {
+func getBrokerByName(name broker.Name) (broker.AvailabilitySearcher, error) {
 	switch name {
 	case broker.BrokerFlex:
 		f := broker.NewFlexWithErpCfg(avCfg.FlexErpDayCharge())

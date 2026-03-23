@@ -76,7 +76,7 @@ func extractFile(req *http.Request) (multipart.File, error) {
 }
 
 // insertLocations fetches locations from the given broker and inserts them into the database using the provided querier.
-func insertLocations(ctx context.Context, b broker.Broker, q db.Querier) error {
+func insertLocations(ctx context.Context, b broker.LocationSearcher, q db.Querier) error {
 	var cursor string
 	skippedCursors := make([]string, 0)
 	for {

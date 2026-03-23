@@ -25,11 +25,28 @@ const (
 	hertzBaseURL = "https://vv.xnet.hertz.com/DirectLinkWEB/handlers/DirectLinkHandler?id=ota2007a"
 )
 
-// Broker is an interface that defines the methods that a broker must implement to provide car rental services.
-type Broker interface {
+// LocationSearcher provides location listing capabilities for a broker.
+type LocationSearcher interface {
 	Name() Name
 	GetLocationsPage(cursor string) (LocationPage, error)
+}
+
+// AvailabilitySearcher provides vehicle availability search capabilities for a broker.
+type AvailabilitySearcher interface {
+	Name() Name
 	SearchAvailability(params SearchAvailabilityParams) ([]AvailableVehicle, error)
+}
+
+// Booker provides booking capabilities for a broker.
+type Booker interface {
+	Book(p BookingParams) (BookingResponse, error)
+}
+
+// Broker composes all broker capabilities into a single interface.
+type Broker interface {
+	LocationSearcher
+	AvailabilitySearcher
+	Booker
 }
 
 // LocationPage represents a page of locations returned by a broker, including the list of locations and a cursor for the next page.
@@ -125,4 +142,37 @@ type AddOn struct {
 	Currency        string `json:"currency"`
 	AllowedQuantity int    `json:"allowedQuantity"`
 	Period          string `json:"period"`
+}
+
+// BookingResponse represents the response received after booking a rental
+type BookingResponse struct {
+	ConfirmationNumber string `json:"confirmationNumber"`
+}
+
+// BookingParams represents the parameters required to book a rental
+type BookingParams struct {
+	RateQualifier   string
+	SupplierCode    string
+	Acriss          string
+	PlanID          string
+	IncludeERP      bool
+	SelectedAddOns  []SelectAddOn
+	DriverTitle     string
+	DriverFirstName string
+	DriverLastName  string
+	DriverAge       string
+	FlightNumber    string
+	PickUpDate      string
+	PickUpTime      string
+	ReturnTime      string
+	ReturnDate      string
+	PickupLocation  string
+	DropoffLocation string
+	CountryCode     string
+}
+
+// SelectAddOn represents an add-on selected by the user during the booking process, including its ID and quantity.
+type SelectAddOn struct {
+	ID       int
+	Quantity int
 }

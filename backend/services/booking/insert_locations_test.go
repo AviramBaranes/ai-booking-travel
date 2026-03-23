@@ -52,10 +52,6 @@ func (m *mockBroker) GetLocationsPage(cursor string) (broker.LocationPage, error
 	return page, nil
 }
 
-func (m *mockBroker) SearchAvailability(broker.SearchAvailabilityParams) ([]broker.AvailableVehicle, error) {
-	return nil, nil
-}
-
 func TestInsertLocations(t *testing.T) {
 	ctx := context.Background()
 	q := testQuerier()
