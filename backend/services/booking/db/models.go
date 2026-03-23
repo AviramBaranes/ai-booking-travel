@@ -54,9 +54,15 @@ func (ns NullBroker) Value() (driver.Value, error) {
 }
 
 type AvailablePlansSnapshot struct {
-	ID        int64
-	CreatedAt pgtype.Timestamptz
-	Plans     []byte
+	ID          int64
+	CreatedAt   pgtype.Timestamptz
+	DriverAge   string
+	PickupDate  string
+	PickupTime  string
+	ReturnDate  string
+	ReturnTime  string
+	CountryCode string
+	Plans       []byte
 }
 
 type Coupon struct {

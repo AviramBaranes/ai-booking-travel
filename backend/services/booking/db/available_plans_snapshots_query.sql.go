@@ -22,7 +22,7 @@ func (q *Queries) DeleteOldAvailablePlansSnapshots(ctx context.Context, createdA
 }
 
 const getSnapshotByID = `-- name: GetSnapshotByID :one
-SELECT id, created_at, plans
+SELECT id, created_at, driver_age, pickup_date, pickup_time, return_date, return_time, country_code, plans
 FROM available_plans_snapshots
 WHERE id = $1
 `
@@ -30,18 +30,46 @@ WHERE id = $1
 func (q *Queries) GetSnapshotByID(ctx context.Context, id int64) (AvailablePlansSnapshot, error) {
 	row := q.db.QueryRow(ctx, getSnapshotByID, id)
 	var i AvailablePlansSnapshot
-	err := row.Scan(&i.ID, &i.CreatedAt, &i.Plans)
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.DriverAge,
+		&i.PickupDate,
+		&i.PickupTime,
+		&i.ReturnDate,
+		&i.ReturnTime,
+		&i.CountryCode,
+		&i.Plans,
+	)
 	return i, err
 }
 
 const insertAvailablePlansSnapshot = `-- name: InsertAvailablePlansSnapshot :one
-INSERT INTO available_plans_snapshots (plans)
-VALUES ($1)
+INSERT INTO available_plans_snapshots (driver_age, pickup_date, pickup_time, return_date, return_time, country_code, plans)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id
 `
 
-func (q *Queries) InsertAvailablePlansSnapshot(ctx context.Context, plans []byte) (int64, error) {
-	row := q.db.QueryRow(ctx, insertAvailablePlansSnapshot, plans)
+type InsertAvailablePlansSnapshotParams struct {
+	DriverAge   string
+	PickupDate  string
+	PickupTime  string
+	ReturnDate  string
+	ReturnTime  string
+	CountryCode string
+	Plans       []byte
+}
+
+func (q *Queries) InsertAvailablePlansSnapshot(ctx context.Context, arg InsertAvailablePlansSnapshotParams) (int64, error) {
+	row := q.db.QueryRow(ctx, insertAvailablePlansSnapshot,
+		arg.DriverAge,
+		arg.PickupDate,
+		arg.PickupTime,
+		arg.ReturnDate,
+		arg.ReturnTime,
+		arg.CountryCode,
+		arg.Plans,
+	)
 	var id int64
 	err := row.Scan(&id)
 	return id, err

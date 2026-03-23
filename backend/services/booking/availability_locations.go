@@ -107,8 +107,8 @@ func createBrokersMap(locs []db.GetAllLocationBrokerCodesByLocationIDsRow, param
 func buildAvailabilityLocations(pickupsByBroker, dropoffsByBroker map[db.Broker]brokerLocation) availabilityLocations {
 	al := make(availabilityLocations)
 
-	for brokerName, pickupID := range pickupsByBroker {
-		dropoffID, ok := dropoffsByBroker[brokerName]
+	for brokerName, pickupBrokerLoc := range pickupsByBroker {
+		dropoffBrokerLoc, ok := dropoffsByBroker[brokerName]
 		if !ok {
 			rlog.Info(
 				"removing broker from availability search because it does not have both pickup and dropoff locations",
@@ -118,11 +118,20 @@ func buildAvailabilityLocations(pickupsByBroker, dropoffsByBroker map[db.Broker]
 		}
 
 		al[broker.Name(brokerName)] = availabilityLocationQuery{
-			pickupBrokerLocationID:  pickupID.locationID,
-			dropoffBrokerLocationID: dropoffID.locationID,
-			pickupCountryCode:       pickupID.countryCode,
+			pickupBrokerLocationID:  pickupBrokerLoc.locationID,
+			dropoffBrokerLocationID: dropoffBrokerLoc.locationID,
+			pickupCountryCode:       pickupBrokerLoc.countryCode,
 		}
 	}
 
 	return al
+}
+
+// extractCountryCode extracts a country code from the availability locations of the first broker in the map. Country code is the same for all locations in the map as it defined in the row of the location and not location broker.
+func extractCountryCode(al availabilityLocations) string {
+	for _, loc := range al {
+		return loc.pickupCountryCode
+	}
+
+	return ""
 }

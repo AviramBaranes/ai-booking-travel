@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"encore.app/internal/broker"
 	"encore.app/services/booking/db"
@@ -24,16 +25,26 @@ type planPriceDetails struct {
 	CarSellPriceWithErpAndVat int         `json:"carSellPriceWithErpAndVat"`
 	DiscountPercentage        int         `json:"discountPercentage"`
 	ChargedERPPriceWithVat    int         `json:"chargedErpPriceWithVat"`
+	PickupLocationCode        string      `json:"pickupLocationCode"` //we store the pickup location code in the plan and not as column in the snapshot because the same snapshot can be used for different suppliers (different location codes)
+	DropoffLocationCode       string      `json:"dropoffLocationCode"`
 }
 
 // storePlansDetails stores the given plan details in the database and returns the ID of the inserted snapshot.
-func storePlansDetails(ctx context.Context, q db.Querier, plans []planPriceDetails) (int64, error) {
+func (s Service) storePlansDetails(ctx context.Context, plans []planPriceDetails, reqParams SearchAvailabilityRequest, countryCode string) (int64, error) {
 	plansJson, err := json.Marshal(plans)
 	if err != nil {
 		return 0, fmt.Errorf("marshaling plans details: %w", err)
 	}
 
-	ID, err := q.InsertAvailablePlansSnapshot(ctx, plansJson)
+	ID, err := s.query.InsertAvailablePlansSnapshot(ctx, db.InsertAvailablePlansSnapshotParams{
+		Plans:       plansJson,
+		DriverAge:   strconv.Itoa(reqParams.DriverAge),
+		PickupDate:  reqParams.PickupDate,
+		PickupTime:  reqParams.PickupTime,
+		ReturnDate:  reqParams.DropoffDate,
+		ReturnTime:  reqParams.DropoffTime,
+		CountryCode: countryCode,
+	})
 	if err != nil {
 		return 0, fmt.Errorf("inserting available plans snapshot: %w", err)
 	}

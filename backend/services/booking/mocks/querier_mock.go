@@ -263,18 +263,18 @@ func (mr *MockQuerierMockRecorder) GetSnapshotByID(ctx, id any) *gomock.Call {
 }
 
 // InsertAvailablePlansSnapshot mocks base method.
-func (m *MockQuerier) InsertAvailablePlansSnapshot(ctx context.Context, plans []byte) (int64, error) {
+func (m *MockQuerier) InsertAvailablePlansSnapshot(ctx context.Context, arg db.InsertAvailablePlansSnapshotParams) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InsertAvailablePlansSnapshot", ctx, plans)
+	ret := m.ctrl.Call(m, "InsertAvailablePlansSnapshot", ctx, arg)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // InsertAvailablePlansSnapshot indicates an expected call of InsertAvailablePlansSnapshot.
-func (mr *MockQuerierMockRecorder) InsertAvailablePlansSnapshot(ctx, plans any) *gomock.Call {
+func (mr *MockQuerierMockRecorder) InsertAvailablePlansSnapshot(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertAvailablePlansSnapshot", reflect.TypeOf((*MockQuerier)(nil).InsertAvailablePlansSnapshot), ctx, plans)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertAvailablePlansSnapshot", reflect.TypeOf((*MockQuerier)(nil).InsertAvailablePlansSnapshot), ctx, arg)
 }
 
 // InsertHertzMarkupRate mocks base method.

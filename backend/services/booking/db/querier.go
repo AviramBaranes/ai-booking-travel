@@ -27,7 +27,7 @@ type Querier interface {
 	GetLocationBrokerCode(ctx context.Context, arg GetLocationBrokerCodeParams) (LocationBrokerCode, error)
 	GetLocationById(ctx context.Context, id int64) (Location, error)
 	GetSnapshotByID(ctx context.Context, id int64) (AvailablePlansSnapshot, error)
-	InsertAvailablePlansSnapshot(ctx context.Context, plans []byte) (int64, error)
+	InsertAvailablePlansSnapshot(ctx context.Context, arg InsertAvailablePlansSnapshotParams) (int64, error)
 	InsertHertzMarkupRate(ctx context.Context, arg InsertHertzMarkupRateParams) (HertzMarkupRate, error)
 	InsertLocation(ctx context.Context, arg InsertLocationParams) (Location, error)
 	InsertLocationBrokerCode(ctx context.Context, arg InsertLocationBrokerCodeParams) (LocationBrokerCode, error)

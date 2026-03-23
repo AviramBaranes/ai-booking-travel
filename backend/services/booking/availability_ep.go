@@ -101,7 +101,7 @@ func (s *Service) SearchAvailability(ctx context.Context, p SearchAvailabilityRe
 
 	sortAvailableVehiclesByCheapestPlan(artifacts.availableCars)
 
-	snapshotID, err := storePlansDetails(ctx, s.query, artifacts.plansDetails)
+	snapshotID, err := s.storePlansDetails(ctx, artifacts.plansDetails, p, extractCountryCode(locs))
 	if err != nil {
 		rlog.Error("failed to store plans details", "error", err)
 		return nil, api_errors.ErrInternalError
