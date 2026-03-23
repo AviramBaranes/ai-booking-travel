@@ -1,0 +1,222 @@
+package reservation
+
+import (
+	"context"
+	"errors"
+	"testing"
+
+	"encore.app/internal/api_errors"
+	"encore.app/internal/validation"
+	"encore.app/services/reservation/db"
+	"encore.app/services/reservation/mocks"
+	"encore.dev/beta/errs"
+	"encore.dev/storage/sqldb"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/mock/gomock"
+)
+
+// --- Helpers ---
+
+// testQuerier returns a real db.Querier backed by the Encore test database.
+func testQuerier() *db.Queries {
+	pool := sqldb.Driver[*pgxpool.Pool](reservationsDB)
+	return db.New(pool)
+}
+
+func validCreateReservationParams() *CreateReservationRequest {
+	return &CreateReservationRequest{
+		UserID:              1,
+		BrokerReservationID: "BRK-12345",
+		Broker:              "flex",
+		SupplierCode:        "SUP1",
+		BrandName:           "Hertz",
+		CarGroup:            "Economy",
+		CountryCode:         "US",
+		CurrencyCode:        "USD",
+		CurrencyRate:        3.65,
+		PurchasePrice:       100.00,
+		PriceBeforeDiscount: 150.00,
+		PriceAfterDiscount:  135.00,
+		DiscountPercentage:  10,
+		ErpPrice:            20.00,
+		TotalPrice:          155.00,
+		PickupDate:          "2026-04-01",
+		ReturnDate:          "2026-04-05",
+		RentalDays:          4,
+		DriverTitle:         "Mr",
+		DriverFirstName:     "John",
+		DriverLastName:      "Doe",
+		DriverAge:           30,
+	}
+}
+
+func mockService(t *testing.T) (*mocks.MockQuerier, *Service) {
+	ctrl := gomock.NewController(t)
+	t.Cleanup(ctrl.Finish)
+	q := mocks.NewMockQuerier(ctrl)
+	return q, &Service{query: q}
+}
+
+func invalidValueErr(field string) error {
+	return api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
+		Code: api_errors.CodeInvalidValue, Field: field,
+	})
+}
+
+// --- Tests ---
+
+func TestCreateReservation_Validation(t *testing.T) {
+	tests := []struct {
+		name    string
+		modify  func(p *CreateReservationRequest)
+		wantErr error
+	}{
+		{
+			name:    "rejects missing broker reservation id",
+			modify:  func(p *CreateReservationRequest) { p.BrokerReservationID = "" },
+			wantErr: invalidValueErr("brokerReservationId"),
+		},
+		{
+			name:    "rejects blank broker reservation id",
+			modify:  func(p *CreateReservationRequest) { p.BrokerReservationID = "   " },
+			wantErr: invalidValueErr("brokerReservationId"),
+		},
+		{
+			name:    "rejects invalid broker",
+			modify:  func(p *CreateReservationRequest) { p.Broker = "avis" },
+			wantErr: invalidValueErr("broker"),
+		},
+		{
+			name:    "rejects missing supplier code",
+			modify:  func(p *CreateReservationRequest) { p.SupplierCode = "" },
+			wantErr: invalidValueErr("supplierCode"),
+		},
+		{
+			name:    "rejects missing brand name",
+			modify:  func(p *CreateReservationRequest) { p.BrandName = "" },
+			wantErr: invalidValueErr("brandName"),
+		},
+		{
+			name:    "rejects missing car group",
+			modify:  func(p *CreateReservationRequest) { p.CarGroup = "" },
+			wantErr: invalidValueErr("carGroup"),
+		},
+		{
+			name:    "rejects missing country code",
+			modify:  func(p *CreateReservationRequest) { p.CountryCode = "" },
+			wantErr: invalidValueErr("countryCode"),
+		},
+		{
+			name:    "rejects missing currency code",
+			modify:  func(p *CreateReservationRequest) { p.CurrencyCode = "" },
+			wantErr: invalidValueErr("currencyCode"),
+		},
+		{
+			name:    "rejects zero currency rate",
+			modify:  func(p *CreateReservationRequest) { p.CurrencyRate = 0 },
+			wantErr: invalidValueErr("currencyRate"),
+		},
+		{
+			name:    "rejects negative currency rate",
+			modify:  func(p *CreateReservationRequest) { p.CurrencyRate = -1 },
+			wantErr: invalidValueErr("currencyRate"),
+		},
+		{
+			name:    "rejects negative purchase price",
+			modify:  func(p *CreateReservationRequest) { p.PurchasePrice = -1 },
+			wantErr: invalidValueErr("purchasePrice"),
+		},
+		{
+			name:    "rejects discount above 100",
+			modify:  func(p *CreateReservationRequest) { p.DiscountPercentage = 101 },
+			wantErr: invalidValueErr("discountPercentage"),
+		},
+		{
+			name:    "rejects negative discount",
+			modify:  func(p *CreateReservationRequest) { p.DiscountPercentage = -1 },
+			wantErr: invalidValueErr("discountPercentage"),
+		},
+		{
+			name:    "rejects invalid pickup date format",
+			modify:  func(p *CreateReservationRequest) { p.PickupDate = "01-04-2026" },
+			wantErr: invalidValueErr("pickupDate"),
+		},
+		{
+			name:    "rejects invalid return date format",
+			modify:  func(p *CreateReservationRequest) { p.ReturnDate = "2026/04/05" },
+			wantErr: invalidValueErr("returnDate"),
+		},
+		{
+			name:    "rejects zero rental days",
+			modify:  func(p *CreateReservationRequest) { p.RentalDays = 0 },
+			wantErr: invalidValueErr("rentalDays"),
+		},
+		{
+			name:    "rejects missing driver title",
+			modify:  func(p *CreateReservationRequest) { p.DriverTitle = "" },
+			wantErr: invalidValueErr("driverTitle"),
+		},
+		{
+			name:    "rejects invalid driver title",
+			modify:  func(p *CreateReservationRequest) { p.DriverTitle = "Dr" },
+			wantErr: invalidValueErr("driverTitle"),
+		},
+		{
+			name:    "rejects missing driver first name",
+			modify:  func(p *CreateReservationRequest) { p.DriverFirstName = "" },
+			wantErr: invalidValueErr("driverFirstName"),
+		},
+		{
+			name:    "rejects blank driver first name",
+			modify:  func(p *CreateReservationRequest) { p.DriverFirstName = "   " },
+			wantErr: invalidValueErr("driverFirstName"),
+		},
+		{
+			name:    "rejects missing driver last name",
+			modify:  func(p *CreateReservationRequest) { p.DriverLastName = "" },
+			wantErr: invalidValueErr("driverLastName"),
+		},
+		{
+			name:    "rejects driver age below 18",
+			modify:  func(p *CreateReservationRequest) { p.DriverAge = 17 },
+			wantErr: invalidValueErr("driverAge"),
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			p := validCreateReservationParams()
+			tc.modify(p)
+			api_errors.AssertApiError(t, tc.wantErr, p.Validate())
+		})
+	}
+
+	t.Run("accepts valid params", func(t *testing.T) {
+		if err := validCreateReservationParams().Validate(); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+}
+
+func TestCreateReservation(t *testing.T) {
+	ctx := context.Background()
+	s := &Service{query: testQuerier()}
+
+	t.Run("creates reservation successfully", func(t *testing.T) {
+		resp, err := s.CreateReservation(ctx, validCreateReservationParams())
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.ID == 0 {
+			t.Fatal("expected non-zero ID")
+		}
+	})
+
+	t.Run("returns error when db fails", func(t *testing.T) {
+		q, s := mockService(t)
+		q.EXPECT().InsertReservation(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
+
+		_, err := s.CreateReservation(ctx, validCreateReservationParams())
+		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
+	})
+}
