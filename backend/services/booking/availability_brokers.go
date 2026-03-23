@@ -47,7 +47,11 @@ func searchAvailabilityAcrossBrokers(p SearchAvailabilityRequest, locs availabil
 	wg.Wait()
 
 	if firstErr != nil {
-		return nil, firstErr
+		if len(vs) == 0 {
+			rlog.Error("search availability across brokers failed", "error", firstErr)
+			return nil, firstErr
+		}
+		rlog.Warn("search availability across brokers completed with partial results due to some errors", "error", firstErr)
 	}
 
 	return vs, nil
