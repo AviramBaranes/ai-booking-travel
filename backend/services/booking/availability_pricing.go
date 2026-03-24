@@ -78,21 +78,31 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 			if p.BrokerErpPrice > 0 {
 				carPriceWithErpWithMarkup = mp.CalculateMarkup(isAgent, p.Price+p.BrokerErpPrice, v.CarDetails.CarGroup, p.SupplierCode)
 			}
+			brokerLoc, ok := locs[v.Broker]
+			if !ok {
+				rlog.Warn("no location data found for broker, skipping plan", "broker", v.Broker)
+				continue
+			}
 
 			pd := planPriceDetails{
 				PlanID:                    p.PlanID,
 				RateQualifier:             p.RateQualifier,
 				SupplierCode:              p.SupplierCode,
-				CarModel:                  v.CarDetails.Model,
 				Broker:                    v.Broker,
+				PickupLocationCode:        brokerLoc.pickupBrokerLocationID,
+				DropoffLocationCode:       brokerLoc.dropoffBrokerLocationID,
+				CurrencyCode:              v.PriceDetails.Currency,
+				CurrencyRate:              cr,
+				DiscountPercentage:        int(couponDiscount),
 				CarPurchasePrice:          p.Price,
+				CarPriceWithMarkup:        carPriceWithMarkup,
+				CarPriceWithErpAndMarkup:  carPriceWithErpWithMarkup,
 				CarSellPriceWithVat:       calculateDiscountedPrice(carPriceWithMarkup, couponDiscount),
 				CarPurchasePriceWithErp:   p.Price + p.BrokerErpPrice,
 				CarSellPriceWithErpAndVat: calculateDiscountedPrice(carPriceWithErpWithMarkup, couponDiscount),
 				ChargedERPPriceWithVat:    p.ChargedErpPriceWithVat,
-				DiscountPercentage:        int(couponDiscount),
-				CurrencyCode:              v.PriceDetails.Currency,
-				CurrencyRate:              cr,
+				CarDetails:                v.CarDetails,
+				Inclusions:                p.PlanInclusions,
 			}
 
 			artifacts.plansDetails = append(artifacts.plansDetails, pd)

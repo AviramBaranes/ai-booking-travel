@@ -12,21 +12,24 @@ import (
 
 // planPriceDetails holds the full pricing breakdown for a single plan, stored as a snapshot for future reference.
 type planPriceDetails struct {
-	PlanID                    int         `json:"planId"`
-	CarModel                  string      `json:"carModel"`
-	Broker                    broker.Name `json:"broker"`
-	RateQualifier             string      `json:"rateQualifier"`
-	SupplierCode              string      `json:"supplierCode"`
-	CurrencyCode              string      `json:"currencyCode"`
-	CurrencyRate              float64     `json:"currencyRate"`
-	CarPurchasePrice          float64     `json:"carPurchasePrice"`
-	CarSellPriceWithVat       int         `json:"carSellPriceWithVat"`
-	CarPurchasePriceWithErp   float64     `json:"carPurchasePriceWithErp"`
-	CarSellPriceWithErpAndVat int         `json:"carSellPriceWithErpAndVat"`
-	DiscountPercentage        int         `json:"discountPercentage"`
-	ChargedERPPriceWithVat    int         `json:"chargedErpPriceWithVat"`
-	PickupLocationCode        string      `json:"pickupLocationCode"` //we store the pickup location code in the plan and not as column in the snapshot because the same snapshot can be used for different suppliers (different location codes)
-	DropoffLocationCode       string      `json:"dropoffLocationCode"`
+	PlanID                    int               `json:"planId"`
+	RateQualifier             string            `json:"rateQualifier"`
+	SupplierCode              string            `json:"supplierCode"`
+	Broker                    broker.Name       `json:"broker"`
+	PickupLocationCode        string            `json:"pickupLocationCode"` //we store the pickup location code in the plan and not as column in the snapshot because the same snapshot can be used for different suppliers (different location codes)
+	DropoffLocationCode       string            `json:"dropoffLocationCode"`
+	CurrencyCode              string            `json:"currencyCode"`
+	CurrencyRate              float64           `json:"currencyRate"`
+	DiscountPercentage        int               `json:"discountPercentage"`
+	CarPurchasePrice          float64           `json:"carPurchasePrice"`
+	CarSellPriceWithVat       int               `json:"carSellPriceWithVat"`
+	CarPurchasePriceWithErp   float64           `json:"carPurchasePriceWithErp"`
+	CarSellPriceWithErpAndVat int               `json:"carSellPriceWithErpAndVat"`
+	ChargedERPPriceWithVat    int               `json:"chargedErpPriceWithVat"`
+	CarPriceWithMarkup        float64           `json:"carPriceWithMarkup"`
+	CarPriceWithErpAndMarkup  float64           `json:"carPriceWithErpAndMarkup"`
+	CarDetails                broker.CarDetails `json:"carDetails"`
+	Inclusions                []string          `json:"inclusions"`
 }
 
 // storePlansDetails stores the given plan details in the database and returns the ID of the inserted snapshot.

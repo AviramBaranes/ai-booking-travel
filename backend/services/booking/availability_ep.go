@@ -113,6 +113,7 @@ func (s *Service) SearchAvailability(ctx context.Context, p SearchAvailabilityRe
 	}, nil
 }
 
+// emptySearchAvailabilityResponse returns an empty SearchAvailabilityResponse with no available vehicles.
 func emptySearchAvailabilityResponse() *SearchAvailabilityResponse {
 	return &SearchAvailabilityResponse{AvailableVehicles: []AvailableVehicle{}}
 }

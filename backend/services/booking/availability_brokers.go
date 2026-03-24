@@ -60,15 +60,14 @@ func searchAvailabilityAcrossBrokers(p SearchAvailabilityRequest, locs availabil
 // searchCars calls the given broker to search for available vehicles with the supplied location and date parameters.
 func searchCars(b broker.AvailabilitySearcher, params SearchAvailabilityRequest, plID, dlID, countryCode string) ([]broker.AvailableVehicle, error) {
 	vs, err := b.SearchAvailability(broker.SearchAvailabilityParams{
-		CountryCode:        countryCode,
-		PickupLocation:     plID,
-		DropoffLocation:    dlID,
-		PickupTime:         params.PickupTime,
-		DropoffTime:        params.DropoffTime,
-		PickupDate:         params.PickupDate,
-		DropoffDate:        params.DropoffDate,
-		DriverAge:          params.DriverAge,
-		DiscountPercentage: 0, // TODO: apply coupon code to get discount percentage
+		CountryCode:     countryCode,
+		PickupLocation:  plID,
+		DropoffLocation: dlID,
+		PickupTime:      params.PickupTime,
+		DropoffTime:     params.DropoffTime,
+		PickupDate:      params.PickupDate,
+		DropoffDate:     params.DropoffDate,
+		DriverAge:       params.DriverAge,
 	})
 	if err != nil {
 		rlog.Error("failed to search availability", "error", err, "broker", b.Name(), "pickupLocation", plID, "dropoffLocation", dlID)
@@ -82,10 +81,9 @@ func searchCars(b broker.AvailabilitySearcher, params SearchAvailabilityRequest,
 func getBrokerByName(name broker.Name) (broker.AvailabilitySearcher, error) {
 	switch name {
 	case broker.BrokerFlex:
-		f := broker.NewFlexWithErpCfg(avCfg.FlexErpDayCharge())
-		return &f, nil
+		return broker.NewFlexWithErpCfg(avCfg.FlexErpDayCharge()), nil
 	case broker.BrokerHertz:
-		return broker.NewHertz(avCfg.HertzErpDayChargeUS(), avCfg.HertzErpDayChargeCA()), nil
+		return broker.NewHertzWithCharges(avCfg.HertzErpDayChargeUS(), avCfg.HertzErpDayChargeCA()), nil
 	default:
 		return nil, api_errors.ErrInternalError
 	}
