@@ -11,3 +11,6 @@ where created_at < $1;
 SELECT id, created_at, driver_age, pickup_date, pickup_time, return_date, return_time, country_code, plans
 FROM available_plans_snapshots
 WHERE id = $1;
+
+-- name: DeleteSnapshotByID :exec
+DELETE FROM available_plans_snapshots WHERE ID = $1;

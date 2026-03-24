@@ -18,8 +18,8 @@ INSERT INTO reservations (
     status,
     broker,
     supplier_code,
-    brand_name,
-    car_group,
+    car_details,
+    plan_inclusions,
     country_code,
     currency_code,
     currency_rate,
@@ -69,8 +69,8 @@ type InsertReservationParams struct {
 	Status              ReservationStatus
 	Broker              Broker
 	SupplierCode        string
-	BrandName           string
-	CarGroup            string
+	CarDetails          []byte
+	PlanInclusions      []string
 	CountryCode         string
 	CurrencyCode        string
 	CurrencyRate        pgtype.Numeric
@@ -96,8 +96,8 @@ func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationPa
 		arg.Status,
 		arg.Broker,
 		arg.SupplierCode,
-		arg.BrandName,
-		arg.CarGroup,
+		arg.CarDetails,
+		arg.PlanInclusions,
 		arg.CountryCode,
 		arg.CurrencyCode,
 		arg.CurrencyRate,

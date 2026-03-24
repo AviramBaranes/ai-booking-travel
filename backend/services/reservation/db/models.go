@@ -104,8 +104,8 @@ type Reservation struct {
 	Status              ReservationStatus
 	Broker              Broker
 	SupplierCode        string
-	BrandName           string
-	CarGroup            string
+	CarDetails          []byte
+	PlanInclusions      []string
 	CountryCode         string
 	CurrencyCode        string
 	CurrencyRate        pgtype.Numeric

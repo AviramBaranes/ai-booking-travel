@@ -2,8 +2,10 @@ package reservation
 
 import (
 	"context"
+	"encoding/json"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/broker"
 	"encore.app/internal/validation"
 	"encore.app/services/reservation/db"
 	"encore.dev/rlog"
@@ -11,28 +13,28 @@ import (
 
 // CreateReservationRequest defines the parameters required to create a reservation.
 type CreateReservationRequest struct {
-	UserID              int32   `json:"userId" validate:"required"`
-	BrokerReservationID string  `json:"brokerReservationId" validate:"required,notblank"`
-	Broker              string  `json:"broker" validate:"required,oneof=flex hertz"`
-	SupplierCode        string  `json:"supplierCode" validate:"required,notblank"`
-	BrandName           string  `json:"brandName" validate:"required,notblank"`
-	CarGroup            string  `json:"carGroup" validate:"required,notblank"`
-	CountryCode         string  `json:"countryCode" validate:"required,notblank"`
-	CurrencyCode        string  `json:"currencyCode" validate:"required,notblank"`
-	CurrencyRate        float64 `json:"currencyRate" validate:"required,gt=0"`
-	PurchasePrice       float64 `json:"purchasePrice" validate:"required,gte=0"`
-	PriceBeforeDiscount float64 `json:"priceBeforeDiscount" validate:"required,gte=0"`
-	PriceAfterDiscount  float64 `json:"priceAfterDiscount" validate:"required,gte=0"`
-	DiscountPercentage  int     `json:"discountPercentage" validate:"gte=0,lte=100"`
-	ErpPrice            float64 `json:"erpPrice" validate:"gte=0"`
-	TotalPrice          float64 `json:"totalPrice" validate:"required,gte=0"`
-	PickupDate          string  `json:"pickupDate" validate:"required,datetime=2006-01-02"`
-	ReturnDate          string  `json:"returnDate" validate:"required,datetime=2006-01-02"`
-	RentalDays          int     `json:"rentalDays" validate:"required,gte=1"`
-	DriverTitle         string  `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Ms'"`
-	DriverFirstName     string  `json:"driverFirstName" validate:"required,notblank"`
-	DriverLastName      string  `json:"driverLastName" validate:"required,notblank"`
-	DriverAge           int     `json:"driverAge" validate:"required,gte=18"`
+	UserID              int32              `json:"userId" validate:"required"`
+	BrokerReservationID string             `json:"brokerReservationId" validate:"required,notblank"`
+	Broker              string             `json:"broker" validate:"required,oneof=flex hertz"`
+	SupplierCode        string             `json:"supplierCode" validate:"required,notblank"`
+	CarDetails          *broker.CarDetails `json:"carDetails" validate:"required"`
+	PlanInclusions      []string           `json:"planInclusions" validate:"required"`
+	CountryCode         string             `json:"countryCode" validate:"required,notblank"`
+	CurrencyCode        string             `json:"currencyCode" validate:"required,notblank"`
+	CurrencyRate        float64            `json:"currencyRate" validate:"required,gt=0"`
+	PurchasePrice       float64            `json:"purchasePrice" validate:"required,gte=0"`
+	PriceBeforeDiscount float64            `json:"priceBeforeDiscount" validate:"required,gte=0"`
+	PriceAfterDiscount  float64            `json:"priceAfterDiscount" validate:"required,gte=0"`
+	DiscountPercentage  int                `json:"discountPercentage" validate:"gte=0,lte=100"`
+	ErpPrice            float64            `json:"erpPrice" validate:"gte=0"`
+	TotalPrice          float64            `json:"totalPrice" validate:"required,gte=0"`
+	PickupDate          string             `json:"pickupDate" validate:"required,datetime=2006-01-02"`
+	ReturnDate          string             `json:"returnDate" validate:"required,datetime=2006-01-02"`
+	RentalDays          int                `json:"rentalDays" validate:"required,gte=1"`
+	DriverTitle         string             `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Ms'"`
+	DriverFirstName     string             `json:"driverFirstName" validate:"required,notblank"`
+	DriverLastName      string             `json:"driverLastName" validate:"required,notblank"`
+	DriverAge           int                `json:"driverAge" validate:"required,gte=18"`
 }
 
 // Validate validates the fields of CreateReservationRequest.
@@ -46,15 +48,21 @@ type CreateReservationResponse struct {
 }
 
 // encore:api private method=POST path=/reservations
-func (s *Service) CreateReservation(ctx context.Context, params *CreateReservationRequest) (*CreateReservationResponse, error) {
+func (s *Service) CreateReservation(ctx context.Context, params CreateReservationRequest) (*CreateReservationResponse, error) {
+	carDetailsJSON, err := json.Marshal(params.CarDetails)
+	if err != nil {
+		rlog.Error("failed to marshal reservation car details", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
 	id, err := s.query.InsertReservation(ctx, db.InsertReservationParams{
 		UserID:              int32(params.UserID),
 		BrokerReservationID: params.BrokerReservationID,
 		Status:              db.ReservationStatusBooked,
 		Broker:              db.Broker(params.Broker),
 		SupplierCode:        params.SupplierCode,
-		BrandName:           params.BrandName,
-		CarGroup:            params.CarGroup,
+		CarDetails:          carDetailsJSON,
+		PlanInclusions:      params.PlanInclusions,
 		CountryCode:         params.CountryCode,
 		CurrencyCode:        params.CurrencyCode,
 		CurrencyRate:        db.NumericFromFloat64(params.CurrencyRate),

@@ -21,6 +21,15 @@ func (q *Queries) DeleteOldAvailablePlansSnapshots(ctx context.Context, createdA
 	return err
 }
 
+const deleteSnapshotByID = `-- name: DeleteSnapshotByID :exec
+DELETE FROM available_plans_snapshots WHERE ID = $1
+`
+
+func (q *Queries) DeleteSnapshotByID(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteSnapshotByID, id)
+	return err
+}
+
 const getSnapshotByID = `-- name: GetSnapshotByID :one
 SELECT id, created_at, driver_age, pickup_date, pickup_time, return_date, return_time, country_code, plans
 FROM available_plans_snapshots

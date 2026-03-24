@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/broker"
 	"encore.app/internal/validation"
 	"encore.app/services/reservation/db"
 	"encore.app/services/reservation/mocks"
@@ -29,8 +30,21 @@ func validCreateReservationParams() *CreateReservationRequest {
 		BrokerReservationID: "BRK-12345",
 		Broker:              "flex",
 		SupplierCode:        "SUP1",
-		BrandName:           "Hertz",
-		CarGroup:            "Economy",
+		CarDetails: &broker.CarDetails{
+			Model:        "Toyota Corolla",
+			CarGroup:     "Economy",
+			ImageURL:     "https://example.com/car.png",
+			SupplierName: "Hertz",
+			CarType:      "Sedan",
+			Acriss:       "CDMR",
+			HasAC:        true,
+			IsAutoGear:   true,
+			IsElectric:   false,
+			Seats:        5,
+			Bags:         2,
+			Doors:        4,
+		},
+		PlanInclusions:      []string{"Unlimited Mileage", "Collision Damage Waiver"},
 		CountryCode:         "US",
 		CurrencyCode:        "USD",
 		CurrencyRate:        3.65,
@@ -92,14 +106,14 @@ func TestCreateReservation_Validation(t *testing.T) {
 			wantErr: invalidValueErr("supplierCode"),
 		},
 		{
-			name:    "rejects missing brand name",
-			modify:  func(p *CreateReservationRequest) { p.BrandName = "" },
-			wantErr: invalidValueErr("brandName"),
+			name:    "rejects missing car details",
+			modify:  func(p *CreateReservationRequest) { p.CarDetails = nil },
+			wantErr: invalidValueErr("carDetails"),
 		},
 		{
-			name:    "rejects missing car group",
-			modify:  func(p *CreateReservationRequest) { p.CarGroup = "" },
-			wantErr: invalidValueErr("carGroup"),
+			name:    "rejects missing plan inclusions",
+			modify:  func(p *CreateReservationRequest) { p.PlanInclusions = nil },
+			wantErr: invalidValueErr("planInclusions"),
 		},
 		{
 			name:    "rejects missing country code",
@@ -203,7 +217,7 @@ func TestCreateReservation(t *testing.T) {
 	s := &Service{query: testQuerier()}
 
 	t.Run("creates reservation successfully", func(t *testing.T) {
-		resp, err := s.CreateReservation(ctx, validCreateReservationParams())
+		resp, err := s.CreateReservation(ctx, *validCreateReservationParams())
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -216,7 +230,7 @@ func TestCreateReservation(t *testing.T) {
 		q, s := mockService(t)
 		q.EXPECT().InsertReservation(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
-		_, err := s.CreateReservation(ctx, validCreateReservationParams())
+		_, err := s.CreateReservation(ctx, *validCreateReservationParams())
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }

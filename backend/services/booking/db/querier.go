@@ -17,6 +17,7 @@ type Querier interface {
 	DeleteCurrency(ctx context.Context, id int32) error
 	DeleteHertzMarkupRate(ctx context.Context, id int64) (int64, error)
 	DeleteOldAvailablePlansSnapshots(ctx context.Context, createdAt pgtype.Timestamptz) error
+	DeleteSnapshotByID(ctx context.Context, id int64) error
 	DisableLocationBrokerCode(ctx context.Context, id int64) error
 	EnableLocationBrokerCode(ctx context.Context, id int64) error
 	FindCouponByCode(ctx context.Context, code string) (Coupon, error)

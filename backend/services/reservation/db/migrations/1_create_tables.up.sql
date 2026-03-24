@@ -10,8 +10,8 @@ CREATE TABLE
         status reservation_status NOT NULL DEFAULT 'booked',
         broker broker NOT NULL,
         supplier_code TEXT NOT NULL,
-        brand_name TEXT NOT NULL,
-        car_group TEXT NOT NULL,
+        car_details JSONB NOT NULL,
+        plan_inclusions TEXT[] NOT NULL DEFAULT '{}',
         country_code TEXT NOT NULL,
         currency_code TEXT NOT NULL,
         currency_rate NUMERIC(12, 4) NOT NULL,
@@ -30,8 +30,8 @@ CREATE TABLE
         driver_age INT NOT NULL CHECK (driver_age >= 18),
         voucher_number TEXT,
         vouchered_at TIMESTAMPTZ,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now (),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now ()
     );
 
 CREATE INDEX idx_reservations_user_id ON reservations (user_id);

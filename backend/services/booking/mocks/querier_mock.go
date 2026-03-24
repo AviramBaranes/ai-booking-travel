@@ -129,6 +129,20 @@ func (mr *MockQuerierMockRecorder) DeleteOldAvailablePlansSnapshots(ctx, created
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOldAvailablePlansSnapshots", reflect.TypeOf((*MockQuerier)(nil).DeleteOldAvailablePlansSnapshots), ctx, createdAt)
 }
 
+// DeleteSnapshotByID mocks base method.
+func (m *MockQuerier) DeleteSnapshotByID(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSnapshotByID", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteSnapshotByID indicates an expected call of DeleteSnapshotByID.
+func (mr *MockQuerierMockRecorder) DeleteSnapshotByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshotByID", reflect.TypeOf((*MockQuerier)(nil).DeleteSnapshotByID), ctx, id)
+}
+
 // DisableLocationBrokerCode mocks base method.
 func (m *MockQuerier) DisableLocationBrokerCode(ctx context.Context, id int64) error {
 	m.ctrl.T.Helper()
