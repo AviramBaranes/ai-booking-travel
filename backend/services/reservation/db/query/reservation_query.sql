@@ -22,7 +22,9 @@ INSERT INTO reservations (
     driver_title,
     driver_first_name,
     driver_last_name,
-    driver_age
+    driver_age,
+    pickup_broker_location_id,
+    return_broker_location_id
 ) VALUES (
     @user_id,
     @broker_reservation_id,
@@ -46,8 +48,40 @@ INSERT INTO reservations (
     @driver_title,
     @driver_first_name,
     @driver_last_name,
-    @driver_age
+    @driver_age,
+    @pickup_broker_location_id,
+    @return_broker_location_id
 ) RETURNING id;
+
+-- name: GetReservationByID :one
+SELECT
+    id,
+    user_id,
+    broker_reservation_id,
+    status,
+    broker,
+    supplier_code,
+    car_details,
+    plan_inclusions,
+    country_code,
+    currency_code,
+    currency_rate,
+    price_after_discount,
+    discount_percentage,
+    erp_price,
+    total_price,
+    pickup_date,
+    return_date,
+    rental_days,
+    driver_title,
+    driver_first_name,
+    driver_last_name,
+    driver_age,
+    pickup_broker_location_id,
+    return_broker_location_id,
+    created_at
+FROM reservations
+WHERE id = @id;
 
 -- name: ListReservationsByUser :many
 SELECT

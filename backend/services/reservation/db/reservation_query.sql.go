@@ -11,6 +11,98 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const getReservationByID = `-- name: GetReservationByID :one
+SELECT
+    id,
+    user_id,
+    broker_reservation_id,
+    status,
+    broker,
+    supplier_code,
+    car_details,
+    plan_inclusions,
+    country_code,
+    currency_code,
+    currency_rate,
+    price_after_discount,
+    discount_percentage,
+    erp_price,
+    total_price,
+    pickup_date,
+    return_date,
+    rental_days,
+    driver_title,
+    driver_first_name,
+    driver_last_name,
+    driver_age,
+    pickup_broker_location_id,
+    return_broker_location_id,
+    created_at
+FROM reservations
+WHERE id = $1
+`
+
+type GetReservationByIDRow struct {
+	ID                     int64
+	UserID                 int32
+	BrokerReservationID    string
+	Status                 ReservationStatus
+	Broker                 Broker
+	SupplierCode           string
+	CarDetails             []byte
+	PlanInclusions         []string
+	CountryCode            string
+	CurrencyCode           string
+	CurrencyRate           pgtype.Numeric
+	PriceAfterDiscount     pgtype.Numeric
+	DiscountPercentage     int32
+	ErpPrice               pgtype.Numeric
+	TotalPrice             pgtype.Numeric
+	PickupDate             pgtype.Date
+	ReturnDate             pgtype.Date
+	RentalDays             int32
+	DriverTitle            string
+	DriverFirstName        string
+	DriverLastName         string
+	DriverAge              int32
+	PickupBrokerLocationID string
+	ReturnBrokerLocationID string
+	CreatedAt              pgtype.Timestamptz
+}
+
+func (q *Queries) GetReservationByID(ctx context.Context, id int64) (GetReservationByIDRow, error) {
+	row := q.db.QueryRow(ctx, getReservationByID, id)
+	var i GetReservationByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.BrokerReservationID,
+		&i.Status,
+		&i.Broker,
+		&i.SupplierCode,
+		&i.CarDetails,
+		&i.PlanInclusions,
+		&i.CountryCode,
+		&i.CurrencyCode,
+		&i.CurrencyRate,
+		&i.PriceAfterDiscount,
+		&i.DiscountPercentage,
+		&i.ErpPrice,
+		&i.TotalPrice,
+		&i.PickupDate,
+		&i.ReturnDate,
+		&i.RentalDays,
+		&i.DriverTitle,
+		&i.DriverFirstName,
+		&i.DriverLastName,
+		&i.DriverAge,
+		&i.PickupBrokerLocationID,
+		&i.ReturnBrokerLocationID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const insertReservation = `-- name: InsertReservation :one
 INSERT INTO reservations (
     user_id,
@@ -35,7 +127,9 @@ INSERT INTO reservations (
     driver_title,
     driver_first_name,
     driver_last_name,
-    driver_age
+    driver_age,
+    pickup_broker_location_id,
+    return_broker_location_id
 ) VALUES (
     $1,
     $2,
@@ -59,34 +153,38 @@ INSERT INTO reservations (
     $20,
     $21,
     $22,
-    $23
+    $23,
+    $24,
+    $25
 ) RETURNING id
 `
 
 type InsertReservationParams struct {
-	UserID              int32
-	BrokerReservationID string
-	Status              ReservationStatus
-	Broker              Broker
-	SupplierCode        string
-	CarDetails          []byte
-	PlanInclusions      []string
-	CountryCode         string
-	CurrencyCode        string
-	CurrencyRate        pgtype.Numeric
-	PurchasePrice       pgtype.Numeric
-	PriceBeforeDiscount pgtype.Numeric
-	PriceAfterDiscount  pgtype.Numeric
-	DiscountPercentage  int32
-	ErpPrice            pgtype.Numeric
-	TotalPrice          pgtype.Numeric
-	PickupDate          pgtype.Date
-	ReturnDate          pgtype.Date
-	RentalDays          int32
-	DriverTitle         string
-	DriverFirstName     string
-	DriverLastName      string
-	DriverAge           int32
+	UserID                 int32
+	BrokerReservationID    string
+	Status                 ReservationStatus
+	Broker                 Broker
+	SupplierCode           string
+	CarDetails             []byte
+	PlanInclusions         []string
+	CountryCode            string
+	CurrencyCode           string
+	CurrencyRate           pgtype.Numeric
+	PurchasePrice          pgtype.Numeric
+	PriceBeforeDiscount    pgtype.Numeric
+	PriceAfterDiscount     pgtype.Numeric
+	DiscountPercentage     int32
+	ErpPrice               pgtype.Numeric
+	TotalPrice             pgtype.Numeric
+	PickupDate             pgtype.Date
+	ReturnDate             pgtype.Date
+	RentalDays             int32
+	DriverTitle            string
+	DriverFirstName        string
+	DriverLastName         string
+	DriverAge              int32
+	PickupBrokerLocationID string
+	ReturnBrokerLocationID string
 }
 
 func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationParams) (int64, error) {
@@ -114,6 +212,8 @@ func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationPa
 		arg.DriverFirstName,
 		arg.DriverLastName,
 		arg.DriverAge,
+		arg.PickupBrokerLocationID,
+		arg.ReturnBrokerLocationID,
 	)
 	var id int64
 	err := row.Scan(&id)

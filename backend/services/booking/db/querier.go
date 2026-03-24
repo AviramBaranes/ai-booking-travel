@@ -26,6 +26,7 @@ type Querier interface {
 	// Used by the markup logic to fetch rates for a given search.
 	GetHertzMarkupRates(ctx context.Context, arg GetHertzMarkupRatesParams) ([]GetHertzMarkupRatesRow, error)
 	GetLocationBrokerCode(ctx context.Context, arg GetLocationBrokerCodeParams) (LocationBrokerCode, error)
+	GetLocationByBrokerLocationID(ctx context.Context, brokerLocationID string) (Location, error)
 	GetLocationById(ctx context.Context, id int64) (Location, error)
 	GetSnapshotByID(ctx context.Context, id int64) (AvailablePlansSnapshot, error)
 	InsertAvailablePlansSnapshot(ctx context.Context, arg InsertAvailablePlansSnapshotParams) (int64, error)

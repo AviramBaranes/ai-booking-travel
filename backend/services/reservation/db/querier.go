@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	GetReservationByID(ctx context.Context, id int64) (GetReservationByIDRow, error)
 	InsertReservation(ctx context.Context, arg InsertReservationParams) (int64, error)
 	ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error)
 }

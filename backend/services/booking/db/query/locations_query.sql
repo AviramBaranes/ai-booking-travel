@@ -71,3 +71,10 @@ WHERE id = $1;
 INSERT INTO locations (country, country_code, city, name, iata)
 VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
+
+-- name: GetLocationByBrokerLocationID :one
+SELECT l.*
+FROM locations l
+JOIN location_broker_codes lbc ON lbc.location_id = l.id
+WHERE lbc.broker_location_id = @broker_location_id
+LIMIT 1;

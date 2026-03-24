@@ -28,6 +28,8 @@ CREATE TABLE
         driver_first_name TEXT NOT NULL,
         driver_last_name TEXT NOT NULL,
         driver_age INT NOT NULL CHECK (driver_age >= 18),
+        pickup_broker_location_id TEXT NOT NULL DEFAULT '',
+        return_broker_location_id TEXT NOT NULL DEFAULT '',
         voucher_number TEXT,
         vouchered_at TIMESTAMPTZ,
         created_at TIMESTAMPTZ NOT NULL DEFAULT now (),

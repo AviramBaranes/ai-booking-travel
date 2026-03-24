@@ -9,6 +9,30 @@ import (
 	"context"
 )
 
+const getLocationByBrokerLocationID = `-- name: GetLocationByBrokerLocationID :one
+SELECT l.id, l.country, l.country_code, l.city, l.name, l.iata, l.created_at, l.updated_at
+FROM locations l
+JOIN location_broker_codes lbc ON lbc.location_id = l.id
+WHERE lbc.broker_location_id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetLocationByBrokerLocationID(ctx context.Context, brokerLocationID string) (Location, error) {
+	row := q.db.QueryRow(ctx, getLocationByBrokerLocationID, brokerLocationID)
+	var i Location
+	err := row.Scan(
+		&i.ID,
+		&i.Country,
+		&i.CountryCode,
+		&i.City,
+		&i.Name,
+		&i.Iata,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getLocationById = `-- name: GetLocationById :one
 SELECT id, country, country_code, city, name, iata, created_at, updated_at
 FROM locations
