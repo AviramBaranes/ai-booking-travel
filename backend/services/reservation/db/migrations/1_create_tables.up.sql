@@ -34,8 +34,6 @@ CREATE TABLE
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now ()
     );
 
-CREATE INDEX idx_reservations_user_id ON reservations (user_id);
+CREATE INDEX idx_reservations_user_id_created_at ON reservations (user_id, created_at DESC);
 
 CREATE INDEX idx_reservations_status ON reservations (status);
-
-CREATE INDEX idx_reservations_created_at ON reservations (created_at);

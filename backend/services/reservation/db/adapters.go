@@ -31,3 +31,19 @@ func DateFromString(s string) pgtype.Date {
 	d.Valid = true
 	return d
 }
+
+// DateToString formats a pgtype.Date as a "2006-01-02" string.
+func DateToString(d pgtype.Date) string {
+	if !d.Valid {
+		return ""
+	}
+	return d.Time.Format("2006-01-02")
+}
+
+// TimestamptzToString formats a pgtype.Timestamptz as an RFC3339 string.
+func TimestamptzToString(ts pgtype.Timestamptz) string {
+	if !ts.Valid {
+		return ""
+	}
+	return ts.Time.Format(time.RFC3339)
+}

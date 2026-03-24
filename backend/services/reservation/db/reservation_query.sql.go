@@ -119,3 +119,72 @@ func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationPa
 	err := row.Scan(&id)
 	return id, err
 }
+
+const listReservationsByUser = `-- name: ListReservationsByUser :many
+SELECT
+    id,
+    broker_reservation_id,
+    created_at,
+    country_code,
+    pickup_date,
+    driver_title,
+    driver_first_name,
+    driver_last_name,
+    status,
+    total_price
+FROM reservations
+WHERE user_id = $1
+ORDER BY created_at DESC
+LIMIT $3::int
+OFFSET $2::int
+`
+
+type ListReservationsByUserParams struct {
+	UserID      int32
+	QueryOffset int32
+	QueryLimit  int32
+}
+
+type ListReservationsByUserRow struct {
+	ID                  int64
+	BrokerReservationID string
+	CreatedAt           pgtype.Timestamptz
+	CountryCode         string
+	PickupDate          pgtype.Date
+	DriverTitle         string
+	DriverFirstName     string
+	DriverLastName      string
+	Status              ReservationStatus
+	TotalPrice          pgtype.Numeric
+}
+
+func (q *Queries) ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error) {
+	rows, err := q.db.Query(ctx, listReservationsByUser, arg.UserID, arg.QueryOffset, arg.QueryLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListReservationsByUserRow
+	for rows.Next() {
+		var i ListReservationsByUserRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.BrokerReservationID,
+			&i.CreatedAt,
+			&i.CountryCode,
+			&i.PickupDate,
+			&i.DriverTitle,
+			&i.DriverFirstName,
+			&i.DriverLastName,
+			&i.Status,
+			&i.TotalPrice,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

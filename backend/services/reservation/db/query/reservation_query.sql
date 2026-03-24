@@ -48,3 +48,21 @@ INSERT INTO reservations (
     @driver_last_name,
     @driver_age
 ) RETURNING id;
+
+-- name: ListReservationsByUser :many
+SELECT
+    id,
+    broker_reservation_id,
+    created_at,
+    country_code,
+    pickup_date,
+    driver_title,
+    driver_first_name,
+    driver_last_name,
+    status,
+    total_price
+FROM reservations
+WHERE user_id = @user_id
+ORDER BY created_at DESC
+LIMIT @query_limit::int
+OFFSET @query_offset::int;

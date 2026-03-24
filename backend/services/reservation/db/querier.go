@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	InsertReservation(ctx context.Context, arg InsertReservationParams) (int64, error)
+	ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error)
 }
 
 var _ Querier = (*Queries)(nil)
