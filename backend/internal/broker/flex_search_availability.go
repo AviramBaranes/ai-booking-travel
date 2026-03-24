@@ -78,7 +78,7 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 			addOns = []AddOn{}
 		}
 
-		plans := f.getPlans(c, dayCount, supplierDetails, p.DiscountPercentage)
+		plans := f.getPlans(c, dayCount, supplierDetails)
 		if len(plans) == 0 {
 			rlog.Warn("no valid plans found for car in CarAvailability response, skipping vehicle", "car_name", c.Name)
 			continue
@@ -167,7 +167,7 @@ func (f Flex) getInsuranceExtraCost(days int) int {
 }
 
 // getPlans returns the list of plans for a given car
-func (f Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDetails, discount int) []Plan {
+func (f Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDetails) []Plan {
 	plans := make([]Plan, 0, len(c.Costs))
 	for _, p := range c.Costs {
 		planID, ok := flexProductMap[p.Product]
@@ -224,6 +224,7 @@ func flexCarToBrokerCar(c flexCar, supplierName string) (CarDetails, error) {
 		Acriss:       c.Code,
 		HasAC:        strings.HasPrefix(c.IsAirCon, "Y"),
 		IsAutoGear:   strings.HasPrefix(c.IsAutomatic, "Y"),
+		IsElectric:   isElectric(c.Code),
 		Seats:        seats,
 		Doors:        doors,
 		Bags:         bags,

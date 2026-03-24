@@ -39,6 +39,7 @@ type AvailabilitySearcher interface {
 
 // Booker provides booking capabilities for a broker.
 type Booker interface {
+	Name() Name
 	Book(p BookingParams) (BookingResponse, error)
 }
 
@@ -67,15 +68,14 @@ type Location struct {
 
 // SearchAvailabilityParams represents the parameters required to search for available vehicles, such as pickup and return dates, location, and car preferences.
 type SearchAvailabilityParams struct {
-	CountryCode        string
-	PickupLocation     string
-	DropoffLocation    string
-	PickupDate         string
-	DropoffDate        string
-	PickupTime         string
-	DropoffTime        string
-	DriverAge          int
-	DiscountPercentage int
+	CountryCode     string
+	PickupLocation  string
+	DropoffLocation string
+	PickupDate      string
+	DropoffDate     string
+	PickupTime      string
+	DropoffTime     string
+	DriverAge       int
 }
 
 // AvailableVehicle represents a vehicle that is available for rent, including details about the car, the rental plans, add-ons, location details, and price details.
@@ -116,6 +116,7 @@ type CarDetails struct {
 	Acriss       string `json:"acriss"`
 	HasAC        bool   `json:"hasAC"`
 	IsAutoGear   bool   `json:"isAutoGear"`
+	IsElectric   bool   `json:"isElectric"`
 	Seats        int    `json:"seats"`
 	Bags         int    `json:"bags"`
 	Doors        int    `json:"doors"`
@@ -165,10 +166,10 @@ type BookingParams struct {
 	DriverTitle     string
 	DriverFirstName string
 	DriverLastName  string
-	DriverAge       string
 	FlightNumber    string
 
 	// snapshot columns:
+	DriverAge   string
 	PickupDate  string
 	DropoffDate string
 	PickupTime  string
@@ -178,6 +179,6 @@ type BookingParams struct {
 
 // SelectAddOn represents an add-on selected by the user during the booking process, including its ID and quantity.
 type SelectAddOn struct {
-	ID       int
-	Quantity int
+	ID       int `json:"id"`
+	Quantity int `json:"quantity"`
 }

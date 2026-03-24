@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"time"
+
+	"encore.dev/rlog"
 )
 
 // roundToInt rounds a number to the nearest integer.
@@ -29,4 +31,12 @@ func CalculateDaysCount(pickupDate, pickupTime, dropoffDate, dropoffTime string)
 	}
 
 	return days, nil
+}
+
+func isElectric(acrissCode string) bool {
+	if len(acrissCode) < 4 {
+		rlog.Warn("invalid acriss code, cannot determine if the car is electric", "acrissCode", acrissCode)
+		return false
+	}
+	return acrissCode[3] == 'E' || acrissCode[3] == 'C'
 }

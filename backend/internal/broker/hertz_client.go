@@ -16,12 +16,19 @@ type Hertz struct {
 	r              io.Reader
 }
 
-// NewHertz creates a new instance of the Hertz broker with a default reader that is not initialized.
-func NewHertz(usErpDayCharge, caErpDayCharge int) Hertz {
+// NewHertzWithCharges creates a new instance of the Hertz broker with the provided ERP day charges.
+func NewHertzWithCharges(usErpDayCharge, caErpDayCharge int) Hertz {
 	return Hertz{
 		usErpDayCharge: usErpDayCharge,
 		caErpDayCharge: caErpDayCharge,
 		httpClient:     &http.Client{Timeout: 10 * time.Second},
+	}
+}
+
+// NewHertz creates a new instance of the Hertz broker with the provided HTTP client, which can be used to customize the HTTP requests made to the Hertz API.
+func NewHertz() Hertz {
+	return Hertz{
+		httpClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
