@@ -11,10 +11,11 @@ INSERT INTO reservations (
     currency_code,
     currency_rate,
     purchase_price,
-    price_before_discount,
-    price_after_discount,
+    markup_percentage,
     discount_percentage,
-    erp_price,
+    broker_erp_price,
+    bt_erp_price,
+    vat_percentage,
     total_price,
     pickup_date,
     return_date,
@@ -23,8 +24,8 @@ INSERT INTO reservations (
     driver_first_name,
     driver_last_name,
     driver_age,
-    pickup_broker_location_id,
-    return_broker_location_id
+    pickup_location_name,
+    dropoff_location_name
 ) VALUES (
     @user_id,
     @broker_reservation_id,
@@ -37,10 +38,11 @@ INSERT INTO reservations (
     @currency_code,
     @currency_rate,
     @purchase_price,
-    @price_before_discount,
-    @price_after_discount,
+    @markup_percentage,
     @discount_percentage,
-    @erp_price,
+    @broker_erp_price,
+    @bt_erp_price,
+    @vat_percentage,
     @total_price,
     @pickup_date,
     @return_date,
@@ -49,8 +51,8 @@ INSERT INTO reservations (
     @driver_first_name,
     @driver_last_name,
     @driver_age,
-    @pickup_broker_location_id,
-    @return_broker_location_id
+    @pickup_location_name,
+    @dropoff_location_name
 ) RETURNING id;
 
 -- name: GetReservationByID :one
@@ -66,9 +68,12 @@ SELECT
     country_code,
     currency_code,
     currency_rate,
-    price_after_discount,
+    purchase_price,
+    markup_percentage,
     discount_percentage,
-    erp_price,
+    broker_erp_price,
+    bt_erp_price,
+    vat_percentage,
     total_price,
     pickup_date,
     return_date,
@@ -77,8 +82,8 @@ SELECT
     driver_first_name,
     driver_last_name,
     driver_age,
-    pickup_broker_location_id,
-    return_broker_location_id,
+    pickup_location_name,
+    dropoff_location_name,
     created_at
 FROM reservations
 WHERE id = @id;

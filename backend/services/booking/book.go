@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 
 	"encore.app/internal/api_errors"
@@ -54,7 +55,7 @@ func (s *Service) Book(ctx context.Context, params BookRequest) (*BookResponse, 
 		return nil, api_errors.ErrInternalError
 	}
 
-	reservationReq := buildCreateReservationRequest(snapshot, plan, params, confID)
+	reservationReq := s.buildCreateReservationRequest(snapshot, plan, params, confID)
 	res, err := reservation.CreateReservation(ctx, reservationReq)
 	if err != nil {
 		rlog.Error("failed to create reservation after successful booking",
@@ -71,7 +72,7 @@ func (s *Service) Book(ctx context.Context, params BookRequest) (*BookResponse, 
 }
 
 // buildCreateReservationRequest maps booking data into a CreateReservationRequest.
-func buildCreateReservationRequest(
+func (s *Service) buildCreateReservationRequest(
 	snapshot db.AvailablePlansSnapshot,
 	plan planPriceDetails,
 	params BookRequest,
@@ -86,42 +87,42 @@ func buildCreateReservationRequest(
 
 	driverAge, _ := strconv.Atoi(snapshot.DriverAge)
 
-	totalPrice := plan.CarSellPriceWithVat
-	carPurchasePrice := plan.CarPurchasePrice
-	priceBefDesc := plan.CarPriceWithMarkup
-	priceAfterDiscount := plan.CarSellPriceWithVat
+	var btErpPrice int
+	var brokerErpPrice float64
 	if params.IncludeERP {
-		totalPrice = plan.CarSellPriceWithErpAndVat + plan.ChargedERPPriceWithVat
-		carPurchasePrice = plan.CarPurchasePriceWithErp
-		priceBefDesc = plan.CarPriceWithErpAndMarkup
-		priceAfterDiscount = plan.CarSellPriceWithErpAndVat
+		btErpPrice = plan.ChargedERPPriceWithVat
+		brokerErpPrice = plan.SupplierErpPrice
+	}
+
+	pickupLocName, dropoffLocName, err := s.getLocationsNames(context.Background(), plan.PickupLocationCode, plan.DropoffLocationCode)
+	if err != nil {
+		rlog.Error("failed to get location names for reservation request", "error", err)
 	}
 
 	return reservation.CreateReservationRequest{
-		UserID:                 authData.UserID,
-		BrokerReservationID:    confirmationNumber,
-		Broker:                 string(plan.Broker),
-		SupplierCode:           plan.SupplierCode,
-		CarDetails:             &plan.CarDetails,
-		PlanInclusions:         plan.Inclusions,
-		PickupDate:             snapshot.PickupDate,
-		ReturnDate:             snapshot.ReturnDate,
-		RentalDays:             rentalDays,
-		DriverTitle:            params.DriverTitle,
-		DriverFirstName:        params.DriverFirstName,
-		DriverLastName:         params.DriverLastName,
-		DriverAge:              driverAge,
-		CountryCode:            snapshot.CountryCode,
-		CurrencyCode:           plan.CurrencyCode,
-		CurrencyRate:           plan.CurrencyRate,
-		PurchasePrice:          carPurchasePrice,
-		PriceBeforeDiscount:    priceBefDesc,
-		PriceAfterDiscount:     float64(priceAfterDiscount),
-		DiscountPercentage:     plan.DiscountPercentage,
-		ErpPrice:               float64(plan.ChargedERPPriceWithVat),
-		TotalPrice:             float64(totalPrice),
-		PickupBrokerLocationID: plan.PickupLocationCode,
-		ReturnBrokerLocationID: plan.DropoffLocationCode,
+		UserID:              authData.UserID,
+		BrokerReservationID: confirmationNumber,
+		Broker:              string(plan.Broker),
+		SupplierCode:        plan.SupplierCode,
+		CarDetails:          &plan.CarDetails,
+		PlanInclusions:      plan.Inclusions,
+		PickupDate:          snapshot.PickupDate,
+		ReturnDate:          snapshot.ReturnDate,
+		RentalDays:          rentalDays,
+		DriverTitle:         params.DriverTitle,
+		DriverFirstName:     params.DriverFirstName,
+		DriverLastName:      params.DriverLastName,
+		DriverAge:           driverAge,
+		CountryCode:         snapshot.CountryCode,
+		CurrencyCode:        plan.CurrencyCode,
+		CurrencyRate:        plan.CurrencyRate,
+		PurchasePrice:       plan.CarPurchasePrice,
+		MarkupPercentage:    plan.MarkupPercentage,
+		DiscountPercentage:  plan.DiscountPercentage,
+		BrokerErpPrice:      brokerErpPrice,
+		BtErpPrice:          btErpPrice,
+		PickupLocationName:  pickupLocName,
+		DropoffLocationName: dropoffLocName,
 	}
 }
 
@@ -201,4 +202,25 @@ func getBrokerByPlan(plan planPriceDetails) (broker.Booker, error) {
 	default:
 		return nil, api_errors.ErrInternalError
 	}
+}
+
+// getLocationsNames retrieves the pickup and dropoff location names based on the broker location IDs in the reservation request.
+func (s *Service) getLocationsNames(ctx context.Context, pickupBrokerLocationID, dropoffBrokerLocationID string) (string, string, error) {
+	pickupLoc, err := s.query.GetLocationByBrokerLocationID(ctx, pickupBrokerLocationID)
+	if err != nil {
+		rlog.Error("failed to get pickup location name", "brokerLocationID", pickupBrokerLocationID, "error", err)
+		return "", "", fmt.Errorf("query pickup location %w", err)
+	}
+
+	if pickupBrokerLocationID == dropoffBrokerLocationID {
+		return pickupLoc.Name, pickupLoc.Name, nil
+	}
+
+	dropoffLoc, err := s.query.GetLocationByBrokerLocationID(ctx, dropoffBrokerLocationID)
+	if err != nil {
+		rlog.Error("failed to get dropoff location name", "brokerLocationID", dropoffBrokerLocationID, "error", err)
+		return "", "", fmt.Errorf("query dropoff location %w", err)
+	}
+
+	return pickupLoc.Name, dropoffLoc.Name, nil
 }

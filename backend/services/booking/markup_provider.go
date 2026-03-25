@@ -11,11 +11,7 @@ import (
 // MarkupProvider calculates markup for a single vehicle.
 // Constructed per-search with all static params already resolved.
 type MarkupProvider interface {
-	CalculateMarkup(isAgent bool, basePrice float64, carGroup, brand string) float64
-}
-
-func applyMarkup(basePrice, markupPct float64) float64 {
-	return basePrice * (1 + markupPct/100)
+	GetMarkup(isAgent bool, carGroup, brand string) float64
 }
 
 type hertzMarkupKey struct {
@@ -34,6 +30,7 @@ type HertzMarkupProvider struct {
 	rates map[hertzMarkupKey]markupRates
 }
 
+// NewHertzMarkupProvider constructs a HertzMarkupProvider by fetching the relevant rates from the DB based on the search parameters.
 func NewHertzMarkupProvider(ctx context.Context, q db.Querier, country, pickupDate string, rentalDays int, carGroups []string) (*HertzMarkupProvider, error) {
 	rows, err := q.GetHertzMarkupRates(ctx, db.GetHertzMarkupRatesParams{
 		Country:    country,
@@ -58,17 +55,16 @@ func NewHertzMarkupProvider(ctx context.Context, q db.Querier, country, pickupDa
 	return &HertzMarkupProvider{rates: rates}, nil
 }
 
-func (h *HertzMarkupProvider) CalculateMarkup(isAgent bool, basePrice float64, carGroup, brand string) float64 {
+// GetMarkup returns the markup percentage for the given car group and brand, or false if no specific rate is found.
+func (h *HertzMarkupProvider) GetMarkup(isAgent bool, carGroup, brand string) float64 {
 	r, ok := h.rates[hertzMarkupKey{CarGroup: carGroup, Brand: brand}]
 	if !ok {
-		rlog.Warn("no Hertz markup rate found for car group and brand, applying 0% markup", "carGroup", carGroup, "brand", brand)
 		return 0
 	}
-	pct := r.Gross
 	if isAgent {
-		pct = r.Net
+		return r.Net
 	}
-	return applyMarkup(basePrice, pct)
+	return r.Gross
 }
 
 // --- Flex ---
@@ -86,10 +82,9 @@ func NewFlexMarkupProvider(MarkUpGross, MarkUpNet float64) *FlexMarkupProvider {
 	}
 }
 
-func (f *FlexMarkupProvider) CalculateMarkup(isAgent bool, basePrice float64, _, _ string) float64 {
-	pct := f.markUpGross
+func (f *FlexMarkupProvider) GetMarkup(isAgent bool, _, _ string) float64 {
 	if isAgent {
-		pct = f.markUpNet
+		return f.markUpNet
 	}
-	return applyMarkup(basePrice, pct)
+	return f.markUpGross
 }

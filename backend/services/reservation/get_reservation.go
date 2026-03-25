@@ -7,37 +7,34 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
+	"encore.app/internal/pricing"
 	"encore.app/services/auth"
 	"encore.app/services/reservation/db"
 	"encore.dev/rlog"
 )
 
 type GetReservationResponse struct {
-	ID                     int64             `json:"id"`
-	UserID                 int32             `json:"userId"`
-	BrokerReservationID    string            `json:"brokerReservationId"`
-	Status                 string            `json:"status"`
-	Broker                 string            `json:"broker"`
-	SupplierCode           string            `json:"supplierCode"`
-	CarDetails             broker.CarDetails `json:"carDetails"`
-	PlanInclusions         []string          `json:"planInclusions"`
-	CountryCode            string            `json:"countryCode"`
-	CurrencyCode           string            `json:"currencyCode"`
-	CurrencyRate           float64           `json:"currencyRate"`
-	PriceAfterDiscount     float64           `json:"priceAfterDiscount"`
-	DiscountPercentage     int32             `json:"discountPercentage"`
-	ErpPrice               float64           `json:"erpPrice"`
-	TotalPrice             float64           `json:"totalPrice"`
-	PickupDate             string            `json:"pickupDate"`
-	ReturnDate             string            `json:"returnDate"`
-	RentalDays             int32             `json:"rentalDays"`
-	DriverTitle            string            `json:"driverTitle"`
-	DriverFirstName        string            `json:"driverFirstName"`
-	DriverLastName         string            `json:"driverLastName"`
-	DriverAge              int32             `json:"driverAge"`
-	PickupBrokerLocationID string            `json:"pickupBrokerLocationId"`
-	ReturnBrokerLocationID string            `json:"returnBrokerLocationId"`
-	CreatedAt              string            `json:"createdAt"`
+	ID                  int64             `json:"id"`
+	BrokerReservationID string            `json:"brokerReservationId"`
+	Status              string            `json:"status"`
+	CarDetails          broker.CarDetails `json:"carDetails"`
+	PlanInclusions      []string          `json:"planInclusions"`
+	CurrencyCode        string            `json:"currencyCode"`
+	CurrencyRate        float64           `json:"currencyRate"`
+	CarFullPrice        int               `json:"priceBefDesc"`
+	DiscountAmount      int               `json:"discountAmount"`
+	ErpPrice            int               `json:"erpPrice"`
+	TotalPrice          int32             `json:"totalPrice"`
+	PickupLocationName  string            `json:"pickupLocationName"`
+	DropoffLocationName string            `json:"dropoffLocationName"`
+	PickupDate          string            `json:"pickupDate"`
+	ReturnDate          string            `json:"returnDate"`
+	RentalDays          int32             `json:"rentalDays"`
+	DriverTitle         string            `json:"driverTitle"`
+	DriverFirstName     string            `json:"driverFirstName"`
+	DriverLastName      string            `json:"driverLastName"`
+	DriverAge           int32             `json:"driverAge"`
+	CreatedAt           string            `json:"createdAt"`
 }
 
 // encore:api auth method=GET path=/reservations/:id
@@ -62,31 +59,54 @@ func (s *Service) GetReservation(ctx context.Context, id int64) (*GetReservation
 		return nil, api_errors.ErrInternalError
 	}
 
+	rpd := calculatePriceDetails(row)
+
 	return &GetReservationResponse{
-		ID:                     row.ID,
-		UserID:                 row.UserID,
-		BrokerReservationID:    row.BrokerReservationID,
-		Status:                 string(row.Status),
-		Broker:                 string(row.Broker),
-		SupplierCode:           row.SupplierCode,
-		CarDetails:             carDetails,
-		PlanInclusions:         row.PlanInclusions,
-		CountryCode:            row.CountryCode,
-		CurrencyCode:           row.CurrencyCode,
-		CurrencyRate:           db.NumericToFloat64(row.CurrencyRate),
-		PriceAfterDiscount:     db.NumericToFloat64(row.PriceAfterDiscount),
-		DiscountPercentage:     row.DiscountPercentage,
-		ErpPrice:               db.NumericToFloat64(row.ErpPrice),
-		TotalPrice:             db.NumericToFloat64(row.TotalPrice),
-		PickupDate:             db.DateToString(row.PickupDate),
-		ReturnDate:             db.DateToString(row.ReturnDate),
-		RentalDays:             row.RentalDays,
-		DriverTitle:            row.DriverTitle,
-		DriverFirstName:        row.DriverFirstName,
-		DriverLastName:         row.DriverLastName,
-		DriverAge:              row.DriverAge,
-		PickupBrokerLocationID: row.PickupBrokerLocationID,
-		ReturnBrokerLocationID: row.ReturnBrokerLocationID,
-		CreatedAt:              db.TimestamptzToString(row.CreatedAt),
+		ID:                  row.ID,
+		BrokerReservationID: row.BrokerReservationID,
+		Status:              string(row.Status),
+		CarDetails:          carDetails,
+		PlanInclusions:      row.PlanInclusions,
+		CurrencyCode:        row.CurrencyCode,
+		CurrencyRate:        db.NumericToFloat64(row.CurrencyRate),
+		CarFullPrice:        rpd.carFullPrice,
+		ErpPrice:            rpd.erpPrice,
+		DiscountAmount:      rpd.discountAmount,
+		TotalPrice:          row.TotalPrice,
+		PickupDate:          db.DateToString(row.PickupDate),
+		ReturnDate:          db.DateToString(row.ReturnDate),
+		RentalDays:          row.RentalDays,
+		DriverTitle:         row.DriverTitle,
+		DriverFirstName:     row.DriverFirstName,
+		DriverLastName:      row.DriverLastName,
+		DriverAge:           row.DriverAge,
+		CreatedAt:           db.TimestamptzToString(row.CreatedAt),
+		PickupLocationName:  row.PickupLocationName,
+		DropoffLocationName: row.DropoffLocationName,
 	}, nil
+}
+
+// reservationPriceDetails holds the calculated price details for a reservation.
+type reservationPriceDetails struct {
+	carFullPrice   int
+	erpPrice       int
+	discountAmount int
+}
+
+// calculatePriceDetails calculates the price details for a reservation based on the given parameters.
+func calculatePriceDetails(reservation db.GetReservationByIDRow) reservationPriceDetails {
+	pp := db.NumericToFloat64(reservation.PurchasePrice)
+	mp := db.NumericToFloat64(reservation.MarkupPercentage)
+	bErp := db.NumericToFloat64(reservation.BrokerErpPrice)
+	btErp := float64(reservation.BtErpPrice)
+
+	carFullPrice := pricing.RoundToInt(pricing.ApplyMarkup(pp, mp))
+	erpFullPrice := pricing.RoundToInt(pricing.ApplyMarkup(bErp, mp) + btErp)
+	discountAmount := (erpFullPrice + carFullPrice) - int(reservation.TotalPrice)
+
+	return reservationPriceDetails{
+		carFullPrice:   carFullPrice,
+		erpPrice:       erpFullPrice,
+		discountAmount: discountAmount,
+	}
 }

@@ -3,11 +3,11 @@ package booking
 import (
 	"context"
 	"fmt"
-	"math"
 	"sort"
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
+	"encore.app/internal/pricing"
 	"encore.app/services/auth"
 	"encore.app/services/booking/db"
 	"encore.dev/rlog"
@@ -63,8 +63,8 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 		avPlans := make([]Plan, 0, len(v.Plans))
 
 		for _, p := range v.Plans {
-			carPriceWithMarkup := mp.CalculateMarkup(isAgent, p.Price, v.CarDetails.CarGroup, p.SupplierCode)
-			if carPriceWithMarkup <= 0 {
+			markupPercentage := mp.GetMarkup(isAgent, v.CarDetails.CarGroup, p.SupplierCode)
+			if markupPercentage <= 0 {
 				rlog.Warn("calculated car price with markup is less than or equal to 0, skipping plan", "carGroup", v.CarDetails.CarGroup, "brand", p.SupplierCode)
 				continue
 			}
@@ -74,10 +74,6 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 				continue
 			}
 
-			carPriceWithErpWithMarkup := carPriceWithMarkup
-			if p.BrokerErpPrice > 0 {
-				carPriceWithErpWithMarkup = mp.CalculateMarkup(isAgent, p.Price+p.BrokerErpPrice, v.CarDetails.CarGroup, p.SupplierCode)
-			}
 			brokerLoc, ok := locs[v.Broker]
 			if !ok {
 				rlog.Warn("no location data found for broker, skipping plan", "broker", v.Broker)
@@ -85,35 +81,34 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 			}
 
 			pd := planPriceDetails{
-				PlanID:                    p.PlanID,
-				RateQualifier:             p.RateQualifier,
-				SupplierCode:              p.SupplierCode,
-				Broker:                    v.Broker,
-				PickupLocationCode:        brokerLoc.pickupBrokerLocationID,
-				DropoffLocationCode:       brokerLoc.dropoffBrokerLocationID,
-				CurrencyCode:              v.PriceDetails.Currency,
-				CurrencyRate:              cr,
-				DiscountPercentage:        int(couponDiscount),
-				CarPurchasePrice:          p.Price,
-				CarPriceWithMarkup:        carPriceWithMarkup,
-				CarPriceWithErpAndMarkup:  carPriceWithErpWithMarkup,
-				CarSellPriceWithVat:       calculateDiscountedPrice(carPriceWithMarkup, couponDiscount),
-				CarPurchasePriceWithErp:   p.Price + p.BrokerErpPrice,
-				CarSellPriceWithErpAndVat: calculateDiscountedPrice(carPriceWithErpWithMarkup, couponDiscount),
-				ChargedERPPriceWithVat:    p.ChargedErpPriceWithVat,
-				CarDetails:                v.CarDetails,
-				Inclusions:                p.PlanInclusions,
+				PlanID:                 p.PlanID,
+				RateQualifier:          p.RateQualifier,
+				SupplierCode:           p.SupplierCode,
+				Broker:                 v.Broker,
+				PickupLocationCode:     brokerLoc.pickupBrokerLocationID,
+				DropoffLocationCode:    brokerLoc.dropoffBrokerLocationID,
+				CurrencyCode:           v.PriceDetails.Currency,
+				CurrencyRate:           cr,
+				DiscountPercentage:     couponDiscount,
+				CarPurchasePrice:       p.Price,
+				MarkupPercentage:       markupPercentage,
+				SupplierErpPrice:       p.BrokerErpPrice,
+				ChargedERPPriceWithVat: p.ChargedErpPriceWithVat,
+				CarDetails:             v.CarDetails,
+				Inclusions:             p.PlanInclusions,
 			}
 
 			artifacts.plansDetails = append(artifacts.plansDetails, pd)
 
+			carPriceWithMarkup := pricing.ApplyMarkup(p.Price, markupPercentage)
+			erpWithMarkup := pricing.ApplyMarkup(p.BrokerErpPrice, markupPercentage)
 			avPlan := Plan{
 				PlanID:         p.PlanID,
 				PlanName:       p.PlanName,
-				FullPrice:      roundToInt(carPriceWithMarkup),
-				Discount:       int(couponDiscount),
-				Price:          calculateDiscountedPrice(carPriceWithMarkup, couponDiscount),
-				ErpPrice:       roundToInt(carPriceWithErpWithMarkup-carPriceWithMarkup) + p.ChargedErpPriceWithVat,
+				FullPrice:      pricing.RoundToInt(carPriceWithMarkup),
+				Discount:       couponDiscount,
+				Price:          pricing.RoundToInt(pricing.CalculateDiscountedPrice(carPriceWithMarkup, couponDiscount)),
+				ErpPrice:       pricing.RoundToInt(pricing.CalculateDiscountedPrice(erpWithMarkup, couponDiscount)) + p.ChargedErpPriceWithVat, // no discount on charged erp
 				PlanInclusions: p.PlanInclusions,
 				Info:           p.Info,
 				RateQualifier:  p.RateQualifier,
@@ -179,12 +174,6 @@ func extractCarGroups(vs []broker.AvailableVehicle) []string {
 	return carGroups
 }
 
-// calculateDiscountedPrice calculates the price after applying a discount percentage.
-func calculateDiscountedPrice(priceBeforeDesc float64, discountPercentage int) int {
-	discountAmount := priceBeforeDesc * float64(discountPercentage) / 100
-	return roundToInt(priceBeforeDesc - discountAmount)
-}
-
 // sortAvailableVehiclesByCheapestPlan sorts the available vehicles in-place by the price of their cheapest plan.
 func sortAvailableVehiclesByCheapestPlan(vs []AvailableVehicle) {
 	sort.Slice(vs, func(i, j int) bool {
@@ -204,9 +193,4 @@ func buildCurrencyMap(ctx context.Context, q db.Querier) (map[string]float64, er
 	}
 
 	return currencyMap, nil
-}
-
-// roundToInt rounds a number to the nearest integer.
-func roundToInt[T float32 | float64](f T) int {
-	return int(math.Round(float64(f)))
 }

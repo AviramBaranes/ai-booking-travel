@@ -19,16 +19,16 @@ func (p ListReservationsRequest) Validate() error {
 }
 
 type ReservationSummary struct {
-	ID                  int64   `json:"id"`
-	BrokerReservationID string  `json:"brokerReservationId"`
-	CreatedAt           string  `json:"createdAt"`
-	CountryCode         string  `json:"countryCode"`
-	PickupDate          string  `json:"pickupDate"`
-	DriverTitle         string  `json:"driverTitle"`
-	DriverFirstName     string  `json:"driverFirstName"`
-	DriverLastName      string  `json:"driverLastName"`
-	Status              string  `json:"status"`
-	TotalPrice          float64 `json:"totalPrice"`
+	ID                  int64  `json:"id"`
+	BrokerReservationID string `json:"brokerReservationId"`
+	CreatedAt           string `json:"createdAt"`
+	CountryCode         string `json:"countryCode"`
+	PickupDate          string `json:"pickupDate"`
+	DriverTitle         string `json:"driverTitle"`
+	DriverFirstName     string `json:"driverFirstName"`
+	DriverLastName      string `json:"driverLastName"`
+	Status              string `json:"status"`
+	TotalPrice          int32  `json:"totalPrice"`
 }
 
 type ListReservationsResponse struct {
@@ -81,7 +81,7 @@ func mapRowsToSummaries(rows []db.ListReservationsByUserRow) []ReservationSummar
 			DriverFirstName:     r.DriverFirstName,
 			DriverLastName:      r.DriverLastName,
 			Status:              string(r.Status),
-			TotalPrice:          db.NumericToFloat64(r.TotalPrice),
+			TotalPrice:          r.TotalPrice,
 		}
 	}
 	return summaries

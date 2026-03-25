@@ -24,9 +24,12 @@ SELECT
     country_code,
     currency_code,
     currency_rate,
-    price_after_discount,
+    purchase_price,
+    markup_percentage,
     discount_percentage,
-    erp_price,
+    broker_erp_price,
+    bt_erp_price,
+    vat_percentage,
     total_price,
     pickup_date,
     return_date,
@@ -35,39 +38,42 @@ SELECT
     driver_first_name,
     driver_last_name,
     driver_age,
-    pickup_broker_location_id,
-    return_broker_location_id,
+    pickup_location_name,
+    dropoff_location_name,
     created_at
 FROM reservations
 WHERE id = $1
 `
 
 type GetReservationByIDRow struct {
-	ID                     int64
-	UserID                 int32
-	BrokerReservationID    string
-	Status                 ReservationStatus
-	Broker                 Broker
-	SupplierCode           string
-	CarDetails             []byte
-	PlanInclusions         []string
-	CountryCode            string
-	CurrencyCode           string
-	CurrencyRate           pgtype.Numeric
-	PriceAfterDiscount     pgtype.Numeric
-	DiscountPercentage     int32
-	ErpPrice               pgtype.Numeric
-	TotalPrice             pgtype.Numeric
-	PickupDate             pgtype.Date
-	ReturnDate             pgtype.Date
-	RentalDays             int32
-	DriverTitle            string
-	DriverFirstName        string
-	DriverLastName         string
-	DriverAge              int32
-	PickupBrokerLocationID string
-	ReturnBrokerLocationID string
-	CreatedAt              pgtype.Timestamptz
+	ID                  int64
+	UserID              int32
+	BrokerReservationID string
+	Status              ReservationStatus
+	Broker              Broker
+	SupplierCode        string
+	CarDetails          []byte
+	PlanInclusions      []string
+	CountryCode         string
+	CurrencyCode        string
+	CurrencyRate        pgtype.Numeric
+	PurchasePrice       pgtype.Numeric
+	MarkupPercentage    pgtype.Numeric
+	DiscountPercentage  int32
+	BrokerErpPrice      pgtype.Numeric
+	BtErpPrice          int32
+	VatPercentage       pgtype.Numeric
+	TotalPrice          int32
+	PickupDate          pgtype.Date
+	ReturnDate          pgtype.Date
+	RentalDays          int32
+	DriverTitle         string
+	DriverFirstName     string
+	DriverLastName      string
+	DriverAge           int32
+	PickupLocationName  string
+	DropoffLocationName string
+	CreatedAt           pgtype.Timestamptz
 }
 
 func (q *Queries) GetReservationByID(ctx context.Context, id int64) (GetReservationByIDRow, error) {
@@ -85,9 +91,12 @@ func (q *Queries) GetReservationByID(ctx context.Context, id int64) (GetReservat
 		&i.CountryCode,
 		&i.CurrencyCode,
 		&i.CurrencyRate,
-		&i.PriceAfterDiscount,
+		&i.PurchasePrice,
+		&i.MarkupPercentage,
 		&i.DiscountPercentage,
-		&i.ErpPrice,
+		&i.BrokerErpPrice,
+		&i.BtErpPrice,
+		&i.VatPercentage,
 		&i.TotalPrice,
 		&i.PickupDate,
 		&i.ReturnDate,
@@ -96,8 +105,8 @@ func (q *Queries) GetReservationByID(ctx context.Context, id int64) (GetReservat
 		&i.DriverFirstName,
 		&i.DriverLastName,
 		&i.DriverAge,
-		&i.PickupBrokerLocationID,
-		&i.ReturnBrokerLocationID,
+		&i.PickupLocationName,
+		&i.DropoffLocationName,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -116,10 +125,11 @@ INSERT INTO reservations (
     currency_code,
     currency_rate,
     purchase_price,
-    price_before_discount,
-    price_after_discount,
+    markup_percentage,
     discount_percentage,
-    erp_price,
+    broker_erp_price,
+    bt_erp_price,
+    vat_percentage,
     total_price,
     pickup_date,
     return_date,
@@ -128,8 +138,8 @@ INSERT INTO reservations (
     driver_first_name,
     driver_last_name,
     driver_age,
-    pickup_broker_location_id,
-    return_broker_location_id
+    pickup_location_name,
+    dropoff_location_name
 ) VALUES (
     $1,
     $2,
@@ -155,36 +165,38 @@ INSERT INTO reservations (
     $22,
     $23,
     $24,
-    $25
+    $25,
+    $26
 ) RETURNING id
 `
 
 type InsertReservationParams struct {
-	UserID                 int32
-	BrokerReservationID    string
-	Status                 ReservationStatus
-	Broker                 Broker
-	SupplierCode           string
-	CarDetails             []byte
-	PlanInclusions         []string
-	CountryCode            string
-	CurrencyCode           string
-	CurrencyRate           pgtype.Numeric
-	PurchasePrice          pgtype.Numeric
-	PriceBeforeDiscount    pgtype.Numeric
-	PriceAfterDiscount     pgtype.Numeric
-	DiscountPercentage     int32
-	ErpPrice               pgtype.Numeric
-	TotalPrice             pgtype.Numeric
-	PickupDate             pgtype.Date
-	ReturnDate             pgtype.Date
-	RentalDays             int32
-	DriverTitle            string
-	DriverFirstName        string
-	DriverLastName         string
-	DriverAge              int32
-	PickupBrokerLocationID string
-	ReturnBrokerLocationID string
+	UserID              int32
+	BrokerReservationID string
+	Status              ReservationStatus
+	Broker              Broker
+	SupplierCode        string
+	CarDetails          []byte
+	PlanInclusions      []string
+	CountryCode         string
+	CurrencyCode        string
+	CurrencyRate        pgtype.Numeric
+	PurchasePrice       pgtype.Numeric
+	MarkupPercentage    pgtype.Numeric
+	DiscountPercentage  int32
+	BrokerErpPrice      pgtype.Numeric
+	BtErpPrice          int32
+	VatPercentage       pgtype.Numeric
+	TotalPrice          int32
+	PickupDate          pgtype.Date
+	ReturnDate          pgtype.Date
+	RentalDays          int32
+	DriverTitle         string
+	DriverFirstName     string
+	DriverLastName      string
+	DriverAge           int32
+	PickupLocationName  string
+	DropoffLocationName string
 }
 
 func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationParams) (int64, error) {
@@ -200,10 +212,11 @@ func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationPa
 		arg.CurrencyCode,
 		arg.CurrencyRate,
 		arg.PurchasePrice,
-		arg.PriceBeforeDiscount,
-		arg.PriceAfterDiscount,
+		arg.MarkupPercentage,
 		arg.DiscountPercentage,
-		arg.ErpPrice,
+		arg.BrokerErpPrice,
+		arg.BtErpPrice,
+		arg.VatPercentage,
 		arg.TotalPrice,
 		arg.PickupDate,
 		arg.ReturnDate,
@@ -212,8 +225,8 @@ func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationPa
 		arg.DriverFirstName,
 		arg.DriverLastName,
 		arg.DriverAge,
-		arg.PickupBrokerLocationID,
-		arg.ReturnBrokerLocationID,
+		arg.PickupLocationName,
+		arg.DropoffLocationName,
 	)
 	var id int64
 	err := row.Scan(&id)
@@ -255,7 +268,7 @@ type ListReservationsByUserRow struct {
 	DriverFirstName     string
 	DriverLastName      string
 	Status              ReservationStatus
-	TotalPrice          pgtype.Numeric
+	TotalPrice          int32
 }
 
 func (q *Queries) ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error) {
