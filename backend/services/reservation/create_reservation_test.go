@@ -44,26 +44,24 @@ func validCreateReservationParams() *CreateReservationRequest {
 			Bags:         2,
 			Doors:        4,
 		},
-		PlanInclusions:         []string{"Unlimited Mileage", "Collision Damage Waiver"},
-		CountryCode:            "US",
-		CurrencyCode:           "USD",
-		CurrencyRate:           3.65,
-		PurchasePrice:          100.00,
-		MarkupPercentage:       45.00,
-		DiscountPercentage:     10,
-		BrokerErpPrice:         15.00,
-		BtErpPrice:             20.00,
-		VatPercentage:          18.00,
-		TotalPrice:             155.00,
-		PickupDate:             "2026-04-01",
-		ReturnDate:             "2026-04-05",
-		RentalDays:             4,
-		DriverTitle:            "Mr",
-		DriverFirstName:        "John",
-		DriverLastName:         "Doe",
-		DriverAge:              30,
-		PickupBrokerLocationID: "LOC-PICKUP-1",
-		ReturnBrokerLocationID: "LOC-RETURN-1",
+		PlanInclusions:      []string{"Unlimited Mileage", "Collision Damage Waiver"},
+		CountryCode:         "US",
+		CurrencyCode:        "USD",
+		CurrencyRate:        3.65,
+		PurchasePrice:       100.00,
+		MarkupPercentage:    45.00,
+		DiscountPercentage:  10,
+		BrokerErpPrice:      15.00,
+		BtErpPrice:          20,
+		PickupDate:          "2026-04-01",
+		ReturnDate:          "2026-04-05",
+		RentalDays:          4,
+		DriverTitle:         "Mr",
+		DriverFirstName:     "John",
+		DriverLastName:      "Doe",
+		DriverAge:           30,
+		PickupLocationName:  "Airport Terminal 1",
+		DropoffLocationName: "City Center Office",
 	}
 }
 
@@ -82,7 +80,7 @@ func invalidValueErr(field string) error {
 
 // --- Tests ---
 
-func TestCreateReservation_Validation(t *testing.T) {
+func TestCreateReservationValidation(t *testing.T) {
 	tests := []struct {
 		name    string
 		modify  func(p *CreateReservationRequest)
