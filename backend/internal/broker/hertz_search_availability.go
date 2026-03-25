@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"encore.app/internal/pricing"
 	"encore.dev/rlog"
 )
 
@@ -148,7 +149,7 @@ func (h Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, r
 
 		info := getInfo(p.DriverAge, dayCount, p.CountryCode, planName)
 		if chargeDetails.payAtPickup > 0 {
-			info = append([]string{fmt.Sprintf("PayAtPickup:%d:%s", roundToInt(chargeDetails.payAtPickup), chargeDetails.payAtPickupCurrency)}, info...)
+			info = append([]string{fmt.Sprintf("PayAtPickup:%d:%s", pricing.RoundToInt(chargeDetails.payAtPickup), chargeDetails.payAtPickupCurrency)}, info...)
 		}
 
 		availableVehicles = append(availableVehicles, AvailableVehicle{
@@ -184,7 +185,7 @@ func (h Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, r
 			},
 			PriceDetails: PriceDetails{
 				Currency:           chargeDetails.currency,
-				DropCharge:         roundToInt(chargeDetails.dropCharge),
+				DropCharge:         pricing.RoundToInt(chargeDetails.dropCharge),
 				DropChargeCurrency: chargeDetails.dropChargeCurrency,
 			},
 		})

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"encore.app/internal/pricing"
 	"encore.dev/rlog"
 )
 
@@ -105,7 +106,7 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 			LocationDetails: getLocationDetails(supplierDetails),
 			PriceDetails: PriceDetails{
 				Currency:           c.Currency,
-				DropCharge:         roundToInt(c.DropCharge),
+				DropCharge:         pricing.RoundToInt(c.DropCharge),
 				DropChargeCurrency: c.DropChargeCurrency,
 			},
 		}

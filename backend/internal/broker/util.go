@@ -2,16 +2,10 @@ package broker
 
 import (
 	"fmt"
-	"math"
 	"time"
 
 	"encore.dev/rlog"
 )
-
-// roundToInt rounds a number to the nearest integer.
-func roundToInt[T float32 | float64](f T) int {
-	return int(math.Round(float64(f)))
-}
 
 // CalculateDaysCount calculates the number of days between pickup and dropoff dates, inclusive, it adds a day if the dropoff time is after the pickup time to account for partial days.
 func CalculateDaysCount(pickupDate, pickupTime, dropoffDate, dropoffTime string) (int, error) {
