@@ -25,6 +25,7 @@ func (p LoginParams) Validate() error {
 
 // LoginResponse defines the response structure for user login.
 type LoginResponse struct {
+	ID           int32  `json:"id"`
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 	Username     string `json:"username,omitempty"`
@@ -55,6 +56,7 @@ func (s *Service) Login(ctx context.Context, p LoginParams) (*LoginResponse, err
 	}
 
 	return &LoginResponse{
+		ID:           row.ID,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		Username:     row.Username,
