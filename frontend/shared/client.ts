@@ -129,9 +129,10 @@ export namespace auth {
      */
     export interface LoginResponse {
         id: number
+        username: string
+        role: db.UserRole
         accessToken: string
         refreshToken: string
-        username: string
         phoneNumber: string
         officeCode: string
         agentCode: string

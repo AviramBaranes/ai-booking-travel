@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import Client, { APIError, isAPIError, Local, PreviewEnv } from "../client";
 import { authOptions } from "../auth/authOptions";
-import { getLang } from "../lang";
+import { getLang } from "../lang/lang";
 
 let client = new Client(Local);
 

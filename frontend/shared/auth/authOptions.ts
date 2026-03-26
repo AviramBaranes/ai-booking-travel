@@ -25,8 +25,7 @@ async function refreshAccessToken(token: Record<string, unknown>) {
       customExp: Math.floor(Date.now() / 1000) + 60 * 15, // 15 minutes
     };
   } catch (error) {
-    console.error("RefreshAccessTokenError", error);
-    return {};
+    return { ...token, error: "RefreshTokenExpired" };
   }
 }
 
@@ -67,7 +66,8 @@ export const authOptions: NextAuthOptions = {
       }
 
       // Access token has expired, try to refresh
-      return refreshAccessToken(token);
+      const res = await refreshAccessToken(token);
+      return res;
     },
     async session({ session, token }) {
       session.user = token as unknown as auth.LoginResponse & {

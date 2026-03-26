@@ -2,6 +2,6 @@ import { auth } from "../client";
 
 declare module "next-auth" {
   interface Session {
-    user: auth.LoginResponse & { customExp: number };
+    user: auth.LoginResponse & { customExp: number; error?: string };
   }
 }
