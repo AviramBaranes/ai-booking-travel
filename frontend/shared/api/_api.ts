@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import Client, { APIError, isAPIError, Local, PreviewEnv } from "../client";
 import { authOptions } from "../auth/authOptions";
+import { getLang } from "../lang";
 
 let client = new Client(Local);
 
@@ -16,18 +17,32 @@ export function removeAuthorizationHeader() {
   });
 }
 
+function setLangHeader(lang: string) {
+  if (!lang) return;
+  client = client.with({
+    requestInit: {
+      headers: {
+        "X-Lang": lang,
+      },
+    },
+  });
+}
+
 export async function withErrorHandler<T>(
   apiCall: (client: Client) => Promise<T>,
   errorHandlers?: Record<number, ((e: APIError) => T | undefined) | undefined>,
   defaultErrorHandler?: () => T | undefined,
 ) {
   try {
+    const lang = await getLang();
+    setLangHeader(lang);
     if (typeof window === "undefined") {
       const session = await getServerSession(authOptions);
       if (session) {
         setAuthorizationHeader(session.user.accessToken);
       }
     }
+
     return await apiCall(client);
   } catch (error) {
     if (!isAPIError(error)) throw error;

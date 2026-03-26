@@ -210,7 +210,6 @@ export namespace auth {
             this.RefreshTokens = this.RefreshTokens.bind(this)
             this.RegisterAdmin = this.RegisterAdmin.bind(this)
             this.RegisterAgent = this.RegisterAgent.bind(this)
-            this.TempAgentTagUsage = this.TempAgentTagUsage.bind(this)
             this.TempCustomerTagUsage = this.TempCustomerTagUsage.bind(this)
             this.UpdateUser = this.UpdateUser.bind(this)
         }
@@ -255,12 +254,6 @@ export namespace auth {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/register-agent`, JSON.stringify(params))
             return await resp.json() as RegisterAgentResponse
-        }
-
-        public async TempAgentTagUsage(): Promise<TempAgentTagUsageResponse> {
-            // Now make the actual call to the API
-            const resp = await this.baseClient.callTypedAPI("GET", `/temp-agent-tag-usage`)
-            return await resp.json() as TempAgentTagUsageResponse
         }
 
         public async TempCustomerTagUsage(): Promise<TempAgentTagUsageResponse> {
