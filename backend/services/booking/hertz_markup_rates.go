@@ -42,7 +42,6 @@ type ListHertzMarkupRatesRequest struct {
 	SortBy   string `query:"sortBy" validate:"omitempty"`
 	SortDir  string `query:"sortDir" validate:"omitempty,oneof=asc desc"`
 	Page     int32  `query:"page" validate:"required,gte=1"`
-	Limit    int32  `query:"limit" validate:"required,gte=1,lte=100"`
 }
 
 func (p ListHertzMarkupRatesRequest) Validate() error {
@@ -57,6 +56,7 @@ func (p ListHertzMarkupRatesRequest) Validate() error {
 
 type ListHertzMarkupRatesResponse struct {
 	Rates []HertzMarkupRateResponse `json:"rates"`
+	Total int64                     `json:"total"`
 }
 
 type CreateHertzMarkupRateRequest struct {
@@ -124,13 +124,15 @@ func toHertzMarkupRateResponse(r db.HertzMarkupRate) HertzMarkupRateResponse {
 	}
 }
 
+const limit = 15
+
 // --- Endpoints ---
 
 // ListHertzMarkupRates lists hertz markup rates with pagination, optional filtering, and sorting.
 //
 //encore:api auth method=GET path=/hertz-markup-rates tag:admin
 func (s *Service) ListHertzMarkupRates(ctx context.Context, params ListHertzMarkupRatesRequest) (*ListHertzMarkupRatesResponse, error) {
-	offset := (params.Page - 1) * params.Limit
+	offset := (params.Page - 1) * limit
 
 	sortField := params.SortBy
 	sortDir := params.SortDir
@@ -142,14 +144,26 @@ func (s *Service) ListHertzMarkupRates(ctx context.Context, params ListHertzMark
 		sortDir = "asc"
 	}
 
+	filterParams := db.CountHertzMarkupRatesParams{
+		Country:  toStringPtr(params.Country),
+		Brand:    toStringPtr(params.Brand),
+		CarGroup: toStringPtr(params.CarGroup),
+	}
+
+	total, err := s.query.CountHertzMarkupRates(ctx, filterParams)
+	if err != nil {
+		rlog.Error("failed to count hertz markup rates", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
 	rows, err := s.query.ListHertzMarkupRates(ctx, db.ListHertzMarkupRatesParams{
-		Country:     toStringPtr(params.Country),
-		Brand:       toStringPtr(params.Brand),
-		CarGroup:    toStringPtr(params.CarGroup),
+		Country:     filterParams.Country,
+		Brand:       filterParams.Brand,
+		CarGroup:    filterParams.CarGroup,
 		SortField:   sortField,
 		SortDir:     sortDir,
 		QueryOffset: offset,
-		QueryLimit:  params.Limit,
+		QueryLimit:  limit,
 	})
 	if err != nil {
 		rlog.Error("failed to list hertz markup rates", "error", err)
@@ -161,7 +175,7 @@ func (s *Service) ListHertzMarkupRates(ctx context.Context, params ListHertzMark
 		rates = append(rates, toHertzMarkupRateResponse(r))
 	}
 
-	return &ListHertzMarkupRatesResponse{Rates: rates}, nil
+	return &ListHertzMarkupRatesResponse{Rates: rates, Total: total}, nil
 }
 
 // CreateHertzMarkupRate creates a new hertz markup rate.

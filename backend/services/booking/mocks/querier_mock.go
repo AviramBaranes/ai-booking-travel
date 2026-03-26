@@ -42,6 +42,21 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 	return m.recorder
 }
 
+// CountHertzMarkupRates mocks base method.
+func (m *MockQuerier) CountHertzMarkupRates(ctx context.Context, arg db.CountHertzMarkupRatesParams) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountHertzMarkupRates", ctx, arg)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountHertzMarkupRates indicates an expected call of CountHertzMarkupRates.
+func (mr *MockQuerierMockRecorder) CountHertzMarkupRates(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountHertzMarkupRates", reflect.TypeOf((*MockQuerier)(nil).CountHertzMarkupRates), ctx, arg)
+}
+
 // CreateCoupon mocks base method.
 func (m *MockQuerier) CreateCoupon(ctx context.Context, arg db.CreateCouponParams) (db.Coupon, error) {
 	m.ctrl.T.Helper()

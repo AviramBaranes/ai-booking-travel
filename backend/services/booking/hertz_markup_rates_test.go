@@ -53,23 +53,23 @@ func TestListHertzMarkupRates(t *testing.T) {
 	s := &Service{query: testQuerier()}
 
 	t.Run("validation rejects missing page", func(t *testing.T) {
-		api_errors.AssertApiError(t, invalidValueErr("page"), (ListHertzMarkupRatesRequest{Limit: 10}).Validate())
+		api_errors.AssertApiError(t, invalidValueErr("page"), (ListHertzMarkupRatesRequest{}).Validate())
 	})
 
 	t.Run("validation rejects limit exceeds max", func(t *testing.T) {
-		api_errors.AssertApiError(t, invalidValueErr("limit"), (ListHertzMarkupRatesRequest{Page: 1, Limit: 101}).Validate())
+		api_errors.AssertApiError(t, invalidValueErr("limit"), (ListHertzMarkupRatesRequest{Page: 1}).Validate())
 	})
 
 	t.Run("validation rejects invalid sort direction", func(t *testing.T) {
-		api_errors.AssertApiError(t, invalidValueErr("sortDir"), (ListHertzMarkupRatesRequest{Page: 1, Limit: 10, SortDir: "up"}).Validate())
+		api_errors.AssertApiError(t, invalidValueErr("sortDir"), (ListHertzMarkupRatesRequest{Page: 1, SortDir: "up"}).Validate())
 	})
 
 	t.Run("validation rejects invalid sort field", func(t *testing.T) {
-		api_errors.AssertApiError(t, api_errors.ErrInvalidValue, (ListHertzMarkupRatesRequest{Page: 1, Limit: 10, SortBy: "invalid_field"}).Validate())
+		api_errors.AssertApiError(t, api_errors.ErrInvalidValue, (ListHertzMarkupRatesRequest{Page: 1, SortBy: "invalid_field"}).Validate())
 	})
 
 	t.Run("validation accepts valid params", func(t *testing.T) {
-		if err := (ListHertzMarkupRatesRequest{Country: "US", SortBy: "country", SortDir: "desc", Page: 1, Limit: 50}).Validate(); err != nil {
+		if err := (ListHertzMarkupRatesRequest{Country: "US", SortBy: "country", SortDir: "desc", Page: 1}).Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 	})
@@ -80,7 +80,7 @@ func TestListHertzMarkupRates(t *testing.T) {
 			t.Fatalf("failed to seed: %v", err)
 		}
 
-		resp, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "US", Brand: "ZR", Page: 1, Limit: 100})
+		resp, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "US", Brand: "ZR", Page: 10})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -98,7 +98,7 @@ func TestListHertzMarkupRates(t *testing.T) {
 	})
 
 	t.Run("returns empty list when no rates match filters", func(t *testing.T) {
-		resp, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "XX", Page: 1, Limit: 10})
+		resp, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "XX", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -130,7 +130,7 @@ func TestListHertzMarkupRates(t *testing.T) {
 			}
 		}
 
-		resp, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "DE", Brand: "FC", Page: 1, Limit: 100})
+		resp, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "DE", Brand: "FC", Page: 10})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -169,7 +169,7 @@ func TestListHertzMarkupRates(t *testing.T) {
 			}
 		}
 
-		resp, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "BF", Brand: "FX", CarGroup: "F", Page: 1, Limit: 100})
+		resp, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "BF", Brand: "FX", CarGroup: "F", Page: 10})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -196,7 +196,7 @@ func TestListHertzMarkupRates(t *testing.T) {
 			}
 		}
 
-		page1, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "PG", Brand: "TT", Page: 1, Limit: 2})
+		page1, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "PG", Brand: "TT", Page: 1})
 		if err != nil {
 			t.Fatalf("page 1 error: %v", err)
 		}
@@ -204,7 +204,7 @@ func TestListHertzMarkupRates(t *testing.T) {
 			t.Fatalf("expected 2 rates on page 1, got %d", len(page1.Rates))
 		}
 
-		page2, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "PG", Brand: "TT", Page: 2, Limit: 2})
+		page2, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "PG", Brand: "TT", Page: 2})
 		if err != nil {
 			t.Fatalf("page 2 error: %v", err)
 		}
@@ -212,7 +212,7 @@ func TestListHertzMarkupRates(t *testing.T) {
 			t.Fatalf("expected 2 rates on page 2, got %d", len(page2.Rates))
 		}
 
-		page3, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "PG", Brand: "TT", Page: 3, Limit: 2})
+		page3, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "PG", Brand: "TT", Page: 3})
 		if err != nil {
 			t.Fatalf("page 3 error: %v", err)
 		}
@@ -248,7 +248,7 @@ func TestListHertzMarkupRates(t *testing.T) {
 			}
 		}
 
-		resp, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "SR", SortBy: "car_group", SortDir: "desc", Page: 1, Limit: 100})
+		resp, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Country: "SR", SortBy: "car_group", SortDir: "desc", Page: 10})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -269,7 +269,7 @@ func TestListHertzMarkupRates(t *testing.T) {
 			}
 		}
 
-		resp, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Brand: "DF", Page: 1, Limit: 100})
+		resp, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Brand: "DF", Page: 10})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -284,7 +284,7 @@ func TestListHertzMarkupRates(t *testing.T) {
 		q, s := mockService(t)
 		q.EXPECT().ListHertzMarkupRates(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
-		_, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Page: 1, Limit: 10})
+		_, err := s.ListHertzMarkupRates(ctx, ListHertzMarkupRatesRequest{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }

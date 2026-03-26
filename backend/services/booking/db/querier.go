@@ -11,6 +11,8 @@ import (
 )
 
 type Querier interface {
+	// Count total rows matching the same filters (for pagination).
+	CountHertzMarkupRates(ctx context.Context, arg CountHertzMarkupRatesParams) (int64, error)
 	CreateCoupon(ctx context.Context, arg CreateCouponParams) (Coupon, error)
 	CreateCurrency(ctx context.Context, arg CreateCurrencyParams) (Currency, error)
 	DeleteCoupon(ctx context.Context, id int32) error

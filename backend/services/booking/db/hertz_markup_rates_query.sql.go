@@ -11,6 +11,28 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countHertzMarkupRates = `-- name: CountHertzMarkupRates :one
+SELECT COUNT(*) AS total
+FROM hertz_markup_rates
+WHERE ($1::text IS NULL OR country ILIKE '%' || $1 || '%')
+  AND ($2::text IS NULL OR brand ILIKE '%' || $2 || '%')
+  AND ($3::text IS NULL OR car_group ILIKE '%' || $3 || '%')
+`
+
+type CountHertzMarkupRatesParams struct {
+	Country  *string
+	Brand    *string
+	CarGroup *string
+}
+
+// Count total rows matching the same filters (for pagination).
+func (q *Queries) CountHertzMarkupRates(ctx context.Context, arg CountHertzMarkupRatesParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countHertzMarkupRates, arg.Country, arg.Brand, arg.CarGroup)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const deleteHertzMarkupRate = `-- name: DeleteHertzMarkupRate :one
 DELETE FROM hertz_markup_rates
 WHERE id = $1
@@ -134,9 +156,9 @@ func (q *Queries) InsertHertzMarkupRate(ctx context.Context, arg InsertHertzMark
 const listHertzMarkupRates = `-- name: ListHertzMarkupRates :many
 SELECT id, country, brand, pickup_date_from, pickup_date_to, car_group, num_of_rental_days_from, num_of_rental_days_to, mark_up_gross, mark_up_net, created_at, updated_at
 FROM hertz_markup_rates
-WHERE ($1::text IS NULL OR country = $1)
-  AND ($2::text IS NULL OR brand = $2)
-  AND ($3::text IS NULL OR car_group = $3)
+WHERE ($1::text IS NULL OR country ILIKE '%' || $1 || '%')
+  AND ($2::text IS NULL OR brand ILIKE '%' || $2 || '%')
+  AND ($3::text IS NULL OR car_group ILIKE '%' || $3 || '%')
 ORDER BY
   CASE WHEN $4::text = 'country' AND $5::text = 'asc' THEN country END ASC,
   CASE WHEN $4::text = 'country' AND $5::text = 'desc' THEN country END DESC,

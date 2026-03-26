@@ -9,13 +9,21 @@ WHERE country = $1
   AND num_of_rental_days_to >= sqlc.arg(rental_days)::int
   AND car_group = ANY(sqlc.arg(car_groups)::text[]);
 
+-- name: CountHertzMarkupRates :one
+-- Count total rows matching the same filters (for pagination).
+SELECT COUNT(*) AS total
+FROM hertz_markup_rates
+WHERE (sqlc.narg(country)::text IS NULL OR country ILIKE '%' || sqlc.narg(country) || '%')
+  AND (sqlc.narg(brand)::text IS NULL OR brand ILIKE '%' || sqlc.narg(brand) || '%')
+  AND (sqlc.narg(car_group)::text IS NULL OR car_group ILIKE '%' || sqlc.narg(car_group) || '%');
+
 -- name: ListHertzMarkupRates :many
 -- Admin listing with pagination, optional filtering, and sorting.
 SELECT *
 FROM hertz_markup_rates
-WHERE (sqlc.narg(country)::text IS NULL OR country = sqlc.narg(country))
-  AND (sqlc.narg(brand)::text IS NULL OR brand = sqlc.narg(brand))
-  AND (sqlc.narg(car_group)::text IS NULL OR car_group = sqlc.narg(car_group))
+WHERE (sqlc.narg(country)::text IS NULL OR country ILIKE '%' || sqlc.narg(country) || '%')
+  AND (sqlc.narg(brand)::text IS NULL OR brand ILIKE '%' || sqlc.narg(brand) || '%')
+  AND (sqlc.narg(car_group)::text IS NULL OR car_group ILIKE '%' || sqlc.narg(car_group) || '%')
 ORDER BY
   CASE WHEN sqlc.arg(sort_field)::text = 'country' AND sqlc.arg(sort_dir)::text = 'asc' THEN country END ASC,
   CASE WHEN sqlc.arg(sort_field)::text = 'country' AND sqlc.arg(sort_dir)::text = 'desc' THEN country END DESC,
