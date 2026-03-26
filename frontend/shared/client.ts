@@ -388,11 +388,11 @@ export namespace booking {
         SortBy: string
         SortDir: string
         Page: number
-        Limit: number
     }
 
     export interface ListHertzMarkupRatesResponse {
         rates: HertzMarkupRateResponse[]
+        total: number
     }
 
     export interface LocationResult {
@@ -602,7 +602,6 @@ export namespace booking {
                 brand:    params.Brand,
                 carGroup: params.CarGroup,
                 country:  params.Country,
-                limit:    String(params.Limit),
                 page:     String(params.Page),
                 sortBy:   params.SortBy,
                 sortDir:  params.SortDir,
