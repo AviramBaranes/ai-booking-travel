@@ -16,7 +16,6 @@ export default async function AppRootLayout({
 }>) {
   const session = await getServerSession(authOptions);
   const isAdmin = session?.user?.role === "admin";
-  console.log("User ID:", session?.user?.id);
   if (isAdmin) {
     redirect("/admin/");
   }

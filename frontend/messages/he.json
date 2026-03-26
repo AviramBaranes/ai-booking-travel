@@ -1,4 +1,26 @@
 {
+  "ApiErrors": {
+    "unknown_error": "אירעה שגיאה לא ידועה",
+    "internal_error": "אירעה שגיאה בלתי צפויה",
+    "invalid_value": "ערך לא תקין",
+    "unauthorized": "אין לך הרשאה לבצע פעולה זו",
+    "unauthenticated": "יש להתחבר כדי להמשיך",
+    "not_found": "לא נמצא",
+    "password_too_short": "הסיסמה קצרה מדי",
+    "password_no_upper": "הסיסמה חייבת להכיל אות גדולה",
+    "password_no_lower": "הסיסמה חייבת להכיל אות קטנה",
+    "password_no_number": "הסיסמה חייבת להכיל מספר",
+    "password_no_symbol": "הסיסמה חייבת להכיל תו מיוחד",
+    "no_broker_code_for_pickup_location": "מיקום האיסוף אינו נתמך",
+    "no_broker_code_for_dropoff_location": "מיקום ההחזרה אינו נתמך",
+    "no_common_broker_for_locations": "אין ספק זמין עבור שילוב מיקומי האיסוף וההחזרה",
+    "user_not_found": "המשתמש לא נמצא",
+    "username_already_exists": "שם המשתמש כבר קיים",
+    "invalid_credentials": "שם משתמש או סיסמה שגויים",
+    "invalid_refresh_token": "ההפעלה אינה תקינה, יש להתחבר מחדש",
+    "expired_refresh_token": "ההפעלה פגה, יש להתחבר מחדש",
+    "invalid_reset_token": "קישור איפוס הסיסמה אינו תקין או שפג תוקפו"
+  },
   "Login": {
     "openModal": "התחברות",
     "title": "התחברות",

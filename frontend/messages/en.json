@@ -1,4 +1,26 @@
 {
+  "ApiErrors": {
+    "unknown_error": "An unknown error occurred",
+    "internal_error": "An unexpected error occurred",
+    "invalid_value": "Invalid value",
+    "unauthorized": "You are not authorized to perform this action",
+    "unauthenticated": "Please log in to continue",
+    "not_found": "Not found",
+    "password_too_short": "Password is too short",
+    "password_no_upper": "Password must contain an uppercase letter",
+    "password_no_lower": "Password must contain a lowercase letter",
+    "password_no_number": "Password must contain a number",
+    "password_no_symbol": "Password must contain a special character",
+    "no_broker_code_for_pickup_location": "Pickup location is not supported",
+    "no_broker_code_for_dropoff_location": "Drop-off location is not supported",
+    "no_common_broker_for_locations": "No provider available for this pickup and drop-off combination",
+    "user_not_found": "User not found",
+    "username_already_exists": "Username already exists",
+    "invalid_credentials": "Invalid username or password",
+    "invalid_refresh_token": "Session is invalid, please log in again",
+    "expired_refresh_token": "Session has expired, please log in again",
+    "invalid_reset_token": "Password reset link is invalid or expired"
+  },
   "Login": {
     "openModal": "Connect",
     "title": "Login",

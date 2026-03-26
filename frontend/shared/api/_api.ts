@@ -1,7 +1,8 @@
 import { getServerSession } from "next-auth";
-import Client, { APIError, isAPIError, Local, PreviewEnv } from "../client";
+import Client, { isAPIError, Local } from "../client";
 import { authOptions } from "../auth/authOptions";
 import { getLang } from "../lang/lang";
+import { AppError } from "./AppError";
 
 let client = new Client(Local);
 
@@ -30,8 +31,6 @@ function setLangHeader(lang: string) {
 
 export async function withErrorHandler<T>(
   apiCall: (client: Client) => Promise<T>,
-  errorHandlers?: Record<number, ((e: APIError) => T | undefined) | undefined>,
-  defaultErrorHandler?: () => T | undefined,
 ) {
   try {
     const lang = await getLang();
@@ -47,10 +46,9 @@ export async function withErrorHandler<T>(
   } catch (error) {
     if (!isAPIError(error)) throw error;
     if (process.env.NODE_ENV === "development") console.error({ error });
-    if (!errorHandlers || !(error.status in errorHandlers)) {
-      if (!defaultErrorHandler) return null;
-      return defaultErrorHandler();
+    if (error.details && typeof error.details.code === "string") {
+      throw new AppError(error.details.code, error.details.field ?? null);
     }
-    return errorHandlers[error.status]?.(error);
+    throw error;
   }
 }

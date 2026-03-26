@@ -24,6 +24,7 @@ type LoginFormData = z.infer<ReturnType<typeof loginSchema>>;
 
 export function LoginModal() {
   const t = useTranslations("Login");
+  const tError = useTranslations("ApiErrors");
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
 
@@ -36,23 +37,22 @@ export function LoginModal() {
     resolver: zodResolver(loginSchema(t)),
   });
 
-  const loginMutation = useMutation({
+  const { mutate, error, isPending } = useMutation({
     mutationFn: async (data: LoginFormData) => {
       const result = await signIn("credentials", {
         redirect: false,
         username: data.username,
         password: data.password,
       });
-      if (!result?.ok) {
-        throw new Error("Login failed");
+
+      if (result?.error) {
+        throw new Error(result?.error ?? "unknown_error");
       }
-      console.log({ result });
+
       return result;
     },
     onSuccess: async () => {
       const session = await getSession();
-      console.log("logging the session now:");
-      console.log({ session });
       reset();
       if (session?.user?.role === "admin") {
         router.push("/admin");
@@ -61,10 +61,6 @@ export function LoginModal() {
       }
     },
   });
-
-  const onSubmit = (data: LoginFormData) => {
-    loginMutation.mutate(data);
-  };
 
   const closeModal = () => {
     reset();
@@ -93,7 +89,7 @@ export function LoginModal() {
             </button>
             <h2 className="text-xl mb-4">{t("title")}</h2>
             <form
-              onSubmit={handleSubmit(onSubmit)}
+              onSubmit={handleSubmit((d) => mutate(d))}
               className="flex flex-col gap-3"
             >
               <div>
@@ -114,9 +110,10 @@ export function LoginModal() {
                 />
                 <ErrorDisplay>{errors.password?.message}</ErrorDisplay>
               </div>
+              <ErrorDisplay>{error && tError(error.message)}</ErrorDisplay>
               <Button
                 type="submit"
-                loading={loginMutation.isPending}
+                loading={isPending}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t("submit")}
