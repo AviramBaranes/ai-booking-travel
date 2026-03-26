@@ -6,48 +6,33 @@ import (
 )
 
 var (
-	UserNotFoundDetails          = api_errors.ErrorDetails{Code: "user_not_found"}
-	UsernameAlreadyExistsDetails = api_errors.ErrorDetails{Code: "username_already_exists"}
-	InvalidCredentialsDetails    = api_errors.ErrorDetails{Code: "invalid_credentials"}
-	InvalidRefreshTokenDetails   = api_errors.ErrorDetails{Code: "invalid_refresh_token"}
-	ExpiredRefreshTokenDetails   = api_errors.ErrorDetails{Code: "expired_refresh_token"}
-	InvalidResetTokenDetails     = api_errors.ErrorDetails{Code: "invalid_reset_token"}
-)
+	ErrUserNotFound = api_errors.NewErrorWithDetail(
+		errs.NotFound, "User not found",
+		api_errors.ErrorDetails{Code: api_errors.CodeUserNotFound},
+	)
 
-var (
-	ErrUserNotFound = errs.B().
-			Code(errs.NotFound).
-			Details(UserNotFoundDetails).
-			Msg("User not found").
-			Err()
+	ErrUsernameAlreadyExists = api_errors.NewErrorWithDetail(
+		errs.AlreadyExists, "Username already exists",
+		api_errors.ErrorDetails{Code: api_errors.CodeUsernameAlreadyExists},
+	)
 
-	ErrUsernameAlreadyExists = errs.B().
-					Code(errs.AlreadyExists).
-					Details(UsernameAlreadyExistsDetails).
-					Msg("Username already exists").
-					Err()
+	ErrInvalidCredentials = api_errors.NewErrorWithDetail(
+		errs.Unauthenticated, "Invalid credentials",
+		api_errors.ErrorDetails{Code: api_errors.CodeInvalidCredentials},
+	)
 
-	ErrInvalidCredentials = errs.B().
-				Code(errs.Unauthenticated).
-				Details(InvalidCredentialsDetails).
-				Msg("Invalid credentials").
-				Err()
+	ErrInvalidRefreshToken = api_errors.NewErrorWithDetail(
+		errs.Unauthenticated, "Invalid refresh token",
+		api_errors.ErrorDetails{Code: api_errors.CodeInvalidRefreshToken},
+	)
 
-	ErrInvalidRefreshToken = errs.B().
-				Code(errs.Unauthenticated).
-				Details(InvalidRefreshTokenDetails).
-				Msg("Invalid refresh token").
-				Err()
+	ErrExpiredRefreshToken = api_errors.NewErrorWithDetail(
+		errs.Unauthenticated, "Expired refresh token",
+		api_errors.ErrorDetails{Code: api_errors.CodeExpiredRefreshToken},
+	)
 
-	ErrExpiredRefreshToken = errs.B().
-				Code(errs.Unauthenticated).
-				Details(ExpiredRefreshTokenDetails).
-				Msg("Expired refresh token").
-				Err()
-
-	ErrInvalidResetToken = errs.B().
-				Code(errs.InvalidArgument).
-				Details(InvalidResetTokenDetails).
-				Msg("Invalid reset token").
-				Err()
+	ErrInvalidResetToken = api_errors.NewErrorWithDetail(
+		errs.InvalidArgument, "Invalid reset token",
+		api_errors.ErrorDetails{Code: api_errors.CodeInvalidResetToken},
+	)
 )
