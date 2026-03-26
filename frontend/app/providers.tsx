@@ -1,18 +1,29 @@
 "use client";
 
-import { SessionProvider, useSession } from "next-auth/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SessionProvider, signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 import {
   removeAuthorizationHeader,
   setAuthorizationHeader,
 } from "@/shared/api/_api";
+import { getLang } from "@/shared/lang/lang";
+
+const queryClient = new QueryClient();
 
 function AuthTokenProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status, update } = useSession();
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
+    if (session?.user?.error === "RefreshTokenExpired") {
+      removeAuthorizationHeader();
+      setAuthenticated(false);
+      signOut({ redirect: false });
+      return;
+    }
+
     if (!session?.user?.customExp) {
       setAuthenticated(false);
       removeAuthorizationHeader();
@@ -58,8 +69,10 @@ function AuthTokenProvider({ children }: { children: React.ReactNode }) {
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
-      <AuthTokenProvider>{children}</AuthTokenProvider>
-    </SessionProvider>
+    <QueryClientProvider client={queryClient}>
+      <SessionProvider>
+        <AuthTokenProvider>{children}</AuthTokenProvider>
+      </SessionProvider>
+    </QueryClientProvider>
   );
 }

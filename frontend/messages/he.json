@@ -1,0 +1,13 @@
+{
+  "Login": {
+    "openModal": "התחברות",
+    "title": "התחברות",
+    "username": "שם משתמש",
+    "password": "סיסמה",
+    "submit": "התחברות",
+    "validation": {
+      "usernameRequired": "שם משתמש הוא שדה חובה",
+      "passwordRequired": "סיסמה היא שדה חובה"
+    }
+  }
+}

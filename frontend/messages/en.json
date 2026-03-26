@@ -1,0 +1,13 @@
+{
+  "Login": {
+    "openModal": "Connect",
+    "title": "Login",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Login",
+    "validation": {
+      "usernameRequired": "Username is required",
+      "passwordRequired": "Password is required"
+    }
+  }
+}
