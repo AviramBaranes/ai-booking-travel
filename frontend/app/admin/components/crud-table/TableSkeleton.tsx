@@ -14,6 +14,9 @@ export function TableSkeleton<TRow>({
       <table className="w-full text-right">
         <thead>
           <tr className="border-b border-gray-200 bg-gray-50">
+            <th className="px-3 py-2 w-10">
+              <div className="h-4 w-4 rounded bg-gray-200" />
+            </th>
             {columns.map((col) => (
               <th
                 key={col.key}
@@ -28,6 +31,12 @@ export function TableSkeleton<TRow>({
         <tbody>
           {Array.from({ length: rows }, (_, i) => (
             <tr key={i} className="border-b border-gray-100">
+              <td className="px-3 py-2.5">
+                <div
+                  className="h-4 w-4 rounded bg-gray-200 animate-pulse"
+                  style={{ animationDelay: `${i * 75}ms` }}
+                />
+              </td>
               {columns.map((col) => (
                 <td key={col.key} className="px-3 py-2.5">
                   <div

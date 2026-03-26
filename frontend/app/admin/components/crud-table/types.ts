@@ -43,7 +43,6 @@ export interface CrudTableProps<TRow, TCreate, TUpdate> {
   deleteFn: (id: number) => Promise<unknown>;
   createSchema: ZodType<TCreate & FieldValues>;
   updateSchema: ZodType<TUpdate & FieldValues>;
-  selectable?: boolean;
   bulkActions?: BulkAction[];
   pageSize?: number;
   filterSlot?: ReactNode;

@@ -31,15 +31,21 @@ const columns: ColumnDef<booking.HertzMarkupRateResponse>[] = [
 ];
 
 const hertzRateSchema = z.object({
-  country: z.string().min(1),
-  brand: z.string().min(1),
-  pickupDateFrom: z.string().min(1),
-  pickupDateTo: z.string().min(1),
-  carGroup: z.string().min(1),
-  numOfRentalDaysFrom: z.number().int().min(0),
-  numOfRentalDaysTo: z.number().int().min(0),
-  markUpGross: z.number(),
-  markUpNet: z.number(),
+  country: z.string().min(1, "שדה חובה"),
+  brand: z.string().min(1, "שדה חובה"),
+  pickupDateFrom: z.string().min(1, "שדה חובה"),
+  pickupDateTo: z.string().min(1, "שדה חובה"),
+  carGroup: z.string().min(1, "שדה חובה"),
+  numOfRentalDaysFrom: z
+    .number({ error: "מספר נדרש" })
+    .int("מספר שלם נדרש")
+    .min(0, "ערך מינימלי 0"),
+  numOfRentalDaysTo: z
+    .number({ error: "מספר נדרש" })
+    .int("מספר שלם נדרש")
+    .min(0, "ערך מינימלי 0"),
+  markUpGross: z.number({ error: "מספר נדרש" }),
+  markUpNet: z.number({ error: "מספר נדרש" }),
 });
 
 // Map camelCase frontend keys to snake_case backend sort fields

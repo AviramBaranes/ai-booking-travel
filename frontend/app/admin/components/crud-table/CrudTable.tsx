@@ -14,6 +14,7 @@ import {
   ChevronsUpDown,
   ChevronRight,
   ChevronLeft,
+  Trash2,
 } from "lucide-react";
 
 import { isAppError, AppError } from "@/shared/api/AppError";
@@ -41,7 +42,6 @@ export function CrudTable<
   deleteFn,
   createSchema,
   updateSchema,
-  selectable = false,
   bulkActions,
   pageSize = 20,
   filterSlot,
@@ -137,6 +137,23 @@ export function CrudTable<
     onError: handleMutationError,
   });
 
+  const deleteSelectedMutation = useMutation({
+    mutationFn: (ids: number[]) => Promise.all(ids.map((id) => deleteFn(id))),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [queryKey] });
+      setSelectedIds(new Set());
+      clearError();
+    },
+    onError: handleMutationError,
+  });
+
+  function handleDeleteSelected() {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    if (!confirm(`האם למחוק ${ids.length} שורות?`)) return;
+    deleteSelectedMutation.mutate(ids);
+  }
+
   const isInitialLoading = listQuery.isLoading && !listQuery.isPlaceholderData;
   const isRefetching = !isInitialLoading && listQuery.isFetching;
 
@@ -163,7 +180,7 @@ export function CrudTable<
               : "transition-opacity duration-200"
           }
         >
-          {selectable && selectedIds.size > 0 && bulkActions && (
+          {selectedIds.size > 0 && bulkActions && (
             <div className="px-4 py-2 bg-blue-50 border-b border-blue-200 flex items-center gap-3">
               <span className="text-sm text-gray-600">
                 {selectedIds.size} נבחרו
@@ -190,18 +207,16 @@ export function CrudTable<
             <table className="w-full text-right">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
-                  {selectable && (
-                    <th className="px-3 py-2 w-10">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4 accent-blue-600"
-                        checked={
-                          rows.length > 0 && selectedIds.size === rows.length
-                        }
-                        onChange={toggleSelectAll}
-                      />
-                    </th>
-                  )}
+                  <th className="px-3 py-2 w-10">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 accent-blue-600"
+                      checked={
+                        rows.length > 0 && selectedIds.size === rows.length
+                      }
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   {columns.map((col) => (
                     <th
                       key={col.key}
@@ -230,7 +245,20 @@ export function CrudTable<
                       </div>
                     </th>
                   ))}
-                  <th className="px-3 py-2 w-20" />
+                  <th className="px-3 py-2 w-20">
+                    <button
+                      type="button"
+                      disabled={
+                        selectedIds.size === 0 ||
+                        deleteSelectedMutation.isPending
+                      }
+                      onClick={handleDeleteSelected}
+                      className="p-1 text-gray-400 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      title={`מחק נבחרים (${selectedIds.size})`}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -244,7 +272,6 @@ export function CrudTable<
                       isEditing={editingId === id}
                       isPending={updateMutation.isPending}
                       schema={updateSchema}
-                      selectable={selectable}
                       selected={selectedIds.has(id)}
                       onToggleSelect={() => toggleSelect(id)}
                       onEdit={() => {
@@ -273,7 +300,6 @@ export function CrudTable<
                   columns={columns}
                   schema={createSchema}
                   isPending={createMutation.isPending}
-                  selectable={selectable}
                   onSubmit={(data) => createMutation.mutate(data as TCreate)}
                 />
               </tbody>

@@ -16,7 +16,6 @@ interface EditableRowProps<TRow> {
   onSave: (data: Record<string, unknown>) => void;
   onDelete: () => void;
   schema: ZodType<FieldValues>;
-  selectable?: boolean;
   selected?: boolean;
   onToggleSelect?: () => void;
 }
@@ -38,7 +37,6 @@ export function EditableRow<TRow>({
   onSave,
   onDelete,
   schema,
-  selectable,
   selected,
   onToggleSelect,
 }: EditableRowProps<TRow>) {
@@ -62,16 +60,14 @@ export function EditableRow<TRow>({
   if (isEditing) {
     return (
       <tr className="bg-blue-50/50">
-        {selectable && (
-          <td className="px-3 py-2 w-10">
-            <input
-              type="checkbox"
-              className="h-4 w-4 accent-blue-600"
-              checked={selected}
-              onChange={onToggleSelect}
-            />
-          </td>
-        )}
+        <td className="px-3 py-2 w-10">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-blue-600"
+            checked={selected}
+            onChange={onToggleSelect}
+          />
+        </td>
         {columns.map((col) => (
           <td key={col.key} className="px-3 py-2">
             {col.editable === false ? (
@@ -79,14 +75,17 @@ export function EditableRow<TRow>({
                 {formatCellValue(row, col)}
               </span>
             ) : (
-              <div>
+              <div className="relative pb-4">
                 <CellInput
                   column={col}
                   register={register}
                   name={col.key as string}
                 />
                 {errors[col.key] && (
-                  <span className="text-red-500 text-xs">
+                  <span
+                    className="absolute right-0 bottom-0 text-red-500 text-xs whitespace-nowrap"
+                    dir="rtl"
+                  >
                     {errors[col.key]?.message as string}
                   </span>
                 )}
@@ -99,7 +98,9 @@ export function EditableRow<TRow>({
             <button
               type="button"
               disabled={isPending}
-              onClick={handleSubmit((data) => onSave(data as Record<string, unknown>))}
+              onClick={handleSubmit((data) =>
+                onSave(data as Record<string, unknown>),
+              )}
               className="p-1 text-green-600 hover:text-green-800 disabled:opacity-50 cursor-pointer"
             >
               <Check size={16} />
@@ -120,16 +121,14 @@ export function EditableRow<TRow>({
 
   return (
     <tr className="hover:bg-gray-50 border-b border-gray-100">
-      {selectable && (
-        <td className="px-3 py-2 w-10">
-          <input
-            type="checkbox"
-            className="h-4 w-4 accent-blue-600"
-            checked={selected}
-            onChange={onToggleSelect}
-          />
-        </td>
-      )}
+      <td className="px-3 py-2 w-10">
+        <input
+          type="checkbox"
+          className="h-4 w-4 accent-blue-600"
+          checked={selected}
+          onChange={onToggleSelect}
+        />
+      </td>
       {columns.map((col) => (
         <td key={col.key} className="px-3 py-2 text-sm">
           {col.type === "checkbox" ? (

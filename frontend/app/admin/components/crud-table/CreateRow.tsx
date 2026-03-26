@@ -11,7 +11,6 @@ interface CreateRowProps<TRow> {
   schema: ZodType<FieldValues>;
   isPending: boolean;
   onSubmit: (data: Record<string, unknown>) => void;
-  selectable?: boolean;
 }
 
 export function CreateRow<TRow>({
@@ -19,7 +18,6 @@ export function CreateRow<TRow>({
   schema,
   isPending,
   onSubmit,
-  selectable,
 }: CreateRowProps<TRow>) {
   const editableColumns = columns.filter((c) => c.editable !== false);
 
@@ -55,20 +53,23 @@ export function CreateRow<TRow>({
 
   return (
     <tr className="bg-green-50/50 border-t-2 border-gray-200">
-      {selectable && <td className="px-3 py-2 w-10" />}
+      <td className="px-3 py-2 w-10" />
       {columns.map((col) => (
         <td key={col.key} className="px-3 py-2">
           {col.editable === false ? (
             <span className="text-sm text-gray-400">—</span>
           ) : (
-            <div>
+            <div className="relative pb-4">
               <CellInput
                 column={col}
                 register={register}
                 name={col.key as string}
               />
               {errors[col.key] && (
-                <span className="text-red-500 text-xs">
+                <span
+                  className="absolute right-0 bottom-0 text-red-500 text-xs whitespace-nowrap"
+                  dir="rtl"
+                >
                   {errors[col.key]?.message as string}
                 </span>
               )}

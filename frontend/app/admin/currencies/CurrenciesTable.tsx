@@ -19,9 +19,9 @@ const columns: ColumnDef<booking.CurrencyResponse>[] = [
 ];
 
 const currencySchema = z.object({
-  currencyCode: z.string().min(1),
-  currencyISOName: z.string().min(1),
-  rate: z.number().min(0),
+  currencyCode: z.string().min(1, "שדה חובה"),
+  currencyISOName: z.string().min(1, "שדה חובה"),
+  rate: z.number({ error: "מספר נדרש" }).min(0, "ערך מינימלי 0"),
 });
 
 export default function CurrenciesTable() {
