@@ -4,7 +4,6 @@ export class AppError extends Error {
 
   constructor(code: string, field: string | null = null) {
     super(code);
-    this.name = "AppError";
     this.code = code;
     this.field = field;
   }
