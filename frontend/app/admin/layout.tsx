@@ -1,7 +1,10 @@
+import "../globals.css";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
 import { authOptions } from "@/shared/auth/authOptions";
+import Providers from "@/app/providers";
+import AdminShell from "./AdminShell";
 
 export default async function AdminRootLayout({
   children,
@@ -9,8 +12,6 @@ export default async function AdminRootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getServerSession(authOptions);
-  console.log("logging the session from the admin layout:");
-  console.log({ session });
   if (!session) {
     redirect("/he/");
   }
@@ -22,7 +23,11 @@ export default async function AdminRootLayout({
 
   return (
     <html lang="he" dir="rtl" className="h-full antialiased">
-      <body>{children}</body>
+      <body className="h-full">
+        <Providers>
+          <AdminShell>{children}</AdminShell>
+        </Providers>
+      </body>
     </html>
   );
 }
