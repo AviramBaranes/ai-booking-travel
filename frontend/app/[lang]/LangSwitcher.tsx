@@ -7,7 +7,7 @@ const languages = [
   { code: "en", label: "English" },
 ];
 
-export default function LangSwitcher({ lang }: { lang: string }) {
+export function LangSwitcher({ lang }: { lang: string }) {
   const pathname = usePathname();
   const router = useRouter();
 
