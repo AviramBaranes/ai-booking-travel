@@ -395,6 +395,15 @@ export namespace booking {
         total: number
     }
 
+    export interface ListLocationsRequest {
+        search: string
+        page: number
+    }
+
+    export interface ListLocationsResponse {
+        locations: LocationRow[]
+    }
+
     export interface LocationResult {
         id: number
         name: string
@@ -402,6 +411,17 @@ export namespace booking {
         countryCode: string
         city: string
         iata: string
+    }
+
+    export interface LocationRow {
+        id: number
+        name: string
+        "country_code": string
+        country: string
+        city: string
+        iata: string
+        enabled: boolean
+        "broker_location_id": string
     }
 
     /**
@@ -450,6 +470,10 @@ export namespace booking {
         locations: LocationResult[]
     }
 
+    export interface ToggleLocationRequest {
+        enabled: boolean
+    }
+
     export interface UpdateCouponRequest {
         name: string
         code: string
@@ -487,14 +511,17 @@ export namespace booking {
             this.DeleteCoupon = this.DeleteCoupon.bind(this)
             this.DeleteCurrency = this.DeleteCurrency.bind(this)
             this.DeleteHertzMarkupRate = this.DeleteHertzMarkupRate.bind(this)
+            this.DeleteLocation = this.DeleteLocation.bind(this)
             this.InsertFlexLocations = this.InsertFlexLocations.bind(this)
             this.InsertHertzLocations = this.InsertHertzLocations.bind(this)
             this.InsertLocation = this.InsertLocation.bind(this)
             this.ListCoupons = this.ListCoupons.bind(this)
             this.ListCurrencies = this.ListCurrencies.bind(this)
             this.ListHertzMarkupRates = this.ListHertzMarkupRates.bind(this)
+            this.ListLocations = this.ListLocations.bind(this)
             this.SearchAvailability = this.SearchAvailability.bind(this)
             this.SearchLocations = this.SearchLocations.bind(this)
+            this.ToggleLocation = this.ToggleLocation.bind(this)
             this.UpdateCoupon = this.UpdateCoupon.bind(this)
             this.UpdateCurrency = this.UpdateCurrency.bind(this)
             this.UpdateHertzMarkupRate = this.UpdateHertzMarkupRate.bind(this)
@@ -555,6 +582,14 @@ export namespace booking {
         }
 
         /**
+         * DeleteLocation deletes a location broker code by its ID.
+         * If no other broker codes reference the same location, the location is also deleted.
+         */
+        public async DeleteLocation(id: number): Promise<void> {
+            await this.baseClient.callTypedAPI("DELETE", `/locations/${encodeURIComponent(id)}`)
+        }
+
+        /**
          * InsertFlexLocations handles the HTTP request to insert Flex locations.
          */
         public async InsertFlexLocations(): Promise<void> {
@@ -612,6 +647,18 @@ export namespace booking {
             return await resp.json() as ListHertzMarkupRatesResponse
         }
 
+        public async ListLocations(params: ListLocationsRequest): Promise<ListLocationsResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                page:   String(params.page),
+                search: params.search,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/locations`, undefined, {query})
+            return await resp.json() as ListLocationsResponse
+        }
+
         /**
          * SearchAvailability handles the http request for searching availability of vehicles.
          */
@@ -645,6 +692,10 @@ export namespace booking {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/locations/search`, undefined, {query})
             return await resp.json() as SearchLocationResponse
+        }
+
+        public async ToggleLocation(id: number, params: ToggleLocationRequest): Promise<void> {
+            await this.baseClient.callTypedAPI("PATCH", `/locations/${encodeURIComponent(id)}`, JSON.stringify(params))
         }
 
         /**
