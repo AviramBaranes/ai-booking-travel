@@ -216,10 +216,11 @@ FROM
     location_broker_codes lbc
     JOIN locations l ON l.id = lbc.location_id
 WHERE
-    l.country_code ILIKE '%' || $3 || '%'
-    OR l.city ILIKE '%' || $3 || '%'
-    OR l.name ILIKE '%' || $3 || '%'
-    OR l.iata ILIKE '%' || $3 || '%'
+    ($3::text IS NULL OR l.country_code ILIKE '%' || $3::text || '%')
+    AND ($4::text IS NULL OR lbc.broker::text ILIKE '%' || $4::text || '%')
+    AND ($5::text IS NULL OR l.name ILIKE '%' || $5::text || '%')
+    AND ($6::text IS NULL OR l.iata ILIKE '%' || $6::text || '%')
+    AND ($7::boolean IS NULL OR lbc.enabled = $7::boolean)
 ORDER BY
     l.country_code, l.name, lbc.broker
 LIMIT $1
@@ -227,9 +228,13 @@ OFFSET $2
 `
 
 type ListLocationBrokerCodesWithLocationParams struct {
-	Limit  int32
-	Offset int32
-	Search *string
+	Limit       int32
+	Offset      int32
+	CountryCode *string
+	Broker      *string
+	Name        *string
+	Iata        *string
+	Enabled     *bool
 }
 
 type ListLocationBrokerCodesWithLocationRow struct {
@@ -248,7 +253,15 @@ type ListLocationBrokerCodesWithLocationRow struct {
 }
 
 func (q *Queries) ListLocationBrokerCodesWithLocation(ctx context.Context, arg ListLocationBrokerCodesWithLocationParams) ([]ListLocationBrokerCodesWithLocationRow, error) {
-	rows, err := q.db.Query(ctx, listLocationBrokerCodesWithLocation, arg.Limit, arg.Offset, arg.Search)
+	rows, err := q.db.Query(ctx, listLocationBrokerCodesWithLocation,
+		arg.Limit,
+		arg.Offset,
+		arg.CountryCode,
+		arg.Broker,
+		arg.Name,
+		arg.Iata,
+		arg.Enabled,
+	)
 	if err != nil {
 		return nil, err
 	}

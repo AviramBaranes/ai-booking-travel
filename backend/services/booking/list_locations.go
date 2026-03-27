@@ -7,6 +7,7 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/validation"
 	"encore.app/services/booking/db"
+	"encore.dev/beta/errs"
 	"encore.dev/rlog"
 )
 
@@ -26,11 +27,20 @@ type LocationRow struct {
 }
 
 type ListLocationsRequest struct {
-	Search string `json:"search"`
-	Page   int    `json:"page" validate:"required,min=1"`
+	CountryCode string `query:"country_code"`
+	Broker      string `query:"broker"`
+	Name        string `query:"name"`
+	Iata        string `query:"iata"`
+	Enabled     string `query:"enabled"`
+	Page        int    `query:"page" validate:"required,min=1"`
 }
 
 func (l ListLocationsRequest) Validate() error {
+	if l.Enabled != "" && l.Enabled != "true" && l.Enabled != "false" {
+		return api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
+			Code: api_errors.CodeInvalidValue, Field: "enabled",
+		})
+	}
 	return validation.ValidateStruct(l)
 }
 
@@ -38,11 +48,21 @@ const LocationsLimit = 15
 
 //encore:api auth method=GET path=/locations tag:admin
 func (s *Service) ListLocations(ctx context.Context, p ListLocationsRequest) (*ListLocationsResponse, error) {
+	var enabled *bool
+	if p.Enabled != "" {
+		v := p.Enabled == "true"
+		enabled = &v
+	}
+
 	offset := (p.Page - 1) * LocationsLimit
 	rows, err := s.query.ListLocationBrokerCodesWithLocation(ctx, db.ListLocationBrokerCodesWithLocationParams{
-		Limit:  LocationsLimit,
-		Offset: int32(offset),
-		Search: &p.Search,
+		Limit:       LocationsLimit,
+		Offset:      int32(offset),
+		CountryCode: nilIfEmpty(p.CountryCode),
+		Broker:      nilIfEmpty(p.Broker),
+		Name:        nilIfEmpty(p.Name),
+		Iata:        nilIfEmpty(p.Iata),
+		Enabled:     enabled,
 	})
 
 	if err != nil {
@@ -72,4 +92,11 @@ func (s *Service) ListLocations(ctx context.Context, p ListLocationsRequest) (*L
 	return &ListLocationsResponse{
 		Locations: locations,
 	}, nil
+}
+
+func nilIfEmpty(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
 }

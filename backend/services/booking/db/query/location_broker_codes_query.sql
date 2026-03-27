@@ -81,10 +81,11 @@ FROM
     location_broker_codes lbc
     JOIN locations l ON l.id = lbc.location_id
 WHERE
-    l.country_code ILIKE '%' || sqlc.arg (search) || '%'
-    OR l.city ILIKE '%' || sqlc.arg (search) || '%'
-    OR l.name ILIKE '%' || sqlc.arg (search) || '%'
-    OR l.iata ILIKE '%' || sqlc.arg (search) || '%'
+    (sqlc.narg('country_code')::text IS NULL OR l.country_code ILIKE '%' || sqlc.narg('country_code')::text || '%')
+    AND (sqlc.narg('broker')::text IS NULL OR lbc.broker::text ILIKE '%' || sqlc.narg('broker')::text || '%')
+    AND (sqlc.narg('name')::text IS NULL OR l.name ILIKE '%' || sqlc.narg('name')::text || '%')
+    AND (sqlc.narg('iata')::text IS NULL OR l.iata ILIKE '%' || sqlc.narg('iata')::text || '%')
+    AND (sqlc.narg('enabled')::boolean IS NULL OR lbc.enabled = sqlc.narg('enabled')::boolean)
 ORDER BY
     l.country_code, l.name, lbc.broker
 LIMIT $1

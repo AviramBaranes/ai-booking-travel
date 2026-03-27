@@ -54,24 +54,24 @@ func seedLocationWithBrokerCode(t *testing.T, q *db.Queries, loc db.InsertLocati
 
 func TestListLocationsValidation(t *testing.T) {
 	t.Run("rejects page 0", func(t *testing.T) {
-		p := ListLocationsRequest{Search: "", Page: 0}
+		p := ListLocationsRequest{Page: 0}
 		api_errors.AssertApiError(t, listLocationsInvalidValueErr("page"), p.Validate())
 	})
 
 	t.Run("rejects negative page", func(t *testing.T) {
-		p := ListLocationsRequest{Search: "", Page: -1}
+		p := ListLocationsRequest{Page: -1}
 		api_errors.AssertApiError(t, listLocationsInvalidValueErr("page"), p.Validate())
 	})
 
 	t.Run("accepts valid params", func(t *testing.T) {
-		p := ListLocationsRequest{Search: "test", Page: 1}
+		p := ListLocationsRequest{Name: "test", Page: 1}
 		if err := p.Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 	})
 
-	t.Run("accepts empty search", func(t *testing.T) {
-		p := ListLocationsRequest{Search: "", Page: 1}
+	t.Run("accepts no filters", func(t *testing.T) {
+		p := ListLocationsRequest{Page: 1}
 		if err := p.Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -103,7 +103,7 @@ func TestListLocations(t *testing.T) {
 	)
 
 	t.Run("returns seeded location with correct fields", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, ListLocationsRequest{Search: "Ben Gurion", Page: 1})
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{Name: "Ben Gurion", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -138,15 +138,15 @@ func TestListLocations(t *testing.T) {
 		}
 	})
 
-	t.Run("search by country code returns only matching locations", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, ListLocationsRequest{Search: "IL", Page: 1})
+	t.Run("filter by country code returns only matching locations", func(t *testing.T) {
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{CountryCode: "IL", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
 		for _, r := range resp.Locations {
 			if r.BrokerLocationID == "flex-lhr-list" {
-				t.Fatal("GB location should not appear when searching for IL")
+				t.Fatal("GB location should not appear when filtering by IL")
 			}
 		}
 
@@ -162,15 +162,15 @@ func TestListLocations(t *testing.T) {
 		}
 	})
 
-	t.Run("search by IATA returns only matching location", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, ListLocationsRequest{Search: "LHR", Page: 1})
+	t.Run("filter by IATA returns only matching location", func(t *testing.T) {
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{Iata: "LHR", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
 		for _, r := range resp.Locations {
 			if r.BrokerLocationID == "flex-tlv-list" {
-				t.Fatal("TLV location should not appear when searching for LHR")
+				t.Fatal("TLV location should not appear when filtering by LHR")
 			}
 		}
 
@@ -186,15 +186,15 @@ func TestListLocations(t *testing.T) {
 		}
 	})
 
-	t.Run("search by city returns only matching location", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, ListLocationsRequest{Search: "London", Page: 1})
+	t.Run("filter by name returns only matching location", func(t *testing.T) {
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{Name: "Heathrow", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
 		for _, r := range resp.Locations {
 			if r.BrokerLocationID == "flex-tlv-list" {
-				t.Fatal("TLV location should not appear when searching for London")
+				t.Fatal("TLV location should not appear when filtering by Heathrow")
 			}
 		}
 
@@ -210,8 +210,40 @@ func TestListLocations(t *testing.T) {
 		}
 	})
 
-	t.Run("search returns empty for non-matching query", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, ListLocationsRequest{Search: "zzzznonexistent", Page: 1})
+	t.Run("filter by enabled returns only matching locations", func(t *testing.T) {
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{Enabled: "true", Page: 1})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		for _, r := range resp.Locations {
+			if !r.Enabled {
+				t.Fatal("disabled location should not appear when filtering by enabled=true")
+			}
+		}
+	})
+
+	t.Run("no filters returns all seeded locations", func(t *testing.T) {
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{Page: 1})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		foundTLV, foundLHR := false, false
+		for _, r := range resp.Locations {
+			if r.BrokerLocationID == "flex-tlv-list" {
+				foundTLV = true
+			}
+			if r.BrokerLocationID == "flex-lhr-list" {
+				foundLHR = true
+			}
+		}
+		if !foundTLV || !foundLHR {
+			t.Fatal("expected both locations when no filters applied")
+		}
+	})
+
+	t.Run("non-matching filter returns empty", func(t *testing.T) {
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{Name: "zzzznonexistent", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -220,7 +252,8 @@ func TestListLocations(t *testing.T) {
 		}
 	})
 
-	t.Run("returns multiple broker codes for same location", func(t *testing.T) {
+	t.Run("filter by broker returns only matching broker codes", func(t *testing.T) {
+		// Add a hertz broker code to the IL location
 		_, err := q.InsertLocationBrokerCode(ctx, db.InsertLocationBrokerCodeParams{
 			LocationID:       lbcIL.LocationID,
 			Broker:           db.BrokerHertz,
@@ -230,19 +263,54 @@ func TestListLocations(t *testing.T) {
 			t.Fatalf("failed to insert second broker code: %v", err)
 		}
 
-		resp, err := s.ListLocations(ctx, ListLocationsRequest{Search: "Ben Gurion", Page: 1})
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{Broker: "hertz", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		brokerIDs := map[string]bool{}
 		for _, r := range resp.Locations {
-			if r.Name == "Ben Gurion Airport" {
-				brokerIDs[r.BrokerLocationID] = true
+			if r.BrokerLocationID == "flex-tlv-list" || r.BrokerLocationID == "flex-lhr-list" {
+				t.Fatal("flex broker codes should not appear when filtering by hertz")
 			}
 		}
-		if !brokerIDs["flex-tlv-list"] || !brokerIDs["hertz-tlv-list"] {
-			t.Fatalf("expected both broker codes, got %v", brokerIDs)
+
+		found := false
+		for _, r := range resp.Locations {
+			if r.BrokerLocationID == "hertz-tlv-list" {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatal("expected hertz broker code in results")
+		}
+	})
+
+	t.Run("multiple filters combine with AND", func(t *testing.T) {
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{
+			CountryCode: "IL",
+			Name:        "Ben Gurion",
+			Page:        1,
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		for _, r := range resp.Locations {
+			if r.BrokerLocationID == "flex-lhr-list" {
+				t.Fatal("GB location should not appear with IL+Ben Gurion filters")
+			}
+		}
+
+		found := false
+		for _, r := range resp.Locations {
+			if r.Name == "Ben Gurion Airport" {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatal("expected Ben Gurion location with combined filters")
 		}
 	})
 
@@ -251,7 +319,7 @@ func TestListLocations(t *testing.T) {
 		q.EXPECT().ListLocationBrokerCodesWithLocation(gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("db error"))
 
-		_, err := s.ListLocations(ctx, ListLocationsRequest{Search: "", Page: 1})
+		_, err := s.ListLocations(ctx, ListLocationsRequest{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }
@@ -261,7 +329,7 @@ func TestListLocationsPagination(t *testing.T) {
 	q := testQuerier()
 	s := &Service{query: q}
 
-	// Seed 16 locations with a shared prefix so we can search for them specifically.
+	// Seed 16 locations with a shared prefix so we can filter for them specifically.
 	// LocationsLimit is 15, so page 1 should have 15, page 2 should have 1.
 	prefix := "PagTest"
 	for i := 1; i <= 16; i++ {
@@ -277,7 +345,7 @@ func TestListLocationsPagination(t *testing.T) {
 	}
 
 	t.Run("page 1 returns exactly 15 results", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, ListLocationsRequest{Search: prefix, Page: 1})
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{Name: prefix, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -287,7 +355,7 @@ func TestListLocationsPagination(t *testing.T) {
 	})
 
 	t.Run("page 2 returns the remaining result", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, ListLocationsRequest{Search: prefix, Page: 2})
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{Name: prefix, Page: 2})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -297,11 +365,11 @@ func TestListLocationsPagination(t *testing.T) {
 	})
 
 	t.Run("page 2 does not repeat page 1 results", func(t *testing.T) {
-		page1, err := s.ListLocations(ctx, ListLocationsRequest{Search: prefix, Page: 1})
+		page1, err := s.ListLocations(ctx, ListLocationsRequest{Name: prefix, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		page2, err := s.ListLocations(ctx, ListLocationsRequest{Search: prefix, Page: 2})
+		page2, err := s.ListLocations(ctx, ListLocationsRequest{Name: prefix, Page: 2})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -318,7 +386,7 @@ func TestListLocationsPagination(t *testing.T) {
 	})
 
 	t.Run("page 3 returns empty", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, ListLocationsRequest{Search: prefix, Page: 3})
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{Name: prefix, Page: 3})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
