@@ -91,6 +91,18 @@ ORDER BY
 LIMIT $1
 OFFSET $2;
 
+-- name: CountLocationBrokerCodesWithLocation :one
+SELECT COUNT(*) AS total
+FROM
+    location_broker_codes lbc
+    JOIN locations l ON l.id = lbc.location_id
+WHERE
+    (sqlc.narg('country_code')::text IS NULL OR l.country_code ILIKE '%' || sqlc.narg('country_code')::text || '%')
+    AND (sqlc.narg('broker')::text IS NULL OR lbc.broker::text ILIKE '%' || sqlc.narg('broker')::text || '%')
+    AND (sqlc.narg('name')::text IS NULL OR l.name ILIKE '%' || sqlc.narg('name')::text || '%')
+    AND (sqlc.narg('iata')::text IS NULL OR l.iata ILIKE '%' || sqlc.narg('iata')::text || '%')
+    AND (sqlc.narg('enabled')::boolean IS NULL OR lbc.enabled = sqlc.narg('enabled')::boolean);
+
 -- name: DeleteLocationBrokerCode :one
 DELETE FROM location_broker_codes
 WHERE id = sqlc.arg(id)

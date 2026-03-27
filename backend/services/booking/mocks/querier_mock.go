@@ -72,6 +72,21 @@ func (mr *MockQuerierMockRecorder) CountLocationBrokerCodesByLocationID(ctx, loc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountLocationBrokerCodesByLocationID", reflect.TypeOf((*MockQuerier)(nil).CountLocationBrokerCodesByLocationID), ctx, locationID)
 }
 
+// CountLocationBrokerCodesWithLocation mocks base method.
+func (m *MockQuerier) CountLocationBrokerCodesWithLocation(ctx context.Context, arg db.CountLocationBrokerCodesWithLocationParams) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountLocationBrokerCodesWithLocation", ctx, arg)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountLocationBrokerCodesWithLocation indicates an expected call of CountLocationBrokerCodesWithLocation.
+func (mr *MockQuerierMockRecorder) CountLocationBrokerCodesWithLocation(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountLocationBrokerCodesWithLocation", reflect.TypeOf((*MockQuerier)(nil).CountLocationBrokerCodesWithLocation), ctx, arg)
+}
+
 // CreateCoupon mocks base method.
 func (m *MockQuerier) CreateCoupon(ctx context.Context, arg db.CreateCouponParams) (db.Coupon, error) {
 	m.ctrl.T.Helper()

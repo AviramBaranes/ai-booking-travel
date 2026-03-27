@@ -23,6 +23,40 @@ func (q *Queries) CountLocationBrokerCodesByLocationID(ctx context.Context, loca
 	return count, err
 }
 
+const countLocationBrokerCodesWithLocation = `-- name: CountLocationBrokerCodesWithLocation :one
+SELECT COUNT(*) AS total
+FROM
+    location_broker_codes lbc
+    JOIN locations l ON l.id = lbc.location_id
+WHERE
+    ($1::text IS NULL OR l.country_code ILIKE '%' || $1::text || '%')
+    AND ($2::text IS NULL OR lbc.broker::text ILIKE '%' || $2::text || '%')
+    AND ($3::text IS NULL OR l.name ILIKE '%' || $3::text || '%')
+    AND ($4::text IS NULL OR l.iata ILIKE '%' || $4::text || '%')
+    AND ($5::boolean IS NULL OR lbc.enabled = $5::boolean)
+`
+
+type CountLocationBrokerCodesWithLocationParams struct {
+	CountryCode *string
+	Broker      *string
+	Name        *string
+	Iata        *string
+	Enabled     *bool
+}
+
+func (q *Queries) CountLocationBrokerCodesWithLocation(ctx context.Context, arg CountLocationBrokerCodesWithLocationParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countLocationBrokerCodesWithLocation,
+		arg.CountryCode,
+		arg.Broker,
+		arg.Name,
+		arg.Iata,
+		arg.Enabled,
+	)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const deleteLocationBrokerCode = `-- name: DeleteLocationBrokerCode :one
 DELETE FROM location_broker_codes
 WHERE id = $1

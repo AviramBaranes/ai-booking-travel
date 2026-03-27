@@ -242,6 +242,16 @@ func TestListLocations(t *testing.T) {
 		}
 	})
 
+	t.Run("total reflects filtered count", func(t *testing.T) {
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{CountryCode: "IL", Page: 1})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.Total != int64(len(resp.Locations)) {
+			t.Fatalf("expected total %d to match location count %d", resp.Total, len(resp.Locations))
+		}
+	})
+
 	t.Run("non-matching filter returns empty", func(t *testing.T) {
 		resp, err := s.ListLocations(ctx, ListLocationsRequest{Name: "zzzznonexistent", Page: 1})
 		if err != nil {
@@ -249,6 +259,9 @@ func TestListLocations(t *testing.T) {
 		}
 		if len(resp.Locations) != 0 {
 			t.Fatalf("expected 0 locations, got %d", len(resp.Locations))
+		}
+		if resp.Total != 0 {
+			t.Fatalf("expected total 0, got %d", resp.Total)
 		}
 	})
 
@@ -314,8 +327,19 @@ func TestListLocations(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
+	t.Run("returns error when count query fails", func(t *testing.T) {
 		q, s := mockService(t)
+		q.EXPECT().CountLocationBrokerCodesWithLocation(gomock.Any(), gomock.Any()).
+			Return(int64(0), errors.New("db error"))
+
+		_, err := s.ListLocations(ctx, ListLocationsRequest{Page: 1})
+		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
+	})
+
+	t.Run("returns error when list query fails", func(t *testing.T) {
+		q, s := mockService(t)
+		q.EXPECT().CountLocationBrokerCodesWithLocation(gomock.Any(), gomock.Any()).
+			Return(int64(5), nil)
 		q.EXPECT().ListLocationBrokerCodesWithLocation(gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("db error"))
 
@@ -351,6 +375,16 @@ func TestListLocationsPagination(t *testing.T) {
 		}
 		if len(resp.Locations) != LocationsLimit {
 			t.Fatalf("expected %d locations on page 1, got %d", LocationsLimit, len(resp.Locations))
+		}
+	})
+
+	t.Run("total reflects all matching rows across pages", func(t *testing.T) {
+		resp, err := s.ListLocations(ctx, ListLocationsRequest{Name: prefix, Page: 1})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.Total != 16 {
+			t.Fatalf("expected total 16, got %d", resp.Total)
 		}
 	})
 

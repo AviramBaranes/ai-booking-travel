@@ -13,6 +13,7 @@ import (
 
 type ListLocationsResponse struct {
 	Locations []LocationRow `json:"locations"`
+	Total     int64         `json:"total"`
 }
 
 type LocationRow struct {
@@ -54,15 +55,29 @@ func (s *Service) ListLocations(ctx context.Context, p ListLocationsRequest) (*L
 		enabled = &v
 	}
 
-	offset := (p.Page - 1) * LocationsLimit
-	rows, err := s.query.ListLocationBrokerCodesWithLocation(ctx, db.ListLocationBrokerCodesWithLocationParams{
-		Limit:       LocationsLimit,
-		Offset:      int32(offset),
+	filterParams := db.CountLocationBrokerCodesWithLocationParams{
 		CountryCode: nilIfEmpty(p.CountryCode),
 		Broker:      nilIfEmpty(p.Broker),
 		Name:        nilIfEmpty(p.Name),
 		Iata:        nilIfEmpty(p.Iata),
 		Enabled:     enabled,
+	}
+
+	total, err := s.query.CountLocationBrokerCodesWithLocation(ctx, filterParams)
+	if err != nil {
+		rlog.Error("failed to count locations", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	offset := (p.Page - 1) * LocationsLimit
+	rows, err := s.query.ListLocationBrokerCodesWithLocation(ctx, db.ListLocationBrokerCodesWithLocationParams{
+		Limit:       LocationsLimit,
+		Offset:      int32(offset),
+		CountryCode: filterParams.CountryCode,
+		Broker:      filterParams.Broker,
+		Name:        filterParams.Name,
+		Iata:        filterParams.Iata,
+		Enabled:     filterParams.Enabled,
 	})
 
 	if err != nil {
@@ -91,6 +106,7 @@ func (s *Service) ListLocations(ctx context.Context, p ListLocationsRequest) (*L
 
 	return &ListLocationsResponse{
 		Locations: locations,
+		Total:     total,
 	}, nil
 }
 
