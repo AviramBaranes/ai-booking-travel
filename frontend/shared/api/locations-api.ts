@@ -26,3 +26,9 @@ export function toggleLocation(id: number, enabled: boolean) {
     client.booking.ToggleLocation(id, { enabled }),
   );
 }
+
+export function bulkToggleLocations(ids: number[], enabled: boolean) {
+  return withErrorHandler((client) =>
+    client.booking.BulkToggleLocations({ ids, enabled }),
+  );
+}

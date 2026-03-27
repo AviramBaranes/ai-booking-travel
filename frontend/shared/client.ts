@@ -307,6 +307,11 @@ export namespace booking {
         reservationId: number
     }
 
+    export interface BulkToggleLocationsRequest {
+        ids: number[]
+        enabled: boolean
+    }
+
     export interface CouponResponse {
         id: number
         name: string
@@ -396,12 +401,17 @@ export namespace booking {
     }
 
     export interface ListLocationsRequest {
-        search: string
-        page: number
+        CountryCode: string
+        Broker: string
+        Name: string
+        Iata: string
+        Enabled: string
+        Page: number
     }
 
     export interface ListLocationsResponse {
         locations: LocationRow[]
+        total: number
     }
 
     export interface LocationResult {
@@ -505,6 +515,7 @@ export namespace booking {
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
             this.Book = this.Book.bind(this)
+            this.BulkToggleLocations = this.BulkToggleLocations.bind(this)
             this.CreateCoupon = this.CreateCoupon.bind(this)
             this.CreateCurrency = this.CreateCurrency.bind(this)
             this.CreateHertzMarkupRate = this.CreateHertzMarkupRate.bind(this)
@@ -531,6 +542,10 @@ export namespace booking {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/booking`, JSON.stringify(params))
             return await resp.json() as BookResponse
+        }
+
+        public async BulkToggleLocations(params: BulkToggleLocationsRequest): Promise<void> {
+            await this.baseClient.callTypedAPI("PATCH", `/location-bulk-toggle`, JSON.stringify(params))
         }
 
         /**
@@ -650,8 +665,12 @@ export namespace booking {
         public async ListLocations(params: ListLocationsRequest): Promise<ListLocationsResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
-                page:   String(params.page),
-                search: params.search,
+                broker:         params.Broker,
+                "country_code": params.CountryCode,
+                enabled:        params.Enabled,
+                iata:           params.Iata,
+                name:           params.Name,
+                page:           String(params.Page),
             })
 
             // Now make the actual call to the API

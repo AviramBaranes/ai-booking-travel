@@ -1,7 +1,10 @@
+import LocationsTable from "./LocationsTable";
+
 export default function LocationsPage() {
   return (
-    <div className="flex h-full items-center justify-center">
-      <h1 className="text-2xl font-bold text-gray-700">עמוד מיקומים</h1>
+    <div className="space-y-4">
+      <h1 className="text-2xl font-bold text-gray-700">מיקומים</h1>
+      <LocationsTable />
     </div>
   );
 }
