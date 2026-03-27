@@ -62,3 +62,39 @@ FROM
     JOIN locations l ON l.id = lbc.location_id
 WHERE
     lbc.location_id = ANY (sqlc.arg ('location_ids')::bigint[]);
+
+-- name: ListLocationBrokerCodesWithLocation :many
+SELECT
+    lbc.id,
+    lbc.location_id,
+    lbc.broker,
+    lbc.broker_location_id,
+    lbc.enabled,
+    lbc.created_at,
+    lbc.updated_at,
+    l.country AS location_country,
+    l.country_code AS location_country_code,
+    l.city AS location_city,
+    l.name AS location_name,
+    l.iata AS location_iata
+FROM
+    location_broker_codes lbc
+    JOIN locations l ON l.id = lbc.location_id
+WHERE
+    l.country_code ILIKE '%' || sqlc.arg (search) || '%'
+    OR l.city ILIKE '%' || sqlc.arg (search) || '%'
+    OR l.name ILIKE '%' || sqlc.arg (search) || '%'
+    OR l.iata ILIKE '%' || sqlc.arg (search) || '%'
+ORDER BY
+    l.country_code, l.name, lbc.broker
+LIMIT $1
+OFFSET $2;
+
+-- name: DeleteLocationBrokerCode :one
+DELETE FROM location_broker_codes
+WHERE id = sqlc.arg(id)
+RETURNING location_id;
+
+-- name: CountLocationBrokerCodesByLocationID :one
+SELECT COUNT(*) FROM location_broker_codes
+WHERE location_id = sqlc.arg(location_id);

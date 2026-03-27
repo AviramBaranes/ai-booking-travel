@@ -9,6 +9,16 @@ import (
 	"context"
 )
 
+const deleteLocationByID = `-- name: DeleteLocationByID :exec
+DELETE FROM locations
+WHERE id = $1
+`
+
+func (q *Queries) DeleteLocationByID(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteLocationByID, id)
+	return err
+}
+
 const getLocationByBrokerLocationID = `-- name: GetLocationByBrokerLocationID :one
 SELECT l.id, l.country, l.country_code, l.city, l.name, l.iata, l.created_at, l.updated_at
 FROM locations l

@@ -11,6 +11,31 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countLocationBrokerCodesByLocationID = `-- name: CountLocationBrokerCodesByLocationID :one
+SELECT COUNT(*) FROM location_broker_codes
+WHERE location_id = $1
+`
+
+func (q *Queries) CountLocationBrokerCodesByLocationID(ctx context.Context, locationID int64) (int64, error) {
+	row := q.db.QueryRow(ctx, countLocationBrokerCodesByLocationID, locationID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const deleteLocationBrokerCode = `-- name: DeleteLocationBrokerCode :one
+DELETE FROM location_broker_codes
+WHERE id = $1
+RETURNING location_id
+`
+
+func (q *Queries) DeleteLocationBrokerCode(ctx context.Context, id int64) (int64, error) {
+	row := q.db.QueryRow(ctx, deleteLocationBrokerCode, id)
+	var location_id int64
+	err := row.Scan(&location_id)
+	return location_id, err
+}
+
 const disableLocationBrokerCode = `-- name: DisableLocationBrokerCode :exec
 UPDATE location_broker_codes
 SET
@@ -171,4 +196,86 @@ func (q *Queries) InsertLocationBrokerCode(ctx context.Context, arg InsertLocati
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const listLocationBrokerCodesWithLocation = `-- name: ListLocationBrokerCodesWithLocation :many
+SELECT
+    lbc.id,
+    lbc.location_id,
+    lbc.broker,
+    lbc.broker_location_id,
+    lbc.enabled,
+    lbc.created_at,
+    lbc.updated_at,
+    l.country AS location_country,
+    l.country_code AS location_country_code,
+    l.city AS location_city,
+    l.name AS location_name,
+    l.iata AS location_iata
+FROM
+    location_broker_codes lbc
+    JOIN locations l ON l.id = lbc.location_id
+WHERE
+    l.country_code ILIKE '%' || $3 || '%'
+    OR l.city ILIKE '%' || $3 || '%'
+    OR l.name ILIKE '%' || $3 || '%'
+    OR l.iata ILIKE '%' || $3 || '%'
+ORDER BY
+    l.country_code, l.name, lbc.broker
+LIMIT $1
+OFFSET $2
+`
+
+type ListLocationBrokerCodesWithLocationParams struct {
+	Limit  int32
+	Offset int32
+	Search *string
+}
+
+type ListLocationBrokerCodesWithLocationRow struct {
+	ID                  int64
+	LocationID          int64
+	Broker              Broker
+	BrokerLocationID    string
+	Enabled             bool
+	CreatedAt           pgtype.Timestamptz
+	UpdatedAt           pgtype.Timestamptz
+	LocationCountry     string
+	LocationCountryCode string
+	LocationCity        *string
+	LocationName        string
+	LocationIata        *string
+}
+
+func (q *Queries) ListLocationBrokerCodesWithLocation(ctx context.Context, arg ListLocationBrokerCodesWithLocationParams) ([]ListLocationBrokerCodesWithLocationRow, error) {
+	rows, err := q.db.Query(ctx, listLocationBrokerCodesWithLocation, arg.Limit, arg.Offset, arg.Search)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListLocationBrokerCodesWithLocationRow
+	for rows.Next() {
+		var i ListLocationBrokerCodesWithLocationRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.LocationID,
+			&i.Broker,
+			&i.BrokerLocationID,
+			&i.Enabled,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.LocationCountry,
+			&i.LocationCountryCode,
+			&i.LocationCity,
+			&i.LocationName,
+			&i.LocationIata,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

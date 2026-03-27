@@ -13,11 +13,14 @@ import (
 type Querier interface {
 	// Count total rows matching the same filters (for pagination).
 	CountHertzMarkupRates(ctx context.Context, arg CountHertzMarkupRatesParams) (int64, error)
+	CountLocationBrokerCodesByLocationID(ctx context.Context, locationID int64) (int64, error)
 	CreateCoupon(ctx context.Context, arg CreateCouponParams) (Coupon, error)
 	CreateCurrency(ctx context.Context, arg CreateCurrencyParams) (Currency, error)
 	DeleteCoupon(ctx context.Context, id int32) error
 	DeleteCurrency(ctx context.Context, id int32) error
 	DeleteHertzMarkupRate(ctx context.Context, id int64) (int64, error)
+	DeleteLocationBrokerCode(ctx context.Context, id int64) (int64, error)
+	DeleteLocationByID(ctx context.Context, id int64) error
 	DeleteOldAvailablePlansSnapshots(ctx context.Context, createdAt pgtype.Timestamptz) error
 	DeleteSnapshotByID(ctx context.Context, id int64) error
 	DisableLocationBrokerCode(ctx context.Context, id int64) error
@@ -40,6 +43,7 @@ type Querier interface {
 	ListCurrencies(ctx context.Context) ([]Currency, error)
 	// Admin listing with pagination, optional filtering, and sorting.
 	ListHertzMarkupRates(ctx context.Context, arg ListHertzMarkupRatesParams) ([]HertzMarkupRate, error)
+	ListLocationBrokerCodesWithLocation(ctx context.Context, arg ListLocationBrokerCodesWithLocationParams) ([]ListLocationBrokerCodesWithLocationRow, error)
 	SearchLocations(ctx context.Context, search string) ([]Location, error)
 	UpdateCoupon(ctx context.Context, arg UpdateCouponParams) (Coupon, error)
 	UpdateCurrency(ctx context.Context, arg UpdateCurrencyParams) (Currency, error)

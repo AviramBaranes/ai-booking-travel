@@ -79,6 +79,12 @@ func TestSearchLocations(t *testing.T) {
 			t.Fatalf("failed to insert test locations: %v", err)
 		}
 
+		t.Cleanup(func() {
+			for _, id := range ids {
+				_ = query.DeleteLocationByID(ctx, id)
+			}
+		})
+
 		for i, id := range ids {
 			_, err = query.InsertLocationBrokerCode(ctx, db.InsertLocationBrokerCodeParams{
 				LocationID:       id,

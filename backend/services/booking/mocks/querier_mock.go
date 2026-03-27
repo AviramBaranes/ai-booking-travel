@@ -57,6 +57,21 @@ func (mr *MockQuerierMockRecorder) CountHertzMarkupRates(ctx, arg any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountHertzMarkupRates", reflect.TypeOf((*MockQuerier)(nil).CountHertzMarkupRates), ctx, arg)
 }
 
+// CountLocationBrokerCodesByLocationID mocks base method.
+func (m *MockQuerier) CountLocationBrokerCodesByLocationID(ctx context.Context, locationID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountLocationBrokerCodesByLocationID", ctx, locationID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountLocationBrokerCodesByLocationID indicates an expected call of CountLocationBrokerCodesByLocationID.
+func (mr *MockQuerierMockRecorder) CountLocationBrokerCodesByLocationID(ctx, locationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountLocationBrokerCodesByLocationID", reflect.TypeOf((*MockQuerier)(nil).CountLocationBrokerCodesByLocationID), ctx, locationID)
+}
+
 // CreateCoupon mocks base method.
 func (m *MockQuerier) CreateCoupon(ctx context.Context, arg db.CreateCouponParams) (db.Coupon, error) {
 	m.ctrl.T.Helper()
@@ -128,6 +143,35 @@ func (m *MockQuerier) DeleteHertzMarkupRate(ctx context.Context, id int64) (int6
 func (mr *MockQuerierMockRecorder) DeleteHertzMarkupRate(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteHertzMarkupRate", reflect.TypeOf((*MockQuerier)(nil).DeleteHertzMarkupRate), ctx, id)
+}
+
+// DeleteLocationBrokerCode mocks base method.
+func (m *MockQuerier) DeleteLocationBrokerCode(ctx context.Context, id int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteLocationBrokerCode", ctx, id)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteLocationBrokerCode indicates an expected call of DeleteLocationBrokerCode.
+func (mr *MockQuerierMockRecorder) DeleteLocationBrokerCode(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteLocationBrokerCode", reflect.TypeOf((*MockQuerier)(nil).DeleteLocationBrokerCode), ctx, id)
+}
+
+// DeleteLocationByID mocks base method.
+func (m *MockQuerier) DeleteLocationByID(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteLocationByID", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteLocationByID indicates an expected call of DeleteLocationByID.
+func (mr *MockQuerierMockRecorder) DeleteLocationByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteLocationByID", reflect.TypeOf((*MockQuerier)(nil).DeleteLocationByID), ctx, id)
 }
 
 // DeleteOldAvailablePlansSnapshots mocks base method.
@@ -424,6 +468,21 @@ func (m *MockQuerier) ListHertzMarkupRates(ctx context.Context, arg db.ListHertz
 func (mr *MockQuerierMockRecorder) ListHertzMarkupRates(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListHertzMarkupRates", reflect.TypeOf((*MockQuerier)(nil).ListHertzMarkupRates), ctx, arg)
+}
+
+// ListLocationBrokerCodesWithLocation mocks base method.
+func (m *MockQuerier) ListLocationBrokerCodesWithLocation(ctx context.Context, arg db.ListLocationBrokerCodesWithLocationParams) ([]db.ListLocationBrokerCodesWithLocationRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListLocationBrokerCodesWithLocation", ctx, arg)
+	ret0, _ := ret[0].([]db.ListLocationBrokerCodesWithLocationRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListLocationBrokerCodesWithLocation indicates an expected call of ListLocationBrokerCodesWithLocation.
+func (mr *MockQuerierMockRecorder) ListLocationBrokerCodesWithLocation(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListLocationBrokerCodesWithLocation", reflect.TypeOf((*MockQuerier)(nil).ListLocationBrokerCodesWithLocation), ctx, arg)
 }
 
 // SearchLocations mocks base method.
