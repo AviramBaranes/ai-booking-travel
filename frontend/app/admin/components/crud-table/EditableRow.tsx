@@ -24,6 +24,7 @@ function formatCellValue<TRow>(row: TRow, column: ColumnDef<TRow>): string {
   const value = (row as Record<string, unknown>)[column.key];
   if (value == null) return "";
   if (column.type === "checkbox") return "";
+  if (column.format) return column.format(value);
   return String(value);
 }
 

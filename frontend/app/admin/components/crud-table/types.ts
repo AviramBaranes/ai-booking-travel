@@ -16,6 +16,7 @@ export interface ColumnDef<TRow> {
   options?: SelectOption[];
   editable?: boolean;
   sortable?: boolean;
+  format?: (value: unknown) => string;
 }
 
 export interface SortState {
@@ -38,12 +39,13 @@ export interface CrudTableProps<TRow, TCreate, TUpdate> {
   listFn: (sort: SortState | null, page: number) => Promise<unknown>;
   extractList: (response: unknown) => TRow[];
   extractTotal?: (response: unknown) => number;
-  createFn: (data: TCreate) => Promise<unknown>;
+  createFn?: (data: TCreate) => Promise<unknown>;
   updateFn: (id: number, data: TUpdate) => Promise<unknown>;
   deleteFn: (id: number) => Promise<unknown>;
-  createSchema: ZodType<TCreate & FieldValues>;
+  createSchema?: ZodType<TCreate & FieldValues>;
   updateSchema: ZodType<TUpdate & FieldValues>;
   bulkActions?: BulkAction[];
   pageSize?: number;
   filterSlot?: ReactNode;
+  hideCreate?: boolean;
 }

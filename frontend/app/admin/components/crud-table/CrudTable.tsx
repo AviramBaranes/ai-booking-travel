@@ -45,6 +45,7 @@ export function CrudTable<
   bulkActions,
   pageSize = 20,
   filterSlot,
+  hideCreate,
 }: CrudTableProps<TRow, TCreate, TUpdate>) {
   const tErrors = useTranslations("ApiErrors");
   const queryClient = useQueryClient();
@@ -104,7 +105,7 @@ export function CrudTable<
   const totalPages = total > 0 ? Math.ceil(total / pageSize) : 0;
 
   const createMutation = useMutation({
-    mutationFn: (data: TCreate) => createFn(data),
+    mutationFn: (data: TCreate) => createFn?.(data) ?? Promise.resolve(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [queryKey] });
       clearError();
@@ -296,12 +297,14 @@ export function CrudTable<
                     />
                   );
                 })}
-                <CreateRow
-                  columns={columns}
-                  schema={createSchema}
-                  isPending={createMutation.isPending}
-                  onSubmit={(data) => createMutation.mutate(data as TCreate)}
-                />
+                {!hideCreate && createSchema && (
+                  <CreateRow
+                    columns={columns}
+                    schema={createSchema}
+                    isPending={createMutation.isPending}
+                    onSubmit={(data) => createMutation.mutate(data as TCreate)}
+                  />
+                )}
               </tbody>
             </table>
           </div>

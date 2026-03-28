@@ -21,6 +21,11 @@
     "expired_refresh_token": "Session has expired, please log in again",
     "invalid_reset_token": "Password reset link is invalid or expired"
   },
+  "TranslationStatus": {
+    "pending": "Pending",
+    "translated": "Translated",
+    "verified": "Verified"
+  },
   "Login": {
     "openModal": "Connect",
     "title": "Login",

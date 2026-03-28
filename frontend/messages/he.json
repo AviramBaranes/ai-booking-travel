@@ -21,6 +21,11 @@
     "expired_refresh_token": "ההפעלה פגה, יש להתחבר מחדש",
     "invalid_reset_token": "קישור איפוס הסיסמה אינו תקין או שפג תוקפו"
   },
+  "TranslationStatus": {
+    "pending": "ממתין",
+    "translated": "מתורגם",
+    "verified": "מאומת"
+  },
   "Login": {
     "openModal": "התחברות",
     "title": "התחברות",

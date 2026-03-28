@@ -15,6 +15,7 @@ import {
   MapPin,
   CalendarCheck,
   BarChart3,
+  Languages,
   LogOut,
 } from "lucide-react";
 
@@ -27,6 +28,7 @@ const navItems = [
   { label: "קופונים", href: "/admin/coupons", icon: Ticket },
   { label: "מטבעות", href: "/admin/currencies", icon: Coins },
   { label: "מיקומים", href: "/admin/locations", icon: MapPin },
+  { label: "תרגומים", href: "/admin/translations", icon: Languages },
   { label: "הזמנות", href: "/admin/bookings", icon: CalendarCheck },
   { label: "דוחות", href: "/admin/reports", icon: BarChart3 },
 ];
