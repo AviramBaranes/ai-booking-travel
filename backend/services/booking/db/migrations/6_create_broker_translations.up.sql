@@ -3,8 +3,8 @@ CREATE TYPE broker_translation_status AS ENUM ('pending', 'translated', 'verifie
 CREATE TABLE
     broker_translations (
         id SERIAL PRIMARY KEY,
-        source_text VARCHAR(10) NOT NULL UNIQUE,
-        target_text VARCHAR(255),
+        source_text TEXT NOT NULL UNIQUE,
+        target_text TEXT,
         status broker_translation_status NOT NULL DEFAULT 'pending',
         confidence_score INTEGER CHECK (
             confidence_score >= 0

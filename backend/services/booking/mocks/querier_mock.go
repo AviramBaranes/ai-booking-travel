@@ -57,6 +57,21 @@ func (mr *MockQuerierMockRecorder) CheckBrokerTranslationExists(ctx, sourceText 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckBrokerTranslationExists", reflect.TypeOf((*MockQuerier)(nil).CheckBrokerTranslationExists), ctx, sourceText)
 }
 
+// CountAllTranslations mocks base method.
+func (m *MockQuerier) CountAllTranslations(ctx context.Context, arg db.CountAllTranslationsParams) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountAllTranslations", ctx, arg)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountAllTranslations indicates an expected call of CountAllTranslations.
+func (mr *MockQuerierMockRecorder) CountAllTranslations(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountAllTranslations", reflect.TypeOf((*MockQuerier)(nil).CountAllTranslations), ctx, arg)
+}
+
 // CountHertzMarkupRates mocks base method.
 func (m *MockQuerier) CountHertzMarkupRates(ctx context.Context, arg db.CountHertzMarkupRatesParams) (int64, error) {
 	m.ctrl.T.Helper()
@@ -130,6 +145,20 @@ func (m *MockQuerier) CreateCurrency(ctx context.Context, arg db.CreateCurrencyP
 func (mr *MockQuerierMockRecorder) CreateCurrency(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCurrency", reflect.TypeOf((*MockQuerier)(nil).CreateCurrency), ctx, arg)
+}
+
+// DeleteBrokerTranslation mocks base method.
+func (m *MockQuerier) DeleteBrokerTranslation(ctx context.Context, id int32) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteBrokerTranslation", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteBrokerTranslation indicates an expected call of DeleteBrokerTranslation.
+func (mr *MockQuerierMockRecorder) DeleteBrokerTranslation(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBrokerTranslation", reflect.TypeOf((*MockQuerier)(nil).DeleteBrokerTranslation), ctx, id)
 }
 
 // DeleteCoupon mocks base method.
@@ -425,6 +454,21 @@ func (mr *MockQuerierMockRecorder) InsertBrokerTranslation(ctx, sourceText any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertBrokerTranslation", reflect.TypeOf((*MockQuerier)(nil).InsertBrokerTranslation), ctx, sourceText)
 }
 
+// InsertBrokerTranslationFull mocks base method.
+func (m *MockQuerier) InsertBrokerTranslationFull(ctx context.Context, arg db.InsertBrokerTranslationFullParams) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertBrokerTranslationFull", ctx, arg)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InsertBrokerTranslationFull indicates an expected call of InsertBrokerTranslationFull.
+func (mr *MockQuerierMockRecorder) InsertBrokerTranslationFull(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertBrokerTranslationFull", reflect.TypeOf((*MockQuerier)(nil).InsertBrokerTranslationFull), ctx, arg)
+}
+
 // InsertHertzMarkupRate mocks base method.
 func (m *MockQuerier) InsertHertzMarkupRate(ctx context.Context, arg db.InsertHertzMarkupRateParams) (db.HertzMarkupRate, error) {
 	m.ctrl.T.Helper()
@@ -483,6 +527,21 @@ func (m *MockQuerier) InsertManyLocation(ctx context.Context, arg db.InsertManyL
 func (mr *MockQuerierMockRecorder) InsertManyLocation(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertManyLocation", reflect.TypeOf((*MockQuerier)(nil).InsertManyLocation), ctx, arg)
+}
+
+// ListAllTranslations mocks base method.
+func (m *MockQuerier) ListAllTranslations(ctx context.Context, arg db.ListAllTranslationsParams) ([]db.BrokerTranslation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAllTranslations", ctx, arg)
+	ret0, _ := ret[0].([]db.BrokerTranslation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAllTranslations indicates an expected call of ListAllTranslations.
+func (mr *MockQuerierMockRecorder) ListAllTranslations(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllTranslations", reflect.TypeOf((*MockQuerier)(nil).ListAllTranslations), ctx, arg)
 }
 
 // ListCoupons mocks base method.

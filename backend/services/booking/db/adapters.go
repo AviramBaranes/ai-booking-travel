@@ -18,3 +18,15 @@ func NumericToFloat64(n pgtype.Numeric) float64 {
 	f, _ := n.Float64Value()
 	return f.Float64
 }
+
+// NullBrokerTranslationStatusFromString converts a status string to a NullBrokerTranslationStatus.
+// Returns an invalid (null) value if the string is empty.
+func NullBrokerTranslationStatusFromString(s string) NullBrokerTranslationStatus {
+	if s == "" {
+		return NullBrokerTranslationStatus{}
+	}
+	return NullBrokerTranslationStatus{
+		BrokerTranslationStatus: BrokerTranslationStatus(s),
+		Valid:                   true,
+	}
+}

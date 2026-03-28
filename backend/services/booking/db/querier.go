@@ -12,12 +12,14 @@ import (
 
 type Querier interface {
 	CheckBrokerTranslationExists(ctx context.Context, sourceText string) (int32, error)
+	CountAllTranslations(ctx context.Context, arg CountAllTranslationsParams) (int64, error)
 	// Count total rows matching the same filters (for pagination).
 	CountHertzMarkupRates(ctx context.Context, arg CountHertzMarkupRatesParams) (int64, error)
 	CountLocationBrokerCodesByLocationID(ctx context.Context, locationID int64) (int64, error)
 	CountLocationBrokerCodesWithLocation(ctx context.Context, arg CountLocationBrokerCodesWithLocationParams) (int64, error)
 	CreateCoupon(ctx context.Context, arg CreateCouponParams) (Coupon, error)
 	CreateCurrency(ctx context.Context, arg CreateCurrencyParams) (Currency, error)
+	DeleteBrokerTranslation(ctx context.Context, id int32) error
 	DeleteCoupon(ctx context.Context, id int32) error
 	DeleteCurrency(ctx context.Context, id int32) error
 	DeleteHertzMarkupRate(ctx context.Context, id int64) (int64, error)
@@ -39,10 +41,12 @@ type Querier interface {
 	GetSnapshotByID(ctx context.Context, id int64) (AvailablePlansSnapshot, error)
 	InsertAvailablePlansSnapshot(ctx context.Context, arg InsertAvailablePlansSnapshotParams) (int64, error)
 	InsertBrokerTranslation(ctx context.Context, sourceText string) (int32, error)
+	InsertBrokerTranslationFull(ctx context.Context, arg InsertBrokerTranslationFullParams) (int32, error)
 	InsertHertzMarkupRate(ctx context.Context, arg InsertHertzMarkupRateParams) (HertzMarkupRate, error)
 	InsertLocation(ctx context.Context, arg InsertLocationParams) (Location, error)
 	InsertLocationBrokerCode(ctx context.Context, arg InsertLocationBrokerCodeParams) (LocationBrokerCode, error)
 	InsertManyLocation(ctx context.Context, arg InsertManyLocationParams) ([]int64, error)
+	ListAllTranslations(ctx context.Context, arg ListAllTranslationsParams) ([]BrokerTranslation, error)
 	ListCoupons(ctx context.Context) ([]Coupon, error)
 	ListCurrencies(ctx context.Context) ([]Currency, error)
 	// Admin listing with pagination, optional filtering, and sorting.

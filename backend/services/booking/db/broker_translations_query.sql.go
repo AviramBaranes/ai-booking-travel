@@ -27,6 +27,46 @@ func (q *Queries) CheckBrokerTranslationExists(ctx context.Context, sourceText s
 	return id, err
 }
 
+const countAllTranslations = `-- name: CountAllTranslations :one
+SELECT
+    COUNT(*)
+FROM
+    broker_translations
+WHERE
+    (
+        $1::text IS NULL
+        OR source_text ILIKE '%' || $1 || '%'
+        OR target_text ILIKE '%' || $1 || '%'
+    )
+    AND (
+        $2::broker_translation_status IS NULL
+        OR status = $2::broker_translation_status
+    )
+`
+
+type CountAllTranslationsParams struct {
+	Search *string
+	Status NullBrokerTranslationStatus
+}
+
+func (q *Queries) CountAllTranslations(ctx context.Context, arg CountAllTranslationsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countAllTranslations, arg.Search, arg.Status)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const deleteBrokerTranslation = `-- name: DeleteBrokerTranslation :exec
+DELETE FROM broker_translations
+WHERE
+    id = $1
+`
+
+func (q *Queries) DeleteBrokerTranslation(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteBrokerTranslation, id)
+	return err
+}
+
 const getAllVerifiedTranslations = `-- name: GetAllVerifiedTranslations :many
 SELECT
     id,
@@ -76,6 +116,103 @@ func (q *Queries) InsertBrokerTranslation(ctx context.Context, sourceText string
 	var id int32
 	err := row.Scan(&id)
 	return id, err
+}
+
+const insertBrokerTranslationFull = `-- name: InsertBrokerTranslationFull :one
+INSERT INTO
+    broker_translations (source_text, target_text, status, confidence_score)
+VALUES
+    ($1, $2, $3::broker_translation_status, $4) RETURNING id
+`
+
+type InsertBrokerTranslationFullParams struct {
+	SourceText      string
+	TargetText      *string
+	Status          BrokerTranslationStatus
+	ConfidenceScore *int32
+}
+
+func (q *Queries) InsertBrokerTranslationFull(ctx context.Context, arg InsertBrokerTranslationFullParams) (int32, error) {
+	row := q.db.QueryRow(ctx, insertBrokerTranslationFull,
+		arg.SourceText,
+		arg.TargetText,
+		arg.Status,
+		arg.ConfidenceScore,
+	)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const listAllTranslations = `-- name: ListAllTranslations :many
+SELECT
+    id, source_text, target_text, status, confidence_score, created_at, updated_at
+FROM
+    broker_translations
+WHERE
+    (
+        $1::text IS NULL
+        OR source_text ILIKE '%' || $1 || '%'
+        OR target_text ILIKE '%' || $1 || '%'
+    )
+    AND (
+        $2::broker_translation_status IS NULL
+        OR status = $2::broker_translation_status
+    )
+ORDER BY
+    CASE
+        WHEN $3::text = 'asc' THEN confidence_score
+    END ASC,
+    CASE
+        WHEN $3::text = 'desc' THEN confidence_score
+    END DESC,
+    id ASC
+LIMIT
+    $5::int
+OFFSET
+    $4::int
+`
+
+type ListAllTranslationsParams struct {
+	Search      *string
+	Status      NullBrokerTranslationStatus
+	SortDir     string
+	QueryOffset int32
+	QueryLimit  int32
+}
+
+func (q *Queries) ListAllTranslations(ctx context.Context, arg ListAllTranslationsParams) ([]BrokerTranslation, error) {
+	rows, err := q.db.Query(ctx, listAllTranslations,
+		arg.Search,
+		arg.Status,
+		arg.SortDir,
+		arg.QueryOffset,
+		arg.QueryLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []BrokerTranslation
+	for rows.Next() {
+		var i BrokerTranslation
+		if err := rows.Scan(
+			&i.ID,
+			&i.SourceText,
+			&i.TargetText,
+			&i.Status,
+			&i.ConfidenceScore,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateBrokerTranslation = `-- name: UpdateBrokerTranslation :exec
