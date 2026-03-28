@@ -42,6 +42,21 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 	return m.recorder
 }
 
+// CheckBrokerTranslationExists mocks base method.
+func (m *MockQuerier) CheckBrokerTranslationExists(ctx context.Context, sourceText string) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckBrokerTranslationExists", ctx, sourceText)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckBrokerTranslationExists indicates an expected call of CheckBrokerTranslationExists.
+func (mr *MockQuerierMockRecorder) CheckBrokerTranslationExists(ctx, sourceText any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckBrokerTranslationExists", reflect.TypeOf((*MockQuerier)(nil).CheckBrokerTranslationExists), ctx, sourceText)
+}
+
 // CountHertzMarkupRates mocks base method.
 func (m *MockQuerier) CountHertzMarkupRates(ctx context.Context, arg db.CountHertzMarkupRatesParams) (int64, error) {
 	m.ctrl.T.Helper()
@@ -290,6 +305,21 @@ func (mr *MockQuerierMockRecorder) GetAllLocationBrokerCodesByLocationIDs(ctx, l
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllLocationBrokerCodesByLocationIDs", reflect.TypeOf((*MockQuerier)(nil).GetAllLocationBrokerCodesByLocationIDs), ctx, locationIds)
 }
 
+// GetAllVerifiedTranslations mocks base method.
+func (m *MockQuerier) GetAllVerifiedTranslations(ctx context.Context) ([]db.GetAllVerifiedTranslationsRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllVerifiedTranslations", ctx)
+	ret0, _ := ret[0].([]db.GetAllVerifiedTranslationsRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllVerifiedTranslations indicates an expected call of GetAllVerifiedTranslations.
+func (mr *MockQuerierMockRecorder) GetAllVerifiedTranslations(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllVerifiedTranslations", reflect.TypeOf((*MockQuerier)(nil).GetAllVerifiedTranslations), ctx)
+}
+
 // GetHertzMarkupRates mocks base method.
 func (m *MockQuerier) GetHertzMarkupRates(ctx context.Context, arg db.GetHertzMarkupRatesParams) ([]db.GetHertzMarkupRatesRow, error) {
 	m.ctrl.T.Helper()
@@ -378,6 +408,21 @@ func (m *MockQuerier) InsertAvailablePlansSnapshot(ctx context.Context, arg db.I
 func (mr *MockQuerierMockRecorder) InsertAvailablePlansSnapshot(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertAvailablePlansSnapshot", reflect.TypeOf((*MockQuerier)(nil).InsertAvailablePlansSnapshot), ctx, arg)
+}
+
+// InsertBrokerTranslation mocks base method.
+func (m *MockQuerier) InsertBrokerTranslation(ctx context.Context, sourceText string) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertBrokerTranslation", ctx, sourceText)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InsertBrokerTranslation indicates an expected call of InsertBrokerTranslation.
+func (mr *MockQuerierMockRecorder) InsertBrokerTranslation(ctx, sourceText any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertBrokerTranslation", reflect.TypeOf((*MockQuerier)(nil).InsertBrokerTranslation), ctx, sourceText)
 }
 
 // InsertHertzMarkupRate mocks base method.
@@ -515,6 +560,20 @@ func (mr *MockQuerierMockRecorder) SearchLocations(ctx, search any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchLocations", reflect.TypeOf((*MockQuerier)(nil).SearchLocations), ctx, search)
 }
 
+// UpdateBrokerTranslation mocks base method.
+func (m *MockQuerier) UpdateBrokerTranslation(ctx context.Context, arg db.UpdateBrokerTranslationParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateBrokerTranslation", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateBrokerTranslation indicates an expected call of UpdateBrokerTranslation.
+func (mr *MockQuerierMockRecorder) UpdateBrokerTranslation(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBrokerTranslation", reflect.TypeOf((*MockQuerier)(nil).UpdateBrokerTranslation), ctx, arg)
+}
+
 // UpdateCoupon mocks base method.
 func (m *MockQuerier) UpdateCoupon(ctx context.Context, arg db.UpdateCouponParams) (db.Coupon, error) {
 	m.ctrl.T.Helper()
@@ -588,4 +647,18 @@ func (m *MockQuerier) UpsertLocationByIATA(ctx context.Context, arg db.UpsertLoc
 func (mr *MockQuerierMockRecorder) UpsertLocationByIATA(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertLocationByIATA", reflect.TypeOf((*MockQuerier)(nil).UpsertLocationByIATA), ctx, arg)
+}
+
+// VerifyBrokerTranslation mocks base method.
+func (m *MockQuerier) VerifyBrokerTranslation(ctx context.Context, id int32) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyBrokerTranslation", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VerifyBrokerTranslation indicates an expected call of VerifyBrokerTranslation.
+func (mr *MockQuerierMockRecorder) VerifyBrokerTranslation(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyBrokerTranslation", reflect.TypeOf((*MockQuerier)(nil).VerifyBrokerTranslation), ctx, id)
 }

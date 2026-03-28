@@ -7,6 +7,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
+	"encore.app/internal/middleware"
 	"encore.app/internal/pricing"
 	"encore.app/services/auth"
 	"encore.app/services/booking/db"
@@ -80,6 +81,13 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 				continue
 			}
 
+			inclusions := p.PlanInclusions
+			info := p.Info
+			if lang, ok := ctx.Value(middleware.LangContextKey).(string); ok && lang == "he" {
+				inclusions = s.translatePlanDetails(ctx, inclusions)
+				info = s.translatePlanDetails(ctx, info)
+			}
+
 			pd := planPriceDetails{
 				PlanID:                 p.PlanID,
 				RateQualifier:          p.RateQualifier,
@@ -95,7 +103,7 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 				SupplierErpPrice:       p.BrokerErpPrice,
 				ChargedERPPriceWithVat: p.ChargedErpPriceWithVat,
 				CarDetails:             v.CarDetails,
-				Inclusions:             p.PlanInclusions,
+				Inclusions:             inclusions,
 			}
 
 			artifacts.plansDetails = append(artifacts.plansDetails, pd)
@@ -109,8 +117,8 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 				Discount:       couponDiscount,
 				Price:          pricing.RoundToInt(pricing.CalculateDiscountedPrice(carPriceWithMarkup, couponDiscount)),
 				ErpPrice:       pricing.RoundToInt(pricing.CalculateDiscountedPrice(erpWithMarkup, couponDiscount)) + p.ChargedErpPriceWithVat, // no discount on charged erp
-				PlanInclusions: p.PlanInclusions,
-				Info:           p.Info,
+				PlanInclusions: inclusions,
+				Info:           info,
 				RateQualifier:  p.RateQualifier,
 				SupplierCode:   p.SupplierCode,
 			}
@@ -193,4 +201,21 @@ func buildCurrencyMap(ctx context.Context, q db.Querier) (map[string]float64, er
 	}
 
 	return currencyMap, nil
+}
+
+// translatePlanDetails translates the plan details using the service's translator, returning the original detail if no translation is found after inserting it to db.
+func (s Service) translatePlanDetails(ctx context.Context, details []string) []string {
+	translatedDetails := make([]string, len(details))
+	for i, detail := range details {
+		if translated, exists := s.t.Get(detail); exists {
+			translatedDetails[i] = translated
+		} else {
+			translatedDetails[i] = detail
+			_, err := s.query.InsertBrokerTranslation(ctx, detail)
+			if err != nil {
+				rlog.Error("failed to insert missing translation to db", "detail", detail, "error", err)
+			}
+		}
+	}
+	return translatedDetails
 }

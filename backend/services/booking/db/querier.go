@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	CheckBrokerTranslationExists(ctx context.Context, sourceText string) (int32, error)
 	// Count total rows matching the same filters (for pagination).
 	CountHertzMarkupRates(ctx context.Context, arg CountHertzMarkupRatesParams) (int64, error)
 	CountLocationBrokerCodesByLocationID(ctx context.Context, locationID int64) (int64, error)
@@ -29,6 +30,7 @@ type Querier interface {
 	FindCouponByCode(ctx context.Context, code string) (Coupon, error)
 	FindCurrencyByISOName(ctx context.Context, currencyIsoName string) (Currency, error)
 	GetAllLocationBrokerCodesByLocationIDs(ctx context.Context, locationIds []int64) ([]GetAllLocationBrokerCodesByLocationIDsRow, error)
+	GetAllVerifiedTranslations(ctx context.Context) ([]GetAllVerifiedTranslationsRow, error)
 	// Used by the markup logic to fetch rates for a given search.
 	GetHertzMarkupRates(ctx context.Context, arg GetHertzMarkupRatesParams) ([]GetHertzMarkupRatesRow, error)
 	GetLocationBrokerCode(ctx context.Context, arg GetLocationBrokerCodeParams) (LocationBrokerCode, error)
@@ -36,6 +38,7 @@ type Querier interface {
 	GetLocationById(ctx context.Context, id int64) (Location, error)
 	GetSnapshotByID(ctx context.Context, id int64) (AvailablePlansSnapshot, error)
 	InsertAvailablePlansSnapshot(ctx context.Context, arg InsertAvailablePlansSnapshotParams) (int64, error)
+	InsertBrokerTranslation(ctx context.Context, sourceText string) (int32, error)
 	InsertHertzMarkupRate(ctx context.Context, arg InsertHertzMarkupRateParams) (HertzMarkupRate, error)
 	InsertLocation(ctx context.Context, arg InsertLocationParams) (Location, error)
 	InsertLocationBrokerCode(ctx context.Context, arg InsertLocationBrokerCodeParams) (LocationBrokerCode, error)
@@ -46,11 +49,13 @@ type Querier interface {
 	ListHertzMarkupRates(ctx context.Context, arg ListHertzMarkupRatesParams) ([]HertzMarkupRate, error)
 	ListLocationBrokerCodesWithLocation(ctx context.Context, arg ListLocationBrokerCodesWithLocationParams) ([]ListLocationBrokerCodesWithLocationRow, error)
 	SearchLocations(ctx context.Context, search string) ([]Location, error)
+	UpdateBrokerTranslation(ctx context.Context, arg UpdateBrokerTranslationParams) error
 	UpdateCoupon(ctx context.Context, arg UpdateCouponParams) (Coupon, error)
 	UpdateCurrency(ctx context.Context, arg UpdateCurrencyParams) (Currency, error)
 	UpdateHertzMarkupRate(ctx context.Context, arg UpdateHertzMarkupRateParams) (HertzMarkupRate, error)
 	UpsertLocationByCountryCodeName(ctx context.Context, arg UpsertLocationByCountryCodeNameParams) (int64, error)
 	UpsertLocationByIATA(ctx context.Context, arg UpsertLocationByIATAParams) (int64, error)
+	VerifyBrokerTranslation(ctx context.Context, id int32) error
 }
 
 var _ Querier = (*Queries)(nil)

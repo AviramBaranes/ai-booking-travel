@@ -8,6 +8,7 @@ sql:
       - "query/coupons_query.sql"
       - "query/currencies_query.sql"
       - "query/available_plans_snapshots_query.sql"
+      - "query/broker_translations_query.sql"
     schema: "./migrations"
     gen:
       go:

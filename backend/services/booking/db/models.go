@@ -53,6 +53,49 @@ func (ns NullBroker) Value() (driver.Value, error) {
 	return string(ns.Broker), nil
 }
 
+type BrokerTranslationStatus string
+
+const (
+	BrokerTranslationStatusPending    BrokerTranslationStatus = "pending"
+	BrokerTranslationStatusTranslated BrokerTranslationStatus = "translated"
+	BrokerTranslationStatusVerified   BrokerTranslationStatus = "verified"
+)
+
+func (e *BrokerTranslationStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = BrokerTranslationStatus(s)
+	case string:
+		*e = BrokerTranslationStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BrokerTranslationStatus: %T", src)
+	}
+	return nil
+}
+
+type NullBrokerTranslationStatus struct {
+	BrokerTranslationStatus BrokerTranslationStatus
+	Valid                   bool // Valid is true if BrokerTranslationStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBrokerTranslationStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.BrokerTranslationStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BrokerTranslationStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBrokerTranslationStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.BrokerTranslationStatus), nil
+}
+
 type AvailablePlansSnapshot struct {
 	ID          int64
 	CreatedAt   pgtype.Timestamptz
@@ -63,6 +106,16 @@ type AvailablePlansSnapshot struct {
 	ReturnTime  string
 	CountryCode string
 	Plans       []byte
+}
+
+type BrokerTranslation struct {
+	ID              int32
+	SourceText      string
+	TargetText      *string
+	Status          BrokerTranslationStatus
+	ConfidenceScore *int32
+	CreatedAt       pgtype.Timestamptz
+	UpdatedAt       pgtype.Timestamptz
 }
 
 type Coupon struct {
