@@ -543,6 +543,7 @@ export namespace booking {
             this.CreateCoupon = this.CreateCoupon.bind(this)
             this.CreateCurrency = this.CreateCurrency.bind(this)
             this.CreateHertzMarkupRate = this.CreateHertzMarkupRate.bind(this)
+            this.DeleteBrokerTranslation = this.DeleteBrokerTranslation.bind(this)
             this.DeleteCoupon = this.DeleteCoupon.bind(this)
             this.DeleteCurrency = this.DeleteCurrency.bind(this)
             this.DeleteHertzMarkupRate = this.DeleteHertzMarkupRate.bind(this)
@@ -600,6 +601,13 @@ export namespace booking {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/hertz-markup-rates`, JSON.stringify(params))
             return await resp.json() as HertzMarkupRateResponse
+        }
+
+        /**
+         * DeleteBrokerTranslation deletes a broker translation by ID.
+         */
+        public async DeleteBrokerTranslation(id: number): Promise<void> {
+            await this.baseClient.callTypedAPI("DELETE", `/broker-translations/${encodeURIComponent(id)}`)
         }
 
         /**
