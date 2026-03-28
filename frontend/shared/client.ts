@@ -307,6 +307,14 @@ export namespace booking {
         reservationId: number
     }
 
+    export interface BrokerTranslationRow {
+        id: number
+        "source_text": string
+        "target_text": string
+        status: string
+        "confidence_score": number
+    }
+
     export interface BulkToggleLocationsRequest {
         ids: number[]
         enabled: boolean
@@ -376,6 +384,18 @@ export namespace booking {
         "country_code": string
         city: string
         iata: string
+    }
+
+    export interface ListBrokerTranslationsRequest {
+        Page: number
+        Search: string
+        Status: string
+        SortDir: string
+    }
+
+    export interface ListBrokerTranslationsResponse {
+        translations: BrokerTranslationRow[]
+        total: number
     }
 
     export interface ListCouponsResponse {
@@ -484,6 +504,10 @@ export namespace booking {
         enabled: boolean
     }
 
+    export interface UpdateBrokerTranslationRequest {
+        "target_text": string
+    }
+
     export interface UpdateCouponRequest {
         name: string
         code: string
@@ -526,6 +550,7 @@ export namespace booking {
             this.InsertFlexLocations = this.InsertFlexLocations.bind(this)
             this.InsertHertzLocations = this.InsertHertzLocations.bind(this)
             this.InsertLocation = this.InsertLocation.bind(this)
+            this.ListBrokerTranslations = this.ListBrokerTranslations.bind(this)
             this.ListCoupons = this.ListCoupons.bind(this)
             this.ListCurrencies = this.ListCurrencies.bind(this)
             this.ListHertzMarkupRates = this.ListHertzMarkupRates.bind(this)
@@ -533,9 +558,11 @@ export namespace booking {
             this.SearchAvailability = this.SearchAvailability.bind(this)
             this.SearchLocations = this.SearchLocations.bind(this)
             this.ToggleLocation = this.ToggleLocation.bind(this)
+            this.UpdateBrokerTranslation = this.UpdateBrokerTranslation.bind(this)
             this.UpdateCoupon = this.UpdateCoupon.bind(this)
             this.UpdateCurrency = this.UpdateCurrency.bind(this)
             this.UpdateHertzMarkupRate = this.UpdateHertzMarkupRate.bind(this)
+            this.VerifyBrokerTranslation = this.VerifyBrokerTranslation.bind(this)
         }
 
         public async Book(params: BookRequest): Promise<BookResponse> {
@@ -623,6 +650,20 @@ export namespace booking {
          */
         public async InsertLocation(params: InsertLocationParams): Promise<void> {
             await this.baseClient.callTypedAPI("POST", `/locations`, JSON.stringify(params))
+        }
+
+        public async ListBrokerTranslations(params: ListBrokerTranslationsRequest): Promise<ListBrokerTranslationsResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                page:    String(params.Page),
+                search:  params.Search,
+                sortDir: params.SortDir,
+                status:  params.Status,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/broker-translations`, undefined, {query})
+            return await resp.json() as ListBrokerTranslationsResponse
         }
 
         /**
@@ -718,6 +759,13 @@ export namespace booking {
         }
 
         /**
+         * UpdateBrokerTranslation updates a broker translation target text by ID.
+         */
+        public async UpdateBrokerTranslation(id: number, params: UpdateBrokerTranslationRequest): Promise<void> {
+            await this.baseClient.callTypedAPI("PUT", `/broker-translations/${encodeURIComponent(id)}`, JSON.stringify(params))
+        }
+
+        /**
          * UpdateCoupon updates an existing coupon.
          */
         public async UpdateCoupon(id: number, params: UpdateCouponRequest): Promise<CouponResponse> {
@@ -742,6 +790,13 @@ export namespace booking {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("PUT", `/hertz-markup-rates/${encodeURIComponent(id)}`, JSON.stringify(params))
             return await resp.json() as HertzMarkupRateResponse
+        }
+
+        /**
+         * VerifyBrokerTranslation marks a broker translation as verified by ID.
+         */
+        public async VerifyBrokerTranslation(id: number): Promise<void> {
+            await this.baseClient.callTypedAPI("PATCH", `/broker-translations/${encodeURIComponent(id)}/verify`)
         }
     }
 }
