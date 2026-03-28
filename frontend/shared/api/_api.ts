@@ -45,6 +45,12 @@ export async function withErrorHandler<T>(
     return await apiCall(client);
   } catch (error) {
     if (!isAPIError(error)) throw error;
+    if (error.status === 401) {
+      removeAuthorizationHeader();
+      if (typeof window !== "undefined") {
+        window.location.href = "/he";
+      }
+    }
     if (process.env.NODE_ENV === "development") console.error({ error });
     if (error.details && typeof error.details.code === "string") {
       throw new AppError(error.details.code, error.details.field ?? null);
