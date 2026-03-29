@@ -3,6 +3,7 @@ import "../globals.css";
 import Providers from "../providers";
 import { LangSwitcher } from "./LangSwitcher";
 import { redirect } from "next/dist/client/components/navigation";
+import { notFound } from "next/navigation";
 import { LoginModal } from "./LoginModal";
 import { NextIntlClientProvider } from "next-intl";
 import { authOptions } from "@/shared/auth/authOptions";
@@ -20,6 +21,11 @@ export default async function AppRootLayout({
     redirect("/admin/");
   }
   const { lang } = await params;
+
+  if (!["he", "en"].includes(lang)) {
+    notFound();
+  }
+
   return (
     <html
       lang={lang}

@@ -2,14 +2,14 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 import { login } from "../api/auth-api";
-import Client, { Local } from "../client";
+import Client, { BaseURL, Local } from "../client";
 import { auth } from "../client";
 
 async function refreshAccessToken(token: Record<string, unknown>) {
   try {
     // Call the backend directly, bypassing withErrorHandler to avoid
     // triggering getServerSession which would re-enter the JWT callback.
-    const client = new Client(Local);
+    const client = new Client(Local as BaseURL, {});
     const refreshed = await client.auth.RefreshTokens({
       RefreshToken: token.refreshToken as string,
     });
