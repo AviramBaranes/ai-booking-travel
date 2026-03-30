@@ -1,11 +1,11 @@
-import "../globals.css";
+import "@/app/globals.css";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 
 import { authOptions } from "@/shared/auth/authOptions";
-import Providers from "@/app/providers";
+import Providers from "@/app/(app)/providers";
 import AdminShell from "./AdminShell";
 
 export default async function AdminRootLayout({

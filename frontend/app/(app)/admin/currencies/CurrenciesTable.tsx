@@ -2,8 +2,8 @@
 
 import { z } from "zod";
 import { booking } from "@/shared/client";
-import { CrudTable } from "@/app/admin/components/crud-table/CrudTable";
-import { ColumnDef } from "@/app/admin/components/crud-table/types";
+import { CrudTable } from "@/app/(app)/admin/components/crud-table/CrudTable";
+import { ColumnDef } from "@/app/(app)/admin/components/crud-table/types";
 import {
   listCurrencies,
   createCurrency,

@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { z } from "zod";
 import { booking } from "@/shared/client";
-import { CrudTable } from "@/app/admin/components/crud-table/CrudTable";
-import { ColumnDef, SortState } from "@/app/admin/components/crud-table/types";
+import { CrudTable } from "@/app/(app)/admin/components/crud-table/CrudTable";
+import {
+  ColumnDef,
+  SortState,
+} from "@/app/(app)/admin/components/crud-table/types";
 import {
   listHertzMarkupRates,
   createHertzMarkupRate,

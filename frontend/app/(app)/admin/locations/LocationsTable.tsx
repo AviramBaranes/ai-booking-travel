@@ -5,8 +5,11 @@ import { z } from "zod";
 import { Power, PowerOff } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { booking } from "@/shared/client";
-import { CrudTable } from "@/app/admin/components/crud-table/CrudTable";
-import { ColumnDef, SortState } from "@/app/admin/components/crud-table/types";
+import { CrudTable } from "@/app/(app)/admin/components/crud-table/CrudTable";
+import {
+  ColumnDef,
+  SortState,
+} from "@/app/(app)/admin/components/crud-table/types";
 import {
   listLocations,
   insertLocation,
