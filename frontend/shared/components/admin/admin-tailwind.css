@@ -1,0 +1,38 @@
+/* src/shared/components/admin/admin-tailwind.css */
+
+/* 1. Establish the Tailwind CSS layer order */
+@layer theme, base, components, utilities;
+
+/* 2. Import ONLY the theme variables and utility classes (Notice we skip 'tailwindcss/preflight') */
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+
+/* 3. Explicitly tell Tailwind v4 to scan this directory and its parents for classes */
+@source "../../";
+
+:root {
+  --background: #F4F4FA;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Polin', Arial, Helvetica, sans-serif;
+}
+/* --- PAYLOAD HEIGHT SCROLLBAR FIX --- */
+
+/* 1. Hide the browser's ugly outer scrollbar entirely */
+html, body {
+  overflow: hidden !important; 
+}
+
+/* 2. Target Payload's main wrapper and subtract your 56px header */
+.template-default {
+  height: calc(100vh - 56px) !important;
+}

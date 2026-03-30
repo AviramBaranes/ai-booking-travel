@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import clsx from "clsx";
 import {
   Home,
   Network,
@@ -16,8 +15,8 @@ import {
   CalendarCheck,
   BarChart3,
   Languages,
-  LogOut,
 } from "lucide-react";
+import AdminNavbar from "@/shared/components/admin/AdminNavbar";
 
 const navItems = [
   { label: "ראשי", href: "/admin", icon: Home },
@@ -40,41 +39,39 @@ export default function AdminShell({
 }) {
   const pathname = usePathname();
 
-  const isActive = (href: string) => {
+  const isAsideActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
     return pathname.startsWith(href);
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <AdminNavbar />
+        <main className="flex-1 overflow-y-auto p-6 bg-background pr-60">
+          {children}
+        </main>
+      </div>
       {/* Sidebar */}
-      <aside className="w-56 shrink-0 bg-white border-l border-gray-200 flex flex-col shadow-sm">
-        <div className="px-5 py-4 border-b border-gray-200">
-          <Image
-            src="/logo.png"
-            alt="AIBookingTravel"
-            width={160}
-            height={40}
-          />
-        </div>
-
-        <nav className="flex-1 overflow-y-auto py-3">
+      <aside className="w-56 shrink-0 bg-white border-l border-gray-200 fixed top-14 bottom-0 shadow-sm">
+        <nav className="flex flex-col overflow-y-auto py-3">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const active = isActive(item.href);
+            const active = isAsideActive(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${
+                className={clsx(
+                  "flex items-center gap-3 px-5 py-2.5 text-sm transition-colors",
                   active
                     ? "bg-blue-50 text-blue-700 font-semibold border-l-3 border-blue-600"
-                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                }`}
+                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+                )}
               >
                 <Icon
                   size={18}
-                  className={active ? "text-blue-600" : "text-gray-400"}
+                  className={clsx(active ? "text-blue-600" : "text-gray-400")}
                 />
                 {item.label}
               </Link>
@@ -82,26 +79,6 @@ export default function AdminShell({
           })}
         </nav>
       </aside>
-
-      {/* Main area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
-        <header className="h-14 shrink-0 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm">
-          <h1 className="text-lg font-semibold text-gray-800">ניהול מערכת</h1>
-          <button
-            onClick={() => signOut({ callbackUrl: "/he/" })}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
-          >
-            <LogOut size={16} />
-            התנתק
-          </button>
-        </header>
-
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6 bg-background">
-          {children}
-        </main>
-      </div>
     </div>
   );
 }

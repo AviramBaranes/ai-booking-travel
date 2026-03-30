@@ -11,6 +11,11 @@ export function proxy(request: NextRequest) {
     response.headers.set("X-Lang", lang);
   }
 
+  if (request.nextUrl.pathname === "/cms/login") {
+    const loginPage = new URL("/he", request.url);
+    return NextResponse.redirect(loginPage);
+  }
+
   return response;
 }
 

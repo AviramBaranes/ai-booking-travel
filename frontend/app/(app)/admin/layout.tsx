@@ -7,6 +7,12 @@ import { getMessages } from "next-intl/server";
 import { authOptions } from "@/shared/auth/authOptions";
 import Providers from "@/app/(app)/providers";
 import AdminShell from "./AdminShell";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "BT Admin Panel",
+  description: "AI Booking Travel Admin Panel",
+};
 
 export default async function AdminRootLayout({
   children,
