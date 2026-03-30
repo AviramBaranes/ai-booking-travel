@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 
 const brands = [
@@ -13,16 +14,15 @@ const brands = [
   "Green-Motion.png",
 ];
 
-export default function LoadingPage() {
+export default async function LoadingPage() {
+  const t = await getTranslations("ResultsPage");
   return (
     <div className="text-center">
-      <p className="mt-40">
-        דמי ביטול 5% או 100 ש״ח הנמוך מביניהם עד 48 שעות לפני איסוף הרכב
-      </p>
+      <p className="mt-40">{t("loadingMessage")}</p>
       <hr className="w-1/12 mx-auto bg-[#336CAE] h-1 rounded border-none mt-3" />
 
       <div className="mt-5 self-stretch text-center justify-start text-indigo-950 text-5xl font-black leading-12">
-        מחפשים לכם בכל מקום בעולם
+        {t("loadingTitle")}
       </div>
       <div
         dir="ltr"

@@ -1,10 +1,10 @@
+import "@/app/globals.css";
 import { getServerSession } from "next-auth/next";
-import "../globals.css";
 import Providers from "../providers";
-import { LangSwitcher } from "./LangSwitcher";
+import { LangSwitcher } from "./components/LangSwitcher";
 import { redirect } from "next/dist/client/components/navigation";
 import { notFound } from "next/navigation";
-import { LoginModal } from "./LoginModal";
+import { LoginModal } from "./components/LoginModal";
 import { NextIntlClientProvider } from "next-intl";
 import { authOptions } from "@/shared/auth/authOptions";
 

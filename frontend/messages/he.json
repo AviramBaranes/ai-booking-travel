@@ -36,5 +36,9 @@
       "usernameRequired": "שם משתמש הוא שדה חובה",
       "passwordRequired": "סיסמה היא שדה חובה"
     }
+  },
+  "ResultsPage": {
+    "loadingTitle": "מחפשים לכם את הדיל הטוב ביותר",
+    "loadingMessage": "דמי ביטול 5% או 100 ש״ח הנמוך מביניהם עד 48 שעות לפני איסוף הרכב"
   }
 }
