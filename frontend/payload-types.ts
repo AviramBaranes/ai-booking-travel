@@ -63,7 +63,7 @@ export type SupportedTimezones =
 
 export interface Config {
   auth: {
-    admins: AdminAuthOperations;
+    users: UserAuthOperations;
   };
   blocks: {};
   collections: {
@@ -73,6 +73,7 @@ export interface Config {
     pages: Page;
     sharedSections: SharedSection;
     'payload-kv': PayloadKv;
+    users: User;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -85,6 +86,7 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     sharedSections: SharedSectionsSelect<false> | SharedSectionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -93,19 +95,23 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('he' | 'en') | ('he' | 'en')[];
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    header: Header;
+  };
+  globalsSelect: {
+    header: HeaderSelect<false> | HeaderSelect<true>;
+  };
   locale: 'he' | 'en';
   widgets: {
     collections: CollectionsWidget;
   };
-  user: Admin;
+  user: User;
   jobs: {
     tasks: unknown;
     workflows: unknown;
   };
 }
-export interface AdminAuthOperations {
+export interface UserAuthOperations {
   forgotPassword: {
     email: string;
     password: string;
@@ -133,22 +139,6 @@ export interface Admin {
   username: string;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'admins';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -498,6 +488,31 @@ export interface PayloadKv {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -522,11 +537,15 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'sharedSections';
         value: number | SharedSection;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
       } | null);
   globalSlug?: string | null;
   user: {
-    relationTo: 'admins';
-    value: number | Admin;
+    relationTo: 'users';
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -538,8 +557,8 @@ export interface PayloadLockedDocument {
 export interface PayloadPreference {
   id: number;
   user: {
-    relationTo: 'admins';
-    value: number | Admin;
+    relationTo: 'users';
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -574,20 +593,6 @@ export interface AdminsSelect<T extends boolean = true> {
   username?: T;
   updatedAt?: T;
   createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -820,6 +825,28 @@ export interface PayloadKvSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents_select".
  */
 export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
@@ -849,6 +876,56 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header".
+ */
+export interface Header {
+  id: number;
+  links?:
+    | {
+        type: 'link' | 'mega';
+        label?: string | null;
+        page?: (number | null) | Page;
+        megaLabel?: string | null;
+        megaLinks?:
+          | {
+              label: string;
+              page: number | Page;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "header_select".
+ */
+export interface HeaderSelect<T extends boolean = true> {
+  links?:
+    | T
+    | {
+        type?: T;
+        label?: T;
+        page?: T;
+        megaLabel?: T;
+        megaLinks?:
+          | T
+          | {
+              label?: T;
+              page?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

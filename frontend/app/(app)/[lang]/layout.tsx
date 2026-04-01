@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { LoginModal } from "./components/LoginModal";
 import { NextIntlClientProvider } from "next-intl";
 import { authOptions } from "@/shared/auth/authOptions";
+import { Navbar } from "./components/navbar/Navbar";
 
 export default async function AppRootLayout({
   children,
@@ -35,11 +36,7 @@ export default async function AppRootLayout({
       <body className="min-h-full flex flex-col">
         <Providers>
           <NextIntlClientProvider locale={lang}>
-            <header className="flex items-center justify-between px-4 py-2 border-b">
-              <span className="font-semibold">AI Booking Travel</span>
-              <LangSwitcher lang={lang} />
-              {!session?.user?.id && <LoginModal />}
-            </header>
+            <Navbar lang={lang} isAuthenticated={!!session?.user?.id} />
             {children}
           </NextIntlClientProvider>
         </Providers>

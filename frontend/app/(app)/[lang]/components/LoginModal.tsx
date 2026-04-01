@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import Image from "next/image";
 import { Button } from "@/shared/components/Button";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 
@@ -69,7 +70,16 @@ export function LoginModal() {
 
   return (
     <>
-      <button className="cursor-pointer" onClick={() => setShowModal(true)}>
+      <button
+        className="flex cursor-pointer items-center gap-2 rounded-full border-2 border-navy px-5 py-2 text-base font-extrabold text-navy"
+        onClick={() => setShowModal(true)}
+      >
+        <Image
+          src="/assets/header/login-icon.svg"
+          alt=""
+          width={20}
+          height={20}
+        />
         {t("openModal")}
       </button>
       {showModal && (
