@@ -8,6 +8,7 @@ import { LoginModal } from "./components/LoginModal";
 import { NextIntlClientProvider } from "next-intl";
 import { authOptions } from "@/shared/auth/authOptions";
 import { Navbar } from "./components/navbar/Navbar";
+import { Footer } from "./components/footer/Footer";
 
 export default async function AppRootLayout({
   children,
@@ -38,6 +39,7 @@ export default async function AppRootLayout({
           <NextIntlClientProvider locale={lang}>
             <Navbar lang={lang} isAuthenticated={!!session?.user?.id} />
             {children}
+            <Footer lang={lang} />
           </NextIntlClientProvider>
         </Providers>
       </body>

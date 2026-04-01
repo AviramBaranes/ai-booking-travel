@@ -11,6 +11,7 @@ import { Pages } from "./collections/Pages";
 import { SharedSections } from "./collections/SharedSections";
 import { Homepage } from "./globals/Homepage";
 import { Header } from "./globals/Header";
+import { Footer } from "./globals/Footer";
 
 export default buildConfig({
   // If you'd like to use Rich Text, pass your editor here
@@ -60,7 +61,7 @@ export default buildConfig({
   // Define and configure your collections in this array
   collections: [Admins, Media, AddonImages, Pages, SharedSections],
 
-  globals: [Header],
+  globals: [Header, Footer],
 
   plugins: [
     seoPlugin({

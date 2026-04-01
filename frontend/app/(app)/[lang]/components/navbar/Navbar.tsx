@@ -6,7 +6,6 @@ import config from "@payload-config";
 import Link from "next/link";
 import { MegaDropdown } from "./MegaDropdown";
 import type { Populated } from "@/shared/types/payload";
-import type { Page } from "@/payload-types";
 
 async function getHeaderData(lang: string) {
   const payload = await getPayload({ config });
