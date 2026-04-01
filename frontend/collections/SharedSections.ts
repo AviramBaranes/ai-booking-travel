@@ -128,7 +128,7 @@ const suppliersFields: Field[] = [
       {
         name: "logo",
         label: "תמונת לוגו",
-        type: "relationship",
+        type: "upload",
         relationTo: "media",
         required: true,
       },
@@ -136,13 +136,6 @@ const suppliersFields: Field[] = [
   },
 ];
 
-/**
- * Stats / Trust Numbers section fields.
- *
- * From Figma (About page): Row of 4 key metrics with icons.
- * Observed examples: "+20,000 לרכישות", "4.9 דירוג לקוח", "4.9 דירוג פרש", "אלפי הזמנות".
- * Values may contain symbols and prefixes like "+" so they're stored as localized text.
- */
 const statsFields: Field[] = [
   {
     name: "pillText",
@@ -194,18 +187,9 @@ const statsFields: Field[] = [
         },
       },
       {
-        name: "caption",
-        label: "תיאור נוסף",
-        type: "text",
-        localized: true,
-        admin: {
-          description: "אופציונלי: שורת הסבר קצרה מתחת לתווית.",
-        },
-      },
-      {
         name: "icon",
         label: "אייקון",
-        type: "relationship",
+        type: "upload",
         relationTo: "media",
         admin: {
           description: "אופציונלי: תמונה/אייקון SVG לצד הנתון.",
@@ -214,8 +198,6 @@ const statsFields: Field[] = [
     ],
   },
 ];
-
-// ─── Collection ────────────────────────────────────────────────────────────────
 
 export const SharedSections: CollectionConfig = {
   slug: "sharedSections",

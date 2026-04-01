@@ -1,13 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { TypedSection, Populated } from "@/shared/types/payload";
-import type { Page } from "@/payload-types";
 
-type Props = {
+type NewsletterSectionProps = {
   section: TypedSection<"newsletter">;
 };
 
-export function NewsletterSection({ section }: Props) {
+export function NewsletterSection({ section }: NewsletterSectionProps) {
   const {
     title,
     subtitle,
