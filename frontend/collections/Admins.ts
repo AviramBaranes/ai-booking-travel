@@ -41,7 +41,6 @@ export const Admins: CollectionConfig = {
             });
           }
 
-          // 5. Hand the user object back to Payload. They are now authenticated!
           return {
             user: {
               ...payloadUser,

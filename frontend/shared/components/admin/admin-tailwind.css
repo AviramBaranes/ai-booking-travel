@@ -25,14 +25,3 @@ body {
   color: var(--foreground);
   font-family: 'Polin', Arial, Helvetica, sans-serif;
 }
-/* --- PAYLOAD HEIGHT SCROLLBAR FIX --- */
-
-/* 1. Hide the browser's ugly outer scrollbar entirely */
-html, body {
-  overflow: hidden !important; 
-}
-
-/* 2. Target Payload's main wrapper and subtract your 56px header */
-.template-default {
-  height: calc(100vh - 56px) !important;
-}

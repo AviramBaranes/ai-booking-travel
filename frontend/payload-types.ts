@@ -69,6 +69,9 @@ export interface Config {
   collections: {
     admins: Admin;
     media: Media;
+    'addon-images': AddonImage;
+    pages: Page;
+    sharedSections: SharedSection;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +81,9 @@ export interface Config {
   collectionsSelect: {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'addon-images': AddonImagesSelect<false> | AddonImagesSelect<true>;
+    pages: PagesSelect<false> | PagesSelect<true>;
+    sharedSections: SharedSectionsSelect<false> | SharedSectionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -86,10 +92,10 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('he' | 'en') | ('he' | 'en')[];
   globals: {};
   globalsSelect: {};
-  locale: null;
+  locale: 'he' | 'en';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -165,6 +171,316 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "addon-images".
+ */
+export interface AddonImage {
+  id: number;
+  addonId: string;
+  englishName: string;
+  hebrewName: string;
+  image: number | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages".
+ */
+export interface Page {
+  id: number;
+  title: string;
+  /**
+   * הגדירו slug שונה לכל שפה. עמוד הבית ישמר כ-"home" ב-Payload ויומף ל-"/" ב-Next.js.
+   */
+  slug: string;
+  /**
+   * תיאור קצר לכרטיסיות ותוצאות חיפוש, עד 220 תווים.
+   */
+  excerpt?: string | null;
+  featuredImage?: (number | null) | Media;
+  layout?:
+    | (HeroBlock | RichTextBlock | MediaBlock | CTABlock | FAQBlock | SharedSectionRefBlock | SidebarSectionBlock)[]
+    | null;
+  template: 'default' | 'landing' | 'about' | 'faq' | 'legal' | 'help' | 'thank-you' | 'not-found';
+  relatedPages?: (number | Page)[] | null;
+  publishedAt?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroBlock".
+ */
+export interface HeroBlock {
+  variant: 'centered' | 'image-right' | 'image-left' | 'full-bg';
+  title: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  media?: (number | null) | Media;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'hero';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextBlock".
+ */
+export interface RichTextBlock {
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  maxWidth: 'sm' | 'md' | 'lg' | 'full';
+  textAlign?: ('start' | 'center' | 'end') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'richText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBlock".
+ */
+export interface MediaBlock {
+  media: number | Media;
+  caption?: string | null;
+  aspectRatio: '16:9' | '4:3' | '1:1' | 'auto';
+  fullBleed?: boolean | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'media';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CTABlock".
+ */
+export interface CTABlock {
+  label: string;
+  page: number | Page;
+  backgroundColor?: ('brand' | 'accent' | 'white') | null;
+  textColor?: ('white' | 'dark') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'cta';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FAQBlock".
+ */
+export interface FAQBlock {
+  eyebrow?: string | null;
+  title?: string | null;
+  subtitle?: string | null;
+  /**
+   * כל קטגוריה מציגה כותרת וקבוצת שאלות-תשובות. לדוגמה: "לפני ההשכרה".
+   */
+  categories?:
+    | {
+        /**
+         * לדוגמה: לפני ההשכרה / בזמן ההשכרה / אחרי ההשכרה. ניתן להשאיר ריק אם אין קטגוריות.
+         */
+        heading?: string | null;
+        items?:
+          | {
+              question: string;
+              answer: {
+                root: {
+                  type: string;
+                  children: {
+                    type: any;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              };
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'faq';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SharedSectionRefBlock".
+ */
+export interface SharedSectionRefBlock {
+  /**
+   * בחרו אזור קיים מהספרייה המשותפת (ניוזלטר, חברות השכרה, סטטיסטיקות וכד׳).
+   */
+  section: number | SharedSection;
+  /**
+   * שינויים חזותיים לעמוד הזה בלבד, מבלי לפגוע באזור המשותף.
+   */
+  overrides?: {
+    spacingTop?: ('default' | 'none' | 'sm' | 'md' | 'lg') | null;
+    spacingBottom?: ('default' | 'none' | 'sm' | 'md' | 'lg') | null;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'sharedSectionRef';
+}
+/**
+ * אזורים שניתן לשלב בכל עמוד או בדף הבית. עריכה כאן תשתקף בכל מקום שהאזור מוטמע.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sharedSections".
+ */
+export interface SharedSection {
+  id: number;
+  /**
+   * שם לזיהוי בממשק הניהול בלבד. לא מוצג בפרונטאנד.
+   */
+  internalTitle: string;
+  /**
+   * בחרו את סוג האזור. הבחירה קובעת אילו שדות יוצגו.
+   */
+  type: 'newsletter' | 'suppliers' | 'stats';
+  newsletter?: {
+    title: string;
+    subtitle?: string | null;
+    /**
+     * רשימת bullets שתוצג לצד הטופס.
+     */
+    benefits?:
+      | {
+          text: string;
+          id?: string | null;
+        }[]
+      | null;
+    formTitle?: string | null;
+    formSubTitle?: string | null;
+    emailPlaceholder?: string | null;
+    submitButtonLabel: string;
+    consentLabel?: string | null;
+    privacyTextBeforeLink?: string | null;
+    privacyLinkLabel?: string | null;
+    privacyPage?: (number | null) | Page;
+  };
+  suppliers?: {
+    /**
+     * לדוגמה: "השותפים שלנו"
+     */
+    pillText?: string | null;
+    /**
+     * לדוגמה: "חברות ההשכרה המובילות בעולם"
+     */
+    title: string;
+    subtitle?: string | null;
+    /**
+     * לוגו לכל חברת השכרה. השתמשו ב-SVG או PNG שקוף.
+     */
+    logos?:
+      | {
+          logo: number | Media;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  stats?: {
+    pillText?: string | null;
+    title: string;
+    subtitle?: string | null;
+    items?:
+      | {
+          /**
+           * לדוגמה: "+20,000", "4.9", "אלפי"
+           */
+          value: string;
+          /**
+           * לדוגמה: "הזמנות", "דירוג לקוחות", "יעדים"
+           */
+          label: string;
+          /**
+           * אופציונלי: שורת הסבר קצרה מתחת לתווית.
+           */
+          caption?: string | null;
+          /**
+           * אופציונלי: תמונה/אייקון SVG לצד הנתון.
+           */
+          icon?: (number | null) | Media;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SidebarSectionBlock".
+ */
+export interface SidebarSectionBlock {
+  /**
+   * מזהה ייחודי שישמש כ-#anchor בכתובת URL ובסרגל הניווט הצדדי. אותיות לועזיות קטנות ומקפים בלבד. לדוגמה: about-us, our-vision.
+   */
+  anchor: string;
+  /**
+   * כותרת האזור — תוצג כקישור בסרגל הצד ובתור כותרת הסעיף.
+   */
+  title: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'sidebarSection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -194,6 +510,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'addon-images';
+        value: number | AddonImage;
+      } | null)
+    | ({
+        relationTo: 'pages';
+        value: number | Page;
+      } | null)
+    | ({
+        relationTo: 'sharedSections';
+        value: number | SharedSection;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -278,6 +606,209 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "addon-images_select".
+ */
+export interface AddonImagesSelect<T extends boolean = true> {
+  addonId?: T;
+  englishName?: T;
+  hebrewName?: T;
+  image?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pages_select".
+ */
+export interface PagesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  excerpt?: T;
+  featuredImage?: T;
+  layout?:
+    | T
+    | {
+        hero?: T | HeroBlockSelect<T>;
+        richText?: T | RichTextBlockSelect<T>;
+        media?: T | MediaBlockSelect<T>;
+        cta?: T | CTABlockSelect<T>;
+        faq?: T | FAQBlockSelect<T>;
+        sharedSectionRef?: T | SharedSectionRefBlockSelect<T>;
+        sidebarSection?: T | SidebarSectionBlockSelect<T>;
+      };
+  template?: T;
+  relatedPages?: T;
+  publishedAt?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HeroBlock_select".
+ */
+export interface HeroBlockSelect<T extends boolean = true> {
+  variant?: T;
+  title?: T;
+  description?: T;
+  media?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RichTextBlock_select".
+ */
+export interface RichTextBlockSelect<T extends boolean = true> {
+  content?: T;
+  maxWidth?: T;
+  textAlign?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MediaBlock_select".
+ */
+export interface MediaBlockSelect<T extends boolean = true> {
+  media?: T;
+  caption?: T;
+  aspectRatio?: T;
+  fullBleed?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CTABlock_select".
+ */
+export interface CTABlockSelect<T extends boolean = true> {
+  label?: T;
+  page?: T;
+  backgroundColor?: T;
+  textColor?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "FAQBlock_select".
+ */
+export interface FAQBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  subtitle?: T;
+  categories?:
+    | T
+    | {
+        heading?: T;
+        items?:
+          | T
+          | {
+              question?: T;
+              answer?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SharedSectionRefBlock_select".
+ */
+export interface SharedSectionRefBlockSelect<T extends boolean = true> {
+  section?: T;
+  overrides?:
+    | T
+    | {
+        spacingTop?: T;
+        spacingBottom?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SidebarSectionBlock_select".
+ */
+export interface SidebarSectionBlockSelect<T extends boolean = true> {
+  anchor?: T;
+  title?: T;
+  content?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sharedSections_select".
+ */
+export interface SharedSectionsSelect<T extends boolean = true> {
+  internalTitle?: T;
+  type?: T;
+  newsletter?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        benefits?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        formTitle?: T;
+        formSubTitle?: T;
+        emailPlaceholder?: T;
+        submitButtonLabel?: T;
+        consentLabel?: T;
+        privacyTextBeforeLink?: T;
+        privacyLinkLabel?: T;
+        privacyPage?: T;
+      };
+  suppliers?:
+    | T
+    | {
+        pillText?: T;
+        title?: T;
+        subtitle?: T;
+        logos?:
+          | T
+          | {
+              logo?: T;
+              id?: T;
+            };
+      };
+  stats?:
+    | T
+    | {
+        pillText?: T;
+        title?: T;
+        subtitle?: T;
+        items?:
+          | T
+          | {
+              value?: T;
+              label?: T;
+              caption?: T;
+              icon?: T;
+              id?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

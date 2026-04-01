@@ -2,10 +2,14 @@ import sharp from "sharp";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { buildConfig } from "payload";
+import { seoPlugin } from "@payloadcms/plugin-seo";
 import { Admins } from "./collections/Admins";
 import { Media } from "./collections/Media";
 import { he } from "@payloadcms/translations/languages/he";
 import { AddonImages } from "./collections/AddonImages";
+import { Pages } from "./collections/Pages";
+import { SharedSections } from "./collections/SharedSections";
+import { Homepage } from "./globals/Homepage";
 
 export default buildConfig({
   // If you'd like to use Rich Text, pass your editor here
@@ -13,11 +17,8 @@ export default buildConfig({
   localization: {
     defaultLocale: "he",
     locales: [
-      {
-        code: "he",
-        label: "עברית",
-        rtl: true,
-      },
+      { code: "he", label: "עברית", rtl: true },
+      { code: "en", label: "אנגלית", rtl: false },
     ],
   },
   i18n: {
@@ -56,7 +57,20 @@ export default buildConfig({
     admin: "/cms",
   },
   // Define and configure your collections in this array
-  collections: [Admins, Media, AddonImages],
+  collections: [Admins, Media, AddonImages, Pages, SharedSections],
+
+  // globals: [Homepage],
+
+  plugins: [
+    seoPlugin({
+      collections: ["pages"],
+      // globals: ["homepage"],
+      uploadsCollection: "media",
+      tabbedUI: true,
+      generateTitle: ({ doc }) => doc?.title ?? "",
+      generateDescription: ({ doc }) => doc?.excerpt ?? "",
+    }),
+  ],
 
   // Your Payload secret - should be a complex and secure string, unguessable
   secret: process.env.PAYLOAD_SECRET || "",
