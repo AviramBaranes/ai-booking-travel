@@ -1,4 +1,4 @@
-package auth
+package accounts
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/jwt"
-	"encore.app/services/auth/db"
+	"encore.app/services/accounts/db"
 	"encore.dev/rlog"
 )
 

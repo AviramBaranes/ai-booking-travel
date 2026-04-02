@@ -1,4 +1,4 @@
-package auth
+package accounts
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/password"
 	"encore.app/internal/validation"
-	"encore.app/services/auth/db"
-	"encore.app/services/auth/mocks"
+	"encore.app/services/accounts/db"
+	"encore.app/services/accounts/mocks"
 	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
 )

@@ -1,4 +1,4 @@
-package auth
+package accounts
 
 import (
 	"encore.app/internal/api_errors"

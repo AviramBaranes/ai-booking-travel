@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"encore.app/internal/api_errors"
-	a "encore.app/services/auth"
+	a "encore.app/services/accounts"
 	"encore.dev/beta/auth"
 	"encore.dev/middleware"
 )

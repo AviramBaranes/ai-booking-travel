@@ -1,7 +1,7 @@
-package auth
+package accounts
 
 import (
-	"encore.app/services/auth/db"
+	"encore.app/services/accounts/db"
 	"encore.dev/storage/sqldb"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

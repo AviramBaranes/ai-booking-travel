@@ -5,8 +5,7 @@ import (
 	"testing"
 
 	"encore.app/internal/api_errors"
-	"encore.app/services/auth"
-	a "encore.app/services/auth"
+	auth "encore.app/services/accounts"
 	encore "encore.dev"
 	"encore.dev/et"
 	mw "encore.dev/middleware"

@@ -9,7 +9,7 @@ import (
 	"encore.app/internal/broker"
 	"encore.app/internal/middleware"
 	"encore.app/internal/pricing"
-	"encore.app/services/auth"
+	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
 	"encore.dev/rlog"
 )

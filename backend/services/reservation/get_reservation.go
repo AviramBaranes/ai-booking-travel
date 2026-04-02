@@ -8,7 +8,7 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	"encore.app/internal/pricing"
-	"encore.app/services/auth"
+	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
 	"encore.dev/rlog"
 )
@@ -48,7 +48,7 @@ func (s *Service) GetReservation(ctx context.Context, id int64) (*GetReservation
 		return nil, api_errors.ErrInternalError
 	}
 
-	authData := auth.GetAuthData()
+	authData := accounts.GetAuthData()
 	if authData.UserID != row.UserID {
 		return nil, api_errors.ErrNotFound
 	}

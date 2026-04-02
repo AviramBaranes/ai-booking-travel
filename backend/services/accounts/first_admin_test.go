@@ -1,12 +1,12 @@
-package auth
+package accounts
 
 import (
 	"context"
 	"errors"
 	"testing"
 
-	"encore.app/services/auth/db"
-	"encore.app/services/auth/mocks"
+	"encore.app/services/accounts/db"
+	"encore.app/services/accounts/mocks"
 	"go.uber.org/mock/gomock"
 )
 

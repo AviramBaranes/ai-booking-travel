@@ -589,7 +589,7 @@ Uses Ubuntu builder with gcc. Libraries must support static linking.
 <clerk_auth>
 Implement Clerk authentication:
 
-package auth
+package accounts
 
 import "github.com/clerkinc/clerk-sdk-go/clerk"
 

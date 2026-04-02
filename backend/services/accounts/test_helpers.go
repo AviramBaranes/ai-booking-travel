@@ -1,4 +1,4 @@
-package auth
+package accounts
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"encore.app/internal/jwt"
-	"encore.app/services/auth/db"
+	"encore.app/services/accounts/db"
 	"encore.dev/storage/sqldb"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

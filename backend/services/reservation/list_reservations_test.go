@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"encore.app/internal/api_errors"
-	authpkg "encore.app/services/auth"
+	authpkg "encore.app/services/accounts"
 	"encore.app/services/reservation/db"
 	"encore.app/services/reservation/mocks"
 	"encore.dev/beta/auth"

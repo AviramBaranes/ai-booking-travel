@@ -1,11 +1,11 @@
-package auth
+package accounts
 
 import (
 	"context"
 	"errors"
 
 	"encore.app/internal/password"
-	"encore.app/services/auth/db"
+	"encore.app/services/accounts/db"
 	"encore.dev/rlog"
 )
 

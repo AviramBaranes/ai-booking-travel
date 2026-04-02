@@ -5,7 +5,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/validation"
-	"encore.app/services/auth"
+	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
 	"encore.dev/rlog"
 )
@@ -51,7 +51,7 @@ func (s Service) ListReservations(ctx context.Context, params ListReservationsRe
 
 // listReservationsByUser returns a paginated list of reservations for a given user, ordered by creation date descending.
 func (s Service) listReservationsByUser(ctx context.Context, page int32) ([]db.ListReservationsByUserRow, error) {
-	authData := auth.GetAuthData()
+	authData := accounts.GetAuthData()
 	offset := (page - 1) * listReservationsLimit
 
 	rows, err := s.query.ListReservationsByUser(ctx, db.ListReservationsByUserParams{

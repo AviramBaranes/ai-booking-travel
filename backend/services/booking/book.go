@@ -10,7 +10,7 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	"encore.app/internal/validation"
-	"encore.app/services/auth"
+	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
 	"encore.app/services/reservation"
 	"encore.dev/rlog"

@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"encore.app/services/auth/db"
+	"encore.app/services/accounts/db"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jackc/pgx/v5/pgtype"
 )

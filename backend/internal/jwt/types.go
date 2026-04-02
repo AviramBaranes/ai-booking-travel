@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	"encore.app/services/auth/db"
+	"encore.app/services/accounts/db"
 	"github.com/golang-jwt/jwt/v4"
 )
 

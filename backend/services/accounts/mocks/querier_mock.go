@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	db "encore.app/services/auth/db"
+	db "encore.app/services/accounts/db"
 	gomock "go.uber.org/mock/gomock"
 )
 
