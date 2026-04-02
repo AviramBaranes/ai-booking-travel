@@ -5,13 +5,13 @@ import (
 	"testing"
 
 	"encore.app/internal/api_errors"
-	auth "encore.app/services/accounts"
+	"encore.app/services/accounts"
 	encore "encore.dev"
 	"encore.dev/et"
 	mw "encore.dev/middleware"
 )
 
-func runRequireRoleTests(t *testing.T, mwFunc func(mw.Request, mw.Next) mw.Response, role auth.UserRole) {
+func runRequireRoleTests(t *testing.T, mwFunc func(mw.Request, mw.Next) mw.Response, role accounts.UserRole) {
 	ctx := context.Background()
 	req := mw.NewRequest(ctx, &encore.Request{})
 
@@ -29,11 +29,11 @@ func runRequireRoleTests(t *testing.T, mwFunc func(mw.Request, mw.Next) mw.Respo
 
 	t.Run("Wrong Role", func(t *testing.T) {
 		nextCalled := false
-		otherRole := auth.UserRoleAdmin
-		if role == auth.UserRoleAdmin {
-			otherRole = auth.UserRoleCustomer
+		otherRole := accounts.UserRoleAdmin
+		if role == accounts.UserRoleAdmin {
+			otherRole = accounts.UserRoleCustomer
 		}
-		et.OverrideAuthInfo("1", &a.AuthData{UserID: 1, Role: otherRole})
+		et.OverrideAuthInfo("1", &accounts.AuthData{UserID: 1, Role: otherRole})
 		defer et.OverrideAuthInfo("", nil)
 		resp := mwFunc(req, func(r mw.Request) mw.Response {
 			nextCalled = true
@@ -47,7 +47,7 @@ func runRequireRoleTests(t *testing.T, mwFunc func(mw.Request, mw.Next) mw.Respo
 
 	t.Run("Correct Role", func(t *testing.T) {
 		nextCalled := false
-		et.OverrideAuthInfo("2", &a.AuthData{UserID: 2, Role: role})
+		et.OverrideAuthInfo("2", &accounts.AuthData{UserID: 2, Role: role})
 		defer et.OverrideAuthInfo("", nil)
 		resp := mwFunc(req, func(r mw.Request) mw.Response {
 			nextCalled = true
@@ -63,13 +63,13 @@ func runRequireRoleTests(t *testing.T, mwFunc func(mw.Request, mw.Next) mw.Respo
 }
 
 func TestRequireAdmin(t *testing.T) {
-	runRequireRoleTests(t, RequireAdminMiddleware, auth.UserRoleAdmin)
+	runRequireRoleTests(t, RequireAdminMiddleware, accounts.UserRoleAdmin)
 }
 
 func TestRequireCustomer(t *testing.T) {
-	runRequireRoleTests(t, RequireCustomerMiddleware, auth.UserRoleCustomer)
+	runRequireRoleTests(t, RequireCustomerMiddleware, accounts.UserRoleCustomer)
 }
 
 func TestRequireAgent(t *testing.T) {
-	runRequireRoleTests(t, RequireAgentMiddleware, auth.UserRoleAgent)
+	runRequireRoleTests(t, RequireAgentMiddleware, accounts.UserRoleAgent)
 }
