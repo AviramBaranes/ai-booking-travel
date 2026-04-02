@@ -7,6 +7,7 @@ import type { Page } from "@/payload-types";
 import type { Populated } from "@/shared/types/payload";
 import Image from "next/image";
 import { BlocksRenderer } from "../components/blocks/BlocksRenderer";
+import { PagesDecorations } from "../components/decorations/PagesDecorations";
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
@@ -46,7 +47,8 @@ export default async function SlugPage({ params }: Props) {
   const image = page.featuredImage as Populated<Page["featuredImage"]>;
 
   return (
-    <main>
+    <main className="relative">
+      {page.includeBgDecorations && <PagesDecorations />}
       {image?.url && (
         <Image
           src={image.url}
