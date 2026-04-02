@@ -53,7 +53,7 @@ export default async function LoadingPage() {
             className="absolute rounded-full backdrop-blur-[1.5px] w-39 h-39 top-22 left-22 -translate-x-1/2 -translate-y-1/2"
           ></div>
           <Image
-            src="/assets/magnifying-glass.svg"
+            src="/assets/loader/magnifying-glass.svg"
             alt="Magnifying glass"
             width={200}
             height={200}

@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { TypedSection, Populated } from "@/shared/types/payload";
-import type { Media } from "@/payload-types";
 import { SectionHeader } from "../SectionHeader";
 
 type StatsSectionProps = {
@@ -22,14 +21,11 @@ export function StatsSection({ section }: StatsSectionProps) {
 
             return (
               <div key={item.id} className="contents">
-                {/* Divider (between cards) */}
                 {index > 0 && (
                   <div className="h-24 w-px shrink-0 bg-border-light" />
                 )}
 
-                {/* Card */}
                 <div className="flex flex-1 flex-col items-center justify-center gap-1 rounded-xl py-6">
-                  {/* Value + icon */}
                   <div className="relative">
                     <span className="relative z-10 text-3xl font-extrabold leading-tight tracking-tight text-foreground">
                       {item.value}
@@ -45,17 +41,9 @@ export function StatsSection({ section }: StatsSectionProps) {
                     )}
                   </div>
 
-                  {/* Label */}
                   <span className="text-sm font-light text-foreground">
                     {item.label}
                   </span>
-
-                  {/* Caption (optional) */}
-                  {item.caption && (
-                    <span className="text-xs font-light text-muted">
-                      {item.caption}
-                    </span>
-                  )}
                 </div>
               </div>
             );
