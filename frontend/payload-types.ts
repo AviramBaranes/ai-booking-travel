@@ -96,10 +96,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'not-found': NotFound;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'not-found': NotFoundSelect<false> | NotFoundSelect<true>;
   };
   locale: 'he' | 'en';
   widgets: {
@@ -833,6 +835,18 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "not-found".
+ */
+export interface NotFound {
+  id: number;
+  title?: string | null;
+  subtitle?: string | null;
+  buttonText?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -897,6 +911,18 @@ export interface FooterSelect<T extends boolean = true> {
         id?: T;
       };
   rights?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "not-found_select".
+ */
+export interface NotFoundSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  buttonText?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

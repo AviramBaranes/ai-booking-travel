@@ -16,13 +16,17 @@ async function getHeaderData(lang: string) {
   });
 }
 
+interface NavbarProps {
+  lang: string;
+  isAuthenticated: boolean;
+  displayLangSwitcher?: boolean;
+}
+
 export async function Navbar({
   lang,
   isAuthenticated,
-}: {
-  lang: string;
-  isAuthenticated: boolean;
-}) {
+  displayLangSwitcher = true,
+}: NavbarProps) {
   const headerData = await getHeaderData(lang);
   return (
     <header className="sticky top-0 z-40 bg-white">
@@ -58,7 +62,7 @@ export async function Navbar({
         </div>
 
         <div className="flex items-center gap-4">
-          <LangSwitcher lang={lang} />
+          {displayLangSwitcher && <LangSwitcher lang={lang} />}
           {!isAuthenticated && <LoginModal />}
         </div>
       </nav>
