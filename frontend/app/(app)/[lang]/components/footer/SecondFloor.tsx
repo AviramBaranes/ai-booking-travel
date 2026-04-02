@@ -39,7 +39,7 @@ export function FooterSecondFloor({
       </div>
       <div className="flex justify-around items-center flex-5">
         {footerData.linkGroups?.map((group) => (
-          <div className="flex flex-col">
+          <div className="flex flex-col" key={group.id}>
             <span className="bg-brand w-5 h-0.5 border-none"></span>
             <h4 className="text-white mb-4">{group.title}</h4>
             <div className="flex flex-col gap-2">

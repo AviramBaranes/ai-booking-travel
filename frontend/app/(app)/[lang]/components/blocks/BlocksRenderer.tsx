@@ -3,6 +3,8 @@ import { Populated } from "@/shared/types/payload";
 import { SharedSectionRenderer } from "./sharedSections/sharedSectionRenderer";
 import { SidebarSection } from "./SidebarSection";
 import { SharedSectionWrapper } from "./sharedSections/SharedSectionWrapper";
+import { RichText } from "@payloadcms/richtext-lexical/react";
+import { FAQBlock } from "./FaqBlock";
 
 export function BlocksRenderer({ blocks }: { blocks: Page["layout"] }) {
   return (
@@ -11,6 +13,10 @@ export function BlocksRenderer({ blocks }: { blocks: Page["layout"] }) {
         switch (block.blockType) {
           case "sidebarSection":
             return <SidebarSection key={index} block={block} />;
+          case "faq":
+            return <FAQBlock key={index} data={block} />;
+          case "richText":
+            return <RichText key={index} data={block.content} />;
           case "sharedSectionRef":
             return (
               <SharedSectionWrapper overrides={block.overrides}>
@@ -22,8 +28,6 @@ export function BlocksRenderer({ blocks }: { blocks: Page["layout"] }) {
                 />
               </SharedSectionWrapper>
             );
-          default:
-            return <div key={index}>[Unknown block: {block.blockType}]</div>;
         }
       })}
     </>

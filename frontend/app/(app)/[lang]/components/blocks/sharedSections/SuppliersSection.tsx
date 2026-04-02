@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { TypedSection, Populated } from "@/shared/types/payload";
 import type { Media } from "@/payload-types";
-import { SectionHeader } from "./SectionHeader";
+import { SectionHeader } from "../SectionHeader";
 
 type SuppliersSectionProps = {
   section: TypedSection<"suppliers">;

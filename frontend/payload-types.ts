@@ -204,10 +204,9 @@ export interface Page {
    */
   excerpt?: string | null;
   featuredImage?: (number | null) | Media;
-  layout?:
-    | (HeroBlock | RichTextBlock | MediaBlock | CTABlock | FAQBlock | SharedSectionRefBlock | SidebarSectionBlock)[]
-    | null;
-  template: 'default' | 'landing' | 'about' | 'faq' | 'legal' | 'help' | 'thank-you' | 'not-found';
+  layout?: (RichTextBlock | FAQBlock | SharedSectionRefBlock | SidebarSectionBlock)[] | null;
+  includeBgDecorations?: boolean | null;
+  template: 'default' | 'landing' | 'about' | 'faq' | 'legal' | 'help';
   relatedPages?: (number | Page)[] | null;
   publishedAt?: string | null;
   meta?: {
@@ -221,33 +220,6 @@ export interface Page {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "HeroBlock".
- */
-export interface HeroBlock {
-  variant: 'centered' | 'image-right' | 'image-left' | 'full-bg';
-  title: string;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  media?: (number | null) | Media;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'hero';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -274,32 +246,6 @@ export interface RichTextBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'richText';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock".
- */
-export interface MediaBlock {
-  media: number | Media;
-  caption?: string | null;
-  aspectRatio: '16:9' | '4:3' | '1:1' | 'auto';
-  fullBleed?: boolean | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'media';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CTABlock".
- */
-export interface CTABlock {
-  label: string;
-  page: number | Page;
-  backgroundColor?: ('brand' | 'accent' | 'white') | null;
-  textColor?: ('white' | 'dark') | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'cta';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -456,7 +402,6 @@ export interface SharedSection {
 export interface SidebarSectionBlock {
   sections?:
     | {
-        anchor?: string | null;
         title: string;
         content: {
           root: {
@@ -632,14 +577,12 @@ export interface PagesSelect<T extends boolean = true> {
   layout?:
     | T
     | {
-        hero?: T | HeroBlockSelect<T>;
         richText?: T | RichTextBlockSelect<T>;
-        media?: T | MediaBlockSelect<T>;
-        cta?: T | CTABlockSelect<T>;
         faq?: T | FAQBlockSelect<T>;
         sharedSectionRef?: T | SharedSectionRefBlockSelect<T>;
         sidebarSection?: T | SidebarSectionBlockSelect<T>;
       };
+  includeBgDecorations?: T;
   template?: T;
   relatedPages?: T;
   publishedAt?: T;
@@ -656,48 +599,12 @@ export interface PagesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "HeroBlock_select".
- */
-export interface HeroBlockSelect<T extends boolean = true> {
-  variant?: T;
-  title?: T;
-  description?: T;
-  media?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "RichTextBlock_select".
  */
 export interface RichTextBlockSelect<T extends boolean = true> {
   content?: T;
   maxWidth?: T;
   textAlign?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "MediaBlock_select".
- */
-export interface MediaBlockSelect<T extends boolean = true> {
-  media?: T;
-  caption?: T;
-  aspectRatio?: T;
-  fullBleed?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "CTABlock_select".
- */
-export interface CTABlockSelect<T extends boolean = true> {
-  label?: T;
-  page?: T;
-  backgroundColor?: T;
-  textColor?: T;
   id?: T;
   blockName?: T;
 }
@@ -748,7 +655,6 @@ export interface SidebarSectionBlockSelect<T extends boolean = true> {
   sections?:
     | T
     | {
-        anchor?: T;
         title?: T;
         content?: T;
         id?: T;

@@ -1,9 +1,6 @@
 import type { CollectionConfig } from "payload";
 import {
-  heroBlock,
   richTextBlock,
-  mediaBlock,
-  ctaBlock,
   faqBlock,
   sharedSectionRefBlock,
   sidebarSectionBlock,
@@ -73,10 +70,7 @@ export const Pages: CollectionConfig = {
               type: "blocks",
               minRows: 0,
               blocks: [
-                heroBlock,
                 richTextBlock,
-                mediaBlock,
-                ctaBlock,
                 faqBlock,
                 sharedSectionRefBlock,
                 sidebarSectionBlock,
@@ -84,10 +78,14 @@ export const Pages: CollectionConfig = {
             },
           ],
         },
-
         {
           label: "הגדרות",
           fields: [
+            {
+              name: "includeBgDecorations",
+              label: "הצג קישוטי רקע",
+              type: "checkbox",
+            },
             {
               name: "template",
               label: "תבנית עמוד",
@@ -101,8 +99,6 @@ export const Pages: CollectionConfig = {
                 { label: "שאלות נפוצות", value: "faq" },
                 { label: "משפטי / תנאי שימוש", value: "legal" },
                 { label: "עזרה", value: "help" },
-                { label: "תודה / אישור", value: "thank-you" },
-                { label: "עמוד לא נמצא (404)", value: "not-found" },
               ],
             },
             {
