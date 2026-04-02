@@ -438,10 +438,6 @@ export interface SharedSection {
            */
           label: string;
           /**
-           * אופציונלי: שורת הסבר קצרה מתחת לתווית.
-           */
-          caption?: string | null;
-          /**
            * אופציונלי: תמונה/אייקון SVG לצד הנתון.
            */
           icon?: (number | null) | Media;
@@ -458,29 +454,28 @@ export interface SharedSection {
  * via the `definition` "SidebarSectionBlock".
  */
 export interface SidebarSectionBlock {
-  /**
-   * מזהה ייחודי שישמש כ-#anchor בכתובת URL ובסרגל הניווט הצדדי. אותיות לועזיות קטנות ומקפים בלבד. לדוגמה: about-us, our-vision.
-   */
-  anchor: string;
-  /**
-   * כותרת האזור — תוצג כקישור בסרגל הצד ובתור כותרת הסעיף.
-   */
-  title: string;
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
+  sections?:
+    | {
+        anchor?: string | null;
+        title: string;
+        content: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        id?: string | null;
+      }[]
+    | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'sidebarSection';
@@ -750,9 +745,14 @@ export interface SharedSectionRefBlockSelect<T extends boolean = true> {
  * via the `definition` "SidebarSectionBlock_select".
  */
 export interface SidebarSectionBlockSelect<T extends boolean = true> {
-  anchor?: T;
-  title?: T;
-  content?: T;
+  sections?:
+    | T
+    | {
+        anchor?: T;
+        title?: T;
+        content?: T;
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }
@@ -807,7 +807,6 @@ export interface SharedSectionsSelect<T extends boolean = true> {
           | {
               value?: T;
               label?: T;
-              caption?: T;
               icon?: T;
               id?: T;
             };
