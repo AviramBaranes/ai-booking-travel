@@ -27,7 +27,6 @@ export const Pages: CollectionConfig = {
     {
       type: "tabs",
       tabs: [
-        // ── Tab 1: Content ────────────────────────────────────────────────
         {
           label: "תוכן",
           fields: [
@@ -86,7 +85,6 @@ export const Pages: CollectionConfig = {
           ],
         },
 
-        // ── Tab 2: Settings ───────────────────────────────────────────────
         {
           label: "הגדרות",
           fields: [

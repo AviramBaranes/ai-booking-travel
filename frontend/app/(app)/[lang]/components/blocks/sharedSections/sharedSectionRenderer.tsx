@@ -1,10 +1,13 @@
-import { SharedSection } from "@/payload-types";
+import { SharedSection, SharedSectionRefBlock } from "@/payload-types";
 import { TypedSection } from "@/shared/types/payload";
 import { NewsletterSection } from "./NewsletterSection";
 import { StatsSection } from "./StatsSection";
 import { SuppliersSection } from "./SuppliersSection";
 
-export function SharedSectionRenderer({ section }: { section: SharedSection }) {
+interface SharedSectionRendererProps {
+  section: SharedSection;
+}
+export function SharedSectionRenderer({ section }: SharedSectionRendererProps) {
   switch (section.type) {
     case "newsletter":
       return (
