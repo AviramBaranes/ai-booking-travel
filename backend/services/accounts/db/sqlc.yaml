@@ -4,6 +4,9 @@ sql:
     queries:
       - "query/users_query.sql"
       - "query/refresh_tokens_query.sql"
+      - "query/organizations_query.sql"
+      - "query/offices_query.sql"
+      - "query/contacts_query.sql"
     schema: "./migrations"
     gen:
       go:

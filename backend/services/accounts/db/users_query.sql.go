@@ -13,11 +13,11 @@ import (
 
 const checkUserExists = `-- name: CheckUserExists :one
 SELECT id FROM users
-WHERE username = $1
+WHERE email = $1
 `
 
-func (q *Queries) CheckUserExists(ctx context.Context, username string) (int32, error) {
-	row := q.db.QueryRow(ctx, checkUserExists, username)
+func (q *Queries) CheckUserExists(ctx context.Context, email string) (int32, error) {
+	row := q.db.QueryRow(ctx, checkUserExists, email)
 	var id int32
 	err := row.Scan(&id)
 	return id, err
@@ -33,8 +33,32 @@ func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 	return err
 }
 
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, role, email, phone_number, otp, office_id, password_hash, last_login, created_at, updated_at
+FROM users
+WHERE email = $1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Role,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.Otp,
+		&i.OfficeID,
+		&i.PasswordHash,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getUserById = `-- name: GetUserById :one
-SELECT id, role, username, phone_number, otp, office_code, agent_code, password_hash, last_login, created_at, updated_at
+SELECT id, role, email, phone_number, otp, office_id, password_hash, last_login, created_at, updated_at
 FROM users
 WHERE id = $1
 `
@@ -45,36 +69,10 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Role,
-		&i.Username,
+		&i.Email,
 		&i.PhoneNumber,
 		&i.Otp,
-		&i.OfficeCode,
-		&i.AgentCode,
-		&i.PasswordHash,
-		&i.LastLogin,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, role, username, phone_number, otp, office_code, agent_code, password_hash, last_login, created_at, updated_at
-FROM users
-WHERE username = $1
-`
-
-func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByUsername, username)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Role,
-		&i.Username,
-		&i.PhoneNumber,
-		&i.Otp,
-		&i.OfficeCode,
-		&i.AgentCode,
+		&i.OfficeID,
 		&i.PasswordHash,
 		&i.LastLogin,
 		&i.CreatedAt,
@@ -84,43 +82,34 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 }
 
 const registerAdmin = `-- name: RegisterAdmin :one
-INSERT INTO users (role, username, password_hash, office_code, agent_code, created_at, updated_at)
-VALUES ('admin', $1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-RETURNING id, role, username, office_code, agent_code, last_login, created_at, updated_at
+INSERT INTO users (role, email, password_hash, created_at, updated_at)
+VALUES ('admin', $1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+RETURNING id, role, email, office_id, last_login, created_at, updated_at
 `
 
 type RegisterAdminParams struct {
-	Username     string
+	Email        string
 	PasswordHash string
-	OfficeCode   pgtype.Text
-	AgentCode    pgtype.Text
 }
 
 type RegisterAdminRow struct {
-	ID         int32
-	Role       UserRole
-	Username   string
-	OfficeCode pgtype.Text
-	AgentCode  pgtype.Text
-	LastLogin  pgtype.Timestamptz
-	CreatedAt  pgtype.Timestamptz
-	UpdatedAt  pgtype.Timestamptz
+	ID        int32
+	Role      UserRole
+	Email     string
+	OfficeID  pgtype.Int4
+	LastLogin pgtype.Timestamptz
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
 }
 
 func (q *Queries) RegisterAdmin(ctx context.Context, arg RegisterAdminParams) (RegisterAdminRow, error) {
-	row := q.db.QueryRow(ctx, registerAdmin,
-		arg.Username,
-		arg.PasswordHash,
-		arg.OfficeCode,
-		arg.AgentCode,
-	)
+	row := q.db.QueryRow(ctx, registerAdmin, arg.Email, arg.PasswordHash)
 	var i RegisterAdminRow
 	err := row.Scan(
 		&i.ID,
 		&i.Role,
-		&i.Username,
-		&i.OfficeCode,
-		&i.AgentCode,
+		&i.Email,
+		&i.OfficeID,
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -129,43 +118,35 @@ func (q *Queries) RegisterAdmin(ctx context.Context, arg RegisterAdminParams) (R
 }
 
 const registerAgent = `-- name: RegisterAgent :one
-INSERT INTO users (role, username, password_hash, office_code, agent_code, created_at, updated_at)
-VALUES ('agent', $1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-RETURNING id, role, username, office_code, agent_code, last_login, created_at, updated_at
+INSERT INTO users (role, email, password_hash, office_id, created_at, updated_at)
+VALUES ('agent', $1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+RETURNING id, role, email, office_id, last_login, created_at, updated_at
 `
 
 type RegisterAgentParams struct {
-	Username     string
+	Email        string
 	PasswordHash string
-	OfficeCode   pgtype.Text
-	AgentCode    pgtype.Text
+	OfficeID     pgtype.Int4
 }
 
 type RegisterAgentRow struct {
-	ID         int32
-	Role       UserRole
-	Username   string
-	OfficeCode pgtype.Text
-	AgentCode  pgtype.Text
-	LastLogin  pgtype.Timestamptz
-	CreatedAt  pgtype.Timestamptz
-	UpdatedAt  pgtype.Timestamptz
+	ID        int32
+	Role      UserRole
+	Email     string
+	OfficeID  pgtype.Int4
+	LastLogin pgtype.Timestamptz
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
 }
 
 func (q *Queries) RegisterAgent(ctx context.Context, arg RegisterAgentParams) (RegisterAgentRow, error) {
-	row := q.db.QueryRow(ctx, registerAgent,
-		arg.Username,
-		arg.PasswordHash,
-		arg.OfficeCode,
-		arg.AgentCode,
-	)
+	row := q.db.QueryRow(ctx, registerAgent, arg.Email, arg.PasswordHash, arg.OfficeID)
 	var i RegisterAgentRow
 	err := row.Scan(
 		&i.ID,
 		&i.Role,
-		&i.Username,
-		&i.OfficeCode,
-		&i.AgentCode,
+		&i.Email,
+		&i.OfficeID,
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -176,17 +157,15 @@ func (q *Queries) RegisterAgent(ctx context.Context, arg RegisterAgentParams) (R
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET
-  agent_code   = COALESCE($1,   agent_code),
-  office_code  = COALESCE($2,  office_code),
-  phone_number = COALESCE($3, phone_number),
+  office_id    = COALESCE($1,    office_id),
+  phone_number = COALESCE($2, phone_number),
   updated_at   = CURRENT_TIMESTAMP
-WHERE id = $4
-RETURNING id, role, username, office_code, agent_code, phone_number, last_login, created_at, updated_at
+WHERE id = $3
+RETURNING id, role, email, office_id, phone_number, last_login, created_at, updated_at
 `
 
 type UpdateUserParams struct {
-	AgentCode   pgtype.Text
-	OfficeCode  pgtype.Text
+	OfficeID    pgtype.Int4
 	PhoneNumber pgtype.Text
 	ID          int32
 }
@@ -194,9 +173,8 @@ type UpdateUserParams struct {
 type UpdateUserRow struct {
 	ID          int32
 	Role        UserRole
-	Username    string
-	OfficeCode  pgtype.Text
-	AgentCode   pgtype.Text
+	Email       string
+	OfficeID    pgtype.Int4
 	PhoneNumber pgtype.Text
 	LastLogin   pgtype.Timestamptz
 	CreatedAt   pgtype.Timestamptz
@@ -204,19 +182,13 @@ type UpdateUserRow struct {
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
-	row := q.db.QueryRow(ctx, updateUser,
-		arg.AgentCode,
-		arg.OfficeCode,
-		arg.PhoneNumber,
-		arg.ID,
-	)
+	row := q.db.QueryRow(ctx, updateUser, arg.OfficeID, arg.PhoneNumber, arg.ID)
 	var i UpdateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.Role,
-		&i.Username,
-		&i.OfficeCode,
-		&i.AgentCode,
+		&i.Email,
+		&i.OfficeID,
 		&i.PhoneNumber,
 		&i.LastLogin,
 		&i.CreatedAt,

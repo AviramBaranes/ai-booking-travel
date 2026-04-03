@@ -1,12 +1,12 @@
 -- name: RegisterAgent :one
-INSERT INTO users (role, username, password_hash, office_code, agent_code, created_at, updated_at)
-VALUES ('agent', $1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-RETURNING id, role, username, office_code, agent_code, last_login, created_at, updated_at;
+INSERT INTO users (role, email, password_hash, office_id, created_at, updated_at)
+VALUES ('agent', sqlc.arg(email), sqlc.arg(password_hash), sqlc.arg(office_id), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+RETURNING id, role, email, office_id, last_login, created_at, updated_at;
 
 -- name: RegisterAdmin :one
-INSERT INTO users (role, username, password_hash, office_code, agent_code, created_at, updated_at)
-VALUES ('admin', $1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-RETURNING id, role, username, office_code, agent_code, last_login, created_at, updated_at;
+INSERT INTO users (role, email, password_hash, created_at, updated_at)
+VALUES ('admin', sqlc.arg(email), sqlc.arg(password_hash), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+RETURNING id, role, email, office_id, last_login, created_at, updated_at;
 
 -- name: GetUserById :one
 SELECT *
@@ -15,12 +15,12 @@ WHERE id = $1;
 
 -- name: CheckUserExists :one
 SELECT id FROM users
-WHERE username = $1;
+WHERE email = $1;
 
--- name: GetUserByUsername :one
+-- name: GetUserByEmail :one
 SELECT *
 FROM users
-WHERE username = $1;
+WHERE email = $1;
 
 -- name: UpdateUserPassword :exec
 UPDATE users
@@ -30,12 +30,11 @@ WHERE id = $2;
 -- name: UpdateUser :one
 UPDATE users
 SET
-  agent_code   = COALESCE(sqlc.narg(agent_code),   agent_code),
-  office_code  = COALESCE(sqlc.narg(office_code),  office_code),
+  office_id    = COALESCE(sqlc.narg(office_id),    office_id),
   phone_number = COALESCE(sqlc.narg(phone_number), phone_number),
   updated_at   = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg(id)
-RETURNING id, role, username, office_code, agent_code, phone_number, last_login, created_at, updated_at;
+RETURNING id, role, email, office_id, phone_number, last_login, created_at, updated_at;
 
 -- name: DeleteUser :exec
 DELETE FROM users

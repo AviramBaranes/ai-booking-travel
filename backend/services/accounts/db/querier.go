@@ -9,16 +9,29 @@ import (
 )
 
 type Querier interface {
-	CheckUserExists(ctx context.Context, username string) (int32, error)
+	CheckUserExists(ctx context.Context, email string) (int32, error)
+	CountContacts(ctx context.Context, arg CountContactsParams) (int64, error)
+	CountOffices(ctx context.Context, arg CountOfficesParams) (int64, error)
+	CountOrganizations(ctx context.Context, arg CountOrganizationsParams) (int64, error)
+	CreateContact(ctx context.Context, arg CreateContactParams) (Contact, error)
+	CreateOffice(ctx context.Context, arg CreateOfficeParams) (Office, error)
+	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error)
+	DeleteContact(ctx context.Context, id int32) error
 	DeleteRefreshToken(ctx context.Context, jti string) error
 	DeleteRefreshTokensByUserId(ctx context.Context, userID int32) error
 	DeleteUser(ctx context.Context, id int32) error
 	GetRefreshToken(ctx context.Context, jti string) (RefreshToken, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserById(ctx context.Context, id int32) (User, error)
-	GetUserByUsername(ctx context.Context, username string) (User, error)
+	ListContacts(ctx context.Context, arg ListContactsParams) ([]Contact, error)
+	ListOffices(ctx context.Context, arg ListOfficesParams) ([]ListOfficesRow, error)
+	ListOrganizations(ctx context.Context, arg ListOrganizationsParams) ([]ListOrganizationsRow, error)
 	RegisterAdmin(ctx context.Context, arg RegisterAdminParams) (RegisterAdminRow, error)
 	RegisterAgent(ctx context.Context, arg RegisterAgentParams) (RegisterAgentRow, error)
 	SaveRefreshToken(ctx context.Context, arg SaveRefreshTokenParams) error
+	UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error)
+	UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (Office, error)
+	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error
 }

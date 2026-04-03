@@ -54,6 +54,40 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
+type Contact struct {
+	ID             int32
+	FirstName      string
+	LastName       string
+	Role           string
+	Cellphone      string
+	Email          string
+	OfficeID       pgtype.Int4
+	OrganizationID pgtype.Int4
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
+type Office struct {
+	ID             int32
+	Name           string
+	OrganizationID int32
+	Phone          pgtype.Text
+	Address        pgtype.Text
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
+type Organization struct {
+	ID        int32
+	Name      string
+	IsOrganic bool
+	Phone     pgtype.Text
+	Address   pgtype.Text
+	Obligo    pgtype.Numeric
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
 type RefreshToken struct {
 	Jti       string
 	UserID    int32
@@ -63,11 +97,10 @@ type RefreshToken struct {
 type User struct {
 	ID           int32
 	Role         UserRole
-	Username     string
+	Email        string
 	PhoneNumber  pgtype.Text
 	Otp          pgtype.Text
-	OfficeCode   pgtype.Text
-	AgentCode    pgtype.Text
+	OfficeID     pgtype.Int4
 	PasswordHash string
 	LastLogin    pgtype.Timestamptz
 	CreatedAt    pgtype.Timestamptz
