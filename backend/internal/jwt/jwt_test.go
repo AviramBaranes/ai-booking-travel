@@ -6,7 +6,6 @@ import (
 
 	"encore.app/services/accounts/db"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func TestMain(m *testing.M) {
@@ -16,18 +15,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestSignAccessToken(t *testing.T) {
+	office_id := int32(10)
 	user := db.User{
 		ID:       123,
-		Username: "testuser",
-		Role:     "admin",
-		AgentCode: pgtype.Text{
-			String: "agent1",
-			Valid:  true,
-		},
-		OfficeCode: pgtype.Text{
-			String: "office1",
-			Valid:  true,
-		},
+		Role:     "agent",
+		OfficeID: &office_id,
 	}
 
 	tokenString, err := SignAccessToken(user)
@@ -59,14 +51,8 @@ func TestSignAccessToken(t *testing.T) {
 	if claims.Role != user.Role {
 		t.Errorf("Expected Role %s, got %s", user.Role, claims.Role)
 	}
-	if claims.Username != user.Username {
-		t.Errorf("Expected Username %s, got %s", user.Username, claims.Username)
-	}
-	if claims.AgentCode != user.AgentCode.String {
-		t.Errorf("Expected AgentCode %s, got %s", user.AgentCode.String, claims.AgentCode)
-	}
-	if claims.OfficeCode != user.OfficeCode.String {
-		t.Errorf("Expected OfficeCode %s, got %s", user.OfficeCode.String, claims.OfficeCode)
+	if *claims.OfficeID != *user.OfficeID {
+		t.Errorf("Expected OfficeID %d, got %d", *user.OfficeID, *claims.OfficeID)
 	}
 	if claims.Issuer != Issuer {
 		t.Errorf("Expected Issuer %s, got %s", Issuer, claims.Issuer)
@@ -75,9 +61,8 @@ func TestSignAccessToken(t *testing.T) {
 
 func TestValidateAccessToken(t *testing.T) {
 	user := db.User{
-		ID:       123,
-		Username: "testuser",
-		Role:     "admin",
+		ID:   123,
+		Role: "admin",
 	}
 	validToken, _ := SignAccessToken(user)
 
@@ -176,13 +161,6 @@ func TestValidateRefreshToken(t *testing.T) {
 		if claims.UserID != userID {
 			t.Errorf("Expected UserID %d, got %d", userID, claims.UserID)
 		}
-	})
-
-	t.Run("Invalid token type (Access Token as Refresh Token)", func(t *testing.T) {
-		// Create an access token
-		// user := db.User{ID: userID}
-		// accessToken, _ := SignAccessToken(user) // Unused
-		// ...
 	})
 
 	t.Run("Invalid signature", func(t *testing.T) {

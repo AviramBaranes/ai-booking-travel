@@ -32,19 +32,15 @@ func TestUpdateUser(t *testing.T) {
 
 		q := mocks.NewMockQuerier(ctrl)
 
-		agentCode := "agent123"
 		params := UpdateUserParams{
-			ID:        999,
-			AgentCode: &agentCode,
+			ID: 999,
 		}
 
 		// Mock DB to return ErrNoRows
 		q.EXPECT().
 			UpdateUser(gomock.Any(), db.UpdateUserParams{
 				ID:          params.ID,
-				AgentCode:   db.TextParam(params.AgentCode),
-				PhoneNumber: db.TextParam(params.PhoneNumber),
-				OfficeCode:  db.TextParam(params.OfficeCode),
+				PhoneNumber: params.PhoneNumber,
 			}).
 			Return(db.UpdateUserRow{}, db.ErrNoRows)
 
@@ -59,10 +55,8 @@ func TestUpdateUser(t *testing.T) {
 
 		q := mocks.NewMockQuerier(ctrl)
 
-		agentCode := "agent123"
 		params := UpdateUserParams{
-			ID:        123,
-			AgentCode: &agentCode,
+			ID: 123,
 		}
 
 		q.EXPECT().
@@ -75,24 +69,41 @@ func TestUpdateUser(t *testing.T) {
 	})
 
 	t.Run("Successful update", func(t *testing.T) {
-		// Create test user
-		adminUsername := "admin_update_test"
-		admin, delAdmin, err := registerAdmin(ctx, adminUsername, testPassword)
+		agentEmail := "agent@example.com"
+		phoneNumber := "0505050502"
+		agent, delAgent, err := registerAgent(ctx, RegisterAgentParams{
+			Email:       agentEmail,
+			PhoneNumber: phoneNumber,
+			Password:    testPassword,
+		})
 		if err != nil {
-			t.Fatalf("Failed to create test admin: %v", err)
+			t.Fatalf("Failed to create test agent: %v", err)
 		}
-		defer delAdmin()
+		defer delAgent()
 
 		// Update user with new values
-		newPhone := "123-456-7890"
-		newOffice := "Office A"
-		newAgentCode := "Agent 007"
+		newPhone := "0555555555"
+		org, err := query.CreateOrganization(ctx, db.CreateOrganizationParams{
+			Name:      randomName(),
+			IsOrganic: false,
+		})
+		if err != nil {
+			t.Fatalf("Failed to create organization: %v", err)
+		}
+
+		office, err := query.CreateOffice(ctx, db.CreateOfficeParams{
+			Name:           randomName(),
+			OrganizationID: org.ID,
+		})
+		if err != nil {
+			t.Fatalf("Failed to create office: %v", err)
+		}
+		newOffice := office.ID
 
 		params := UpdateUserParams{
-			ID:          admin.ID,
+			ID:          agent.ID,
 			PhoneNumber: &newPhone,
-			OfficeCode:  &newOffice,
-			AgentCode:   &newAgentCode,
+			OfficeID:    &newOffice,
 		}
 
 		resp, err := UpdateUser(ctx, params)
@@ -101,33 +112,24 @@ func TestUpdateUser(t *testing.T) {
 		}
 
 		// Verify response fields
-		if resp.ID != admin.ID {
-			t.Errorf("Expected ID %d, got %d", admin.ID, resp.ID)
+		if resp.ID != agent.ID {
+			t.Errorf("Expected ID %d, got %d", agent.ID, resp.ID)
 		}
 		if resp.PhoneNumber != newPhone {
 			t.Errorf("Expected PhoneNumber %s, got %s", newPhone, resp.PhoneNumber)
 		}
-		if resp.OfficeCode != newOffice {
-			t.Errorf("Expected OfficeCode %s, got %s", newOffice, resp.OfficeCode)
-		}
-		if resp.AgentCode != newAgentCode {
-			t.Errorf("Expected AgentCode %s, got %s", newAgentCode, resp.AgentCode)
+		if *resp.OfficeID != newOffice {
+			t.Errorf("Expected OfficeID %d, got %d", newOffice, *resp.OfficeID)
 		}
 
 		// Verify changes persisted in DB
-		updatedUser, err := query.GetUserById(ctx, admin.ID)
+		updatedUser, err := query.GetUserById(ctx, agent.ID)
 		if err != nil {
 			t.Fatalf("Failed to get user from DB: %v", err)
 		}
 
-		if db.StringFromTextParam(updatedUser.PhoneNumber) != newPhone {
-			t.Errorf("DB: Expected PhoneNumber %s, got %s", newPhone, db.StringFromTextParam(updatedUser.PhoneNumber))
-		}
-		if db.StringFromTextParam(updatedUser.OfficeCode) != newOffice {
-			t.Errorf("DB: Expected OfficeCode %s, got %s", newOffice, db.StringFromTextParam(updatedUser.OfficeCode))
-		}
-		if db.StringFromTextParam(updatedUser.AgentCode) != newAgentCode {
-			t.Errorf("DB: Expected AgentCode %s, got %s", newAgentCode, db.StringFromTextParam(updatedUser.AgentCode))
+		if *updatedUser.PhoneNumber != newPhone {
+			t.Errorf("DB: Expected PhoneNumber %s, got %s", newPhone, *updatedUser.PhoneNumber)
 		}
 	})
 }

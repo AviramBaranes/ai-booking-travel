@@ -20,8 +20,8 @@ WHERE
 `
 
 type CountOfficesParams struct {
-	Name           pgtype.Text
-	OrganizationID pgtype.Int4
+	Name           *string
+	OrganizationID *int32
 }
 
 func (q *Queries) CountOffices(ctx context.Context, arg CountOfficesParams) (int64, error) {
@@ -47,8 +47,8 @@ RETURNING id, name, organization_id, phone, address, created_at, updated_at
 type CreateOfficeParams struct {
 	Name           string
 	OrganizationID int32
-	Phone          pgtype.Text
-	Address        pgtype.Text
+	Phone          *string
+	Address        *string
 }
 
 func (q *Queries) CreateOffice(ctx context.Context, arg CreateOfficeParams) (Office, error) {
@@ -95,8 +95,8 @@ OFFSET $3::BIGINT
 `
 
 type ListOfficesParams struct {
-	Name           pgtype.Text
-	OrganizationID pgtype.Int4
+	Name           *string
+	OrganizationID *int32
 	PageOffset     int64
 	PageSize       int64
 }
@@ -105,8 +105,8 @@ type ListOfficesRow struct {
 	ID             int32
 	Name           string
 	OrganizationID int32
-	Phone          pgtype.Text
-	Address        pgtype.Text
+	Phone          *string
+	Address        *string
 	CreatedAt      pgtype.Timestamptz
 	UpdatedAt      pgtype.Timestamptz
 	ContactCount   int64
@@ -161,10 +161,10 @@ RETURNING id, name, organization_id, phone, address, created_at, updated_at
 `
 
 type UpdateOfficeParams struct {
-	Name           pgtype.Text
-	OrganizationID pgtype.Int4
-	Phone          pgtype.Text
-	Address        pgtype.Text
+	Name           *string
+	OrganizationID *int32
+	Phone          *string
+	Address        *string
 	ID             int32
 }
 

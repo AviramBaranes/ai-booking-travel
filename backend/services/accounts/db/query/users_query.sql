@@ -1,7 +1,7 @@
 -- name: RegisterAgent :one
-INSERT INTO users (role, email, password_hash, office_id, created_at, updated_at)
-VALUES ('agent', sqlc.arg(email), sqlc.arg(password_hash), sqlc.arg(office_id), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-RETURNING id, role, email, office_id, last_login, created_at, updated_at;
+INSERT INTO users (role, email, phone_number, password_hash, office_id, created_at, updated_at)
+VALUES ('agent', sqlc.arg(email), sqlc.arg(phone_number), sqlc.arg(password_hash), sqlc.arg(office_id), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+RETURNING id, role, email, phone_number, office_id, last_login, created_at, updated_at;
 
 -- name: RegisterAdmin :one
 INSERT INTO users (role, email, password_hash, created_at, updated_at)

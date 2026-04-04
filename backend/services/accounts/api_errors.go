@@ -11,9 +11,9 @@ var (
 		api_errors.ErrorDetails{Code: api_errors.CodeUserNotFound},
 	)
 
-	ErrUsernameAlreadyExists = api_errors.NewErrorWithDetail(
-		errs.AlreadyExists, "Username already exists",
-		api_errors.ErrorDetails{Code: api_errors.CodeUsernameAlreadyExists},
+	ErrEmailAlreadyExists = api_errors.NewErrorWithDetail(
+		errs.AlreadyExists, "Email already exists",
+		api_errors.ErrorDetails{Code: api_errors.CodeEmailAlreadyExists},
 	)
 
 	ErrInvalidCredentials = api_errors.NewErrorWithDetail(

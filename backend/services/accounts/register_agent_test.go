@@ -3,7 +3,6 @@ package accounts
 import (
 	"context"
 	"errors"
-	"strings"
 	"testing"
 
 	"encore.app/internal/api_errors"
@@ -19,23 +18,23 @@ func TestRegisterAgent(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Validation Tests", func(t *testing.T) {
-		t.Run("Invalid username", func(t *testing.T) {
+		t.Run("Invalid email", func(t *testing.T) {
+			officeID := int32(12345)
+			phoneNumber := "0505050505"
+			password := "StrongPassword123!"
 			cases := []RegisterAgentParams{
-				{Username: "", Password: testPassword, OfficeCode: "12345", AgentCode: "67890"},
-				{Username: "ab", Password: testPassword, OfficeCode: "12345", AgentCode: "67890"},
-				{Username: strings.Repeat("a", 33), Password: testPassword, OfficeCode: "12345", AgentCode: "67890"},
-				{Username: "לא חוקי", Password: testPassword, OfficeCode: "12345", AgentCode: "67890"},
-				{Username: "endswith-", Password: testPassword, OfficeCode: "12345", AgentCode: "67890"},
+				{Email: "", Password: password, OfficeID: officeID, PhoneNumber: phoneNumber},
+				{Email: "invalid", Password: password, OfficeID: officeID, PhoneNumber: phoneNumber},
+				{Email: "invalid@@email.com", Password: password, OfficeID: officeID, PhoneNumber: phoneNumber},
 			}
-
 			for _, p := range cases {
 				err := p.Validate()
 				expectedErr := api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
 					Code:  api_errors.CodeInvalidValue,
-					Field: "username",
+					Field: "email",
 				})
 
-				t.Log("Testing with username:", p.Username)
+				t.Log("Testing with email:", p.Email)
 				api_errors.AssertApiError(t, expectedErr, err)
 			}
 		})
@@ -54,10 +53,8 @@ func TestRegisterAgent(t *testing.T) {
 			for _, tt := range tests {
 				t.Run(tt.password, func(t *testing.T) {
 					p := RegisterAgentParams{
-						Username:   testUsername,
-						Password:   tt.password,
-						OfficeCode: "12345",
-						AgentCode:  "67890",
+						Email:    testEmail,
+						Password: tt.password,
 					}
 					err := p.Validate()
 					api_errors.AssertApiError(t, tt.error, err)
@@ -65,32 +62,30 @@ func TestRegisterAgent(t *testing.T) {
 			}
 		})
 
-		t.Run("Missing office code", func(t *testing.T) {
+		t.Run("Missing office id", func(t *testing.T) {
 			p := RegisterAgentParams{
-				Username:   testUsername,
-				Password:   testPassword,
-				OfficeCode: "",
-				AgentCode:  "67890",
+				Email:       testEmail,
+				Password:    testPassword,
+				PhoneNumber: "0505050505",
 			}
 			err := p.Validate()
 			expectedErr := api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
 				Code:  api_errors.CodeInvalidValue,
-				Field: "office_code",
+				Field: "officeId",
 			})
 			api_errors.AssertApiError(t, expectedErr, err)
 		})
 
-		t.Run("Missing agent code", func(t *testing.T) {
+		t.Run("Missing office phone number", func(t *testing.T) {
 			p := RegisterAgentParams{
-				Username:   testUsername,
-				Password:   testPassword,
-				OfficeCode: "12345",
-				AgentCode:  "",
+				Email:    testEmail,
+				Password: testPassword,
+				OfficeID: int32(12345),
 			}
 			err := p.Validate()
 			expectedErr := api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
 				Code:  api_errors.CodeInvalidValue,
-				Field: "agent_code",
+				Field: "phoneNumber",
 			})
 			api_errors.AssertApiError(t, expectedErr, err)
 		})
@@ -98,16 +93,14 @@ func TestRegisterAgent(t *testing.T) {
 
 	t.Run("Integration Tests", func(t *testing.T) {
 		t.Run("Successful registration", func(t *testing.T) {
-			username := generateTestUsername()
+			email := generateTestEmail()
 			passwordStr := testPassword
-			officeCode := "OFF123"
-			agentCode := "AGT456"
+			phoneNumber := randomIsraeliPhoneNumber()
 
 			agent, cleanup, err := registerAgent(ctx, RegisterAgentParams{
-				Username:   username,
-				Password:   passwordStr,
-				OfficeCode: officeCode,
-				AgentCode:  agentCode,
+				Email:       email,
+				Password:    passwordStr,
+				PhoneNumber: phoneNumber,
 			})
 			if err != nil {
 				t.Fatalf("Failed to register agent: %v", err)
@@ -119,12 +112,12 @@ func TestRegisterAgent(t *testing.T) {
 			}
 
 			// Verify in DB
-			fetched, err := query.GetUserByUsername(ctx, username)
+			fetched, err := query.GetUserByEmail(ctx, email)
 			if err != nil {
-				t.Fatalf("Failed to get user by username: %v", err)
+				t.Fatalf("Failed to get user by email: %v", err)
 			}
-			if fetched.Username != username {
-				t.Errorf("Expected username %s, got %s", username, fetched.Username)
+			if fetched.Email != email {
+				t.Errorf("Expected email %s, got %s", email, fetched.Email)
 			}
 			if fetched.Role != db.UserRoleAgent {
 				t.Errorf("Expected role agent, got %s", fetched.Role)
@@ -132,37 +125,30 @@ func TestRegisterAgent(t *testing.T) {
 			if !password.ComparePassword(fetched.PasswordHash, passwordStr) {
 				t.Error("Stored password hash does not match password")
 			}
-			if !fetched.OfficeCode.Valid || fetched.OfficeCode.String != officeCode {
-				t.Errorf("Expected office code %s, got %v", officeCode, fetched.OfficeCode)
-			}
-			if !fetched.AgentCode.Valid || fetched.AgentCode.String != agentCode {
-				t.Errorf("Expected agent code %s, got %v", agentCode, fetched.AgentCode)
-			}
 		})
 
 		t.Run("User already exists", func(t *testing.T) {
-			username := generateTestUsername()
+			email := generateTestEmail()
 			passwordStr := testPassword
 
 			_, cleanup, err := registerAgent(ctx, RegisterAgentParams{
-				Username:   username,
-				Password:   passwordStr,
-				OfficeCode: "12345",
-				AgentCode:  "67890",
+				Email:       email,
+				Password:    passwordStr,
+				PhoneNumber: randomIsraeliPhoneNumber(),
 			})
 			if err != nil {
 				t.Fatalf("Failed to register first agent: %v", err)
 			}
 			defer cleanup()
 
-			// Try to register again with same username
+			// Try to register again with same email
 			_, err = RegisterAgent(ctx, RegisterAgentParams{
-				Username:   username,
-				Password:   passwordStr,
-				OfficeCode: "12345",
-				AgentCode:  "67890",
+				Email:       email,
+				Password:    passwordStr,
+				OfficeID:    int32(12345),
+				PhoneNumber: randomIsraeliPhoneNumber(),
 			})
-			api_errors.AssertApiError(t, ErrUsernameAlreadyExists, err)
+			api_errors.AssertApiError(t, ErrEmailAlreadyExists, err)
 		})
 	})
 
@@ -172,18 +158,18 @@ func TestRegisterAgent(t *testing.T) {
 			defer ctrl.Finish()
 
 			q := mocks.NewMockQuerier(ctrl)
-			username := "test_agent"
+			email := "test_agent@example.com"
 
 			q.EXPECT().
-				CheckUserExists(gomock.Any(), username).
+				CheckUserExists(gomock.Any(), email).
 				Return(int32(0), errors.New("db error"))
 
 			s := &Service{query: q}
 			_, err := s.RegisterAgent(ctx, RegisterAgentParams{
-				Username:   username,
-				Password:   testPassword,
-				OfficeCode: "12345",
-				AgentCode:  "67890",
+				Email:       email,
+				Password:    testPassword,
+				OfficeID:    int32(12345),
+				PhoneNumber: randomIsraeliPhoneNumber(),
 			})
 			api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 		})
@@ -193,20 +179,20 @@ func TestRegisterAgent(t *testing.T) {
 			defer ctrl.Finish()
 
 			q := mocks.NewMockQuerier(ctrl)
-			username := "existing_agent"
+			email := "existing_agent@example.com"
 
 			q.EXPECT().
-				CheckUserExists(gomock.Any(), username).
+				CheckUserExists(gomock.Any(), email).
 				Return(int32(123), nil) // User ID exists
 
 			s := &Service{query: q}
 			_, err := s.RegisterAgent(ctx, RegisterAgentParams{
-				Username:   username,
-				Password:   testPassword,
-				OfficeCode: "12345",
-				AgentCode:  "67890",
+				Email:       email,
+				Password:    testPassword,
+				OfficeID:    int32(12345),
+				PhoneNumber: randomIsraeliPhoneNumber(),
 			})
-			api_errors.AssertApiError(t, ErrUsernameAlreadyExists, err)
+			api_errors.AssertApiError(t, ErrEmailAlreadyExists, err)
 		})
 
 		t.Run("RegisterAgent DB fails", func(t *testing.T) {
@@ -214,10 +200,10 @@ func TestRegisterAgent(t *testing.T) {
 			defer ctrl.Finish()
 
 			q := mocks.NewMockQuerier(ctrl)
-			username := "test_agent"
+			email := "test_agent@example.com"
 
 			q.EXPECT().
-				CheckUserExists(gomock.Any(), username).
+				CheckUserExists(gomock.Any(), email).
 				Return(int32(0), nil) // User does not exist
 
 			q.EXPECT().
@@ -226,10 +212,10 @@ func TestRegisterAgent(t *testing.T) {
 
 			s := &Service{query: q}
 			_, err := s.RegisterAgent(ctx, RegisterAgentParams{
-				Username:   username,
-				Password:   testPassword,
-				OfficeCode: "12345",
-				AgentCode:  "67890",
+				Email:       email,
+				Password:    testPassword,
+				OfficeID:    int32(12345),
+				PhoneNumber: randomIsraeliPhoneNumber(),
 			})
 			api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 		})

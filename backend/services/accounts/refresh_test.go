@@ -67,7 +67,7 @@ func TestRefreshTokens(t *testing.T) {
 
 	t.Run("Expired refresh token", func(t *testing.T) {
 		// Create a user first
-		admin, del, err := registerAdmin(ctx, "expired_refresh_user", testPassword)
+		admin, del, err := registerAdmin(ctx, "expired_refresh_user@example.com", testPassword)
 		if err != nil {
 			t.Fatalf("failed to register user: %v", err)
 		}
@@ -96,13 +96,13 @@ func TestRefreshTokens(t *testing.T) {
 	})
 
 	t.Run("Deleting refresh token failed", func(t *testing.T) {
-		_, del, err := registerAdmin(ctx, "del_refresh_fail_user", testPassword)
+		_, del, err := registerAdmin(ctx, "del_refresh_fail_user@example.com", testPassword)
 		if err != nil {
 			t.Fatalf("failed to register user: %v", err)
 		}
 		defer del()
 
-		loginResp, err := Login(ctx, LoginParams{Username: "del_refresh_fail_user", Password: testPassword})
+		loginResp, err := Login(ctx, LoginParams{Email: "del_refresh_fail_user@example.com", Password: testPassword})
 		if err != nil {
 			t.Fatalf("failed to login: %v", err)
 		}
@@ -129,12 +129,12 @@ func TestRefreshTokens(t *testing.T) {
 	})
 
 	t.Run("User not found", func(t *testing.T) {
-		_, del, err := registerAdmin(ctx, "missing_user_refresh", testPassword)
+		_, del, err := registerAdmin(ctx, "missing_user_refresh@example.com", testPassword)
 		if err != nil {
 			t.Fatalf("failed to register user: %v", err)
 		}
 
-		_, err = Login(ctx, LoginParams{Username: "missing_user_refresh", Password: testPassword})
+		_, err = Login(ctx, LoginParams{Email: "missing_user_refresh@example.com", Password: testPassword})
 		if err != nil {
 			del()
 			t.Fatalf("failed to login: %v", err)
@@ -226,7 +226,7 @@ func TestRefreshTokens(t *testing.T) {
 
 		q.EXPECT().
 			GetUserById(gomock.Any(), int32(123)).
-			Return(db.User{ID: 123, Username: "test"}, nil)
+			Return(db.User{ID: 123, Email: "test@example.com"}, nil)
 
 		// generateTokens calls SaveRefreshToken
 		q.EXPECT().
@@ -239,13 +239,13 @@ func TestRefreshTokens(t *testing.T) {
 	})
 
 	t.Run("Successful refresh", func(t *testing.T) {
-		admin, del, err := registerAdmin(ctx, "refresh_success_user", testPassword)
+		admin, del, err := registerAdmin(ctx, "refresh_success_user@example.com", testPassword)
 		if err != nil {
 			t.Fatalf("failed to register user: %v", err)
 		}
 		defer del()
 
-		loginResp, err := Login(ctx, LoginParams{Username: "refresh_success_user", Password: testPassword})
+		loginResp, err := Login(ctx, LoginParams{Email: "refresh_success_user@example.com", Password: testPassword})
 		if err != nil {
 			t.Fatalf("failed to login: %v", err)
 		}

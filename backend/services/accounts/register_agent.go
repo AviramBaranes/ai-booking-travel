@@ -13,10 +13,10 @@ import (
 
 // RegisterAgentParams defines the parameters required to register an agent user.
 type RegisterAgentParams struct {
-	Username   string `json:"username" validate:"required,username"`
-	Password   string `json:"password" validate:"required,min=8" encore:"sensitive"`
-	OfficeCode string `json:"office_code" validate:"required"`
-	AgentCode  string `json:"agent_code" validate:"required"`
+	Email       string `json:"email" validate:"required,email"`
+	PhoneNumber string `json:"phoneNumber" validate:"required,israeli_phone"`
+	Password    string `json:"password" validate:"required,min=8" encore:"sensitive"`
+	OfficeID    int32  `json:"officeId" validate:"required"`
 }
 
 // RegisterAgentResponse represents the response returned after registering an agent user.
@@ -35,30 +35,30 @@ func (p RegisterAgentParams) Validate() error {
 // RegisterAgent registers a new agent user.
 // encore:api auth path=/register-agent method=POST tag:admin
 func (s *Service) RegisterAgent(ctx context.Context, params RegisterAgentParams) (*RegisterAgentResponse, error) {
-	userID, err := s.query.CheckUserExists(ctx, params.Username)
+	userID, err := s.query.CheckUserExists(ctx, params.Email)
 	if err != nil && !errors.Is(err, db.ErrNoRows) {
-		rlog.Error("failed to check if user exists", "username", params.Username, "error", err)
+		rlog.Error("failed to check if user exists", "email", params.Email, "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 	if userID != 0 {
-		return nil, ErrUsernameAlreadyExists
+		return nil, ErrEmailAlreadyExists
 	}
 
 	hashed, err := password.HashPassword(params.Password)
 	if err != nil {
-		rlog.Error("failed to hash password", "username", params.Username, "error", err)
+		rlog.Error("failed to hash password", "email", params.Email, "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 
 	row, err := s.query.RegisterAgent(ctx, db.RegisterAgentParams{
-		Username:     params.Username,
+		Email:        params.Email,
+		PhoneNumber:  &params.PhoneNumber,
 		PasswordHash: hashed,
-		AgentCode:    db.TextParam(&params.AgentCode),
-		OfficeCode:   db.TextParam(&params.OfficeCode),
+		OfficeID:     &params.OfficeID,
 	})
 
 	if err != nil {
-		rlog.Error("failed to register agent user", "username", params.Username, "error", err)
+		rlog.Error("failed to register agent user", "email", params.Email, "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 

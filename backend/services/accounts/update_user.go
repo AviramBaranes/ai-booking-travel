@@ -13,11 +13,9 @@ import (
 type UpdateUserResponse struct {
 	ID          int32       `json:"id"`
 	Role        db.UserRole `json:"role"`
-	Username    string      `json:"username"`
-	AgentCode   string      `json:"agent_code"`
-	OfficeCode  string      `json:"office_code"`
+	Email       string      `json:"email,omitempty"`
+	OfficeID    *int32      `json:"office_id,omitempty"`
 	PhoneNumber string      `json:"phone_number"`
-	LastLogin   string      `json:"last_login"`
 	CreatedAt   string      `json:"created_at"`
 	UpdatedAt   string      `json:"updated_at"`
 }
@@ -25,8 +23,7 @@ type UpdateUserResponse struct {
 type UpdateUserParams struct {
 	ID          int32   `json:"id" validate:"required"`
 	PhoneNumber *string `json:"phone_number,omitempty"`
-	OfficeCode  *string `json:"office_code,omitempty"`
-	AgentCode   *string `json:"agent_code,omitempty"`
+	OfficeID    *int32  `json:"office_id,omitempty"`
 }
 
 func (p UpdateUserParams) Validate() error {
@@ -38,9 +35,8 @@ func (p UpdateUserParams) Validate() error {
 func (s *Service) UpdateUser(ctx context.Context, params UpdateUserParams) (*UpdateUserResponse, error) {
 	row, err := s.query.UpdateUser(ctx, db.UpdateUserParams{
 		ID:          params.ID,
-		AgentCode:   db.TextParam(params.AgentCode),
-		PhoneNumber: db.TextParam(params.PhoneNumber),
-		OfficeCode:  db.TextParam(params.OfficeCode),
+		PhoneNumber: params.PhoneNumber,
+		OfficeID:    params.OfficeID,
 	})
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
@@ -51,14 +47,17 @@ func (s *Service) UpdateUser(ctx context.Context, params UpdateUserParams) (*Upd
 		return nil, api_errors.ErrInternalError
 	}
 
+	var phoneNumber string
+	if row.PhoneNumber != nil {
+		phoneNumber = *row.PhoneNumber
+	}
+
 	return &UpdateUserResponse{
 		ID:          row.ID,
 		Role:        row.Role,
-		Username:    row.Username,
-		AgentCode:   db.StringFromTextParam(row.AgentCode),
-		OfficeCode:  db.StringFromTextParam(row.OfficeCode),
-		PhoneNumber: db.StringFromTextParam(row.PhoneNumber),
-		LastLogin:   db.StringFromTimeParam(row.LastLogin),
+		Email:       row.Email,
+		PhoneNumber: phoneNumber,
+		OfficeID:    row.OfficeID,
 		CreatedAt:   db.StringFromTimeParam(row.CreatedAt),
 		UpdatedAt:   db.StringFromTimeParam(row.UpdatedAt),
 	}, nil

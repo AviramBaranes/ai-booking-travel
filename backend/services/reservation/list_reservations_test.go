@@ -18,9 +18,8 @@ import (
 func authContext(userID int32) context.Context {
 	uid := auth.UID(strconv.Itoa(int(userID)))
 	return auth.WithContext(context.Background(), uid, &authpkg.AuthData{
-		UserID:   userID,
-		Role:     authpkg.UserRoleAgent,
-		Username: "testuser",
+		UserID: userID,
+		Role:   authpkg.UserRoleAgent,
 	})
 }
 

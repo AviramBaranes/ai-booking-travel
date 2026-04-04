@@ -14,6 +14,7 @@ import (
 
 var validator = v.New()
 var usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9](?:[a-zA-Z0-9._-]{1,30}[a-zA-Z0-9])?$`)
+var israeliPhoneRegex = regexp.MustCompile(`^05\d{8}$`)
 
 func init() {
 	validator.RegisterValidation("notblank", func(fl v.FieldLevel) bool {
@@ -21,14 +22,9 @@ func init() {
 		return strings.TrimSpace(s) != ""
 	})
 
-	validator.RegisterValidation("username", func(fl v.FieldLevel) bool {
-		s := fl.Field().String()
-
-		if len(s) > 31 {
-			return false
-		}
-
-		return usernameRegex.MatchString(s)
+	// israeli_phone accepts digits only, must start with 05 followed by exactly 8 digits (e.g. 0521234567).
+	validator.RegisterValidation("israeli_phone", func(fl v.FieldLevel) bool {
+		return israeliPhoneRegex.MatchString(fl.Field().String())
 	})
 }
 

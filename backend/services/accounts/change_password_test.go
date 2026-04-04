@@ -47,7 +47,7 @@ func TestChangePassword(t *testing.T) {
 			}
 			for _, tt := range tests {
 				t.Run(tt.password, func(t *testing.T) {
-					p := RegisterAdminParams{Username: generateTestUsername(), Password: tt.password}
+					p := RegisterAdminParams{Email: generateTestEmail(), Password: tt.password}
 					err := p.Validate()
 					api_errors.AssertApiError(t, tt.error, err)
 				})
@@ -85,7 +85,7 @@ func TestChangePassword(t *testing.T) {
 
 	t.Run("Successful password change", func(t *testing.T) {
 		// Create a user
-		user, del, err := registerAdmin(ctx, "change_pass_user", testPassword)
+		user, del, err := registerAdmin(ctx, "change_pass_user@example.com", testPassword)
 		if err != nil {
 			t.Fatalf("failed to register user: %v", err)
 		}
@@ -104,7 +104,7 @@ func TestChangePassword(t *testing.T) {
 
 		// Verify login with new password works
 		_, err = Login(ctx, LoginParams{
-			Username: "change_pass_user",
+			Email:    "change_pass_user@example.com",
 			Password: newPassword,
 		})
 		if err != nil {
@@ -113,7 +113,7 @@ func TestChangePassword(t *testing.T) {
 
 		// Verify login with old password fails
 		_, err = Login(ctx, LoginParams{
-			Username: "change_pass_user",
+			Email:    "change_pass_user@example.com",
 			Password: testPassword,
 		})
 		api_errors.AssertApiError(t, ErrInvalidCredentials, err)

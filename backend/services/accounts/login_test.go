@@ -3,7 +3,6 @@ package accounts
 import (
 	"context"
 	"errors"
-	"strings"
 	"testing"
 	"time"
 
@@ -19,44 +18,41 @@ import (
 
 const (
 	testPassword = "ValidPass123!"
-	testUsername = "valid_username"
+	testEmail    = "valid_email@example.com"
 )
 
 type hybridQuerier struct {
 	*mocks.MockQuerier
 }
 
-func (hq *hybridQuerier) GetUserByUsername(ctx context.Context, username string) (db.User, error) {
-	return query.GetUserByUsername(ctx, username)
+func (hq *hybridQuerier) GetUserByEmail(ctx context.Context, email string) (db.User, error) {
+	return query.GetUserByEmail(ctx, email)
 }
 
 func TestLogin(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("Invalid username", func(t *testing.T) {
+	t.Run("Invalid email", func(t *testing.T) {
 		cases := []LoginParams{
-			{Username: "", Password: testPassword},
-			{Username: "ab", Password: testPassword},
-			{Username: strings.Repeat("a", 33), Password: testPassword},
-			{Username: "לא חוקי", Password: testPassword},
-			{Username: "endswith-", Password: testPassword},
+			{Email: "", Password: testPassword},
+			{Email: "ab", Password: testPassword},
+			{Email: "xsxs@@dd.com", Password: testPassword},
 		}
 
 		for _, p := range cases {
 			err := p.Validate()
 			expectedErr := api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
 				Code:  api_errors.CodeInvalidValue,
-				Field: "username",
+				Field: "email",
 			})
 
-			t.Log("Testing with username:", p.Username)
 			api_errors.AssertApiError(t, expectedErr, err)
 		}
 	})
 
 	t.Run("Invalid password", func(t *testing.T) {
 		p := LoginParams{
-			Username: testUsername,
+			Email: testEmail,
 		}
 		err := p.Validate()
 		expectedErr := api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
@@ -68,27 +64,27 @@ func TestLogin(t *testing.T) {
 	})
 
 	t.Run("User not found", func(t *testing.T) {
-		_, err := Login(ctx, LoginParams{Username: testUsername, Password: testPassword})
+		_, err := Login(ctx, LoginParams{Email: testEmail, Password: testPassword})
 		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
 	})
 
-	t.Run("Search user by username fails", func(t *testing.T) {
+	t.Run("Search user by email fails", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		q := mocks.NewMockQuerier(ctrl)
 		q.EXPECT().
-			GetUserByUsername(gomock.Any(), testUsername).
+			GetUserByEmail(gomock.Any(), testEmail).
 			Return(db.User{}, errors.New(("db error")))
 
 		s := &Service{query: q}
-		_, err := s.Login(ctx, LoginParams{Username: testUsername, Password: testPassword})
+		_, err := s.Login(ctx, LoginParams{Email: testEmail, Password: testPassword})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
 	t.Run("Incorrect password", func(t *testing.T) {
 		user, err := RegisterAdmin(ctx, RegisterAdminParams{
-			Username: testUsername,
+			Email:    testEmail,
 			Password: testPassword,
 		})
 		if err != nil {
@@ -96,13 +92,13 @@ func TestLogin(t *testing.T) {
 		}
 		defer query.DeleteUser(ctx, user.ID)
 
-		_, err = Login(ctx, LoginParams{Username: testUsername, Password: "WrongPass123!"})
+		_, err = Login(ctx, LoginParams{Email: testEmail, Password: "WrongPass123!"})
 		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
 	})
 
 	t.Run("Store refresh token fails", func(t *testing.T) {
 		user, err := RegisterAdmin(ctx, RegisterAdminParams{
-			Username: testUsername,
+			Email:    testEmail,
 			Password: testPassword,
 		})
 		if err != nil {
@@ -126,13 +122,13 @@ func TestLogin(t *testing.T) {
 			Return(errors.New("db error"))
 
 		s := &Service{query: &hq}
-		_, err = s.Login(ctx, LoginParams{Username: testUsername, Password: testPassword})
+		_, err = s.Login(ctx, LoginParams{Email: testEmail, Password: testPassword})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
 	t.Run("Successful login", func(t *testing.T) {
-		adminUsername := "admin_" + testUsername
-		_, delAdmin, err := registerAdmin(ctx, adminUsername, testPassword)
+		adminEmail := "admin_" + testEmail
+		_, delAdmin, err := registerAdmin(ctx, adminEmail, testPassword)
 
 		if err != nil {
 			t.Fatalf("Failed to create test admin: %v", err)
@@ -140,12 +136,11 @@ func TestLogin(t *testing.T) {
 
 		defer delAdmin()
 
-		agentUsername := "agent_" + testUsername
+		agentEmail := "agent_" + testEmail
 		_, delAgent, err := registerAgent(ctx, RegisterAgentParams{
-			Username:   agentUsername,
-			Password:   testPassword,
-			OfficeCode: "12345",
-			AgentCode:  "67890",
+			Email:       agentEmail,
+			Password:    testPassword,
+			PhoneNumber: "0505050505",
 		})
 
 		if err != nil {
@@ -155,16 +150,16 @@ func TestLogin(t *testing.T) {
 		defer delAgent()
 
 		cases := []struct {
-			name     string
-			username string
+			name  string
+			email string
 		}{
-			{name: "Admin user", username: adminUsername},
-			{name: "Agent user", username: agentUsername},
+			{name: "Admin user", email: adminEmail},
+			{name: "Agent user", email: agentEmail},
 		}
 
 		for _, c := range cases {
 
-			resp, err := Login(ctx, LoginParams{Username: c.username, Password: testPassword})
+			resp, err := Login(ctx, LoginParams{Email: c.email, Password: testPassword})
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
@@ -180,9 +175,9 @@ func TestLogin(t *testing.T) {
 				t.Fatalf("Failed to validate access token: %v", err)
 			}
 
-			user, err := query.GetUserByUsername(ctx, c.username)
+			user, err := query.GetUserByEmail(ctx, c.email)
 			if err != nil {
-				t.Fatalf("Failed to query user: %v, user: %s", err, c.username)
+				t.Fatalf("Failed to query user: %v, user: %s", err, c.email)
 			}
 
 			assertAccessClaims(t, accessClaims, &user)

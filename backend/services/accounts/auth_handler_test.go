@@ -9,19 +9,18 @@ import (
 	"encore.app/internal/jwt"
 	"encore.app/services/accounts/db"
 	jwtgo "github.com/golang-jwt/jwt/v4"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func TestAuthHandler(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Valid token", func(t *testing.T) {
+		office_id := int32(123)
 		user := db.User{
-			ID:         123,
-			Role:       db.UserRoleAdmin,
-			Username:   "testuser",
-			OfficeCode: pgtype.Text{String: "office1", Valid: true},
-			AgentCode:  pgtype.Text{String: "agent1", Valid: true},
+			ID:       123,
+			Role:     db.UserRoleAgent,
+			Email:    "test@test.com",
+			OfficeID: &office_id,
 		}
 
 		token, err := jwt.SignAccessToken(user)
@@ -41,17 +40,11 @@ func TestAuthHandler(t *testing.T) {
 		if authData.UserID != user.ID {
 			t.Errorf("Expected UserID %d, got %d", user.ID, authData.UserID)
 		}
-		if authData.Role != UserRoleAdmin {
-			t.Errorf("Expected Role %s, got %s", UserRoleAdmin, authData.Role)
+		if authData.Role != UserRoleAgent {
+			t.Errorf("Expected Role %s, got %s", UserRoleAgent, authData.Role)
 		}
-		if authData.Username != user.Username {
-			t.Errorf("Expected Username %s, got %s", user.Username, authData.Username)
-		}
-		if authData.OfficeCode != user.OfficeCode.String {
-			t.Errorf("Expected OfficeCode %s, got %s", user.OfficeCode.String, authData.OfficeCode)
-		}
-		if authData.AgentCode != user.AgentCode.String {
-			t.Errorf("Expected AgentCode %s, got %s", user.AgentCode.String, authData.AgentCode)
+		if authData.OfficeID != office_id {
+			t.Errorf("Expected OfficeID %d, got %d", office_id, authData.OfficeID)
 		}
 	})
 
@@ -61,10 +54,12 @@ func TestAuthHandler(t *testing.T) {
 	})
 
 	t.Run("Expired token", func(t *testing.T) {
+		office_id := int32(456)
 		user := db.User{
 			ID:       456,
 			Role:     db.UserRoleAgent,
-			Username: "expireduser",
+			Email:    "test@test.com",
+			OfficeID: &office_id,
 		}
 
 		token, err := jwt.SignAccessToken(user)

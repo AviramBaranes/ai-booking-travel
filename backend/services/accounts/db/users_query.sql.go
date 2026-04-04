@@ -96,7 +96,7 @@ type RegisterAdminRow struct {
 	ID        int32
 	Role      UserRole
 	Email     string
-	OfficeID  pgtype.Int4
+	OfficeID  *int32
 	LastLogin pgtype.Timestamptz
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
@@ -118,34 +118,42 @@ func (q *Queries) RegisterAdmin(ctx context.Context, arg RegisterAdminParams) (R
 }
 
 const registerAgent = `-- name: RegisterAgent :one
-INSERT INTO users (role, email, password_hash, office_id, created_at, updated_at)
-VALUES ('agent', $1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-RETURNING id, role, email, office_id, last_login, created_at, updated_at
+INSERT INTO users (role, email, phone_number, password_hash, office_id, created_at, updated_at)
+VALUES ('agent', $1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+RETURNING id, role, email, phone_number, office_id, last_login, created_at, updated_at
 `
 
 type RegisterAgentParams struct {
 	Email        string
+	PhoneNumber  *string
 	PasswordHash string
-	OfficeID     pgtype.Int4
+	OfficeID     *int32
 }
 
 type RegisterAgentRow struct {
-	ID        int32
-	Role      UserRole
-	Email     string
-	OfficeID  pgtype.Int4
-	LastLogin pgtype.Timestamptz
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
+	ID          int32
+	Role        UserRole
+	Email       string
+	PhoneNumber *string
+	OfficeID    *int32
+	LastLogin   pgtype.Timestamptz
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
 }
 
 func (q *Queries) RegisterAgent(ctx context.Context, arg RegisterAgentParams) (RegisterAgentRow, error) {
-	row := q.db.QueryRow(ctx, registerAgent, arg.Email, arg.PasswordHash, arg.OfficeID)
+	row := q.db.QueryRow(ctx, registerAgent,
+		arg.Email,
+		arg.PhoneNumber,
+		arg.PasswordHash,
+		arg.OfficeID,
+	)
 	var i RegisterAgentRow
 	err := row.Scan(
 		&i.ID,
 		&i.Role,
 		&i.Email,
+		&i.PhoneNumber,
 		&i.OfficeID,
 		&i.LastLogin,
 		&i.CreatedAt,
@@ -165,8 +173,8 @@ RETURNING id, role, email, office_id, phone_number, last_login, created_at, upda
 `
 
 type UpdateUserParams struct {
-	OfficeID    pgtype.Int4
-	PhoneNumber pgtype.Text
+	OfficeID    *int32
+	PhoneNumber *string
 	ID          int32
 }
 
@@ -174,8 +182,8 @@ type UpdateUserRow struct {
 	ID          int32
 	Role        UserRole
 	Email       string
-	OfficeID    pgtype.Int4
-	PhoneNumber pgtype.Text
+	OfficeID    *int32
+	PhoneNumber *string
 	LastLogin   pgtype.Timestamptz
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz

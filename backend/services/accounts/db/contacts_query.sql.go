@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countContacts = `-- name: CountContacts :one
@@ -21,9 +19,9 @@ WHERE
 `
 
 type CountContactsParams struct {
-	Name           pgtype.Text
-	OfficeID       pgtype.Int4
-	OrganizationID pgtype.Int4
+	Name           *string
+	OfficeID       *int32
+	OrganizationID *int32
 }
 
 func (q *Queries) CountContacts(ctx context.Context, arg CountContactsParams) (int64, error) {
@@ -55,8 +53,8 @@ type CreateContactParams struct {
 	Role           string
 	Cellphone      string
 	Email          string
-	OfficeID       pgtype.Int4
-	OrganizationID pgtype.Int4
+	OfficeID       *int32
+	OrganizationID *int32
 }
 
 func (q *Queries) CreateContact(ctx context.Context, arg CreateContactParams) (Contact, error) {
@@ -118,9 +116,9 @@ OFFSET $4::BIGINT
 `
 
 type ListContactsParams struct {
-	Name           pgtype.Text
-	OfficeID       pgtype.Int4
-	OrganizationID pgtype.Int4
+	Name           *string
+	OfficeID       *int32
+	OrganizationID *int32
 	PageOffset     int64
 	PageSize       int64
 }
@@ -178,13 +176,13 @@ RETURNING id, first_name, last_name, role, cellphone, email, office_id, organiza
 `
 
 type UpdateContactParams struct {
-	FirstName      pgtype.Text
-	LastName       pgtype.Text
-	Role           pgtype.Text
-	Cellphone      pgtype.Text
-	Email          pgtype.Text
-	OfficeID       pgtype.Int4
-	OrganizationID pgtype.Int4
+	FirstName      *string
+	LastName       *string
+	Role           *string
+	Cellphone      *string
+	Email          *string
+	OfficeID       *int32
+	OrganizationID *int32
 	ID             int32
 }
 

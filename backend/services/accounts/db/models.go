@@ -61,8 +61,8 @@ type Contact struct {
 	Role           string
 	Cellphone      string
 	Email          string
-	OfficeID       pgtype.Int4
-	OrganizationID pgtype.Int4
+	OfficeID       *int32
+	OrganizationID *int32
 	CreatedAt      pgtype.Timestamptz
 	UpdatedAt      pgtype.Timestamptz
 }
@@ -71,8 +71,8 @@ type Office struct {
 	ID             int32
 	Name           string
 	OrganizationID int32
-	Phone          pgtype.Text
-	Address        pgtype.Text
+	Phone          *string
+	Address        *string
 	CreatedAt      pgtype.Timestamptz
 	UpdatedAt      pgtype.Timestamptz
 }
@@ -81,8 +81,8 @@ type Organization struct {
 	ID        int32
 	Name      string
 	IsOrganic bool
-	Phone     pgtype.Text
-	Address   pgtype.Text
+	Phone     *string
+	Address   *string
 	Obligo    pgtype.Numeric
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
@@ -98,9 +98,9 @@ type User struct {
 	ID           int32
 	Role         UserRole
 	Email        string
-	PhoneNumber  pgtype.Text
-	Otp          pgtype.Text
-	OfficeID     pgtype.Int4
+	PhoneNumber  *string
+	Otp          *string
+	OfficeID     *int32
 	PasswordHash string
 	LastLogin    pgtype.Timestamptz
 	CreatedAt    pgtype.Timestamptz

@@ -15,7 +15,7 @@ import (
 
 // LoginParams defines the parameters required for user login.
 type LoginParams struct {
-	Username string `json:"username" validate:"required,username"`
+	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required" encore:"sensitive"`
 }
 
@@ -26,23 +26,22 @@ func (p LoginParams) Validate() error {
 // LoginResponse defines the response structure for user login.
 type LoginResponse struct {
 	ID           int32       `json:"id"`
-	Username     string      `json:"username,omitempty"`
+	Email        string      `json:"email,omitempty"`
 	Role         db.UserRole `json:"role,omitempty"`
 	AccessToken  string      `json:"accessToken"`
 	RefreshToken string      `json:"refreshToken"`
 	PhoneNumber  string      `json:"phoneNumber,omitempty"`
-	OfficeCode   string      `json:"officeCode,omitempty"`
-	AgentCode    string      `json:"agentCode,omitempty"`
+	OfficeID     *int32      `json:"officeId,omitempty"`
 }
 
 // encore:api public path=/login method=POST
 func (s *Service) Login(ctx context.Context, p LoginParams) (*LoginResponse, error) {
-	row, err := s.query.GetUserByUsername(ctx, p.Username)
+	row, err := s.query.GetUserByEmail(ctx, p.Email)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
 			return nil, ErrInvalidCredentials
 		}
-		rlog.Error("failed to get user by username", "username", p.Username, "error", err)
+		rlog.Error("failed to get user by email", "email", p.Email, "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 
@@ -56,15 +55,19 @@ func (s *Service) Login(ctx context.Context, p LoginParams) (*LoginResponse, err
 		return nil, api_errors.ErrInternalError
 	}
 
+	var phoneNumber string
+	if row.PhoneNumber != nil {
+		phoneNumber = *row.PhoneNumber
+	}
+
 	return &LoginResponse{
 		ID:           row.ID,
 		Role:         row.Role,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		Username:     row.Username,
-		PhoneNumber:  row.PhoneNumber.String,
-		OfficeCode:   row.OfficeCode.String,
-		AgentCode:    row.AgentCode.String,
+		Email:        row.Email,
+		PhoneNumber:  phoneNumber,
+		OfficeID:     row.OfficeID,
 	}, nil
 }
 

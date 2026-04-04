@@ -20,8 +20,8 @@ WHERE
 `
 
 type CountOrganizationsParams struct {
-	Name      pgtype.Text
-	IsOrganic pgtype.Bool
+	Name      *string
+	IsOrganic *bool
 }
 
 func (q *Queries) CountOrganizations(ctx context.Context, arg CountOrganizationsParams) (int64, error) {
@@ -48,8 +48,8 @@ RETURNING id, name, is_organic, phone, address, obligo, created_at, updated_at
 type CreateOrganizationParams struct {
 	Name      string
 	IsOrganic bool
-	Phone     pgtype.Text
-	Address   pgtype.Text
+	Phone     *string
+	Address   *string
 	Obligo    pgtype.Numeric
 }
 
@@ -102,8 +102,8 @@ OFFSET $3::BIGINT
 `
 
 type ListOrganizationsParams struct {
-	Name       pgtype.Text
-	IsOrganic  pgtype.Bool
+	Name       *string
+	IsOrganic  *bool
 	PageOffset int64
 	PageSize   int64
 }
@@ -112,8 +112,8 @@ type ListOrganizationsRow struct {
 	ID           int32
 	Name         string
 	IsOrganic    bool
-	Phone        pgtype.Text
-	Address      pgtype.Text
+	Phone        *string
+	Address      *string
 	Obligo       pgtype.Numeric
 	CreatedAt    pgtype.Timestamptz
 	UpdatedAt    pgtype.Timestamptz
@@ -173,10 +173,10 @@ RETURNING id, name, is_organic, phone, address, obligo, created_at, updated_at
 `
 
 type UpdateOrganizationParams struct {
-	Name      pgtype.Text
-	IsOrganic pgtype.Bool
-	Phone     pgtype.Text
-	Address   pgtype.Text
+	Name      *string
+	IsOrganic *bool
+	Phone     *string
+	Address   *string
 	Obligo    pgtype.Numeric
 	ID        int32
 }

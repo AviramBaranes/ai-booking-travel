@@ -25,11 +25,9 @@ func SignAccessToken(user db.User) (string, error) {
 	now := time.Now()
 
 	claims := AccessTokenClaims{
-		UserID:     user.ID,
-		Role:       user.Role,
-		Username:   user.Username,
-		AgentCode:  user.AgentCode.String,
-		OfficeCode: user.OfficeCode.String,
+		UserID:   user.ID,
+		Role:     user.Role,
+		OfficeID: user.OfficeID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    Issuer,
 			Subject:   strconv.FormatInt(int64(user.ID), 10),

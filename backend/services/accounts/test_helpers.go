@@ -74,14 +74,14 @@ func assertAccessClaims(t *testing.T, claims *jwt.AccessTokenClaims, user *db.Us
 	}
 }
 
-func registerAdmin(ctx context.Context, username, password string) (*RegisterAdminResponse, func(), error) {
+func registerAdmin(ctx context.Context, email, password string) (*RegisterAdminResponse, func(), error) {
 	admin, err := RegisterAdmin(ctx, RegisterAdminParams{
-		Username: username,
+		Email:    email,
 		Password: password,
 	})
 
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("registering admin %w", err)
 	}
 
 	return admin, func() {
@@ -89,7 +89,32 @@ func registerAdmin(ctx context.Context, username, password string) (*RegisterAdm
 	}, nil
 }
 
+func randomName() string {
+	return fmt.Sprintf("name_%d", time.Now().UnixNano())
+}
+
+func randomIsraeliPhoneNumber() string {
+	return fmt.Sprintf("05%08d", time.Now().UnixNano()%100000000)
+}
+
 func registerAgent(ctx context.Context, p RegisterAgentParams) (*RegisterAgentResponse, func(), error) {
+	org, err := query.CreateOrganization(ctx, db.CreateOrganizationParams{
+		Name:      randomName(),
+		IsOrganic: false,
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("creating organization %w", err)
+	}
+
+	office, err := query.CreateOffice(ctx, db.CreateOfficeParams{
+		Name:           randomName(),
+		OrganizationID: org.ID,
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("creating office %w", err)
+	}
+
+	p.OfficeID = office.ID
 	agent, err := RegisterAgent(ctx, p)
 
 	if err != nil {

@@ -3,9 +3,7 @@ package accounts
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
-	"time"
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/password"
@@ -14,26 +12,21 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func generateTestUsername() string {
-	return fmt.Sprintf("user_%d", time.Now().UnixNano())
-}
-
 func TestRegisterAdmin(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Validation Tests", func(t *testing.T) {
-		t.Run("Invalid username", func(t *testing.T) {
+		t.Run("Invalid email", func(t *testing.T) {
 			cases := []RegisterAdminParams{
-				{Username: "", Password: "StrongPassword123!"},
-				{Username: "ab", Password: "StrongPassword123!"}, // Too short?
-				{Username: "endswith-", Password: "StrongPassword123!"},
-				{Username: "invalid@email.com", Password: "StrongPassword123!"}, // Assuming @ is not allowed in username
+				{Email: "", Password: "StrongPassword123!"},
+				{Email: "invalid", Password: "StrongPassword123!"},
+				{Email: "invalid@@email.com", Password: "StrongPassword123!"},
 			}
 
 			for _, p := range cases {
 				err := p.Validate()
 				if err == nil {
-					t.Errorf("Expected error for username '%s', got nil", p.Username)
+					t.Errorf("Expected error for email '%s', got nil", p.Email)
 				}
 			}
 		})
@@ -51,44 +44,21 @@ func TestRegisterAdmin(t *testing.T) {
 			}
 			for _, tt := range tests {
 				t.Run(tt.password, func(t *testing.T) {
-					p := RegisterAdminParams{Username: generateTestUsername(), Password: tt.password}
+					p := RegisterAdminParams{Email: generateTestEmail(), Password: tt.password}
 					err := p.Validate()
 					api_errors.AssertApiError(t, tt.error, err)
 				})
-			}
-		})
-
-		t.Run("Missing office/agent code", func(t *testing.T) {
-			code := "123"
-			cases := []RegisterAdminParams{
-				{Username: generateTestUsername(), Password: "StrongPassword123!", OfficeCode: &code, AgentCode: nil},
-				{Username: generateTestUsername(), Password: "StrongPassword123!", OfficeCode: nil, AgentCode: &code},
-			}
-
-			for _, p := range cases {
-				ctrl := gomock.NewController(t)
-				defer ctrl.Finish()
-				q := mocks.NewMockQuerier(ctrl)
-				s := &Service{query: q}
-
-				// CheckUserExists happens before the office/agent code check
-				q.EXPECT().CheckUserExists(gomock.Any(), p.Username).Return(int32(0), nil)
-
-				_, err := s.RegisterAdmin(ctx, p)
-				if err == nil {
-					t.Error("Expected error, got nil")
-				}
 			}
 		})
 	})
 
 	t.Run("Integration Tests", func(t *testing.T) {
 		t.Run("Successful registration", func(t *testing.T) {
-			username := generateTestUsername()
+			email := generateTestEmail()
 			passwordStr := "StrongPassword123!"
 
 			// Use helper to register (which uses real DB)
-			admin, cleanup, err := registerAdmin(ctx, username, passwordStr)
+			admin, cleanup, err := registerAdmin(ctx, email, passwordStr)
 			if err != nil {
 				t.Fatalf("Failed to register admin: %v", err)
 			}
@@ -103,8 +73,8 @@ func TestRegisterAdmin(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to get user by ID: %v", err)
 			}
-			if fetched.Username != username {
-				t.Errorf("Expected username %s, got %s", username, fetched.Username)
+			if fetched.Email != email {
+				t.Errorf("Expected email %s, got %s", email, fetched.Email)
 			}
 			if fetched.Role != db.UserRoleAdmin {
 				t.Errorf("Expected role admin, got %s", fetched.Role)
@@ -115,18 +85,18 @@ func TestRegisterAdmin(t *testing.T) {
 		})
 
 		t.Run("User already exists", func(t *testing.T) {
-			username := generateTestUsername()
+			email := generateTestEmail()
 			passwordStr := "StrongPassword123!"
 
-			_, cleanup, err := registerAdmin(ctx, username, passwordStr)
+			_, cleanup, err := registerAdmin(ctx, email, passwordStr)
 			if err != nil {
 				t.Fatalf("Failed to register first admin: %v", err)
 			}
 			defer cleanup()
 
 			// Try to register again
-			_, err = RegisterAdmin(ctx, RegisterAdminParams{Username: username, Password: passwordStr})
-			api_errors.AssertApiError(t, ErrUsernameAlreadyExists, err)
+			_, err = RegisterAdmin(ctx, RegisterAdminParams{Email: email, Password: passwordStr})
+			api_errors.AssertApiError(t, ErrEmailAlreadyExists, err)
 		})
 	})
 
@@ -136,14 +106,14 @@ func TestRegisterAdmin(t *testing.T) {
 			defer ctrl.Finish()
 
 			q := mocks.NewMockQuerier(ctrl)
-			username := "test_user"
+			email := "test_user@example.com"
 
 			q.EXPECT().
-				CheckUserExists(gomock.Any(), username).
+				CheckUserExists(gomock.Any(), email).
 				Return(int32(0), errors.New("db error"))
 
 			s := &Service{query: q}
-			_, err := s.RegisterAdmin(ctx, RegisterAdminParams{Username: username, Password: "StrongPassword123!"})
+			_, err := s.RegisterAdmin(ctx, RegisterAdminParams{Email: email, Password: "StrongPassword123!"})
 			api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 		})
 
@@ -152,10 +122,10 @@ func TestRegisterAdmin(t *testing.T) {
 			defer ctrl.Finish()
 
 			q := mocks.NewMockQuerier(ctrl)
-			username := "test_user"
+			email := "test_user@example.com"
 
 			q.EXPECT().
-				CheckUserExists(gomock.Any(), username).
+				CheckUserExists(gomock.Any(), email).
 				Return(int32(0), nil) // User does not exist
 
 			q.EXPECT().
@@ -163,7 +133,7 @@ func TestRegisterAdmin(t *testing.T) {
 				Return(db.RegisterAdminRow{}, errors.New("db error"))
 
 			s := &Service{query: q}
-			_, err := s.RegisterAdmin(ctx, RegisterAdminParams{Username: username, Password: "StrongPassword123!"})
+			_, err := s.RegisterAdmin(ctx, RegisterAdminParams{Email: email, Password: "StrongPassword123!"})
 			api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 		})
 	})

@@ -57,10 +57,13 @@ func (s *Service) RefreshTokens(ctx context.Context, p RefreshTokensParams) (*Lo
 		return nil, api_errors.ErrInternalError
 	}
 
+	var phoneNumber string
+	if user.PhoneNumber != nil {
+		phoneNumber = *user.PhoneNumber
+	}
+
 	return &LoginResponse{AccessToken: accessToken, RefreshToken: refreshToken,
-		Username:    user.Username,
-		PhoneNumber: user.PhoneNumber.String,
-		OfficeCode:  user.OfficeCode.String,
-		AgentCode:   user.AgentCode.String,
+		Email:       user.Email,
+		PhoneNumber: phoneNumber,
 	}, nil
 }

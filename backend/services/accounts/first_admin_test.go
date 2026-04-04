@@ -14,15 +14,15 @@ func TestCreateFirstAdmin(t *testing.T) {
 	ctx := context.Background()
 
 	// Save original secrets and restore after tests
-	originalUsername := secrets.FirstAdminUsername
+	originalUsername := secrets.FirstAdminEmail
 	originalPassword := secrets.FirstAdminPassword
 	defer func() {
-		secrets.FirstAdminUsername = originalUsername
+		secrets.FirstAdminEmail = originalUsername
 		secrets.FirstAdminPassword = originalPassword
 	}()
 
 	t.Run("Secrets not set", func(t *testing.T) {
-		secrets.FirstAdminUsername = ""
+		secrets.FirstAdminEmail = ""
 		secrets.FirstAdminPassword = ""
 
 		defer func() {
@@ -35,14 +35,14 @@ func TestCreateFirstAdmin(t *testing.T) {
 	})
 
 	t.Run("Success And User already exists", func(t *testing.T) {
-		username := "admin"
-		secrets.FirstAdminUsername = username
+		email := "admin@example.com"
+		secrets.FirstAdminEmail = email
 		secrets.FirstAdminPassword = "password123"
 
 		// validate admin not exists yet:
-		admin, err := query.GetUserByUsername(ctx, username)
+		admin, err := query.GetUserByEmail(ctx, email)
 		if err != nil && !errors.Is(err, db.ErrNoRows) {
-			t.Fatalf("failed to get user by username: %v", err)
+			t.Fatalf("failed to get user by email: %v", err)
 		}
 		if err == nil {
 			t.Fatalf("expected no admin user, but found one: %v", admin)
@@ -52,12 +52,12 @@ func TestCreateFirstAdmin(t *testing.T) {
 		createFirstAdmin(query)
 
 		// validate admin was created:
-		admin, err = query.GetUserByUsername(ctx, username)
+		admin, err = query.GetUserByEmail(ctx, email)
 		if err != nil {
-			t.Fatalf("failed to get user by username after creation: %v", err)
+			t.Fatalf("failed to get user by email after creation: %v", err)
 		}
-		if admin.Username != username {
-			t.Errorf("expected username %s, got %s", username, admin.Username)
+		if admin.Email != email {
+			t.Errorf("expected email %s, got %s", email, admin.Email)
 		}
 
 		// user already exists, should not panic or create another user
@@ -71,7 +71,7 @@ func TestCreateFirstAdmin(t *testing.T) {
 	})
 
 	t.Run("Database error checking user", func(t *testing.T) {
-		secrets.FirstAdminUsername = "admin"
+		secrets.FirstAdminEmail = "admin@example.com"
 		secrets.FirstAdminPassword = "password123"
 
 		ctrl := gomock.NewController(t)
@@ -80,7 +80,7 @@ func TestCreateFirstAdmin(t *testing.T) {
 		q := mocks.NewMockQuerier(ctrl)
 		expectedErr := errors.New("db error")
 		q.EXPECT().
-			CheckUserExists(gomock.Any(), secrets.FirstAdminUsername).
+			CheckUserExists(gomock.Any(), secrets.FirstAdminEmail).
 			Return(int32(0), expectedErr)
 
 		defer func() {

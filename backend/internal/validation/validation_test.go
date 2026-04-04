@@ -9,8 +9,8 @@ import (
 
 func TestValidateStruct(t *testing.T) {
 	type TestStruct struct {
-		Name     string `json:"name" validate:"required,notblank"`
-		Username string `json:"username" validate:"required,username"`
+		Name  string `json:"name" validate:"required,notblank"`
+		Phone string `json:"phone" validate:"required,israeli_phone"`
 	}
 
 	tests := []struct {
@@ -18,17 +18,21 @@ func TestValidateStruct(t *testing.T) {
 		input   TestStruct
 		wantErr error
 	}{
-		{"valid input", TestStruct{Name: "John Doe", Username: "john_doe"}, nil},
-		{"empty name", TestStruct{Name: "", Username: "john_doe"},
+		{"valid input", TestStruct{Name: "John Doe", Phone: "0521234567"}, nil},
+		{"empty name", TestStruct{Name: "", Phone: "0521234567"},
 			api_errors.NewErrorWithDetail(errs.InvalidArgument, InvalidValueMsg, api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue, Field: "name"})},
-		{"name with only spaces", TestStruct{Name: "   ", Username: "john_doe"},
+		{"name with only spaces", TestStruct{Name: "   ", Phone: "0521234567"},
 			api_errors.NewErrorWithDetail(errs.InvalidArgument, InvalidValueMsg, api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue, Field: "name"})},
-		{"empty username", TestStruct{Name: "John Doe", Username: ""},
-			api_errors.NewErrorWithDetail(errs.InvalidArgument, InvalidValueMsg, api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue, Field: "username"})},
-		{"username with invalid characters", TestStruct{Name: "John Doe", Username: "john@doe"},
-			api_errors.NewErrorWithDetail(errs.InvalidArgument, InvalidValueMsg, api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue, Field: "username"})},
-		{"username too long", TestStruct{Name: "John Doe", Username: "a_very_long_username_exceeding_31_characters"},
-			api_errors.NewErrorWithDetail(errs.InvalidArgument, InvalidValueMsg, api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue, Field: "username"})},
+		{"empty phone", TestStruct{Name: "John Doe", Phone: ""},
+			api_errors.NewErrorWithDetail(errs.InvalidArgument, InvalidValueMsg, api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue, Field: "phone"})},
+		{"phone not starting with 05", TestStruct{Name: "John Doe", Phone: "0321234567"},
+			api_errors.NewErrorWithDetail(errs.InvalidArgument, InvalidValueMsg, api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue, Field: "phone"})},
+		{"phone too short", TestStruct{Name: "John Doe", Phone: "052123456"},
+			api_errors.NewErrorWithDetail(errs.InvalidArgument, InvalidValueMsg, api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue, Field: "phone"})},
+		{"phone too long", TestStruct{Name: "John Doe", Phone: "05212345678"},
+			api_errors.NewErrorWithDetail(errs.InvalidArgument, InvalidValueMsg, api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue, Field: "phone"})},
+		{"phone with non-digits", TestStruct{Name: "John Doe", Phone: "052-123456"},
+			api_errors.NewErrorWithDetail(errs.InvalidArgument, InvalidValueMsg, api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue, Field: "phone"})},
 	}
 
 	for _, tt := range tests {

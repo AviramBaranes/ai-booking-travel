@@ -13,10 +13,8 @@ import (
 
 // RegisterAdminParams defines the parameters required to register an admin user.
 type RegisterAdminParams struct {
-	Username   string  `json:"username" validate:"required,username"`
-	Password   string  `json:"password" validate:"required,min=8" encore:"sensitive"`
-	OfficeCode *string `json:"office_code"`
-	AgentCode  *string `json:"agent_code"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=8" encore:"sensitive"`
 }
 
 // RegisterAdminResponse represents the response returned after registering an admin user.
@@ -39,35 +37,28 @@ var (
 // RegisterAdmin registers a new admin user.
 // encore:api auth path=/register-admin method=POST tag:admin
 func (s *Service) RegisterAdmin(ctx context.Context, params RegisterAdminParams) (*RegisterAdminResponse, error) {
-	userID, err := s.query.CheckUserExists(ctx, params.Username)
+	userID, err := s.query.CheckUserExists(ctx, params.Email)
 	if err != nil && !errors.Is(err, db.ErrNoRows) {
-		rlog.Error("failed to check if user exists", "username", params.Username, "error", err)
+		rlog.Error("failed to check if user exists", "email", params.Email, "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 	if userID != 0 {
-		return nil, ErrUsernameAlreadyExists
+		return nil, ErrEmailAlreadyExists
 	}
 
 	hashed, err := password.HashPassword(params.Password)
 	if err != nil {
-		rlog.Error("failed to hash password", "username", params.Username, "error", err)
+		rlog.Error("failed to hash password", "email", params.Email, "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 
-	if (params.OfficeCode != nil && params.AgentCode == nil) || (params.OfficeCode == nil && params.AgentCode != nil) {
-		rlog.Warn("office code and agent code must be provided together", "username", params.Username)
-		return nil, ErrOfficeAgentCodeMismatch
-	}
-
 	row, err := s.query.RegisterAdmin(ctx, db.RegisterAdminParams{
-		Username:     params.Username,
+		Email:        params.Email,
 		PasswordHash: hashed,
-		AgentCode:    db.TextParam(params.AgentCode),
-		OfficeCode:   db.TextParam(params.OfficeCode),
 	})
 
 	if err != nil {
-		rlog.Error("failed to register admin user", "username", params.Username, "error", err)
+		rlog.Error("failed to register admin user", "email", params.Email, "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 
