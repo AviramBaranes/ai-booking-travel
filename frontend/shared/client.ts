@@ -32,7 +32,7 @@ const BROWSER = typeof globalThis === "object" && ("window" in globalThis);
  * Client is an API client for the global-rental-2m42 Encore application.
  */
 export default class Client {
-    public readonly auth: auth.ServiceClient
+    public readonly accounts: accounts.ServiceClient
     public readonly booking: booking.ServiceClient
     public readonly reservation: reservation.ServiceClient
     private readonly options: ClientOptions
@@ -65,7 +65,7 @@ export default class Client {
         this.target = target
         this.options = options ?? {}
         const base = new BaseClient(this.target, this.options)
-        this.auth = new auth.ServiceClient(base)
+        this.accounts = new accounts.ServiceClient(base)
         this.booking = new booking.ServiceClient(base)
         this.reservation = new reservation.ServiceClient(base)
     }
@@ -107,20 +107,152 @@ export interface ClientOptions {
     auth?: string | AuthDataGenerator
 }
 
-export namespace auth {
-    /**
-     * ChangePasswordParams defines the parameters for changing a user's password.
-     */
-    export interface ChangePasswordParams {
+export namespace accounts {
+    export interface AdminResponse {
         id: number
-        "new_password": string
+        email: string
+        lastLogin: string
+        createdAt: string
+        updatedAt: string
+    }
+
+    export interface AgentResponse {
+        id: number
+        email: string
+        phoneNumber: string
+        officeId: number
+        lastLogin: string
+        createdAt: string
+        updatedAt: string
+    }
+
+    export interface ContactResponse {
+        id: number
+        firstName: string
+        lastName: string
+        role: string
+        cellphone: string
+        email: string
+        officeId: number
+        organizationId: number
+    }
+
+    export interface CreateAdminRequest {
+        email: string
+        password: string
+    }
+
+    export interface CreateAdminResponse {
+        id: number
+    }
+
+    export interface CreateAgentRequest {
+        email: string
+        password: string
+        phoneNumber: string
+        officeId: number
+    }
+
+    export interface CreateAgentResponse {
+        id: number
+    }
+
+    export interface CreateContactRequest {
+        firstName: string
+        lastName: string
+        role: string
+        cellphone: string
+        email: string
+        officeId: number
+        organizationId: number
+    }
+
+    export interface CreateOfficeRequest {
+        name: string
+        organizationId: number
+        phone: string
+        address: string
+    }
+
+    export interface CreateOrganizationRequest {
+        name: string
+        isOrganic: boolean
+        phone: string
+        address: string
+        obligo: number
+    }
+
+    export interface ListAdminsResponse {
+        admins: AdminResponse[]
+    }
+
+    export interface ListAgentsRequest {
+        Search: string
+        OfficeID: number
+        OrgID: number
+        Page: number
+    }
+
+    export interface ListAgentsResponse {
+        agents: AgentResponse[]
+        total: number
+    }
+
+    export interface ListContactsRequest {
+        Search: string
+        OfficeID: number
+        OrgID: number
+        Page: number
+    }
+
+    export interface ListContactsResponse {
+        contacts: ContactResponse[]
+        total: number
+    }
+
+    export interface ListOfficesRequest {
+        Search: string
+        OrgID: number
+        Page: number
+    }
+
+    export interface ListOfficesResponse {
+        offices: OfficeResponse[]
+        total: number
+    }
+
+    export interface ListOrganizationsRequest {
+        Search: string
+        IsOrganic: boolean
+        Page: number
+    }
+
+    export interface ListOrganizationsResponse {
+        organizations: ListOrganizationsRow[]
+        total: number
+    }
+
+    export interface ListOrganizationsRow {
+        id: number
+        name: string
+        isOrganic: boolean
+        phone: string
+        address: string
+        obligo: number
+        officeCount: number
+        contactCount: number
+        agentCount: number
+    }
+
+    export interface LoginAsAgentParams {
+        agentId: number
     }
 
     /**
      * LoginParams defines the parameters required for user login.
      */
     export interface LoginParams {
-        username: string
+        email: string
         password: string
     }
 
@@ -129,13 +261,31 @@ export namespace auth {
      */
     export interface LoginResponse {
         id: number
-        username: string
+        email: string
         role: db.UserRole
         accessToken: string
         refreshToken: string
         phoneNumber: string
-        officeCode: string
-        agentCode: string
+        officeId: number
+    }
+
+    export interface OfficeResponse {
+        id: number
+        name: string
+        organizationId: number
+        phone: string
+        address: string
+        contactCount: number
+        agentCount: number
+    }
+
+    export interface OrganizationResponse {
+        id: number
+        name: string
+        isOrganic: boolean
+        phone: string
+        address: string
+        obligo: number
     }
 
     /**
@@ -145,60 +295,46 @@ export namespace auth {
         RefreshToken: string
     }
 
-    /**
-     * RegisterAdminParams defines the parameters required to register an admin user.
-     */
-    export interface RegisterAdminParams {
-        username: string
-        password: string
-        "office_code": string
-        "agent_code": string
-    }
-
-    /**
-     * RegisterAdminResponse represents the response returned after registering an admin user.
-     */
-    export interface RegisterAdminResponse {
-        id: number
-    }
-
-    /**
-     * RegisterAgentParams defines the parameters required to register an agent user.
-     */
-    export interface RegisterAgentParams {
-        username: string
-        password: string
-        "office_code": string
-        "agent_code": string
-    }
-
-    /**
-     * RegisterAgentResponse represents the response returned after registering an agent user.
-     */
-    export interface RegisterAgentResponse {
-        id: number
-    }
-
     export interface TempAgentTagUsageResponse {
     }
 
-    export interface UpdateUserParams {
-        id: number
-        "phone_number": string
-        "office_code": string
-        "agent_code": string
+    export interface UpdateContactRequest {
+        firstName: string
+        lastName: string
+        role: string
+        cellphone: string
+        email: string
+        officeId: number
+        organizationId: number
+    }
+
+    export interface UpdateOfficeRequest {
+        name: string
+        organizationId: number
+        phone: string
+        address: string
+    }
+
+    export interface UpdateOrganizationRequest {
+        name: string
+        isOrganic: boolean
+        phone: string
+        address: string
+        obligo: number
+    }
+
+    export interface UpdateUserRequest {
+        email: string
+        phoneNumber: string
+        officeId: number
+        password: string
     }
 
     export interface UpdateUserResponse {
         id: number
-        role: db.UserRole
-        username: string
-        "agent_code": string
-        "office_code": string
-        "phone_number": string
-        "last_login": string
-        "created_at": string
-        "updated_at": string
+        email: string
+        phoneNumber: string
+        officeId: number
     }
 
     export class ServiceClient {
@@ -206,25 +342,170 @@ export namespace auth {
 
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
-            this.ChangePassword = this.ChangePassword.bind(this)
+            this.CreateAdmin = this.CreateAdmin.bind(this)
+            this.CreateAgent = this.CreateAgent.bind(this)
+            this.CreateContact = this.CreateContact.bind(this)
+            this.CreateOffice = this.CreateOffice.bind(this)
+            this.CreateOrganization = this.CreateOrganization.bind(this)
+            this.DeleteContact = this.DeleteContact.bind(this)
+            this.ListAdmins = this.ListAdmins.bind(this)
+            this.ListAgents = this.ListAgents.bind(this)
+            this.ListContacts = this.ListContacts.bind(this)
+            this.ListOffices = this.ListOffices.bind(this)
+            this.ListOrganizations = this.ListOrganizations.bind(this)
             this.Login = this.Login.bind(this)
+            this.LoginAsAgent = this.LoginAsAgent.bind(this)
+            this.LoginBackToAdmin = this.LoginBackToAdmin.bind(this)
             this.RefreshTokens = this.RefreshTokens.bind(this)
-            this.RegisterAdmin = this.RegisterAdmin.bind(this)
-            this.RegisterAgent = this.RegisterAgent.bind(this)
             this.TempCustomerTagUsage = this.TempCustomerTagUsage.bind(this)
+            this.UpdateContact = this.UpdateContact.bind(this)
+            this.UpdateOffice = this.UpdateOffice.bind(this)
+            this.UpdateOrganization = this.UpdateOrganization.bind(this)
             this.UpdateUser = this.UpdateUser.bind(this)
         }
 
         /**
-         * ChangePassword changes the password for a given user.
+         * CreateAdmin creates a new admin user.
          */
-        public async ChangePassword(params: ChangePasswordParams): Promise<void> {
-            await this.baseClient.callTypedAPI("PUT", `/change-password`, JSON.stringify(params))
+        public async CreateAdmin(params: CreateAdminRequest): Promise<CreateAdminResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/admins`, JSON.stringify(params))
+            return await resp.json() as CreateAdminResponse
+        }
+
+        /**
+         * CreateAgent creates a new agent user.
+         */
+        public async CreateAgent(params: CreateAgentRequest): Promise<CreateAgentResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/agents`, JSON.stringify(params))
+            return await resp.json() as CreateAgentResponse
+        }
+
+        /**
+         * CreateContact creates a new contact.
+         */
+        public async CreateContact(params: CreateContactRequest): Promise<ContactResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/contacts`, JSON.stringify(params))
+            return await resp.json() as ContactResponse
+        }
+
+        /**
+         * CreateOffice creates a new office.
+         */
+        public async CreateOffice(params: CreateOfficeRequest): Promise<OfficeResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/offices`, JSON.stringify(params))
+            return await resp.json() as OfficeResponse
+        }
+
+        /**
+         * CreateOrganization creates a new organization.
+         */
+        public async CreateOrganization(params: CreateOrganizationRequest): Promise<OrganizationResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/organizations`, JSON.stringify(params))
+            return await resp.json() as OrganizationResponse
+        }
+
+        /**
+         * DeleteContact deletes a contact by its ID.
+         */
+        public async DeleteContact(id: number): Promise<void> {
+            await this.baseClient.callTypedAPI("DELETE", `/contacts/${encodeURIComponent(id)}`)
+        }
+
+        /**
+         * ListAdmins returns all admin users.
+         */
+        public async ListAdmins(): Promise<ListAdminsResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/admins`)
+            return await resp.json() as ListAdminsResponse
+        }
+
+        /**
+         * ListAgents lists agents with optional filtering and pagination.
+         */
+        public async ListAgents(params: ListAgentsRequest): Promise<ListAgentsResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                officeId: String(params.OfficeID),
+                orgId:    String(params.OrgID),
+                page:     String(params.Page),
+                search:   params.Search,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/agents`, undefined, {query})
+            return await resp.json() as ListAgentsResponse
+        }
+
+        /**
+         * ListContacts lists contacts with optional filtering and pagination.
+         */
+        public async ListContacts(params: ListContactsRequest): Promise<ListContactsResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                officeId: String(params.OfficeID),
+                orgId:    String(params.OrgID),
+                page:     String(params.Page),
+                search:   params.Search,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/contacts`, undefined, {query})
+            return await resp.json() as ListContactsResponse
+        }
+
+        /**
+         * ListOffices lists offices with optional filtering and pagination.
+         */
+        public async ListOffices(params: ListOfficesRequest): Promise<ListOfficesResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                orgId:  String(params.OrgID),
+                page:   String(params.Page),
+                search: params.Search,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/offices`, undefined, {query})
+            return await resp.json() as ListOfficesResponse
+        }
+
+        /**
+         * ListOrganizations lists organizations with optional search and pagination.
+         */
+        public async ListOrganizations(params: ListOrganizationsRequest): Promise<ListOrganizationsResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                isOrganic: String(params.IsOrganic),
+                page:      String(params.Page),
+                search:    params.Search,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/organizations`, undefined, {query})
+            return await resp.json() as ListOrganizationsResponse
         }
 
         public async Login(params: LoginParams): Promise<LoginResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/login`, JSON.stringify(params))
+            return await resp.json() as LoginResponse
+        }
+
+        public async LoginAsAgent(params: LoginAsAgentParams): Promise<LoginResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/login/as-agent`, JSON.stringify(params))
+            return await resp.json() as LoginResponse
+        }
+
+        public async LoginBackToAdmin(): Promise<LoginResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/login/back-to-admin`)
             return await resp.json() as LoginResponse
         }
 
@@ -239,24 +520,6 @@ export namespace auth {
             return await resp.json() as LoginResponse
         }
 
-        /**
-         * RegisterAdmin registers a new admin user.
-         */
-        public async RegisterAdmin(params: RegisterAdminParams): Promise<RegisterAdminResponse> {
-            // Now make the actual call to the API
-            const resp = await this.baseClient.callTypedAPI("POST", `/register-admin`, JSON.stringify(params))
-            return await resp.json() as RegisterAdminResponse
-        }
-
-        /**
-         * RegisterAgent registers a new agent user.
-         */
-        public async RegisterAgent(params: RegisterAgentParams): Promise<RegisterAgentResponse> {
-            // Now make the actual call to the API
-            const resp = await this.baseClient.callTypedAPI("POST", `/register-agent`, JSON.stringify(params))
-            return await resp.json() as RegisterAgentResponse
-        }
-
         public async TempCustomerTagUsage(): Promise<TempAgentTagUsageResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/temp-customer-tag-usage`)
@@ -264,11 +527,38 @@ export namespace auth {
         }
 
         /**
-         * UpdateUser updates user details such as phone number, office code, and agent code.
+         * UpdateContact updates an existing contact.
          */
-        public async UpdateUser(params: UpdateUserParams): Promise<UpdateUserResponse> {
+        public async UpdateContact(id: number, params: UpdateContactRequest): Promise<ContactResponse> {
             // Now make the actual call to the API
-            const resp = await this.baseClient.callTypedAPI("PUT", `/update-user`, JSON.stringify(params))
+            const resp = await this.baseClient.callTypedAPI("PUT", `/contacts/${encodeURIComponent(id)}`, JSON.stringify(params))
+            return await resp.json() as ContactResponse
+        }
+
+        /**
+         * UpdateOffice updates an existing office.
+         */
+        public async UpdateOffice(id: number, params: UpdateOfficeRequest): Promise<OfficeResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("PUT", `/offices/${encodeURIComponent(id)}`, JSON.stringify(params))
+            return await resp.json() as OfficeResponse
+        }
+
+        /**
+         * UpdateOrganization updates an existing organization.
+         */
+        public async UpdateOrganization(id: number, params: UpdateOrganizationRequest): Promise<OrganizationResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("PUT", `/organizations/${encodeURIComponent(id)}`, JSON.stringify(params))
+            return await resp.json() as OrganizationResponse
+        }
+
+        /**
+         * UpdateUser updates an existing user.
+         */
+        public async UpdateUser(id: number, params: UpdateUserRequest): Promise<UpdateUserResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("PUT", `/users/${encodeURIComponent(id)}`, JSON.stringify(params))
             return await resp.json() as UpdateUserResponse
         }
     }

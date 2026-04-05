@@ -15,8 +15,10 @@
     "no_broker_code_for_dropoff_location": "מיקום ההחזרה אינו נתמך",
     "no_common_broker_for_locations": "אין ספק זמין עבור שילוב מיקומי האיסוף וההחזרה",
     "user_not_found": "המשתמש לא נמצא",
-    "username_already_exists": "שם המשתמש כבר קיים",
-    "invalid_credentials": "שם משתמש או סיסמה שגויים",
+    "email_already_exists": "כתובת האימייל כבר קיימת",
+    "phone_already_exists": "מספר הטלפון כבר קיים",
+    "name_already_exists": "השם כבר קיים",
+    "invalid_credentials": "אימייל או סיסמה שגויים",
     "invalid_refresh_token": "ההפעלה אינה תקינה, יש להתחבר מחדש",
     "expired_refresh_token": "ההפעלה פגה, יש להתחבר מחדש",
     "invalid_reset_token": "קישור איפוס הסיסמה אינו תקין או שפג תוקפו"
@@ -29,11 +31,11 @@
   "Login": {
     "openModal": "התחברות",
     "title": "התחברות",
-    "username": "שם משתמש",
+    "email": "אימייל",
     "password": "סיסמה",
     "submit": "התחברות",
     "validation": {
-      "usernameRequired": "שם משתמש הוא שדה חובה",
+      "invalidEmail": "יש להזין כתובת אימייל תקינה",
       "passwordRequired": "סיסמה היא שדה חובה"
     }
   },

@@ -3,14 +3,14 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 import { login } from "../api/auth-api";
 import Client, { BaseURL, Local } from "../client";
-import { auth } from "../client";
+import { accounts } from "../client";
 
 async function refreshAccessToken(token: Record<string, unknown>) {
   try {
     // Call the backend directly, bypassing withErrorHandler to avoid
     // triggering getServerSession which would re-enter the JWT callback.
     const client = new Client(Local as BaseURL, {});
-    const refreshed = await client.auth.RefreshTokens({
+    const refreshed = await client.accounts.RefreshTokens({
       RefreshToken: token.refreshToken as string,
     });
 
@@ -35,12 +35,12 @@ export const authOptions: NextAuthOptions = {
       name: "Credentials",
       type: "credentials",
       credentials: {
-        username: { label: "שם משתמש", type: "text" },
+        email: { label: 'דוא"ל', type: "email" },
         password: { label: "סיסמה", type: "password" },
       },
       async authorize(credentials) {
         const user = await login({
-          username: credentials?.username ?? "",
+          email: credentials?.email ?? "",
           password: credentials?.password ?? "",
         });
 
@@ -70,7 +70,7 @@ export const authOptions: NextAuthOptions = {
       return res;
     },
     async session({ session, token }) {
-      session.user = token as unknown as auth.LoginResponse & {
+      session.user = token as unknown as accounts.LoginResponse & {
         customExp: number;
       };
       return session;

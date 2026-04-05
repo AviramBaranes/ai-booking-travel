@@ -16,7 +16,7 @@ import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 
 function loginSchema(t: (key: string) => string) {
   return z.object({
-    username: z.string().min(1, t("validation.usernameRequired")),
+    email: z.string().email(t("validation.invalidEmail")),
     password: z.string().min(1, t("validation.passwordRequired")),
   });
 }
@@ -42,7 +42,7 @@ export function LoginModal() {
     mutationFn: async (data: LoginFormData) => {
       const result = await signIn("credentials", {
         redirect: false,
-        username: data.username,
+        email: data.email,
         password: data.password,
       });
 
@@ -104,12 +104,12 @@ export function LoginModal() {
             >
               <div>
                 <input
-                  type="text"
-                  placeholder={t("username")}
+                  type="email"
+                  placeholder={t("email")}
                   className="border p-2 rounded w-full"
-                  {...register("username")}
+                  {...register("email")}
                 />
-                <ErrorDisplay>{errors.username?.message}</ErrorDisplay>
+                <ErrorDisplay>{errors.email?.message}</ErrorDisplay>
               </div>
               <div>
                 <input

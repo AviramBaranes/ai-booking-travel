@@ -15,8 +15,10 @@
     "no_broker_code_for_dropoff_location": "Drop-off location is not supported",
     "no_common_broker_for_locations": "No provider available for this pickup and drop-off combination",
     "user_not_found": "User not found",
-    "username_already_exists": "Username already exists",
-    "invalid_credentials": "Invalid username or password",
+    "email_already_exists": "Email already exists",
+    "phone_already_exists": "Phone number already exists",
+    "name_already_exists": "Name already exists",
+    "invalid_credentials": "Invalid email or password",
     "invalid_refresh_token": "Session is invalid, please log in again",
     "expired_refresh_token": "Session has expired, please log in again",
     "invalid_reset_token": "Password reset link is invalid or expired"
@@ -29,11 +31,11 @@
   "Login": {
     "openModal": "Connect",
     "title": "Login",
-    "username": "Username",
+    "email": "Email",
     "password": "Password",
     "submit": "Login",
     "validation": {
-      "usernameRequired": "Username is required",
+      "invalidEmail": "Please enter a valid email address",
       "passwordRequired": "Password is required"
     }
   },
