@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import { login } from "../api/auth-api";
+import { login } from "../api/accounts-api";
 import Client, { BaseURL, Local } from "../client";
 import { accounts } from "../client";
 
