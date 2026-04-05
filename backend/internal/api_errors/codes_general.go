@@ -6,4 +6,6 @@ const (
 	CodeUnauthorized    = "unauthorized"
 	CodeUnauthenticated = "unauthenticated"
 	CodeNotFound        = "not_found"
+
+	CodeNameAlreadyExists = "name_already_exists"
 )

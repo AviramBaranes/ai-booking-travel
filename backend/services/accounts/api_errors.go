@@ -35,4 +35,9 @@ var (
 		errs.InvalidArgument, "Invalid reset token",
 		api_errors.ErrorDetails{Code: api_errors.CodeInvalidResetToken},
 	)
+
+	ErrNameAlreadyExists = api_errors.NewErrorWithDetail(
+		errs.AlreadyExists, "Name already exists",
+		api_errors.ErrorDetails{Code: api_errors.CodeNameAlreadyExists},
+	)
 )

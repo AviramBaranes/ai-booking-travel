@@ -7,11 +7,20 @@ import (
 	"testing"
 	"time"
 
+	"encore.app/internal/api_errors"
 	"encore.app/internal/jwt"
+	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
+	"encore.dev/beta/errs"
 	"encore.dev/storage/sqldb"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+func invalidValueErr(field string) error {
+	return api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
+		Code: api_errors.CodeInvalidValue, Field: field,
+	})
+}
 
 const (
 	allowedDelta = time.Second
