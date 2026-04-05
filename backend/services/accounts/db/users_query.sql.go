@@ -23,14 +23,109 @@ func (q *Queries) CheckUserExists(ctx context.Context, email string) (int32, err
 	return id, err
 }
 
-const deleteUser = `-- name: DeleteUser :exec
-DELETE FROM users
-WHERE id = $1
+const countAgents = `-- name: CountAgents :one
+SELECT COUNT(*)
+FROM users
+WHERE role = 'agent'
+  AND ($1::text IS NULL OR email ILIKE '%' || $1::text || '%' OR phone_number ILIKE '%' || $1::text || '%')
+  AND ($2::int IS NULL OR office_id = $2::int)
+  AND ($3::int IS NULL OR office_id IN (
+    SELECT id FROM offices WHERE organization_id = $3::int
+  ))
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, deleteUser, id)
-	return err
+type CountAgentsParams struct {
+	Search         *string
+	OfficeID       *int32
+	OrganizationID *int32
+}
+
+func (q *Queries) CountAgents(ctx context.Context, arg CountAgentsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countAgents, arg.Search, arg.OfficeID, arg.OrganizationID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const createAdmin = `-- name: CreateAdmin :one
+INSERT INTO users (role, email, password_hash, created_at, updated_at)
+VALUES ('admin', $1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+RETURNING id, role, email, office_id, last_login, created_at, updated_at
+`
+
+type CreateAdminParams struct {
+	Email        string
+	PasswordHash string
+}
+
+type CreateAdminRow struct {
+	ID        int32
+	Role      UserRole
+	Email     string
+	OfficeID  *int32
+	LastLogin pgtype.Timestamptz
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) CreateAdmin(ctx context.Context, arg CreateAdminParams) (CreateAdminRow, error) {
+	row := q.db.QueryRow(ctx, createAdmin, arg.Email, arg.PasswordHash)
+	var i CreateAdminRow
+	err := row.Scan(
+		&i.ID,
+		&i.Role,
+		&i.Email,
+		&i.OfficeID,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createAgent = `-- name: CreateAgent :one
+INSERT INTO users (role, email, phone_number, password_hash, office_id, created_at, updated_at)
+VALUES ('agent', $1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+RETURNING id, role, email, phone_number, office_id, last_login, created_at, updated_at
+`
+
+type CreateAgentParams struct {
+	Email        string
+	PhoneNumber  *string
+	PasswordHash string
+	OfficeID     *int32
+}
+
+type CreateAgentRow struct {
+	ID          int32
+	Role        UserRole
+	Email       string
+	PhoneNumber *string
+	OfficeID    *int32
+	LastLogin   pgtype.Timestamptz
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
+func (q *Queries) CreateAgent(ctx context.Context, arg CreateAgentParams) (CreateAgentRow, error) {
+	row := q.db.QueryRow(ctx, createAgent,
+		arg.Email,
+		arg.PhoneNumber,
+		arg.PasswordHash,
+		arg.OfficeID,
+	)
+	var i CreateAgentRow
+	err := row.Scan(
+		&i.ID,
+		&i.Role,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.OfficeID,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
@@ -81,18 +176,13 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
 	return i, err
 }
 
-const registerAdmin = `-- name: RegisterAdmin :one
-INSERT INTO users (role, email, password_hash, created_at, updated_at)
-VALUES ('admin', $1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-RETURNING id, role, email, office_id, last_login, created_at, updated_at
+const listAdmins = `-- name: ListAdmins :many
+SELECT id, role, email, office_id, last_login, created_at, updated_at
+FROM users
+WHERE role = 'admin'
 `
 
-type RegisterAdminParams struct {
-	Email        string
-	PasswordHash string
-}
-
-type RegisterAdminRow struct {
+type ListAdminsRow struct {
 	ID        int32
 	Role      UserRole
 	Email     string
@@ -102,35 +192,57 @@ type RegisterAdminRow struct {
 	UpdatedAt pgtype.Timestamptz
 }
 
-func (q *Queries) RegisterAdmin(ctx context.Context, arg RegisterAdminParams) (RegisterAdminRow, error) {
-	row := q.db.QueryRow(ctx, registerAdmin, arg.Email, arg.PasswordHash)
-	var i RegisterAdminRow
-	err := row.Scan(
-		&i.ID,
-		&i.Role,
-		&i.Email,
-		&i.OfficeID,
-		&i.LastLogin,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+func (q *Queries) ListAdmins(ctx context.Context) ([]ListAdminsRow, error) {
+	rows, err := q.db.Query(ctx, listAdmins)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListAdminsRow
+	for rows.Next() {
+		var i ListAdminsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Role,
+			&i.Email,
+			&i.OfficeID,
+			&i.LastLogin,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-const registerAgent = `-- name: RegisterAgent :one
-INSERT INTO users (role, email, phone_number, password_hash, office_id, created_at, updated_at)
-VALUES ('agent', $1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-RETURNING id, role, email, phone_number, office_id, last_login, created_at, updated_at
+const listAgents = `-- name: ListAgents :many
+SELECT id, role, email, phone_number, office_id, last_login, created_at, updated_at
+FROM users
+WHERE role = 'agent'
+  AND ($1::text IS NULL OR email ILIKE '%' || $1::text || '%' OR phone_number ILIKE '%' || $1::text || '%')
+  AND ($2::int IS NULL OR office_id = $2::int)
+  AND ($3::int IS NULL OR office_id IN (
+    SELECT id FROM offices WHERE organization_id = $3::int
+  ))
+ORDER BY created_at DESC
+LIMIT $5
+OFFSET $4
 `
 
-type RegisterAgentParams struct {
-	Email        string
-	PhoneNumber  *string
-	PasswordHash string
-	OfficeID     *int32
+type ListAgentsParams struct {
+	Search         *string
+	OfficeID       *int32
+	OrganizationID *int32
+	PageOffset     int32
+	PageSize       int32
 }
 
-type RegisterAgentRow struct {
+type ListAgentsRow struct {
 	ID          int32
 	Role        UserRole
 	Email       string
@@ -141,82 +253,90 @@ type RegisterAgentRow struct {
 	UpdatedAt   pgtype.Timestamptz
 }
 
-func (q *Queries) RegisterAgent(ctx context.Context, arg RegisterAgentParams) (RegisterAgentRow, error) {
-	row := q.db.QueryRow(ctx, registerAgent,
-		arg.Email,
-		arg.PhoneNumber,
-		arg.PasswordHash,
+func (q *Queries) ListAgents(ctx context.Context, arg ListAgentsParams) ([]ListAgentsRow, error) {
+	rows, err := q.db.Query(ctx, listAgents,
+		arg.Search,
 		arg.OfficeID,
+		arg.OrganizationID,
+		arg.PageOffset,
+		arg.PageSize,
 	)
-	var i RegisterAgentRow
-	err := row.Scan(
-		&i.ID,
-		&i.Role,
-		&i.Email,
-		&i.PhoneNumber,
-		&i.OfficeID,
-		&i.LastLogin,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListAgentsRow
+	for rows.Next() {
+		var i ListAgentsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Role,
+			&i.Email,
+			&i.PhoneNumber,
+			&i.OfficeID,
+			&i.LastLogin,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET
-  office_id    = COALESCE($1,    office_id),
-  phone_number = COALESCE($2, phone_number),
-  updated_at   = CURRENT_TIMESTAMP
-WHERE id = $3
-RETURNING id, role, email, office_id, phone_number, last_login, created_at, updated_at
+  email = COALESCE($1::varchar, email),
+  phone_number = COALESCE($2::varchar, phone_number),
+  office_id = COALESCE($3::int, office_id),
+  password_hash = COALESCE($4::varchar, password_hash),
+  updated_at = CURRENT_TIMESTAMP
+WHERE id = $5
+RETURNING id, role, email, phone_number, office_id, last_login, created_at, updated_at
 `
 
 type UpdateUserParams struct {
-	OfficeID    *int32
-	PhoneNumber *string
-	ID          int32
+	Email        *string
+	PhoneNumber  *string
+	OfficeID     *int32
+	PasswordHash *string
+	ID           int32
 }
 
 type UpdateUserRow struct {
 	ID          int32
 	Role        UserRole
 	Email       string
-	OfficeID    *int32
 	PhoneNumber *string
+	OfficeID    *int32
 	LastLogin   pgtype.Timestamptz
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
-	row := q.db.QueryRow(ctx, updateUser, arg.OfficeID, arg.PhoneNumber, arg.ID)
+	row := q.db.QueryRow(ctx, updateUser,
+		arg.Email,
+		arg.PhoneNumber,
+		arg.OfficeID,
+		arg.PasswordHash,
+		arg.ID,
+	)
 	var i UpdateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.Role,
 		&i.Email,
-		&i.OfficeID,
 		&i.PhoneNumber,
+		&i.OfficeID,
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
-}
-
-const updateUserPassword = `-- name: UpdateUserPassword :exec
-UPDATE users
-SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
-WHERE id = $2
-`
-
-type UpdateUserPasswordParams struct {
-	PasswordHash string
-	ID           int32
-}
-
-func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) error {
-	_, err := q.db.Exec(ctx, updateUserPassword, arg.PasswordHash, arg.ID)
-	return err
 }
