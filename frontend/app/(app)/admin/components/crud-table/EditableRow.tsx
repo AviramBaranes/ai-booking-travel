@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil, Trash2, Check, X } from "lucide-react";
@@ -141,6 +142,13 @@ export function EditableRow<TRow>({
             />
           ) : col.type === "password" ? (
             <span className="text-gray-400">••••••</span>
+          ) : col.type === "link" && col.href ? (
+            <Link
+              href={col.href(row)}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              {formatCellValue(row, col)}
+            </Link>
           ) : (
             formatCellValue(row, col)
           )}

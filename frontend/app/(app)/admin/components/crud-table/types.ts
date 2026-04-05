@@ -8,7 +8,8 @@ export type ColumnType =
   | "date"
   | "checkbox"
   | "select"
-  | "password";
+  | "password"
+  | "link";
 
 export interface SelectOption {
   label: string;
@@ -23,6 +24,7 @@ export interface ColumnDef<TRow> {
   editable?: boolean;
   sortable?: boolean;
   format?: (value: unknown) => string;
+  href?: (row: TRow) => string;
 }
 
 export interface SortState {

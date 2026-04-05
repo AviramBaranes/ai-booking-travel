@@ -177,9 +177,9 @@ export namespace accounts {
     export interface CreateOrganizationRequest {
         name: string
         isOrganic: boolean
-        phone: string
-        address: string
-        obligo: number
+        phone?: string
+        address?: string
+        obligo?: number
     }
 
     export interface ListAdminsResponse {
@@ -222,8 +222,8 @@ export namespace accounts {
     }
 
     export interface ListOrganizationsRequest {
-        Search: string
-        IsOrganic: boolean
+        Search?: string
+        IsOrganic?: string
         Page: number
     }
 
@@ -316,11 +316,11 @@ export namespace accounts {
     }
 
     export interface UpdateOrganizationRequest {
-        name: string
-        isOrganic: boolean
-        phone: string
-        address: string
-        obligo: number
+        name?: string
+        isOrganic?: boolean
+        phone?: string
+        address?: string
+        obligo?: number
     }
 
     export interface UpdateUserRequest {
@@ -481,7 +481,7 @@ export namespace accounts {
         public async ListOrganizations(params: ListOrganizationsRequest): Promise<ListOrganizationsResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
-                isOrganic: String(params.IsOrganic),
+                isOrganic: params.IsOrganic,
                 page:      String(params.Page),
                 search:    params.Search,
             })

@@ -3,6 +3,7 @@ package accounts
 import (
 	"context"
 	"errors"
+	"strconv"
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/validation"
@@ -41,21 +42,25 @@ type ListOrganizationsResponse struct {
 }
 
 type ListOrganizationsRequest struct {
-	Search    string `query:"search"`
-	IsOrganic bool   `query:"isOrganic"`
+	Search    string `query:"search" encore:"optional"`
+	IsOrganic string `query:"isOrganic" encore:"optional"`
 	Page      int64  `query:"page" validate:"required,gte=1"`
 }
 
 func (p ListOrganizationsRequest) Validate() error {
+	_, err := strconv.ParseBool(p.IsOrganic)
+	if err != nil && p.IsOrganic != "" {
+		return api_errors.NewValidationError("isOrganic is invalid")
+	}
 	return validation.ValidateStruct(p)
 }
 
 type CreateOrganizationRequest struct {
 	Name      string   `json:"name" validate:"required,notblank"`
 	IsOrganic bool     `json:"isOrganic"`
-	Phone     *string  `json:"phone" validate:"omitempty,notblank"`
-	Address   *string  `json:"address" validate:"omitempty,notblank"`
-	Obligo    *float64 `json:"obligo" validate:"omitempty,gte=0"`
+	Phone     *string  `json:"phone" validate:"omitempty,notblank" encore:"optional"`
+	Address   *string  `json:"address" validate:"omitempty,notblank" encore:"optional"`
+	Obligo    *float64 `json:"obligo" validate:"omitempty,gte=0" encore:"optional"`
 }
 
 func (p CreateOrganizationRequest) Validate() error {
@@ -63,11 +68,11 @@ func (p CreateOrganizationRequest) Validate() error {
 }
 
 type UpdateOrganizationRequest struct {
-	Name      *string  `json:"name" validate:"omitempty,notblank"`
-	IsOrganic *bool    `json:"isOrganic"`
-	Phone     *string  `json:"phone"`
-	Address   *string  `json:"address"`
-	Obligo    *float64 `json:"obligo" validate:"omitempty,gte=0"`
+	Name      *string  `json:"name" validate:"omitempty,notblank" encore:"optional"`
+	IsOrganic *bool    `json:"isOrganic" encore:"optional"`
+	Phone     *string  `json:"phone" encore:"optional"`
+	Address   *string  `json:"address" encore:"optional"`
+	Obligo    *float64 `json:"obligo" validate:"omitempty,gte=0" encore:"optional"`
 }
 
 func (p UpdateOrganizationRequest) Validate() error {
@@ -115,8 +120,9 @@ func (s *Service) ListOrganizations(ctx context.Context, params *ListOrganizatio
 	}
 
 	var isOrganicPtr *bool
-	if params.IsOrganic {
-		isOrganicPtr = &params.IsOrganic
+	if params.IsOrganic != "" {
+		isOrganic, _ := strconv.ParseBool(params.IsOrganic)
+		isOrganicPtr = &isOrganic
 	}
 
 	rows, err := s.query.ListOrganizations(ctx, db.ListOrganizationsParams{

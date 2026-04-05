@@ -17,13 +17,14 @@ import {
   CalendarCheck,
   BarChart3,
   Languages,
+  Landmark,
 } from "lucide-react";
 import AdminNavbar from "@/shared/components/admin/AdminNavbar";
 
 const navItems = [
   { label: "ראשי", href: "/admin", icon: Home },
   { label: "מנהלים", href: "/admin/admins", icon: UserCog },
-  { label: "רשתות", href: "/admin/networks", icon: Network },
+  { label: "רשתות", href: "/admin/organizations", icon: Landmark },
   { label: "משרדים", href: "/admin/offices", icon: Building2 },
   { label: "אנשי קשר", href: "/admin/contacts", icon: Contact },
   { label: "סוכנים", href: "/admin/agents", icon: Users },
