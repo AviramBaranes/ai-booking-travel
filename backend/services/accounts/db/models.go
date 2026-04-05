@@ -89,9 +89,10 @@ type Organization struct {
 }
 
 type RefreshToken struct {
-	Jti       string
-	UserID    int32
-	ExpiresAt pgtype.Timestamptz
+	Jti        string
+	UserID     int32
+	AdminRefID *int32
+	ExpiresAt  pgtype.Timestamptz
 }
 
 type User struct {

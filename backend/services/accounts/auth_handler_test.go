@@ -23,7 +23,7 @@ func TestAuthHandler(t *testing.T) {
 			OfficeID: &office_id,
 		}
 
-		token, err := jwt.SignAccessToken(user)
+		token, err := jwt.SignAccessToken(user, nil)
 		if err != nil {
 			t.Fatalf("Failed to sign token: %v", err)
 		}
@@ -62,7 +62,7 @@ func TestAuthHandler(t *testing.T) {
 			OfficeID: &office_id,
 		}
 
-		token, err := jwt.SignAccessToken(user)
+		token, err := jwt.SignAccessToken(user, nil)
 		if err != nil {
 			t.Fatalf("Failed to sign token: %v", err)
 		}

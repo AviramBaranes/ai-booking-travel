@@ -21,13 +21,14 @@ var secrets struct {
 }
 
 // SignAccessToken generates a signed JWT access token for the given user ID and role.
-func SignAccessToken(user db.User) (string, error) {
+func SignAccessToken(user db.User, adminRefID *int32) (string, error) {
 	now := time.Now()
 
 	claims := AccessTokenClaims{
-		UserID:   user.ID,
-		Role:     user.Role,
-		OfficeID: user.OfficeID,
+		UserID:     user.ID,
+		Role:       user.Role,
+		OfficeID:   user.OfficeID,
+		AdminRefID: adminRefID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    Issuer,
 			Subject:   strconv.FormatInt(int64(user.ID), 10),

@@ -22,7 +22,7 @@ func TestSignAccessToken(t *testing.T) {
 		OfficeID: &office_id,
 	}
 
-	tokenString, err := SignAccessToken(user)
+	tokenString, err := SignAccessToken(user, nil)
 	if err != nil {
 		t.Fatalf("SignAccessToken failed: %v", err)
 	}
@@ -64,7 +64,7 @@ func TestValidateAccessToken(t *testing.T) {
 		ID:   123,
 		Role: "admin",
 	}
-	validToken, _ := SignAccessToken(user)
+	validToken, _ := SignAccessToken(user, nil)
 
 	t.Run("Valid token", func(t *testing.T) {
 		claims, err := ValidateAccessToken(validToken)

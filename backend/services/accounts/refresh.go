@@ -51,7 +51,7 @@ func (s *Service) RefreshTokens(ctx context.Context, p RefreshTokensParams) (*Lo
 		return nil, api_errors.ErrInternalError
 	}
 
-	accessToken, refreshToken, err := s.generateTokens(ctx, user)
+	accessToken, refreshToken, err := s.generateTokens(ctx, user, savedToken.AdminRefID)
 	if err != nil {
 		rlog.Error("failed to generate new tokens", "user_id", user.ID, "error", err)
 		return nil, api_errors.ErrInternalError

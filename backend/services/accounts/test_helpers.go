@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -98,8 +99,10 @@ func registerAdmin(ctx context.Context, email, password string) (*CreateAdminRes
 	}, nil
 }
 
+var nameCounter atomic.Int64
+
 func randomName() string {
-	return fmt.Sprintf("name_%d", time.Now().UnixNano())
+	return fmt.Sprintf("name_%d_%d", time.Now().UnixNano(), nameCounter.Add(1))
 }
 
 func randomIsraeliPhoneNumber() string {

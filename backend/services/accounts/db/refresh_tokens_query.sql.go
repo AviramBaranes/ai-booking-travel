@@ -30,28 +30,39 @@ func (q *Queries) DeleteRefreshTokensByUserId(ctx context.Context, userID int32)
 }
 
 const getRefreshToken = `-- name: GetRefreshToken :one
-SELECT jti, user_id, expires_at FROM refresh_tokens WHERE jti = $1
+SELECT jti, user_id, admin_ref_id, expires_at FROM refresh_tokens WHERE jti = $1
 `
 
 func (q *Queries) GetRefreshToken(ctx context.Context, jti string) (RefreshToken, error) {
 	row := q.db.QueryRow(ctx, getRefreshToken, jti)
 	var i RefreshToken
-	err := row.Scan(&i.Jti, &i.UserID, &i.ExpiresAt)
+	err := row.Scan(
+		&i.Jti,
+		&i.UserID,
+		&i.AdminRefID,
+		&i.ExpiresAt,
+	)
 	return i, err
 }
 
 const saveRefreshToken = `-- name: SaveRefreshToken :exec
-INSERT INTO refresh_tokens (jti, user_id, expires_at)
-VALUES ($1, $2, $3)
+INSERT INTO refresh_tokens (jti, user_id, admin_ref_id, expires_at)
+VALUES ($1, $2, $3, $4)
 `
 
 type SaveRefreshTokenParams struct {
-	Jti       string
-	UserID    int32
-	ExpiresAt pgtype.Timestamptz
+	Jti        string
+	UserID     int32
+	AdminRefID *int32
+	ExpiresAt  pgtype.Timestamptz
 }
 
 func (q *Queries) SaveRefreshToken(ctx context.Context, arg SaveRefreshTokenParams) error {
-	_, err := q.db.Exec(ctx, saveRefreshToken, arg.Jti, arg.UserID, arg.ExpiresAt)
+	_, err := q.db.Exec(ctx, saveRefreshToken,
+		arg.Jti,
+		arg.UserID,
+		arg.AdminRefID,
+		arg.ExpiresAt,
+	)
 	return err
 }

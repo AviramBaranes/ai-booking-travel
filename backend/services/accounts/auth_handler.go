@@ -18,9 +18,10 @@ const (
 )
 
 type AuthData struct {
-	UserID   int32
-	Role     UserRole
-	OfficeID int32
+	UserID     int32
+	Role       UserRole
+	OfficeID   int32
+	AdminRefID *int32
 }
 
 // encore: authhandler
@@ -35,9 +36,10 @@ func AuthHandler(ctx context.Context, token string) (auth.UID, *AuthData, error)
 		officeID = *claims.OfficeID
 	}
 	authData := &AuthData{
-		UserID:   claims.UserID,
-		Role:     UserRole(claims.Role),
-		OfficeID: officeID,
+		UserID:     claims.UserID,
+		Role:       UserRole(claims.Role),
+		OfficeID:   officeID,
+		AdminRefID: claims.AdminRefID,
 	}
 
 	uid := strconv.Itoa(int(authData.UserID))

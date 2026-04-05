@@ -75,5 +75,6 @@ CREATE TABLE
     refresh_tokens (
         jti TEXT PRIMARY KEY,
         user_id SERIAL NOT NULL REFERENCES users (id),
+        admin_ref_id INTEGER REFERENCES users (id),
         expires_at TIMESTAMPTZ NOT NULL
     );

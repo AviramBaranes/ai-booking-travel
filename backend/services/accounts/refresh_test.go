@@ -3,6 +3,7 @@ package accounts
 import (
 	"context"
 	"errors"
+	"strconv"
 	"testing"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"encore.app/internal/jwt"
 	"encore.app/services/accounts/db"
 	"encore.app/services/accounts/mocks"
+	"encore.dev/beta/auth"
 	"go.uber.org/mock/gomock"
 )
 
@@ -309,6 +311,69 @@ func TestRefreshTokens(t *testing.T) {
 		}
 		if rt.Jti != refreshClaims.ID {
 			t.Errorf("expected token.JTI %s, got %s", refreshClaims.ID, rt.Jti)
+		}
+	})
+
+	t.Run("Refresh preserves admin ref ID", func(t *testing.T) {
+		admin, delAdmin, err := registerAdmin(ctx, generateTestEmail(), testPassword)
+		if err != nil {
+			t.Fatalf("failed to create admin: %v", err)
+		}
+		defer delAdmin()
+
+		agentEmail := generateTestEmail()
+		agent, delAgent, err := createAgent(ctx, CreateAgentRequest{
+			Email:       agentEmail,
+			Password:    testPassword,
+			PhoneNumber: randomIsraeliPhoneNumber(),
+		})
+		if err != nil {
+			t.Fatalf("failed to create agent: %v", err)
+		}
+		defer delAgent()
+
+		// Login as agent (creates tokens with admin ref)
+		adminCtx := auth.WithContext(ctx, auth.UID(strconv.Itoa(int(admin.ID))), &AuthData{
+			UserID: admin.ID,
+			Role:   UserRoleAdmin,
+		})
+		loginResp, err := LoginAsAgent(adminCtx, LoginAsAgentParams{AgentID: agent.ID})
+		if err != nil {
+			t.Fatalf("failed to login as agent: %v", err)
+		}
+
+		// Refresh the tokens
+		refreshResp, err := RefreshTokens(ctx, RefreshTokensParams{RefreshToken: loginResp.RefreshToken})
+		if err != nil {
+			t.Fatalf("expected no error on refresh, got %v", err)
+		}
+
+		// Verify new access token still has admin ref ID
+		accessClaims, err := jwt.ValidateAccessToken(refreshResp.AccessToken)
+		if err != nil {
+			t.Fatalf("failed to validate refreshed access token: %v", err)
+		}
+		if accessClaims.AdminRefID == nil {
+			t.Fatal("expected AdminRefID in refreshed access token")
+		}
+		if *accessClaims.AdminRefID != admin.ID {
+			t.Errorf("expected AdminRefID %d, got %d", admin.ID, *accessClaims.AdminRefID)
+		}
+
+		// Verify new refresh token row also has admin ref
+		refreshClaims, err := jwt.ValidateRefreshToken(refreshResp.RefreshToken)
+		if err != nil {
+			t.Fatalf("failed to validate refreshed refresh token: %v", err)
+		}
+		rt, err := query.GetRefreshToken(ctx, refreshClaims.ID)
+		if err != nil {
+			t.Fatalf("failed to get stored refresh token: %v", err)
+		}
+		if rt.AdminRefID == nil {
+			t.Fatal("expected AdminRefID in stored refresh token after refresh")
+		}
+		if *rt.AdminRefID != admin.ID {
+			t.Errorf("expected stored AdminRefID %d, got %d", admin.ID, *rt.AdminRefID)
 		}
 	})
 }
