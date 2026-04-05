@@ -34,9 +34,9 @@ func (p CreateCurrencyRequest) Validate() error {
 }
 
 type UpdateCurrencyRequest struct {
-	CurrencyCode    *string  `json:"currencyCode" validate:"omitempty,notblank"`
-	CurrencyISOName *string  `json:"currencyISOName" validate:"omitempty,notblank"`
-	Rate            *float64 `json:"rate" validate:"omitempty,gt=0"`
+	CurrencyCode    *string  `json:"currencyCode" validate:"omitempty,notblank" encore:"optional"`
+	CurrencyISOName *string  `json:"currencyISOName" validate:"omitempty,notblank" encore:"optional"`
+	Rate            *float64 `json:"rate" validate:"omitempty,gt=0" encore:"optional"`
 }
 
 func (p UpdateCurrencyRequest) Validate() error {

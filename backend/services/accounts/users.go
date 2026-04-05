@@ -14,10 +14,10 @@ import (
 // --- Request / Response types ---
 
 type UpdateUserRequest struct {
-	Email       *string `json:"email" validate:"omitempty,email"`
-	PhoneNumber *string `json:"phoneNumber"`
-	OfficeID    *int32  `json:"officeId" validate:"omitempty,gte=1"`
-	Password    *string `json:"password" validate:"omitempty,min=8" encore:"sensitive"`
+	Email       *string `json:"email" validate:"omitempty,email" encore:"optional"`
+	PhoneNumber *string `json:"phoneNumber" encore:"optional"`
+	OfficeID    *int32  `json:"officeId" validate:"omitempty,gte=1" encore:"optional"`
+	Password    *string `json:"password" validate:"omitempty,min=8" encore:"sensitive,optional"`
 }
 
 func (p UpdateUserRequest) Validate() error {

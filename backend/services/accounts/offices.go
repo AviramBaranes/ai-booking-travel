@@ -40,8 +40,8 @@ type ListOfficesResponse struct {
 type CreateOfficeRequest struct {
 	Name           string  `json:"name" validate:"required,notblank"`
 	OrganizationID int32   `json:"organizationId" validate:"required,gte=1"`
-	Phone          *string `json:"phone"`
-	Address        *string `json:"address"`
+	Phone          *string `json:"phone" encore:"optional"`
+	Address        *string `json:"address" encore:"optional"`
 }
 
 func (p CreateOfficeRequest) Validate() error {
@@ -49,10 +49,10 @@ func (p CreateOfficeRequest) Validate() error {
 }
 
 type UpdateOfficeRequest struct {
-	Name           *string `json:"name" validate:"omitempty,notblank"`
-	OrganizationID *int32  `json:"organizationId" validate:"omitempty,gte=1"`
-	Phone          *string `json:"phone"`
-	Address        *string `json:"address"`
+	Name           *string `json:"name" validate:"omitempty,notblank" encore:"optional"`
+	OrganizationID *int32  `json:"organizationId" validate:"omitempty,gte=1" encore:"optional"`
+	Phone          *string `json:"phone" encore:"optional"`
+	Address        *string `json:"address" encore:"optional"`
 }
 
 func (p UpdateOfficeRequest) Validate() error {

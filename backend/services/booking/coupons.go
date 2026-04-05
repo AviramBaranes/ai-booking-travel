@@ -36,10 +36,10 @@ func (p CreateCouponRequest) Validate() error {
 }
 
 type UpdateCouponRequest struct {
-	Name      *string `json:"name" validate:"omitempty,notblank"`
-	Code      *string `json:"code" validate:"omitempty,notblank"`
-	Discount  *int32  `json:"discount" validate:"omitempty,gte=1,lte=100"`
-	IsEnabled *bool   `json:"isEnabled"`
+	Name      *string `json:"name" validate:"omitempty,notblank" encore:"optional"`
+	Code      *string `json:"code" validate:"omitempty,notblank" encore:"optional"`
+	Discount  *int32  `json:"discount" validate:"omitempty,gte=1,lte=100" encore:"optional"`
+	IsEnabled *bool   `json:"isEnabled" encore:"optional"`
 }
 
 func (p UpdateCouponRequest) Validate() error {

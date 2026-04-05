@@ -47,8 +47,8 @@ type CreateContactRequest struct {
 	Role           string `json:"role" validate:"required,notblank"`
 	Cellphone      string `json:"cellphone" validate:"required,notblank"`
 	Email          string `json:"email" validate:"required,email"`
-	OfficeID       *int32 `json:"officeId"`
-	OrganizationID *int32 `json:"organizationId"`
+	OfficeID       *int32 `json:"officeId" encore:"optional"`
+	OrganizationID *int32 `json:"organizationId" encore:"optional"`
 }
 
 func (p CreateContactRequest) Validate() error {
@@ -70,13 +70,13 @@ func (p CreateContactRequest) Validate() error {
 }
 
 type UpdateContactRequest struct {
-	FirstName      *string `json:"firstName" validate:"omitempty,notblank"`
-	LastName       *string `json:"lastName" validate:"omitempty,notblank"`
-	Role           *string `json:"role" validate:"omitempty,notblank"`
-	Cellphone      *string `json:"cellphone" validate:"omitempty,notblank"`
-	Email          *string `json:"email" validate:"omitempty,email"`
-	OfficeID       *int32  `json:"officeId"`
-	OrganizationID *int32  `json:"organizationId"`
+	FirstName      *string `json:"firstName" validate:"omitempty,notblank" encore:"optional"`
+	LastName       *string `json:"lastName" validate:"omitempty,notblank" encore:"optional"`
+	Role           *string `json:"role" validate:"omitempty,notblank" encore:"optional"`
+	Cellphone      *string `json:"cellphone" validate:"omitempty,notblank" encore:"optional"`
+	Email          *string `json:"email" validate:"omitempty,email" encore:"optional"`
+	OfficeID       *int32  `json:"officeId" encore:"optional"`
+	OrganizationID *int32  `json:"organizationId" encore:"optional"`
 }
 
 func (p UpdateContactRequest) Validate() error {

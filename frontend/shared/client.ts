@@ -163,15 +163,15 @@ export namespace accounts {
         role: string
         cellphone: string
         email: string
-        officeId: number
-        organizationId: number
+        officeId?: number
+        organizationId?: number
     }
 
     export interface CreateOfficeRequest {
         name: string
         organizationId: number
-        phone: string
-        address: string
+        phone?: string
+        address?: string
     }
 
     export interface CreateOrganizationRequest {
@@ -299,20 +299,20 @@ export namespace accounts {
     }
 
     export interface UpdateContactRequest {
-        firstName: string
-        lastName: string
-        role: string
-        cellphone: string
-        email: string
-        officeId: number
-        organizationId: number
+        firstName?: string
+        lastName?: string
+        role?: string
+        cellphone?: string
+        email?: string
+        officeId?: number
+        organizationId?: number
     }
 
     export interface UpdateOfficeRequest {
-        name: string
-        organizationId: number
-        phone: string
-        address: string
+        name?: string
+        organizationId?: number
+        phone?: string
+        address?: string
     }
 
     export interface UpdateOrganizationRequest {
@@ -324,10 +324,10 @@ export namespace accounts {
     }
 
     export interface UpdateUserRequest {
-        email: string
-        phoneNumber: string
-        officeId: number
-        password: string
+        email?: string
+        phoneNumber?: string
+        officeId?: number
+        password?: string
     }
 
     export interface UpdateUserResponse {
@@ -799,16 +799,16 @@ export namespace booking {
     }
 
     export interface UpdateCouponRequest {
-        name: string
-        code: string
-        discount: number
-        isEnabled: boolean
+        name?: string
+        code?: string
+        discount?: number
+        isEnabled?: boolean
     }
 
     export interface UpdateCurrencyRequest {
-        currencyCode: string
-        currencyISOName: string
-        rate: number
+        currencyCode?: string
+        currencyISOName?: string
+        rate?: number
     }
 
     export interface UpdateHertzMarkupRateRequest {

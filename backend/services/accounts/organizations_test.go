@@ -185,7 +185,7 @@ func TestListOrganizations(t *testing.T) {
 
 		resp, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{
 			Search:    "OrganicFilterTest",
-			IsOrganic: true,
+			IsOrganic: "true",
 			Page:      1,
 		})
 		if err != nil {
