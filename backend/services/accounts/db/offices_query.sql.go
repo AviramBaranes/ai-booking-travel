@@ -76,6 +76,7 @@ SELECT
     o.id,
     o.name,
     o.organization_id,
+    org.name AS organization_name,
     o.phone,
     o.address,
     o.created_at,
@@ -83,12 +84,13 @@ SELECT
     COUNT(DISTINCT c.id)::BIGINT  AS contact_count,
     COUNT(DISTINCT u.id)::BIGINT  AS agent_count
 FROM offices o
+JOIN organizations org ON org.id = o.organization_id
 LEFT JOIN contacts c ON c.office_id = o.id
 LEFT JOIN users u ON (u.office_id = o.id AND u.role = 'agent')
 WHERE
     ($1::VARCHAR IS NULL            OR o.name ILIKE '%' || $1::VARCHAR || '%')
     AND ($2::INTEGER IS NULL OR o.organization_id = $2::INTEGER)
-GROUP BY o.id
+GROUP BY o.id, org.name
 ORDER BY o.name
 LIMIT  $4::BIGINT
 OFFSET $3::BIGINT
@@ -102,15 +104,16 @@ type ListOfficesParams struct {
 }
 
 type ListOfficesRow struct {
-	ID             int32
-	Name           string
-	OrganizationID int32
-	Phone          *string
-	Address        *string
-	CreatedAt      pgtype.Timestamptz
-	UpdatedAt      pgtype.Timestamptz
-	ContactCount   int64
-	AgentCount     int64
+	ID               int32
+	Name             string
+	OrganizationID   int32
+	OrganizationName string
+	Phone            *string
+	Address          *string
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+	ContactCount     int64
+	AgentCount       int64
 }
 
 func (q *Queries) ListOffices(ctx context.Context, arg ListOfficesParams) ([]ListOfficesRow, error) {
@@ -131,6 +134,7 @@ func (q *Queries) ListOffices(ctx context.Context, arg ListOfficesParams) ([]Lis
 			&i.ID,
 			&i.Name,
 			&i.OrganizationID,
+			&i.OrganizationName,
 			&i.Phone,
 			&i.Address,
 			&i.CreatedAt,

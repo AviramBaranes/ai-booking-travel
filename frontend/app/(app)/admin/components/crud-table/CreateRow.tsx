@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { ZodType } from "zod";
-import { FieldValues } from "react-hook-form";
+import { FieldValues, Path } from "react-hook-form";
 import { ColumnDef } from "./types";
 import { CellInput } from "./CellInput";
 
@@ -39,6 +39,8 @@ export function CreateRow<TRow>({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,6 +60,25 @@ export function CreateRow<TRow>({
         <td key={col.key} className="px-3 py-2">
           {col.editable === false ? (
             <span className="text-sm text-gray-400">—</span>
+          ) : col.renderEditCell ? (
+            <div className="relative pb-4">
+              {col.renderEditCell({
+                value: watch(col.key as string),
+                onChange: (v) =>
+                  setValue(
+                    col.key as Path<Record<string, string>>,
+                    v as Record<string, string>[string],
+                  ),
+              })}
+              {errors[col.key] && (
+                <span
+                  className="absolute right-0 bottom-0 text-red-500 text-xs whitespace-nowrap"
+                  dir="rtl"
+                >
+                  {errors[col.key]?.message as string}
+                </span>
+              )}
+            </div>
           ) : (
             <div className="relative pb-4">
               <CellInput

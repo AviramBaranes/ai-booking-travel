@@ -13,13 +13,14 @@ import (
 // --- Request / Response types ---
 
 type OfficeResponse struct {
-	ID             int32   `json:"id"`
-	Name           string  `json:"name"`
-	OrganizationID int32   `json:"organizationId"`
-	Phone          *string `json:"phone"`
-	Address        *string `json:"address"`
-	ContactCount   int64   `json:"contactCount"`
-	AgentCount     int64   `json:"agentCount"`
+	ID               int32   `json:"id"`
+	Name             string  `json:"name"`
+	OrganizationID   int32   `json:"organizationId"`
+	OrganizationName string  `json:"organizationName"`
+	Phone            *string `json:"phone"`
+	Address          *string `json:"address"`
+	ContactCount     int64   `json:"contactCount"`
+	AgentCount       int64   `json:"agentCount"`
 }
 
 type ListOfficesRequest struct {
@@ -65,13 +66,14 @@ const officesPageSize int64 = 15
 
 func toOfficeResponse(o db.ListOfficesRow) OfficeResponse {
 	return OfficeResponse{
-		ID:             o.ID,
-		Name:           o.Name,
-		OrganizationID: o.OrganizationID,
-		Phone:          o.Phone,
-		Address:        o.Address,
-		ContactCount:   o.ContactCount,
-		AgentCount:     o.AgentCount,
+		ID:               o.ID,
+		Name:             o.Name,
+		OrganizationID:   o.OrganizationID,
+		OrganizationName: o.OrganizationName,
+		Phone:            o.Phone,
+		Address:          o.Address,
+		ContactCount:     o.ContactCount,
+		AgentCount:       o.AgentCount,
 	}
 }
 

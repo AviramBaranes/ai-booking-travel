@@ -3,6 +3,7 @@ SELECT
     o.id,
     o.name,
     o.organization_id,
+    org.name AS organization_name,
     o.phone,
     o.address,
     o.created_at,
@@ -10,12 +11,13 @@ SELECT
     COUNT(DISTINCT c.id)::BIGINT  AS contact_count,
     COUNT(DISTINCT u.id)::BIGINT  AS agent_count
 FROM offices o
+JOIN organizations org ON org.id = o.organization_id
 LEFT JOIN contacts c ON c.office_id = o.id
 LEFT JOIN users u ON (u.office_id = o.id AND u.role = 'agent')
 WHERE
     (sqlc.narg(name)::VARCHAR IS NULL            OR o.name ILIKE '%' || sqlc.narg(name)::VARCHAR || '%')
     AND (sqlc.narg(organization_id)::INTEGER IS NULL OR o.organization_id = sqlc.narg(organization_id)::INTEGER)
-GROUP BY o.id
+GROUP BY o.id, org.name
 ORDER BY o.name
 LIMIT  sqlc.arg(page_size)::BIGINT
 OFFSET sqlc.arg(page_offset)::BIGINT;

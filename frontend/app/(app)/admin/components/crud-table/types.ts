@@ -25,6 +25,11 @@ export interface ColumnDef<TRow> {
   sortable?: boolean;
   format?: (value: unknown) => string;
   href?: (row: TRow) => string;
+  renderEditCell?: (props: {
+    value: unknown;
+    onChange: (value: unknown) => void;
+  }) => React.ReactNode;
+  renderCell?: (value: unknown, row: TRow) => React.ReactNode;
 }
 
 export interface SortState {

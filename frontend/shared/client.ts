@@ -273,6 +273,7 @@ export namespace accounts {
         id: number
         name: string
         organizationId: number
+        organizationName: string
         phone: string
         address: string
         contactCount: number

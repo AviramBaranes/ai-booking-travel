@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil, Trash2, Check, X } from "lucide-react";
 import { ZodType } from "zod";
-import { FieldValues } from "react-hook-form";
+import { FieldValues, Path } from "react-hook-form";
 import { ColumnDef } from "./types";
 import { CellInput } from "./CellInput";
 
@@ -52,6 +52,8 @@ export function EditableRow<TRow>({
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,6 +78,25 @@ export function EditableRow<TRow>({
               <span className="text-sm text-gray-500">
                 {formatCellValue(row, col)}
               </span>
+            ) : col.renderEditCell ? (
+              <div className="relative pb-4">
+                {col.renderEditCell({
+                  value: watch(col.key),
+                  onChange: (v) =>
+                    setValue(
+                      col.key as Path<Record<string, string>>,
+                      v as Record<string, string>[string],
+                    ),
+                })}
+                {errors[col.key] && (
+                  <span
+                    className="absolute right-0 bottom-0 text-red-500 text-xs whitespace-nowrap"
+                    dir="rtl"
+                  >
+                    {errors[col.key]?.message as string}
+                  </span>
+                )}
+              </div>
             ) : (
               <div className="relative pb-4">
                 <CellInput
@@ -133,7 +154,9 @@ export function EditableRow<TRow>({
       </td>
       {columns.map((col) => (
         <td key={col.key} className="px-3 py-2 text-sm">
-          {col.type === "checkbox" ? (
+          {col.renderCell ? (
+            col.renderCell((row as Record<string, unknown>)[col.key], row)
+          ) : col.type === "checkbox" ? (
             <input
               type="checkbox"
               checked={!!(row as Record<string, unknown>)[col.key]}
