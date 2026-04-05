@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
 	"encore.app/services/accounts/mocks"
 	"go.uber.org/mock/gomock"
@@ -90,5 +91,148 @@ func TestCreateFirstAdmin(t *testing.T) {
 		}()
 
 		createFirstAdmin(q)
+	})
+}
+
+// --- Helpers ---
+
+func adminMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
+	ctrl := gomock.NewController(t)
+	t.Cleanup(ctrl.Finish)
+	q := mocks.NewMockQuerier(ctrl)
+	return q, &Service{query: q}
+}
+
+func createTestAdmin(t *testing.T, s *Service, email string) *CreateAdminResponse {
+	t.Helper()
+	resp, err := s.CreateAdmin(context.Background(), CreateAdminRequest{
+		Email:    email,
+		Password: "ValidPass123!",
+	})
+	if err != nil {
+		t.Fatalf("failed to create admin %s: %v", email, err)
+	}
+	return resp
+}
+
+// --- Tests ---
+
+func TestListAdmins(t *testing.T) {
+	ctx := context.Background()
+	s := &Service{query: query}
+
+	t.Run("returns created admin in list", func(t *testing.T) {
+		t.Parallel()
+		admin := createTestAdmin(t, s, "list_admin_1@test.com")
+		defer query.DeleteUser(ctx, admin.ID)
+
+		resp, err := s.ListAdmins(ctx)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		found := false
+		for _, a := range resp.Admins {
+			if a.ID == admin.ID {
+				found = true
+				if a.Email != "list_admin_1@test.com" {
+					t.Fatalf("expected email list_admin_1@test.com, got %s", a.Email)
+				}
+			}
+		}
+		if !found {
+			t.Fatal("created admin not found in list")
+		}
+	})
+
+	t.Run("returns error when db fails", func(t *testing.T) {
+		t.Parallel()
+		q, s := adminMockService(t)
+		q.EXPECT().ListAdmins(gomock.Any()).Return(nil, errors.New("db error"))
+
+		_, err := s.ListAdmins(ctx)
+		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
+	})
+}
+
+func TestCreateAdmin(t *testing.T) {
+	ctx := context.Background()
+	s := &Service{query: query}
+
+	t.Run("creates admin successfully", func(t *testing.T) {
+		t.Parallel()
+		resp, err := s.CreateAdmin(ctx, CreateAdminRequest{
+			Email:    "create_admin_ok@test.com",
+			Password: "ValidPass123!",
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		defer query.DeleteUser(ctx, resp.ID)
+
+		if resp.ID == 0 {
+			t.Fatal("expected non-zero ID")
+		}
+	})
+
+	t.Run("returns error on duplicate email", func(t *testing.T) {
+		t.Parallel()
+		admin := createTestAdmin(t, s, "dup_admin@test.com")
+		defer query.DeleteUser(ctx, admin.ID)
+
+		_, err := s.CreateAdmin(ctx, CreateAdminRequest{
+			Email:    "dup_admin@test.com",
+			Password: "ValidPass123!",
+		})
+		api_errors.AssertApiError(t, ErrEmailAlreadyExists, err)
+	})
+
+	t.Run("validation rejects invalid email", func(t *testing.T) {
+		t.Parallel()
+		p := CreateAdminRequest{Email: "not-an-email", Password: "ValidPass123!"}
+		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
+	})
+
+	t.Run("validation rejects empty email", func(t *testing.T) {
+		t.Parallel()
+		p := CreateAdminRequest{Email: "", Password: "ValidPass123!"}
+		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
+	})
+
+	t.Run("validation rejects weak password", func(t *testing.T) {
+		t.Parallel()
+		p := CreateAdminRequest{Email: "weak_pw@test.com", Password: "short"}
+		api_errors.AssertApiError(t, ErrPasswordTooShort, p.Validate())
+	})
+
+	t.Run("validation rejects password without uppercase", func(t *testing.T) {
+		t.Parallel()
+		p := CreateAdminRequest{Email: "no_upper@test.com", Password: "validpass123!"}
+		api_errors.AssertApiError(t, ErrPasswordNoUpper, p.Validate())
+	})
+
+	t.Run("returns error when check exists db fails", func(t *testing.T) {
+		t.Parallel()
+		q, s := adminMockService(t)
+		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int32(0), errors.New("db error"))
+
+		_, err := s.CreateAdmin(ctx, CreateAdminRequest{
+			Email:    "db_fail@test.com",
+			Password: "ValidPass123!",
+		})
+		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
+	})
+
+	t.Run("returns error when create db fails", func(t *testing.T) {
+		t.Parallel()
+		q, s := adminMockService(t)
+		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int32(0), db.ErrNoRows)
+		q.EXPECT().CreateAdmin(gomock.Any(), gomock.Any()).Return(db.CreateAdminRow{}, errors.New("db error"))
+
+		_, err := s.CreateAdmin(ctx, CreateAdminRequest{
+			Email:    "db_create_fail@test.com",
+			Password: "ValidPass123!",
+		})
+		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }

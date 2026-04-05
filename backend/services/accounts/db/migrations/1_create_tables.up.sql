@@ -64,7 +64,11 @@ CREATE TABLE
             TIME ZONE DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP
         WITH
-            TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT users_office_agent_only CHECK (
+                role = 'agent'
+                OR office_id IS NULL
+            )
     );
 
 CREATE TABLE
