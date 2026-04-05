@@ -11,12 +11,12 @@ type Service struct {
 	query db.Querier
 }
 
-var usersDB = sqldb.NewDatabase("users", sqldb.DatabaseConfig{
+var accountsDb = sqldb.NewDatabase("accounts", sqldb.DatabaseConfig{
 	Migrations: "./db/migrations/",
 })
 
 func initService() (*Service, error) {
-	pgxdb := sqldb.Driver[*pgxpool.Pool](usersDB)
+	pgxdb := sqldb.Driver[*pgxpool.Pool](accountsDb)
 	query := db.New(pgxdb)
 
 	createFirstAdmin(query)

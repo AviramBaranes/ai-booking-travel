@@ -83,7 +83,7 @@ func TestLogin(t *testing.T) {
 	})
 
 	t.Run("Incorrect password", func(t *testing.T) {
-		user, err := RegisterAdmin(ctx, RegisterAdminParams{
+		user, err := CreateAdmin(ctx, CreateAdminRequest{
 			Email:    testEmail,
 			Password: testPassword,
 		})
@@ -97,7 +97,7 @@ func TestLogin(t *testing.T) {
 	})
 
 	t.Run("Store refresh token fails", func(t *testing.T) {
-		user, err := RegisterAdmin(ctx, RegisterAdminParams{
+		user, err := CreateAdmin(ctx, CreateAdminRequest{
 			Email:    testEmail,
 			Password: testPassword,
 		})

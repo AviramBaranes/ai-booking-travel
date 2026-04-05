@@ -28,7 +28,7 @@ const (
 )
 
 var (
-	pgxdb = sqldb.Driver[*pgxpool.Pool](usersDB)
+	pgxdb = sqldb.Driver[*pgxpool.Pool](accountsDb)
 	query = db.New(pgxdb)
 )
 
@@ -83,8 +83,8 @@ func assertAccessClaims(t *testing.T, claims *jwt.AccessTokenClaims, user *db.Us
 	}
 }
 
-func registerAdmin(ctx context.Context, email, password string) (*RegisterAdminResponse, func(), error) {
-	admin, err := RegisterAdmin(ctx, RegisterAdminParams{
+func registerAdmin(ctx context.Context, email, password string) (*CreateAdminResponse, func(), error) {
+	admin, err := CreateAdmin(ctx, CreateAdminRequest{
 		Email:    email,
 		Password: password,
 	})
