@@ -7,7 +7,9 @@ import {
   Home,
   Network,
   Building2,
+  UserCog,
   Users,
+  Contact,
   Receipt,
   Ticket,
   Coins,
@@ -20,8 +22,10 @@ import AdminNavbar from "@/shared/components/admin/AdminNavbar";
 
 const navItems = [
   { label: "ראשי", href: "/admin", icon: Home },
+  { label: "מנהלים", href: "/admin/admins", icon: UserCog },
   { label: "רשתות", href: "/admin/networks", icon: Network },
   { label: "משרדים", href: "/admin/offices", icon: Building2 },
+  { label: "אנשי קשר", href: "/admin/contacts", icon: Contact },
   { label: "סוכנים", href: "/admin/agents", icon: Users },
   { label: "מחירונים", href: "/admin/pricing", icon: Receipt },
   { label: "קופונים", href: "/admin/coupons", icon: Ticket },
