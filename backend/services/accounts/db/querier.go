@@ -22,9 +22,11 @@ type Querier interface {
 	DeleteContact(ctx context.Context, id int32) error
 	DeleteRefreshToken(ctx context.Context, jti string) error
 	DeleteRefreshTokensByUserId(ctx context.Context, userID int32) error
+	DeleteUser(ctx context.Context, id int32) error
 	GetRefreshToken(ctx context.Context, jti string) (RefreshToken, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserById(ctx context.Context, id int32) (User, error)
+	GetUserByPhone(ctx context.Context, phoneNumber *string) (int32, error)
 	ListAdmins(ctx context.Context) ([]ListAdminsRow, error)
 	ListAgents(ctx context.Context, arg ListAgentsParams) ([]ListAgentsRow, error)
 	ListContacts(ctx context.Context, arg ListContactsParams) ([]Contact, error)

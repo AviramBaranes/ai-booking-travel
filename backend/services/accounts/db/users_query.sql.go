@@ -128,6 +128,16 @@ func (q *Queries) CreateAgent(ctx context.Context, arg CreateAgentParams) (Creat
 	return i, err
 }
 
+const deleteUser = `-- name: DeleteUser :exec
+DELETE FROM users
+WHERE id = $1
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteUser, id)
+	return err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, role, email, phone_number, otp, office_id, password_hash, last_login, created_at, updated_at
 FROM users
@@ -174,6 +184,18 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getUserByPhone = `-- name: GetUserByPhone :one
+SELECT id FROM users
+WHERE phone_number = $1
+`
+
+func (q *Queries) GetUserByPhone(ctx context.Context, phoneNumber *string) (int32, error) {
+	row := q.db.QueryRow(ctx, getUserByPhone, phoneNumber)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
 }
 
 const listAdmins = `-- name: ListAdmins :many

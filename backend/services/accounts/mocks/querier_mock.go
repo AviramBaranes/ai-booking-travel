@@ -233,6 +233,20 @@ func (mr *MockQuerierMockRecorder) DeleteRefreshTokensByUserId(ctx, userID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRefreshTokensByUserId", reflect.TypeOf((*MockQuerier)(nil).DeleteRefreshTokensByUserId), ctx, userID)
 }
 
+// DeleteUser mocks base method.
+func (m *MockQuerier) DeleteUser(ctx context.Context, id int32) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUser", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUser indicates an expected call of DeleteUser.
+func (mr *MockQuerierMockRecorder) DeleteUser(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockQuerier)(nil).DeleteUser), ctx, id)
+}
+
 // GetRefreshToken mocks base method.
 func (m *MockQuerier) GetRefreshToken(ctx context.Context, jti string) (db.RefreshToken, error) {
 	m.ctrl.T.Helper()
@@ -276,6 +290,21 @@ func (m *MockQuerier) GetUserById(ctx context.Context, id int32) (db.User, error
 func (mr *MockQuerierMockRecorder) GetUserById(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserById", reflect.TypeOf((*MockQuerier)(nil).GetUserById), ctx, id)
+}
+
+// GetUserByPhone mocks base method.
+func (m *MockQuerier) GetUserByPhone(ctx context.Context, phoneNumber *string) (int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserByPhone", ctx, phoneNumber)
+	ret0, _ := ret[0].(int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserByPhone indicates an expected call of GetUserByPhone.
+func (mr *MockQuerierMockRecorder) GetUserByPhone(ctx, phoneNumber any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByPhone", reflect.TypeOf((*MockQuerier)(nil).GetUserByPhone), ctx, phoneNumber)
 }
 
 // ListAdmins mocks base method.

@@ -137,7 +137,7 @@ func TestLogin(t *testing.T) {
 		defer delAdmin()
 
 		agentEmail := "agent_" + testEmail
-		_, delAgent, err := registerAgent(ctx, RegisterAgentParams{
+		_, delAgent, err := createAgent(ctx, CreateAgentRequest{
 			Email:       agentEmail,
 			Password:    testPassword,
 			PhoneNumber: "0505050505",

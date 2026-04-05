@@ -21,3 +21,11 @@ func TimeFromDB(t pgtype.Timestamptz) time.Time {
 	}
 	return t.Time
 }
+
+// TimePtrFromDB converts a pgtype.Timestamptz to a *time.Time, returning nil if not valid.
+func TimePtrFromDB(t pgtype.Timestamptz) *time.Time {
+	if !t.Valid {
+		return nil
+	}
+	return &t.Time
+}

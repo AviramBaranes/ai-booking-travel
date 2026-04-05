@@ -13,6 +13,10 @@ SELECT *
 FROM users
 WHERE id = $1;
 
+-- name: DeleteUser :exec
+DELETE FROM users
+WHERE id = $1;
+
 -- name: CheckUserExists :one
 SELECT id FROM users
 WHERE email = $1;
@@ -21,6 +25,10 @@ WHERE email = $1;
 SELECT *
 FROM users
 WHERE email = $1;
+
+-- name: GetUserByPhone :one
+SELECT id FROM users
+WHERE phone_number = $1;
 
 -- name: ListAgents :many
 SELECT id, role, email, phone_number, office_id, last_login, created_at, updated_at

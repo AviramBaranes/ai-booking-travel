@@ -222,7 +222,7 @@ func TestListOffices(t *testing.T) {
 		}
 
 		// Create 1 agent on this office
-		_, err = query.RegisterAgent(ctx, db.RegisterAgentParams{
+		_, err = query.CreateAgent(ctx, db.CreateAgentParams{
 			Email: "agent_count1@offcounts.com", PasswordHash: "hash",
 			OfficeID: &office.ID,
 		})

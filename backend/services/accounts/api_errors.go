@@ -40,4 +40,9 @@ var (
 		errs.AlreadyExists, "Name already exists",
 		api_errors.ErrorDetails{Code: api_errors.CodeNameAlreadyExists},
 	)
+
+	ErrPhoneAlreadyExists = api_errors.NewErrorWithDetail(
+		errs.AlreadyExists, "Phone number already exists",
+		api_errors.ErrorDetails{Code: api_errors.CodePhoneAlreadyExists},
+	)
 )

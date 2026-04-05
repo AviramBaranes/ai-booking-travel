@@ -9,6 +9,7 @@ const (
 
 	CodeUserNotFound        = "user_not_found"
 	CodeEmailAlreadyExists  = "email_already_exists"
+	CodePhoneAlreadyExists  = "phone_already_exists"
 	CodeInvalidCredentials  = "invalid_credentials"
 	CodeInvalidRefreshToken = "invalid_refresh_token"
 	CodeExpiredRefreshToken = "expired_refresh_token"

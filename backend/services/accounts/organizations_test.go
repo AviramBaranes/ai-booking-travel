@@ -247,14 +247,14 @@ func TestListOrganizations(t *testing.T) {
 		}
 
 		// Create 2 agents: one in office1, one in office2
-		_, err = query.RegisterAgent(ctx, db.RegisterAgentParams{
+		_, err = query.CreateAgent(ctx, db.CreateAgentParams{
 			Email: "agent1@counts.com", PasswordHash: "hash",
 			OfficeID: &office1.ID,
 		})
 		if err != nil {
 			t.Fatalf("failed to create agent1: %v", err)
 		}
-		_, err = query.RegisterAgent(ctx, db.RegisterAgentParams{
+		_, err = query.CreateAgent(ctx, db.CreateAgentParams{
 			Email: "agent2@counts.com", PasswordHash: "hash",
 			OfficeID: &office2.ID,
 		})
@@ -278,7 +278,7 @@ func TestListOrganizations(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create unrelated contact: %v", err)
 		}
-		_, err = query.RegisterAgent(ctx, db.RegisterAgentParams{
+		_, err = query.CreateAgent(ctx, db.CreateAgentParams{
 			Email: "unrelated-agent@counts.com", PasswordHash: "hash",
 			OfficeID: &unrelatedOffice.ID,
 		})

@@ -106,7 +106,7 @@ func randomIsraeliPhoneNumber() string {
 	return fmt.Sprintf("05%08d", time.Now().UnixNano()%100000000)
 }
 
-func registerAgent(ctx context.Context, p RegisterAgentParams) (*RegisterAgentResponse, func(), error) {
+func createAgent(ctx context.Context, p CreateAgentRequest) (*CreateAgentResponse, func(), error) {
 	org, err := query.CreateOrganization(ctx, db.CreateOrganizationParams{
 		Name:      randomName(),
 		IsOrganic: false,
@@ -124,7 +124,7 @@ func registerAgent(ctx context.Context, p RegisterAgentParams) (*RegisterAgentRe
 	}
 
 	p.OfficeID = office.ID
-	agent, err := RegisterAgent(ctx, p)
+	agent, err := CreateAgent(ctx, p)
 
 	if err != nil {
 		return nil, nil, err
