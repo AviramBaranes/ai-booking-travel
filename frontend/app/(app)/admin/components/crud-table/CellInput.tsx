@@ -44,6 +44,15 @@ export function CellInput<TRow, TForm extends FieldValues>({
       );
     case "date":
       return <input type="date" className={base} {...register(name)} />;
+    case "password":
+      return (
+        <input
+          type="password"
+          className={base}
+          autoComplete="new-password"
+          {...register(name)}
+        />
+      );
     default:
       return <input type="text" className={base} {...register(name)} />;
   }

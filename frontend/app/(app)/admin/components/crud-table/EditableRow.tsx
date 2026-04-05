@@ -14,7 +14,7 @@ interface EditableRowProps<TRow> {
   onEdit: () => void;
   onCancel: () => void;
   onSave: (data: Record<string, unknown>) => void;
-  onDelete: () => void;
+  onDelete?: () => void;
   schema: ZodType<FieldValues>;
   selected?: boolean;
   onToggleSelect?: () => void;
@@ -139,6 +139,8 @@ export function EditableRow<TRow>({
               disabled
               className="h-4 w-4 accent-blue-600"
             />
+          ) : col.type === "password" ? (
+            <span className="text-gray-400">••••••</span>
           ) : (
             formatCellValue(row, col)
           )}
@@ -153,13 +155,15 @@ export function EditableRow<TRow>({
           >
             <Pencil size={14} />
           </button>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="p-1 text-gray-400 hover:text-red-600 cursor-pointer"
-          >
-            <Trash2 size={14} />
-          </button>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="p-1 text-gray-400 hover:text-red-600 cursor-pointer"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
         </div>
       </td>
     </tr>

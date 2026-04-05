@@ -2,7 +2,13 @@ import { ReactNode } from "react";
 import { ZodType } from "zod";
 import { FieldValues } from "react-hook-form";
 
-export type ColumnType = "text" | "number" | "date" | "checkbox" | "select";
+export type ColumnType =
+  | "text"
+  | "number"
+  | "date"
+  | "checkbox"
+  | "select"
+  | "password";
 
 export interface SelectOption {
   label: string;
@@ -41,7 +47,7 @@ export interface CrudTableProps<TRow, TCreate, TUpdate> {
   extractTotal?: (response: unknown) => number;
   createFn?: (data: TCreate) => Promise<unknown>;
   updateFn: (id: number, data: TUpdate) => Promise<unknown>;
-  deleteFn: (id: number) => Promise<unknown>;
+  deleteFn?: (id: number) => Promise<unknown>;
   createSchema?: ZodType<TCreate & FieldValues>;
   updateSchema: ZodType<TUpdate & FieldValues>;
   bulkActions?: BulkAction[];

@@ -125,7 +125,7 @@ export function CrudTable<
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteFn(id),
+    mutationFn: (id: number) => deleteFn?.(id) ?? Promise.resolve(),
     onSuccess: (_data, deletedId) => {
       queryClient.invalidateQueries({ queryKey: [queryKey] });
       setSelectedIds((prev) => {
@@ -139,7 +139,8 @@ export function CrudTable<
   });
 
   const deleteSelectedMutation = useMutation({
-    mutationFn: (ids: number[]) => Promise.all(ids.map((id) => deleteFn(id))),
+    mutationFn: (ids: number[]) =>
+      Promise.all(ids.map((id) => deleteFn?.(id) ?? Promise.resolve())),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [queryKey] });
       setSelectedIds(new Set());
@@ -247,18 +248,20 @@ export function CrudTable<
                     </th>
                   ))}
                   <th className="px-3 py-2 w-20">
-                    <button
-                      type="button"
-                      disabled={
-                        selectedIds.size === 0 ||
-                        deleteSelectedMutation.isPending
-                      }
-                      onClick={handleDeleteSelected}
-                      className="p-1 text-gray-400 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                      title={`מחק נבחרים (${selectedIds.size})`}
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    {deleteFn && (
+                      <button
+                        type="button"
+                        disabled={
+                          selectedIds.size === 0 ||
+                          deleteSelectedMutation.isPending
+                        }
+                        onClick={handleDeleteSelected}
+                        className="p-1 text-gray-400 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                        title={`מחק נבחרים (${selectedIds.size})`}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </th>
                 </tr>
               </thead>
@@ -289,11 +292,15 @@ export function CrudTable<
                           data: data as TUpdate,
                         })
                       }
-                      onDelete={() => {
-                        if (confirm("האם למחוק?")) {
-                          deleteMutation.mutate(id);
-                        }
-                      }}
+                      onDelete={
+                        deleteFn
+                          ? () => {
+                              if (confirm("האם למחוק?")) {
+                                deleteMutation.mutate(id);
+                              }
+                            }
+                          : undefined
+                      }
                     />
                   );
                 })}
