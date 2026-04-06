@@ -25,7 +25,7 @@ export function BenefitsBlock({ block }: Props) {
           return (
             <div
               key={item.id}
-              className="flex flex-col items-center gap-6 rounded-2xl bg-white py-4 shadow-[0px_4px_24px_0px_rgba(0,14,247,0.08)]"
+              className="flex flex-col items-center gap-6 rounded-2xl bg-white py-4 shadow-card"
             >
               {media && typeof media === "object" && (media as Media).url && (
                 <Image

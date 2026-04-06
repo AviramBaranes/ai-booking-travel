@@ -264,6 +264,22 @@ body {
   font-weight: var(--type-label-weight);
 }
 
+@utility shadow-subtle {
+  box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.06);
+}
+
+@utility shadow-card {
+  box-shadow: 0px 4px 24px 0px rgba(0, 14, 247, 0.08);
+}
+
+@utility shadow-modal {
+  box-shadow: 0px 8px 24px 0px rgba(0, 0, 0, 0.08);
+}
+
+@utility shadow-dropdown {
+  box-shadow: 0px 4px 16px rgba(15, 0, 67, 0.15);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

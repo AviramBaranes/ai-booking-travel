@@ -101,7 +101,7 @@ export function LoginModal() {
       </DialogTrigger>
 
       <DialogContent
-        className="min-w-96 max-w-md p-6 flex flex-col gap-6 bg-white border-border-light/50 rounded-2xl shadow-[0px_8px_24px_0px_rgba(0,0,0,0.08)]"
+        className="min-w-96 max-w-md p-6 flex flex-col gap-6 bg-white border-border-light/50 rounded-2xl shadow-modal"
         showCloseButton={false}
       >
         {/* Header — title on inline-start, close on inline-end */}

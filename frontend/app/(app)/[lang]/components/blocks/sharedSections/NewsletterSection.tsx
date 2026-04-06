@@ -71,12 +71,12 @@ export function NewsletterSection({ section }: NewsletterSectionProps) {
               <input
                 type="email"
                 placeholder={emailPlaceholder ?? "כתובת הדואר האלקטרוני שלכם"}
-                className="w-full rounded-[10px] border border-border-light bg-white px-4.5 py-4 ps-10 text-sm text-foreground shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] placeholder:text-gray-400"
+                className="w-full rounded-[10px] border border-border-light bg-white px-4.5 py-4 ps-10 text-sm text-foreground shadow-subtle placeholder:text-gray-400"
               />
             </div>
             <button
               type="submit"
-              className="h-13 w-30 shrink-0 cursor-pointer rounded-[10px] bg-brand text-[15px] font-bold text-white shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] transition-opacity hover:opacity-90"
+              className="h-13 w-30 shrink-0 cursor-pointer rounded-[10px] bg-brand text-[15px] font-bold text-white shadow-subtle transition-opacity hover:opacity-90"
             >
               {submitButtonLabel}
             </button>

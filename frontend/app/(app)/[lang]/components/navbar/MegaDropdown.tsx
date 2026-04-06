@@ -46,7 +46,7 @@ export function MegaDropdown({ label, links, lang }: MegaDropdownProps) {
       </button>
 
       <div
-        className={`absolute inset-s-0 top-full z-50 mt-4 min-w-56 rounded-xl bg-white py-2 shadow-[0px_4px_16px_rgba(15,0,67,0.15)] ${isOpen ? "" : "hidden"}`}
+        className={`absolute inset-s-0 top-full z-50 mt-4 min-w-56 rounded-xl bg-white py-2 shadow-dropdown ${isOpen ? "" : "hidden"}`}
       >
         {links.map((link, i) => {
           const page = link.page as Populated<typeof link.page>;

@@ -24,7 +24,7 @@ export function NotFoundContent({
         <div className="bg-brand h-0.75 w-20 rounded-sm" />
         <Link
           href={homepageUrl}
-          className="bg-brand text-white font-bold type-paragraph px-5 py-3.5 rounded-[10px] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] whitespace-nowrap"
+          className="bg-brand text-white font-bold type-paragraph px-5 py-3.5 rounded-[10px] shadow-subtle whitespace-nowrap"
         >
           {buttonText}
         </Link>

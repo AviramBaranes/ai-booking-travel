@@ -60,7 +60,7 @@ export function CustomerOtpForm({ phone }: Props) {
             <InputOTPSlot
               key={i}
               index={i}
-              className="size-11.5 rounded-lg border-2 border-border-light bg-white shadow-[0px_2px_8px_0px_rgba(0,0,0,0.06)] type-h6 text-foreground data-[active=true]:border-brand/80"
+              className="size-11.5 rounded-lg border-2 border-border-light bg-white shadow-subtle type-h6 text-foreground data-[active=true]:border-brand/80"
             />
           ))}
         </InputOTPGroup>
