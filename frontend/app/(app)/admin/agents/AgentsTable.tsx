@@ -11,6 +11,7 @@ import { listAgents, createAgent, updateUser } from "@/shared/api/accounts-api";
 import { ContactsFilterBar } from "@/app/(app)/admin/components/ContactsFilterBar";
 import { OfficeCombobox } from "@/app/(app)/admin/components/OfficeCombobox";
 import { useUrlFilters } from "@/app/(app)/admin/hooks/useUrlFilters";
+import LoginAsAgentButton from "./LoginAsAgentButton";
 
 const formatDate = (v: unknown) => {
   const d = new Date(v as string);
@@ -111,6 +112,13 @@ export default function AgentsTable() {
           key: "password" as keyof accounts.AgentResponse,
           label: "סיסמה",
           type: "password",
+        },
+        {
+          key: "id" as keyof accounts.AgentResponse,
+          label: "פעולות",
+          type: "text",
+          editable: false,
+          renderCell: (_v, row) => <LoginAsAgentButton agentId={row.id} />,
         },
       ]}
       queryKey="agents"

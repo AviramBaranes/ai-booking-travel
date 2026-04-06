@@ -6,14 +6,6 @@ export function login(data: accounts.LoginParams) {
   return withErrorHandler((client) => client.accounts.Login(data));
 }
 
-export function loginAsAgent(data: accounts.LoginAsAgentParams) {
-  return withErrorHandler((client) => client.accounts.LoginAsAgent(data));
-}
-
-export function loginBackToAdmin() {
-  return withErrorHandler((client) => client.accounts.LoginBackToAdmin());
-}
-
 export function refreshTokens(data: accounts.RefreshTokensParams) {
   return withErrorHandler((client) => client.accounts.RefreshTokens(data));
 }

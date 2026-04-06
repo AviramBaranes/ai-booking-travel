@@ -48,6 +48,47 @@ export const authOptions: NextAuthOptions = {
         return null;
       },
     }),
+    CredentialsProvider({
+      id: "agent-login",
+      name: "Agent Login",
+      type: "credentials",
+      credentials: {
+        agentId: { type: "text" },
+        accessToken: { type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.agentId || !credentials?.accessToken) return null;
+
+        const client = new Client(Local as BaseURL, {
+          auth: credentials.accessToken,
+        });
+        const user = await client.accounts.LoginAsAgent({
+          agentId: Number(credentials.agentId),
+        });
+
+        if (user) return { ...user, id: String(user.id), isAdminAsAgent: true };
+        return null;
+      },
+    }),
+    CredentialsProvider({
+      id: "admin-login-back",
+      name: "Admin Login Back",
+      type: "credentials",
+      credentials: {
+        accessToken: { type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.accessToken) return null;
+
+        const client = new Client(Local as BaseURL, {
+          auth: credentials.accessToken,
+        });
+        const user = await client.accounts.LoginBackToAdmin();
+
+        if (user) return { ...user, id: String(user.id) };
+        return null;
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user, trigger }) {
@@ -72,6 +113,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       session.user = token as unknown as accounts.LoginResponse & {
         customExp: number;
+        isAdminAsAgent?: boolean;
       };
       return session;
     },

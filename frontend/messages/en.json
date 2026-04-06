@@ -43,6 +43,10 @@
     "he": "Hebrew",
     "en": "English"
   },
+  "BackToAdmin": {
+    "message": "You are logged in as an agent",
+    "button": "Back to Admin"
+  },
   "ResultsPage": {
     "loadingTitle": "Searching for the best deal for you",
     "loadingMessage": "Cancellation fee 5% or 100 ILS, whichever is lower, up to 48 hours before car pickup"

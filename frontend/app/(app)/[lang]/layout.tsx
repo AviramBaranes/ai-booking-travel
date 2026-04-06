@@ -1,14 +1,13 @@
 import "@/app/globals.css";
 import { getServerSession } from "next-auth/next";
 import Providers from "../providers";
-import { LangSwitcher } from "./components/LangSwitcher";
 import { redirect } from "next/dist/client/components/navigation";
 import { notFound } from "next/navigation";
-import { LoginModal } from "./components/LoginModal";
 import { NextIntlClientProvider } from "next-intl";
 import { authOptions } from "@/shared/auth/authOptions";
 import { Navbar } from "./components/navbar/Navbar";
 import { Footer } from "./components/footer/Footer";
+import { BackToAdminBanner } from "./components/BackToAdminBanner";
 
 export default async function AppRootLayout({
   children,
@@ -37,6 +36,7 @@ export default async function AppRootLayout({
       <body className="min-h-full flex flex-col">
         <Providers>
           <NextIntlClientProvider locale={lang}>
+            <BackToAdminBanner />
             <Navbar lang={lang} isAuthenticated={!!session?.user?.id} />
             {children}
             <Footer lang={lang} />
