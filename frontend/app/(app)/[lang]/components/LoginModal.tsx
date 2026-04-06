@@ -1,132 +1,179 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { X, User } from "lucide-react";
-import { getSession, signIn } from "next-auth/react";
+import { getSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useEffect, useState } from "react";
+import { User, X } from "lucide-react";
 
-import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { AgentLoginForm } from "./login/AgentLoginForm";
+import { AgentSuccessScreen } from "./login/AgentSuccessScreen";
+import { CustomerPhoneForm } from "./login/CustomerPhoneForm";
+import { CustomerOtpForm } from "./login/CustomerOtpForm";
 
-function loginSchema(t: (key: string) => string) {
-  return z.object({
-    email: z.string().email(t("validation.invalidEmail")),
-    password: z.string().min(1, t("validation.passwordRequired")),
-  });
-}
-
-type LoginFormData = z.infer<ReturnType<typeof loginSchema>>;
+type LoginMode = "agent" | "customer";
+type AgentStep = "credentials" | "success";
+type CustomerStep = "phone" | "otp";
 
 export function LoginModal() {
   const t = useTranslations("Login");
-  const tError = useTranslations("ApiErrors");
   const router = useRouter();
-  const [showModal, setShowModal] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema(t)),
-  });
+  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<LoginMode>("agent");
+  const [agentStep, setAgentStep] = useState<AgentStep>("credentials");
+  const [customerStep, setCustomerStep] = useState<CustomerStep>("phone");
+  const [customerPhone, setCustomerPhone] = useState("");
 
-  const { mutate, error, isPending } = useMutation({
-    mutationFn: async (data: LoginFormData) => {
-      const result = await signIn("credentials", {
-        redirect: false,
-        email: data.email,
-        password: data.password,
-      });
+  // Restore success screen if next-auth's session update caused a remount
+  useEffect(() => {
+    if (sessionStorage.getItem("agentLoginSuccess")) {
+      sessionStorage.removeItem("agentLoginSuccess");
+      setOpen(true);
+      setAgentStep("success");
+    }
+  }, []);
 
-      if (result?.error) {
-        throw new Error(result?.error ?? "unknown_error");
-      }
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
+      setMode("agent");
+      setAgentStep("credentials");
+      setCustomerStep("phone");
+      setCustomerPhone("");
+    }
+    setOpen(next);
+  };
 
-      return result;
-    },
-    onSuccess: async () => {
-      const session = await getSession();
-      reset();
-      if (session?.user?.role === "admin") {
-        router.push("/admin");
-      } else {
-        setShowModal(false);
-      }
-    },
-  });
+  const handleModeSwitch = (newMode: LoginMode) => {
+    setMode(newMode);
+    setAgentStep("credentials");
+    setCustomerStep("phone");
+  };
 
-  const closeModal = () => {
-    reset();
-    setShowModal(false);
+  const handleAgentSuccess = () => {
+    setAgentStep("success");
+  };
+
+  const handleContinueToSite = async () => {
+    const session = await getSession();
+    handleOpenChange(false);
+    if (session?.user?.role === "admin") {
+      router.push("/admin");
+    } else {
+      router.refresh();
+    }
+  };
+
+  const handleCustomerPhoneSubmit = (phone: string) => {
+    setCustomerPhone(phone);
+    setCustomerStep("otp");
+  };
+
+  const headerTitle = () => {
+    if (mode === "agent") return t("agent.title");
+    if (customerStep === "otp") return t("customer.otpTitle");
+    return t("customer.title");
+  };
+
+  const headerSubtitle = () => {
+    if (mode === "agent") {
+      return agentStep === "credentials" ? t("agent.subtitle") : null;
+    }
+    if (customerStep === "phone") return t("customer.subtitle");
+    return t("customer.otpSubtitle", { phone: customerPhone });
   };
 
   return (
-    <>
-      <Button
-        size="outline"
-        variant="outline"
-        onClick={() => setShowModal(true)}
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button size="outline" variant="outline">
+          <User className="size-5" />
+          {t("openModal")}
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent
+        className="min-w-96 max-w-md p-6 flex flex-col gap-6 bg-white border-border-light/50 rounded-2xl shadow-[0px_8px_24px_0px_rgba(0,0,0,0.08)]"
+        showCloseButton={false}
       >
-        <User className="size-5" />
-        {t("openModal")}
-      </Button>
-      {showModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 cursor-pointer"
-          onClick={closeModal}
-        >
-          <div
-            className="relative bg-white p-6 rounded-lg shadow-lg w-80 cursor-default"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={closeModal}
-              className="absolute top-3 inset-e-3 text-gray-400 hover:text-gray-600 cursor-pointer"
-            >
-              <X size={20} />
-            </button>
-            <h2 className="text-xl mb-4">{t("title")}</h2>
-            <form
-              onSubmit={handleSubmit((d) => mutate(d))}
-              className="flex flex-col gap-3"
-            >
-              <div>
-                <input
-                  type="email"
-                  placeholder={t("email")}
-                  className="border p-2 rounded w-full"
-                  {...register("email")}
-                />
-                <ErrorDisplay>{errors.email?.message}</ErrorDisplay>
-              </div>
-              <div>
-                <input
-                  type="password"
-                  placeholder={t("password")}
-                  className="border p-2 rounded w-full"
-                  {...register("password")}
-                />
-                <ErrorDisplay>{errors.password?.message}</ErrorDisplay>
-              </div>
-              <ErrorDisplay>{error && tError(error.message)}</ErrorDisplay>
-              <Button
-                type="submit"
-                // loading={isPending}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {t("submit")}
-              </Button>
-            </form>
+        {/* Header — title on inline-start, close on inline-end */}
+        <div className="flex items-start justify-between w-full gap-4">
+          <div className="flex flex-col gap-1">
+            <DialogTitle className="type-h5 text-navy">
+              {headerTitle()}
+            </DialogTitle>
+            {headerSubtitle() && (
+              <p className="type-paragraph text-text-secondary">
+                {headerSubtitle()}
+              </p>
+            )}
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleOpenChange(false)}
+            className="text-text-secondary -me-1.5 -mt-1.5 size-8 shrink-0"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </Button>
         </div>
-      )}
-    </>
+
+        {/* Success state */}
+        {mode === "agent" && agentStep === "success" ? (
+          <AgentSuccessScreen onContinue={handleContinueToSite} />
+        ) : (
+          <>
+            {/* Tab switcher — agent on inline-start (right in RTL) */}
+            <div className="flex gap-4 items-center w-full">
+              <Button
+                onClick={() => handleModeSwitch("agent")}
+                className={cn(
+                  "flex-1 py-4 px-9 rounded-xl type-paragraph font-bold h-auto transition-colors",
+                  mode === "agent"
+                    ? "bg-navy text-white hover:bg-navy/90"
+                    : "bg-background border border-navy text-navy hover:bg-navy/5",
+                )}
+              >
+                {t("tab.agent")}
+              </Button>
+              <Button
+                onClick={() => handleModeSwitch("customer")}
+                className={cn(
+                  "flex-1 py-4 px-9 rounded-xl type-paragraph font-bold h-auto transition-colors",
+                  mode === "customer"
+                    ? "bg-navy text-white hover:bg-navy/90"
+                    : "bg-background border border-navy text-navy hover:bg-navy/5",
+                )}
+              >
+                {t("tab.customer")}
+              </Button>
+            </div>
+
+            <div className="h-px w-full bg-border-light/50" />
+
+            {mode === "agent" && agentStep === "credentials" && (
+              <AgentLoginForm onSuccess={handleAgentSuccess} />
+            )}
+
+            {mode === "customer" && customerStep === "phone" && (
+              <CustomerPhoneForm onSubmit={handleCustomerPhoneSubmit} />
+            )}
+
+            {mode === "customer" && customerStep === "otp" && (
+              <CustomerOtpForm phone={customerPhone} />
+            )}
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -28,12 +28,42 @@
     "translated": "מתורגם",
     "verified": "מאומת"
   },
+  "Logout": {
+    "Logout": "התנתק"
+  },
   "Login": {
     "openModal": "התחברות",
-    "title": "התחברות",
-    "email": "אימייל",
-    "password": "סיסמה",
-    "submit": "התחברות",
+    "tab": {
+      "agent": "אני סוכן",
+      "customer": "אני לקוח"
+    },
+    "agent": {
+      "title": "התחברות",
+      "titleError": "שגיאה — נסו שנית",
+      "subtitle": "ברוכים השבים ל-AI Booking Travel",
+      "email": "דוא\"ל",
+      "password": "סיסמה",
+      "forgotPassword": "שכחתי סיסמה",
+      "submit": "התחברות",
+      "otpTitle": "אימות דו-שלבי",
+      "otpSubtitle": "שלחנו קוד אימות לנייד שלכם",
+      "otpResend": "לא קיבלתם? שלחו שוב",
+      "confirmCode": "אישור קוד",
+      "successTitle": "ההתחברות בוצעה בהצלחה!",
+      "successMessage": "ברוך הבא! אתם מחוברים כעת.",
+      "continueToSite": "המשך לאתר"
+    },
+    "customer": {
+      "title": "כניסת לקוח",
+      "subtitle": "הכניסו מספר נייד לקבלת קוד אימות",
+      "phonePlaceholder": "050-000-0000",
+      "smsNote": "נשלח SMS עם קוד אימות לנייד שלכם",
+      "submit": "המשך",
+      "otpTitle": "אמתו את הנייד",
+      "otpSubtitle": "שלחנו קוד ל- {phone}",
+      "otpResend": "לא קיבלתם? שלחו שוב ({time})",
+      "confirmCode": "אישור"
+    },
     "validation": {
       "invalidEmail": "יש להזין כתובת אימייל תקינה",
       "passwordRequired": "סיסמה היא שדה חובה"

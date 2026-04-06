@@ -5,9 +5,13 @@ export function ErrorDisplay({
   children,
   className,
 }: PropsWithChildren<{ className?: string }>) {
+  if (!children) return null;
   return (
-    <label className={clsx("label", { hidden: !children }, className)}>
-      <span className="label-text text-red-500 text-sm">{children}</span>
-    </label>
+    <p
+      role="alert"
+      className={clsx("text-destructive text-sm mt-1", className)}
+    >
+      {children}
+    </p>
   );
 }

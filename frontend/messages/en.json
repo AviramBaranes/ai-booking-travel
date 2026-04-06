@@ -28,12 +28,42 @@
     "translated": "Translated",
     "verified": "Verified"
   },
+  "Logout": {
+    "Logout": "Logout"
+  },
   "Login": {
     "openModal": "Connect",
-    "title": "Login",
-    "email": "Email",
-    "password": "Password",
-    "submit": "Login",
+    "tab": {
+      "agent": "I'm an agent",
+      "customer": "I'm a customer"
+    },
+    "agent": {
+      "title": "Login",
+      "titleError": "Error — Try Again",
+      "subtitle": "Welcome back to AI Booking Travel",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot password",
+      "submit": "Login",
+      "otpTitle": "Two-Factor Authentication",
+      "otpSubtitle": "We sent a verification code to your mobile",
+      "otpResend": "Didn't receive it? Send again",
+      "confirmCode": "Confirm code",
+      "successTitle": "Login successful!",
+      "successMessage": "Welcome! You are now logged in.",
+      "continueToSite": "Continue to site"
+    },
+    "customer": {
+      "title": "Customer Login",
+      "subtitle": "Enter your mobile number to receive a verification code",
+      "phonePlaceholder": "050-000-0000",
+      "smsNote": "We'll send an SMS with a verification code to your mobile",
+      "submit": "Continue",
+      "otpTitle": "Verify your mobile",
+      "otpSubtitle": "We sent a code to {phone}",
+      "otpResend": "Didn't receive it? Send again ({time})",
+      "confirmCode": "Verify"
+    },
     "validation": {
       "invalidEmail": "Please enter a valid email address",
       "passwordRequired": "Password is required"

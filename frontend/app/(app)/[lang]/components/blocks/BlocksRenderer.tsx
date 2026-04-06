@@ -19,9 +19,8 @@ export function BlocksRenderer({ blocks }: { blocks: Page["layout"] }) {
             return <RichText key={index} data={block.content} />;
           case "sharedSectionRef":
             return (
-              <SharedSectionWrapper overrides={block.overrides}>
+              <SharedSectionWrapper key={index} overrides={block.overrides}>
                 <SharedSectionRenderer
-                  key={index}
                   section={
                     block.section as Populated<SharedSectionRefBlock["section"]>
                   }

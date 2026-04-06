@@ -6,6 +6,9 @@ import config from "@payload-config";
 import Link from "next/link";
 import { MegaDropdown } from "./MegaDropdown";
 import type { Populated } from "@/shared/types/payload";
+import { signOut } from "next-auth/react";
+import { LogOut } from "lucide-react";
+import { LogoutButton } from "./LogoutButton";
 
 async function getHeaderData(lang: string) {
   const payload = await getPayload({ config });
@@ -63,7 +66,7 @@ export async function Navbar({
 
         <div className="flex items-center gap-4">
           {displayLangSwitcher && <LangSwitcher lang={lang} />}
-          {!isAuthenticated && <LoginModal />}
+          {isAuthenticated ? <LogoutButton /> : <LoginModal />}
         </div>
       </nav>
     </header>
