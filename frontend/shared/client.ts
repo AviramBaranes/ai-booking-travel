@@ -135,6 +135,8 @@ export namespace accounts {
         email: string
         officeId: number
         organizationId: number
+        officeName: string
+        organizationName: string
     }
 
     export interface CreateAdminRequest {

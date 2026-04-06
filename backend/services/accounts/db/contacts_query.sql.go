@@ -7,15 +7,18 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countContacts = `-- name: CountContacts :one
 SELECT COUNT(*)::BIGINT AS total
-FROM contacts
+FROM contacts c
+LEFT JOIN offices o ON o.id = c.office_id
 WHERE
-    ($1::VARCHAR IS NULL OR first_name ILIKE '%' || $1::VARCHAR || '%' OR last_name ILIKE '%' || $1::VARCHAR || '%')
-    AND ($2::INTEGER IS NULL       OR office_id = $2::INTEGER)
-    AND ($3::INTEGER IS NULL OR organization_id = $3::INTEGER)
+    ($1::VARCHAR IS NULL OR c.first_name ILIKE '%' || $1::VARCHAR || '%' OR c.last_name ILIKE '%' || $1::VARCHAR || '%')
+    AND ($2::INTEGER IS NULL       OR c.office_id = $2::INTEGER)
+    AND ($3::INTEGER IS NULL OR c.organization_id = $3::INTEGER OR o.organization_id = $3::INTEGER)
 `
 
 type CountContactsParams struct {
@@ -95,22 +98,26 @@ func (q *Queries) DeleteContact(ctx context.Context, id int32) error {
 
 const listContacts = `-- name: ListContacts :many
 SELECT
-    id,
-    first_name,
-    last_name,
-    role,
-    cellphone,
-    email,
-    office_id,
-    organization_id,
-    created_at,
-    updated_at
-FROM contacts
+    c.id,
+    c.first_name,
+    c.last_name,
+    c.role,
+    c.cellphone,
+    c.email,
+    c.office_id,
+    c.organization_id,
+    c.created_at,
+    c.updated_at,
+    o.name  AS office_name,
+    org.name AS organization_name
+FROM contacts c
+LEFT JOIN offices       o   ON o.id   = c.office_id
+LEFT JOIN organizations org ON org.id = c.organization_id
 WHERE
-    ($1::VARCHAR IS NULL OR first_name ILIKE '%' || $1::VARCHAR || '%' OR last_name ILIKE '%' || $1::VARCHAR || '%')
-    AND ($2::INTEGER IS NULL       OR office_id = $2::INTEGER)
-    AND ($3::INTEGER IS NULL OR organization_id = $3::INTEGER)
-ORDER BY last_name, first_name
+    ($1::VARCHAR IS NULL OR c.first_name ILIKE '%' || $1::VARCHAR || '%' OR c.last_name ILIKE '%' || $1::VARCHAR || '%')
+    AND ($2::INTEGER IS NULL       OR c.office_id = $2::INTEGER)
+    AND ($3::INTEGER IS NULL OR c.organization_id = $3::INTEGER OR o.organization_id = $3::INTEGER)
+ORDER BY c.last_name, c.first_name
 LIMIT  $5::BIGINT
 OFFSET $4::BIGINT
 `
@@ -123,7 +130,22 @@ type ListContactsParams struct {
 	PageSize       int64
 }
 
-func (q *Queries) ListContacts(ctx context.Context, arg ListContactsParams) ([]Contact, error) {
+type ListContactsRow struct {
+	ID               int32
+	FirstName        string
+	LastName         string
+	Role             string
+	Cellphone        string
+	Email            string
+	OfficeID         *int32
+	OrganizationID   *int32
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+	OfficeName       *string
+	OrganizationName *string
+}
+
+func (q *Queries) ListContacts(ctx context.Context, arg ListContactsParams) ([]ListContactsRow, error) {
 	rows, err := q.db.Query(ctx, listContacts,
 		arg.Name,
 		arg.OfficeID,
@@ -135,9 +157,9 @@ func (q *Queries) ListContacts(ctx context.Context, arg ListContactsParams) ([]C
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Contact
+	var items []ListContactsRow
 	for rows.Next() {
-		var i Contact
+		var i ListContactsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.FirstName,
@@ -149,6 +171,8 @@ func (q *Queries) ListContacts(ctx context.Context, arg ListContactsParams) ([]C
 			&i.OrganizationID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.OfficeName,
+			&i.OrganizationName,
 		); err != nil {
 			return nil, err
 		}

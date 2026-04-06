@@ -338,10 +338,10 @@ func (mr *MockQuerierMockRecorder) ListAgents(ctx, arg any) *gomock.Call {
 }
 
 // ListContacts mocks base method.
-func (m *MockQuerier) ListContacts(ctx context.Context, arg db.ListContactsParams) ([]db.Contact, error) {
+func (m *MockQuerier) ListContacts(ctx context.Context, arg db.ListContactsParams) ([]db.ListContactsRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListContacts", ctx, arg)
-	ret0, _ := ret[0].([]db.Contact)
+	ret0, _ := ret[0].([]db.ListContactsRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

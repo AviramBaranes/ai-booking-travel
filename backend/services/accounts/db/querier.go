@@ -29,7 +29,7 @@ type Querier interface {
 	GetUserByPhone(ctx context.Context, phoneNumber *string) (int32, error)
 	ListAdmins(ctx context.Context) ([]ListAdminsRow, error)
 	ListAgents(ctx context.Context, arg ListAgentsParams) ([]ListAgentsRow, error)
-	ListContacts(ctx context.Context, arg ListContactsParams) ([]Contact, error)
+	ListContacts(ctx context.Context, arg ListContactsParams) ([]ListContactsRow, error)
 	ListOffices(ctx context.Context, arg ListOfficesParams) ([]ListOfficesRow, error)
 	ListOrganizations(ctx context.Context, arg ListOrganizationsParams) ([]ListOrganizationsRow, error)
 	SaveRefreshToken(ctx context.Context, arg SaveRefreshTokenParams) error

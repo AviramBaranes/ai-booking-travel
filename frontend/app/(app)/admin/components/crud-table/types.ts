@@ -28,6 +28,7 @@ export interface ColumnDef<TRow> {
   renderEditCell?: (props: {
     value: unknown;
     onChange: (value: unknown) => void;
+    row?: TRow;
   }) => React.ReactNode;
   renderCell?: (value: unknown, row: TRow) => React.ReactNode;
 }

@@ -15,14 +15,16 @@ import (
 // --- Request / Response types ---
 
 type ContactResponse struct {
-	ID             int32  `json:"id"`
-	FirstName      string `json:"firstName"`
-	LastName       string `json:"lastName"`
-	Role           string `json:"role"`
-	Cellphone      string `json:"cellphone"`
-	Email          string `json:"email"`
-	OfficeID       *int32 `json:"officeId"`
-	OrganizationID *int32 `json:"organizationId"`
+	ID               int32   `json:"id"`
+	FirstName        string  `json:"firstName"`
+	LastName         string  `json:"lastName"`
+	Role             string  `json:"role"`
+	Cellphone        string  `json:"cellphone"`
+	Email            string  `json:"email"`
+	OfficeID         *int32  `json:"officeId"`
+	OrganizationID   *int32  `json:"organizationId"`
+	OfficeName       *string `json:"officeName"`
+	OrganizationName *string `json:"organizationName"`
 }
 
 type ListContactsRequest struct {
@@ -100,6 +102,21 @@ func toContactResponse(c db.Contact) ContactResponse {
 	}
 }
 
+func toContactResponseFromRow(r db.ListContactsRow) ContactResponse {
+	return ContactResponse{
+		ID:               r.ID,
+		FirstName:        r.FirstName,
+		LastName:         r.LastName,
+		Role:             r.Role,
+		Cellphone:        r.Cellphone,
+		Email:            r.Email,
+		OfficeID:         r.OfficeID,
+		OrganizationID:   r.OrganizationID,
+		OfficeName:       r.OfficeName,
+		OrganizationName: r.OrganizationName,
+	}
+}
+
 // --- Endpoints ---
 
 // ListContacts lists contacts with optional filtering and pagination.
@@ -147,7 +164,7 @@ func (s *Service) ListContacts(ctx context.Context, params *ListContactsRequest)
 
 	contacts := make([]ContactResponse, 0, len(rows))
 	for _, r := range rows {
-		contacts = append(contacts, toContactResponse(r))
+		contacts = append(contacts, toContactResponseFromRow(r))
 	}
 
 	return &ListContactsResponse{Contacts: contacts, Total: total}, nil

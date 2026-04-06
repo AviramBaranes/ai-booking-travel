@@ -35,14 +35,14 @@ const columns: ColumnDef<accounts.OfficeResponse>[] = [
     label: "אנשי קשר",
     type: "link",
     editable: false,
-    href: (row) => `/admin/contacts?orgId=${row.organizationId}`,
+    href: (row) => `/admin/contacts?officeId=${row.id}`,
   },
   {
     key: "agentCount",
     label: "סוכנים",
     type: "link",
     editable: false,
-    href: (row) => `/admin/agents?orgId=${row.organizationId}`,
+    href: (row) => `/admin/agents?officeId=${row.id}`,
   },
 ];
 

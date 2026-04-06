@@ -10,39 +10,40 @@ import {
   ComboboxItem,
   ComboboxEmpty,
 } from "@/components/ui/combobox";
-import { listOrganizations } from "@/shared/api/accounts-api";
+import { listOffices } from "@/shared/api/accounts-api";
 
-interface OrgComboboxProps {
+interface OfficeComboboxProps {
   value: number | string;
-  onChange: (orgId: number) => void;
+  onChange: (officeId: number) => void;
   showClear?: boolean;
   placeholder?: string;
 }
 
-export function OrgCombobox({
+export function OfficeCombobox({
   value,
   onChange,
   showClear = false,
-  placeholder = "בחר רשת...",
-}: OrgComboboxProps) {
+  placeholder = "בחר משרד...",
+}: OfficeComboboxProps) {
   const [search, setSearch] = useState("");
 
   const { data } = useQuery({
-    queryKey: ["organizations-combobox", search],
-    queryFn: () => listOrganizations({ Page: 1, Search: search }),
+    queryKey: ["offices-combobox", search],
+    queryFn: () => listOffices({ Page: 1, Search: search, OrgID: 0 }),
   });
 
-  const orgs = data?.organizations ?? [];
-  const names = orgs.map((o) => o.name);
-  const selectedName = orgs.find((o) => o.id === Number(value))?.name ?? null;
+  const offices = data?.offices ?? [];
+  const names = offices.map((o) => o.name);
+  const selectedName =
+    offices.find((o) => o.id === Number(value))?.name ?? null;
 
   return (
     <Combobox
       items={names}
       value={selectedName}
       onValueChange={(name) => {
-        const org = orgs.find((o) => o.name === name);
-        onChange(org ? org.id : 0);
+        const office = offices.find((o) => o.name === name);
+        onChange(office ? office.id : 0);
       }}
     >
       <ComboboxInput
@@ -52,7 +53,7 @@ export function OrgCombobox({
         onChange={(e) => setSearch(e.target.value)}
       />
       <ComboboxContent>
-        <ComboboxEmpty>לא נמצאו רשתות</ComboboxEmpty>
+        <ComboboxEmpty>לא נמצאו משרדים</ComboboxEmpty>
         <ComboboxList>
           {(name) => (
             <ComboboxItem key={name} value={name}>

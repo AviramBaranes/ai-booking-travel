@@ -87,6 +87,7 @@ export function EditableRow<TRow>({
                       col.key as Path<Record<string, string>>,
                       v as Record<string, string>[string],
                     ),
+                  row,
                 })}
                 {errors[col.key] && (
                   <span
