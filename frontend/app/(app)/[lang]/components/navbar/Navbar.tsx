@@ -46,7 +46,7 @@ export async function Navbar({
               <Link
                 key={link.id}
                 href={`/${lang}/${(link.page as Populated<typeof link.page>)?.slug ?? ""}`}
-                className="text-lg font-bold text-navy"
+                className="type-h6 text-navy"
               >
                 {link.label}
               </Link>

@@ -32,7 +32,7 @@ export function MegaDropdown({ label, links, lang }: MegaDropdownProps) {
       onMouseLeave={handleMouseLeave}
     >
       <button
-        className="flex cursor-pointer items-center gap-1.5 text-lg font-bold text-navy"
+        className="flex cursor-pointer items-center gap-1.5 type-h6 text-navy"
         onClick={() => setIsOpen((v) => !v)}
       >
         {label}

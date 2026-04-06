@@ -10,14 +10,16 @@ export function SectionHeader({
   subtitle,
 }: SectionHeaderProps) {
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-4 text-center">
       {pillText && (
-        <span className="rounded-full bg-brand-blue/10 px-8 py-3 text-sm font-bold text-brand-blue">
+        <span className="rounded-full bg-brand-blue/10 min-w-50 py-3 type-label text-brand-blue">
           {pillText}
         </span>
       )}
-      <h2 className="text-4xl font-black text-navy">{title}</h2>
-      {subtitle && <p className="text-base text-muted">{subtitle}</p>}
+
+      <h2 className="type-h3 text-navy">{title}</h2>
+
+      {subtitle && <p className="type-h6 text-muted">{subtitle}</p>}
     </div>
   );
 }

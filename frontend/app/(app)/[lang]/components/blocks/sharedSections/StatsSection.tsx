@@ -27,9 +27,9 @@ export function StatsSection({ section }: StatsSectionProps) {
 
                 <div className="flex flex-1 flex-col items-center justify-center gap-1 rounded-xl py-6">
                   <div className="relative">
-                    <span className="relative z-10 text-3xl font-extrabold leading-tight tracking-tight text-foreground">
+                    <h3 className="relative z-10 type-h3 leading-tight tracking-tight text-foreground">
                       {item.value}
-                    </span>
+                    </h3>
                     {icon?.url && (
                       <Image
                         src={icon.url}
@@ -41,9 +41,7 @@ export function StatsSection({ section }: StatsSectionProps) {
                     )}
                   </div>
 
-                  <span className="text-sm font-light text-foreground">
-                    {item.label}
-                  </span>
+                  <h6 className="type-h6 text-foreground">{item.label}</h6>
                 </div>
               </div>
             );

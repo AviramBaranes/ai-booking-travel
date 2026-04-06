@@ -1,4 +1,5 @@
 import "@/app/globals.css";
+import localFont from "next/font/local";
 import { getServerSession } from "next-auth/next";
 import Providers from "../providers";
 import { redirect } from "next/dist/client/components/navigation";
@@ -8,6 +9,17 @@ import { authOptions } from "@/shared/auth/authOptions";
 import { Navbar } from "./components/navbar/Navbar";
 import { Footer } from "./components/footer/Footer";
 import { BackToAdminBanner } from "./components/BackToAdminBanner";
+
+const polin = localFont({
+  src: [
+    { path: "../../fonts/Polin-Regular.otf", weight: "400" },
+    { path: "../../fonts/Polin-SemiBold.otf", weight: "600" },
+    { path: "../../fonts/Polin-Bold.otf", weight: "700" },
+    { path: "../../fonts/Polin-Black.otf", weight: "900" },
+  ],
+  variable: "--font-polin",
+  display: "swap",
+});
 
 export default async function AppRootLayout({
   children,
@@ -31,9 +43,9 @@ export default async function AppRootLayout({
     <html
       lang={lang}
       dir={lang === "he" || lang === "ar" ? "rtl" : "ltr"}
-      className="h-full antialiased"
+      className={`h-full antialiased ${polin.variable}`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className={`min-h-full flex flex-col`}>
         <Providers>
           <NextIntlClientProvider locale={lang}>
             <BackToAdminBanner />

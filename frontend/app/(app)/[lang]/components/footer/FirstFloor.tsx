@@ -13,7 +13,7 @@ export function FooterFirstFloor({ links, lang }: FooterFirstFloorProps) {
       {links?.map((link) => (
         <Link
           key={link.id}
-          className="text-white opacity-65 text-sm"
+          className="text-white opacity-65 type-label font-normal"
           href={`/${lang}/${(link.page as Populated<typeof link.page>).slug}`}
         >
           {link.label}

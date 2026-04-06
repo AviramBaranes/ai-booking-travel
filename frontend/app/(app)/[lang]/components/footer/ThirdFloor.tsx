@@ -14,19 +14,19 @@ export function FooterThirdFloor({
   lang,
 }: FooterThirdFloorProps) {
   return (
-    <div className="flex items-center justify-between bg-navy py-5 px-20">
-      <div className="flex items-start gap-6">
+    <div className="flex items-center justify-between bg-navy py-8 px-20">
+      <div className="flex items-start gap-7">
         {links?.map((link) => (
           <Link
             key={link.id}
-            className="text-white text-sm"
+            className="text-white type-label font-normal"
             href={`/${lang}/${(link.page as Populated<typeof link.page>)?.slug ?? ""}`}
           >
             {link.label}
           </Link>
         ))}
       </div>
-      <span className="text-white opacity-65 text-xs">{rightsText}</span>
+      <span className="text-white type-label font-normal">{rightsText}</span>
     </div>
   );
 }

@@ -2,6 +2,14 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { CheckIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const languages = [
   { code: "he", flag: "🇮🇱" },
@@ -13,23 +21,34 @@ export function LangSwitcher({ lang }: { lang: string }) {
   const router = useRouter();
   const t = useTranslations("LangSwitcher");
 
-  function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const newLang = e.target.value;
+  function handleSelect(newLang: string) {
     const rest = pathname.replace(/^\/[^/]+/, "");
     router.push(`/${newLang}${rest}`);
   }
 
+  const current = languages.find((l) => l.code === lang);
+
   return (
-    <select
-      value={lang}
-      onChange={handleChange}
-      className="cursor-pointer appearance-none rounded-full border-2 border-navy bg-white px-4 py-2 text-base font-bold text-navy"
-    >
-      {languages.map((l) => (
-        <option key={l.code} value={l.code}>
-          {l.flag} {t(l.code as "he" | "en")}
-        </option>
-      ))}
-    </select>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="outline">
+          {/* <GlobeIcon className="size-4" /> */}
+          {current?.flag} {t(lang as "he" | "en")}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {languages.map((l) => (
+          <DropdownMenuItem
+            key={l.code}
+            onClick={() => handleSelect(l.code)}
+            className="gap-2"
+          >
+            <span>{l.flag}</span>
+            {t(l.code as "he" | "en")}
+            {l.code === lang && <CheckIcon className="ms-auto size-4" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

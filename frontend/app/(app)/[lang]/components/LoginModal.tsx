@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { X } from "lucide-react";
+import { X, User } from "lucide-react";
 import { getSession, signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -10,9 +10,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import Image from "next/image";
-import { Button } from "@/shared/components/Button";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
+import { Button } from "@/components/ui/button";
 
 function loginSchema(t: (key: string) => string) {
   return z.object({
@@ -70,18 +69,14 @@ export function LoginModal() {
 
   return (
     <>
-      <button
-        className="flex cursor-pointer items-center gap-2 rounded-full border-2 border-navy px-5 py-2 text-base font-extrabold text-navy"
+      <Button
+        size="outline"
+        variant="outline"
         onClick={() => setShowModal(true)}
       >
-        <Image
-          src="/assets/header/login-icon.svg"
-          alt=""
-          width={20}
-          height={20}
-        />
+        <User className="size-5" />
         {t("openModal")}
-      </button>
+      </Button>
       {showModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 cursor-pointer"
@@ -123,7 +118,7 @@ export function LoginModal() {
               <ErrorDisplay>{error && tError(error.message)}</ErrorDisplay>
               <Button
                 type="submit"
-                loading={isPending}
+                // loading={isPending}
                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t("submit")}

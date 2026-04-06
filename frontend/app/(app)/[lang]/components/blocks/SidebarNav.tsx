@@ -88,15 +88,15 @@ export function SidebarNav({ sections }: SidebarNavProps) {
             key={section.id}
             href={`#${anchor}`}
             onClick={(e) => handleClick(e, anchor)}
-            className={`flex items-center gap-2 rounded-lg p-4 text-lg font-semibold tracking-tight transition-colors ${
+            className={`flex items-center gap-2 rounded-lg p-4 type-h6 tracking-tight transition-colors ${
               isActive
-                ? "border border-brand-blue bg-brand-blue/10 text-foreground"
-                : "text-gray-600 hover:text-foreground"
+                ? "border border-brand-blue bg-brand-blue/10 text-navy"
+                : "text-text-secondary hover:text-foreground font-normal"
             }`}
           >
             <span
               className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                isActive ? "bg-brand-blue" : "bg-gray-300"
+                isActive ? "bg-navy" : "bg-text-secondary"
               }`}
             />
             {section.title}

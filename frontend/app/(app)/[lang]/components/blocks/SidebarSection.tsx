@@ -23,9 +23,7 @@ export function SidebarSection({ block }: SidebarSectionProps) {
             id={slugify(section.title)}
             className="flex flex-col gap-2 scroll-mt-32"
           >
-            <h2 className="py-3 text-3xl font-black text-foreground">
-              {section.title}
-            </h2>
+            <h4 className="py-3 type-h4 text-navy">{section.title}</h4>
             <div className="text-lg font-semibold leading-[1.7] tracking-tight text-gray-600">
               <RichText data={section.content} />
             </div>

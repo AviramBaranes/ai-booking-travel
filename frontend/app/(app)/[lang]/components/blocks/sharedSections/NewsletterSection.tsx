@@ -31,16 +31,16 @@ export function NewsletterSection({ section }: NewsletterSectionProps) {
       <div className="relative flex flex-col items-center gap-10 md:flex-row md:items-center md:justify-center md:gap-20">
         {/* ── Right (in RTL): hero text + benefits ── */}
         <div className="flex w-full flex-col items-start gap-5 text-start md:w-100.25">
-          <h2 className="text-4xl font-black leading-tight text-background">
+          <h3 className="type-h3 font-black leading-tight text-background">
             {title}
-          </h2>
-          {subtitle && <p className="text-base text-gray-400">{subtitle}</p>}
+          </h3>
+          {subtitle && <p className="type-p text-muted">{subtitle}</p>}
           {benefits && benefits.length > 0 && (
             <div className="flex flex-wrap items-center gap-5">
               {benefits.map((b) => (
                 <div key={b.id} className="flex items-start gap-1.5">
                   <span className="text-xs font-bold text-green-600">✓</span>
-                  <span className="text-sm text-white">{b.text}</span>
+                  <span className="type-label text-white">{b.text}</span>
                 </div>
               ))}
             </div>
@@ -51,11 +51,9 @@ export function NewsletterSection({ section }: NewsletterSectionProps) {
         <form className="flex flex-1 flex-col items-start gap-5">
           {/* Heading */}
           <div className="flex flex-col items-start gap-1.5 text-start">
-            {formTitle && (
-              <h3 className="text-xl font-bold text-white">{formTitle}</h3>
-            )}
+            {formTitle && <h5 className="type-h5 text-white">{formTitle}</h5>}
             {formSubTitle && (
-              <p className="text-sm text-gray-400">{formSubTitle}</p>
+              <p className="type-p text-muted">{formSubTitle}</p>
             )}
           </div>
 
@@ -92,11 +90,11 @@ export function NewsletterSection({ section }: NewsletterSectionProps) {
                   type="checkbox"
                   className="size-4.5 cursor-pointer rounded border-[1.5px] border-border-light bg-white accent-brand"
                 />
-                <span>{consentLabel}</span>
+                <span className="type-label">{consentLabel}</span>
               </label>
             )}
             {privacyTextBeforeLink && (
-              <p className="text-sm text-gray-400">
+              <p className="type-label text-muted">
                 {privacyTextBeforeLink}
                 {privacyLinkLabel && privacySlug && (
                   <Link
