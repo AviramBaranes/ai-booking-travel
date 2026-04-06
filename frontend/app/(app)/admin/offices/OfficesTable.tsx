@@ -1,7 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { z } from "zod";
 import { accounts } from "@/shared/client";
 import { CrudTable } from "@/app/(app)/admin/components/crud-table/CrudTable";
@@ -15,6 +13,8 @@ import {
   updateOffice,
 } from "@/shared/api/accounts-api";
 import { OrgCombobox } from "@/app/(app)/admin/components/OrgCombobox";
+import { OfficesFilterBar } from "@/app/(app)/admin/components/OfficesFilterBar";
+import { useUrlFilters } from "@/app/(app)/admin/hooks/useUrlFilters";
 
 const columns: ColumnDef<accounts.OfficeResponse>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },
@@ -66,36 +66,10 @@ const updateSchema = z.object({
   address: z.string().optional().default(""),
 });
 
-interface Filters {
-  search: string;
-  orgId: string;
-}
-
-function useUrlFilters(): [Filters, (f: Filters) => void] {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const [filters, setFiltersState] = useState<Filters>({
-    search: searchParams.get("search") ?? "",
-    orgId: searchParams.get("orgId") ?? "",
-  });
-
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (filters.search) params.set("search", filters.search);
-    if (filters.orgId) params.set("orgId", filters.orgId);
-    const qs = params.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  }, [filters, router, pathname]);
-
-  return [filters, setFiltersState];
-}
-
 function buildRequest(
   _sort: SortState | null,
   page: number,
-  filters: Filters,
+  filters: { search: string; orgId: string },
 ): accounts.ListOfficesRequest {
   return {
     Search: filters.search,
@@ -104,43 +78,8 @@ function buildRequest(
   };
 }
 
-function FilterBar({
-  filters,
-  onChange,
-}: {
-  filters: Filters;
-  onChange: (f: Filters) => void;
-}) {
-  const inputClass =
-    "border border-gray-300 rounded px-2 py-1.5 text-sm w-full";
-
-  return (
-    <div className="flex items-end gap-3 flex-wrap">
-      <div>
-        <label className="block text-xs text-gray-500 mb-1">חיפוש</label>
-        <input
-          type="text"
-          className={inputClass}
-          value={filters.search}
-          onChange={(e) => onChange({ ...filters, search: e.target.value })}
-          placeholder="חיפוש לפי שם"
-        />
-      </div>
-      <div className="min-w-48">
-        <label className="block text-xs text-gray-500 mb-1">רשת</label>
-        <OrgCombobox
-          value={filters.orgId ? Number(filters.orgId) : 0}
-          onChange={(v) => onChange({ ...filters, orgId: v ? String(v) : "" })}
-          showClear
-          placeholder="כל הרשתות"
-        />
-      </div>
-    </div>
-  );
-}
-
 export default function OfficesTable() {
-  const [filters, setFilters] = useUrlFilters();
+  const [filters, setFilters] = useUrlFilters(["search", "orgId"]);
 
   return (
     <CrudTable<
@@ -164,7 +103,7 @@ export default function OfficesTable() {
       createSchema={createSchema}
       updateSchema={updateSchema}
       pageSize={15}
-      filterSlot={<FilterBar filters={filters} onChange={setFilters} />}
+      filterSlot={<OfficesFilterBar filters={filters} onChange={setFilters} />}
     />
   );
 }

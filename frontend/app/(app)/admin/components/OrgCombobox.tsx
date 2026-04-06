@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Combobox,
@@ -10,8 +11,6 @@ import {
   ComboboxEmpty,
 } from "@/components/ui/combobox";
 import { listOrganizations } from "@/shared/api/accounts-api";
-
-type Org = { id: number; name: string };
 
 interface OrgComboboxProps {
   value: number | string;
@@ -26,24 +25,26 @@ export function OrgCombobox({
   showClear = false,
   placeholder = "בחר רשת...",
 }: OrgComboboxProps) {
+  const [search, setSearch] = useState("");
+
   const { data } = useQuery({
-    queryKey: ["organizations-all"],
-    queryFn: () => listOrganizations({ Page: 1, Search: "" }),
+    queryKey: ["organizations-combobox", search],
+    queryFn: () => listOrganizations({ Page: 1, Search: search }),
   });
 
-  const orgs: Org[] =
-    (data as { organizations?: Org[] } | undefined)?.organizations ?? [];
-
-  const selected = orgs.find((o) => o.id === Number(value)) ?? null;
+  const orgs = data?.organizations ?? [];
+  const names = orgs.map((o) => o.name);
+  const selectedName = orgs.find((o) => o.id === Number(value))?.name ?? null;
 
   return (
     <Combobox
-      items={orgs}
-      itemToStringValue={(org) => org.name}
-      value={selected}
-      onValueChange={(org) => {
+      items={names}
+      value={selectedName}
+      onValueChange={(name) => {
+        const org = orgs.find((o) => o.name === name);
         onChange(org ? org.id : 0);
       }}
+      onInputValueChange={setSearch}
     >
       <ComboboxInput
         placeholder={placeholder}
@@ -53,9 +54,9 @@ export function OrgCombobox({
       <ComboboxContent>
         <ComboboxEmpty>לא נמצאו רשתות</ComboboxEmpty>
         <ComboboxList>
-          {(org) => (
-            <ComboboxItem key={org.id} value={org}>
-              {org.name}
+          {(name) => (
+            <ComboboxItem key={name} value={name}>
+              {name}
             </ComboboxItem>
           )}
         </ComboboxList>
