@@ -45,6 +45,7 @@ export default buildConfig({
   },
 
   admin: {
+    theme: "light",
     components: {
       header: ["@/shared/components/admin/AdminNavbar"],
       graphics: {
@@ -70,12 +71,12 @@ export default buildConfig({
   // Define and configure your collections in this array
   collections: [Admins, Media, AddonImages, Pages, SharedSections],
 
-  globals: [Header, Footer, NotFoundConfig],
+  globals: [Header, Footer, NotFoundConfig, Homepage],
 
   plugins: [
     seoPlugin({
       collections: ["pages"],
-      // globals: ["homepage"],
+      globals: ["homepage"],
       uploadsCollection: "media",
       tabbedUI: true,
       generateTitle: ({ doc }) => doc?.title ?? "",

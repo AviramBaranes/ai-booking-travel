@@ -1,10 +1,5 @@
 import type { GlobalConfig } from "payload";
-import {
-  richTextBlock,
-  faqBlock,
-  sharedSectionRefBlock,
-  sidebarSectionBlock,
-} from "../blocks";
+import { faqBlock, sharedSectionRefBlock, benefitsBlock } from "../blocks";
 
 export const Homepage: GlobalConfig = {
   slug: "homepage",
@@ -22,23 +17,52 @@ export const Homepage: GlobalConfig = {
       type: "tabs",
       tabs: [
         {
+          label: "גיבור",
+          fields: [
+            {
+              name: "featuredImage",
+              label: "תמונה ראשית",
+              type: "upload",
+              relationTo: "media",
+            },
+            {
+              name: "title",
+              label: "כותרת ראשית",
+              type: "text",
+              localized: true,
+              required: true,
+            },
+            {
+              name: "subtitle",
+              label: "כותרת משנה",
+              type: "textarea",
+              localized: true,
+            },
+            {
+              name: "excerpt",
+              label: "תקציר",
+              type: "textarea",
+              localized: true,
+              maxLength: 220,
+              admin: {
+                description: "תיאור קצר לכרטיסיות ותוצאות חיפוש, עד 220 תווים.",
+              },
+            },
+          ],
+        },
+        {
           label: "פריסה",
           fields: [
             {
               name: "layout",
               label: "בלוקים",
               type: "blocks",
-              minRows: 1,
+              minRows: 0,
               admin: {
                 description:
-                  "בנו את דף הבית על ידי הוספת בלוקים. שלבו אזורים משותפים (ניוזלטר, חברות השכרה, סטטיסטיקות) עם תוכן ייחודי לדף הבית.",
+                  "בנו את דף הבית על ידי הוספת בלוקים. שלבו אזורים משותפים עם תוכן ייחודי לדף הבית.",
               },
-              blocks: [
-                richTextBlock,
-                faqBlock,
-                sharedSectionRefBlock,
-                sidebarSectionBlock,
-              ],
+              blocks: [sharedSectionRefBlock, benefitsBlock, faqBlock],
             },
           ],
         },

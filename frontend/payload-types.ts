@@ -97,11 +97,13 @@ export interface Config {
     header: Header;
     footer: Footer;
     'not-found': NotFound;
+    homepage: Homepage;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'not-found': NotFoundSelect<false> | NotFoundSelect<true>;
+    homepage: HomepageSelect<false> | HomepageSelect<true>;
   };
   locale: 'he' | 'en';
   widgets: {
@@ -257,6 +259,7 @@ export interface FAQBlock {
   eyebrow?: string | null;
   title?: string | null;
   subtitle?: string | null;
+  columns?: number | null;
   /**
    * כל קטגוריה מציגה כותרת וקבוצת שאלות-תשובות. לדוגמה: "לפני ההשכרה".
    */
@@ -618,6 +621,7 @@ export interface FAQBlockSelect<T extends boolean = true> {
   eyebrow?: T;
   title?: T;
   subtitle?: T;
+  columns?: T;
   categories?:
     | T
     | {
@@ -846,6 +850,60 @@ export interface NotFound {
   createdAt?: string | null;
 }
 /**
+ * תוכן דף הבית. הוסיפו בלוקים בסדר הרצוי ושלבו אזורים משותפים לפי הצורך.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homepage".
+ */
+export interface Homepage {
+  id: number;
+  featuredImage?: (number | null) | Media;
+  title: string;
+  subtitle?: string | null;
+  /**
+   * תיאור קצר לכרטיסיות ותוצאות חיפוש, עד 220 תווים.
+   */
+  excerpt?: string | null;
+  /**
+   * בנו את דף הבית על ידי הוספת בלוקים. שלבו אזורים משותפים עם תוכן ייחודי לדף הבית.
+   */
+  layout?: (SharedSectionRefBlock | BenefitsBlock | FAQBlock)[] | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  _status?: ('draft' | 'published') | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BenefitsBlock".
+ */
+export interface BenefitsBlock {
+  /**
+   * טקסט קצר המוצג מעל הכותרת הראשית. לדוגמה: "למה לבחור בנו".
+   */
+  eyebrow?: string | null;
+  title?: string | null;
+  subtitle?: string | null;
+  items?:
+    | {
+        image?: (number | null) | Media;
+        title: string;
+        subtitle?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'benefits';
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -926,6 +984,53 @@ export interface NotFoundSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homepage_select".
+ */
+export interface HomepageSelect<T extends boolean = true> {
+  featuredImage?: T;
+  title?: T;
+  subtitle?: T;
+  excerpt?: T;
+  layout?:
+    | T
+    | {
+        sharedSectionRef?: T | SharedSectionRefBlockSelect<T>;
+        benefits?: T | BenefitsBlockSelect<T>;
+        faq?: T | FAQBlockSelect<T>;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  _status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "BenefitsBlock_select".
+ */
+export interface BenefitsBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  subtitle?: T;
+  items?:
+    | T
+    | {
+        image?: T;
+        title?: T;
+        subtitle?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -32,6 +32,12 @@ export const faqBlock: Block = {
       localized: true,
     },
     {
+      name: "columns",
+      label: "מספר עמודות",
+      type: "number",
+      defaultValue: 1,
+    },
+    {
       name: "categories",
       label: "קטגוריות",
       type: "array",
