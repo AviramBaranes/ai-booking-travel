@@ -31,15 +31,17 @@ SELECT id FROM users
 WHERE phone_number = $1;
 
 -- name: ListAgents :many
-SELECT id, role, email, phone_number, office_id, last_login, created_at, updated_at
-FROM users
-WHERE role = 'agent'
-  AND (sqlc.narg(search)::text IS NULL OR email ILIKE '%' || sqlc.narg(search)::text || '%' OR phone_number ILIKE '%' || sqlc.narg(search)::text || '%')
-  AND (sqlc.narg(office_id)::int IS NULL OR office_id = sqlc.narg(office_id)::int)
-  AND (sqlc.narg(organization_id)::int IS NULL OR office_id IN (
-    SELECT id FROM offices WHERE organization_id = sqlc.narg(organization_id)::int
-  ))
-ORDER BY created_at DESC
+SELECT u.id, u.role, u.email, u.phone_number, u.office_id, u.last_login, u.created_at, u.updated_at,
+       o.name AS office_name,
+       org.name AS organization_name
+FROM users u
+LEFT JOIN offices       o   ON o.id   = u.office_id
+LEFT JOIN organizations org ON org.id = o.organization_id
+WHERE u.role = 'agent'
+  AND (sqlc.narg(search)::text IS NULL OR u.email ILIKE '%' || sqlc.narg(search)::text || '%' OR u.phone_number ILIKE '%' || sqlc.narg(search)::text || '%')
+  AND (sqlc.narg(office_id)::int IS NULL OR u.office_id = sqlc.narg(office_id)::int)
+  AND (sqlc.narg(organization_id)::int IS NULL OR o.organization_id = sqlc.narg(organization_id)::int)
+ORDER BY u.created_at DESC
 LIMIT sqlc.arg(page_size)
 OFFSET sqlc.arg(page_offset);
 

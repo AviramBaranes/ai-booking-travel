@@ -121,6 +121,8 @@ export namespace accounts {
         email: string
         phoneNumber: string
         officeId: number
+        officeName: string
+        organizationName: string
         lastLogin: string
         createdAt: string
         updatedAt: string

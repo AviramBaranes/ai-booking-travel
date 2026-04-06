@@ -15,13 +15,15 @@ import (
 // --- Request / Response types ---
 
 type AgentResponse struct {
-	ID          int32      `json:"id"`
-	Email       string     `json:"email"`
-	PhoneNumber *string    `json:"phoneNumber"`
-	OfficeID    *int32     `json:"officeId"`
-	LastLogin   *time.Time `json:"lastLogin"`
-	CreatedAt   time.Time  `json:"createdAt"`
-	UpdatedAt   time.Time  `json:"updatedAt"`
+	ID               int32      `json:"id"`
+	Email            string     `json:"email"`
+	PhoneNumber      *string    `json:"phoneNumber"`
+	OfficeID         *int32     `json:"officeId"`
+	OfficeName       *string    `json:"officeName"`
+	OrganizationName *string    `json:"organizationName"`
+	LastLogin        *time.Time `json:"lastLogin"`
+	CreatedAt        time.Time  `json:"createdAt"`
+	UpdatedAt        time.Time  `json:"updatedAt"`
 }
 
 type ListAgentsRequest struct {
@@ -64,13 +66,15 @@ const agentsPageSize int32 = 15
 
 func toAgentResponse(r db.ListAgentsRow) AgentResponse {
 	return AgentResponse{
-		ID:          r.ID,
-		Email:       r.Email,
-		PhoneNumber: r.PhoneNumber,
-		OfficeID:    r.OfficeID,
-		LastLogin:   db.TimePtrFromDB(r.LastLogin),
-		CreatedAt:   db.TimeFromDB(r.CreatedAt),
-		UpdatedAt:   db.TimeFromDB(r.UpdatedAt),
+		ID:               r.ID,
+		Email:            r.Email,
+		PhoneNumber:      r.PhoneNumber,
+		OfficeID:         r.OfficeID,
+		OfficeName:       r.OfficeName,
+		OrganizationName: r.OrganizationName,
+		LastLogin:        db.TimePtrFromDB(r.LastLogin),
+		CreatedAt:        db.TimeFromDB(r.CreatedAt),
+		UpdatedAt:        db.TimeFromDB(r.UpdatedAt),
 	}
 }
 

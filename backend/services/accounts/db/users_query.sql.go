@@ -243,15 +243,17 @@ func (q *Queries) ListAdmins(ctx context.Context) ([]ListAdminsRow, error) {
 }
 
 const listAgents = `-- name: ListAgents :many
-SELECT id, role, email, phone_number, office_id, last_login, created_at, updated_at
-FROM users
-WHERE role = 'agent'
-  AND ($1::text IS NULL OR email ILIKE '%' || $1::text || '%' OR phone_number ILIKE '%' || $1::text || '%')
-  AND ($2::int IS NULL OR office_id = $2::int)
-  AND ($3::int IS NULL OR office_id IN (
-    SELECT id FROM offices WHERE organization_id = $3::int
-  ))
-ORDER BY created_at DESC
+SELECT u.id, u.role, u.email, u.phone_number, u.office_id, u.last_login, u.created_at, u.updated_at,
+       o.name AS office_name,
+       org.name AS organization_name
+FROM users u
+LEFT JOIN offices       o   ON o.id   = u.office_id
+LEFT JOIN organizations org ON org.id = o.organization_id
+WHERE u.role = 'agent'
+  AND ($1::text IS NULL OR u.email ILIKE '%' || $1::text || '%' OR u.phone_number ILIKE '%' || $1::text || '%')
+  AND ($2::int IS NULL OR u.office_id = $2::int)
+  AND ($3::int IS NULL OR o.organization_id = $3::int)
+ORDER BY u.created_at DESC
 LIMIT $5
 OFFSET $4
 `
@@ -265,14 +267,16 @@ type ListAgentsParams struct {
 }
 
 type ListAgentsRow struct {
-	ID          int32
-	Role        UserRole
-	Email       string
-	PhoneNumber *string
-	OfficeID    *int32
-	LastLogin   pgtype.Timestamptz
-	CreatedAt   pgtype.Timestamptz
-	UpdatedAt   pgtype.Timestamptz
+	ID               int32
+	Role             UserRole
+	Email            string
+	PhoneNumber      *string
+	OfficeID         *int32
+	LastLogin        pgtype.Timestamptz
+	CreatedAt        pgtype.Timestamptz
+	UpdatedAt        pgtype.Timestamptz
+	OfficeName       *string
+	OrganizationName *string
 }
 
 func (q *Queries) ListAgents(ctx context.Context, arg ListAgentsParams) ([]ListAgentsRow, error) {
@@ -299,6 +303,8 @@ func (q *Queries) ListAgents(ctx context.Context, arg ListAgentsParams) ([]ListA
 			&i.LastLogin,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.OfficeName,
+			&i.OrganizationName,
 		); err != nil {
 			return nil, err
 		}
