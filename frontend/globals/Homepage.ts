@@ -1,24 +1,11 @@
 import type { GlobalConfig } from "payload";
 import {
-  heroBlock,
   richTextBlock,
-  mediaBlock,
-  ctaBlock,
   faqBlock,
   sharedSectionRefBlock,
   sidebarSectionBlock,
 } from "../blocks";
 
-/**
- * Homepage global.
- *
- * A single-document global (one per locale) that drives the homepage layout.
- * Uses the same block palette as the Pages collection so blocks and shared
- * sections are consistent across the site.
- *
- * Editors compose the homepage by mixing inline blocks (hero, richText, cta, …)
- * and references to shared sections (newsletter, suppliers, stats) in any order.
- */
 export const Homepage: GlobalConfig = {
   slug: "homepage",
   label: "דף הבית",
@@ -34,7 +21,6 @@ export const Homepage: GlobalConfig = {
     {
       type: "tabs",
       tabs: [
-        // ── Tab 1: Layout ────────────────────────────────────────────────────
         {
           label: "פריסה",
           fields: [
@@ -48,10 +34,7 @@ export const Homepage: GlobalConfig = {
                   "בנו את דף הבית על ידי הוספת בלוקים. שלבו אזורים משותפים (ניוזלטר, חברות השכרה, סטטיסטיקות) עם תוכן ייחודי לדף הבית.",
               },
               blocks: [
-                heroBlock,
                 richTextBlock,
-                mediaBlock,
-                ctaBlock,
                 faqBlock,
                 sharedSectionRefBlock,
                 sidebarSectionBlock,
@@ -59,8 +42,6 @@ export const Homepage: GlobalConfig = {
             },
           ],
         },
-
-        // ── Tab 2: SEO added automatically by plugin-seo ─────────────────────
       ],
     },
   ],

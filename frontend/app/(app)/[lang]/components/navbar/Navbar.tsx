@@ -22,13 +22,14 @@ async function getHeaderData(lang: string) {
 interface NavbarProps {
   lang: string;
   isAuthenticated: boolean;
-  displayLangSwitcher?: boolean;
+  // When true, hides the login/logout buttons and language switcher. Used 404 page outside of the [lang] path
+  isRootLayout?: boolean;
 }
 
 export async function Navbar({
   lang,
   isAuthenticated,
-  displayLangSwitcher = true,
+  isRootLayout = false,
 }: NavbarProps) {
   const headerData = await getHeaderData(lang);
   return (
@@ -64,10 +65,12 @@ export async function Navbar({
           )}
         </div>
 
-        <div className="flex items-center gap-4">
-          {displayLangSwitcher && <LangSwitcher lang={lang} />}
-          {isAuthenticated ? <LogoutButton /> : <LoginModal />}
-        </div>
+        {!isRootLayout && (
+          <div className="flex items-center gap-4">
+            <LangSwitcher lang={lang} />
+            {isAuthenticated ? <LogoutButton /> : <LoginModal />}
+          </div>
+        )}
       </nav>
     </header>
   );
