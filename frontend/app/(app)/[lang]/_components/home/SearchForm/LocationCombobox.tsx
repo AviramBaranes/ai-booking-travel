@@ -22,7 +22,7 @@ export function LocationCombobox({ placeholder }: LocationComboboxProps) {
     <Combobox items={locations}>
       <ComboboxInput
         placeholder={placeholder}
-        className="w-full rounded-md border-[1.5px] px-8 py-6 bg-input-bg border-input-border text-navy placeholder:text-secondary focus-within:border-brand-blue/50 [&_input]:bg-transparent"
+        className="search-form-input"
         showTrigger={false}
         onChange={(e) => setSearch(e.target.value)}
       >

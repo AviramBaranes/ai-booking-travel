@@ -282,6 +282,10 @@ body {
   box-shadow: 0px 4px 16px rgba(15, 0, 67, 0.15);
 }
 
+@utility search-form-input {
+  @apply w-full rounded-md border-[1.5px] border-input-border bg-white px-8 py-6 text-navy placeholder:text-secondary focus-within:border-brand-blue/50 [&_input]:bg-transparent;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
