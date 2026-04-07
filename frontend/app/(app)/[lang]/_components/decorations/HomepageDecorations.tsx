@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export function HomepageDecorations() {
   return (
-    <>
+    <div dir="rtl">
       <div className="absolute -z-10 top-130">
         <Image
           src="/assets/home/paper-plane.png"
@@ -54,6 +54,6 @@ export function HomepageDecorations() {
           height={100}
         />
       </div> */}
-    </>
+    </div>
   );
 }
