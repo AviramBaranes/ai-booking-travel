@@ -1,6 +1,6 @@
 "use client";
 
-import { OrgCombobox } from "@/app/(app)/admin/components/OrgCombobox";
+import { OrgCombobox } from "@/app/(app)/admin/_components/OrgCombobox";
 
 interface OfficesFilters {
   search: string;

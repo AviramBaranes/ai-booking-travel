@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { z } from "zod";
 import { accounts } from "@/shared/client";
-import { CrudTable } from "@/app/(app)/admin/components/crud-table/CrudTable";
+import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import {
   ColumnDef,
   SortState,
-} from "@/app/(app)/admin/components/crud-table/types";
+} from "@/app/(app)/admin/_components/crud-table/types";
 import {
   listOrganizations,
   createOrganization,

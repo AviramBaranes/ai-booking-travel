@@ -2,19 +2,19 @@
 
 import { z } from "zod";
 import { accounts } from "@/shared/client";
-import { CrudTable } from "@/app/(app)/admin/components/crud-table/CrudTable";
+import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import {
   ColumnDef,
   SortState,
-} from "@/app/(app)/admin/components/crud-table/types";
+} from "@/app/(app)/admin/_components/crud-table/types";
 import {
   listOffices,
   createOffice,
   updateOffice,
 } from "@/shared/api/accounts-api";
-import { OrgCombobox } from "@/app/(app)/admin/components/OrgCombobox";
-import { OfficesFilterBar } from "@/app/(app)/admin/components/OfficesFilterBar";
-import { useUrlFilters } from "@/app/(app)/admin/hooks/useUrlFilters";
+import { OrgCombobox } from "@/app/(app)/admin/_components/OrgCombobox";
+import { OfficesFilterBar } from "@/app/(app)/admin/_components/OfficesFilterBar";
+import { useUrlFilters } from "@/app/(app)/admin/_hooks/useUrlFilters";
 
 const columns: ColumnDef<accounts.OfficeResponse>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },

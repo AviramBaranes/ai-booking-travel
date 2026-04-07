@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { OrgCombobox } from "@/app/(app)/admin/components/OrgCombobox";
-import { OfficeCombobox } from "@/app/(app)/admin/components/OfficeCombobox";
+import { OrgCombobox } from "@/app/(app)/admin/_components/OrgCombobox";
+import { OfficeCombobox } from "@/app/(app)/admin/_components/OfficeCombobox";
 
 type AssociationType = "office" | "org";
 

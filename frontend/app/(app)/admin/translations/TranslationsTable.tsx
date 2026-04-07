@@ -6,11 +6,11 @@ import { BadgeCheck } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { booking } from "@/shared/client";
-import { CrudTable } from "@/app/(app)/admin/components/crud-table/CrudTable";
+import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import {
   ColumnDef,
   SortState,
-} from "@/app/(app)/admin/components/crud-table/types";
+} from "@/app/(app)/admin/_components/crud-table/types";
 import {
   listBrokerTranslations,
   deleteBrokerTranslation,

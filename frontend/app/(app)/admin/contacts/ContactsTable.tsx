@@ -2,24 +2,24 @@
 
 import { z } from "zod";
 import { accounts } from "@/shared/client";
-import { CrudTable } from "@/app/(app)/admin/components/crud-table/CrudTable";
+import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import {
   ColumnDef,
   SortState,
-} from "@/app/(app)/admin/components/crud-table/types";
+} from "@/app/(app)/admin/_components/crud-table/types";
 import {
   listContacts,
   createContact,
   updateContact,
   deleteContact,
 } from "@/shared/api/accounts-api";
-import { ContactsFilterBar } from "@/app/(app)/admin/components/ContactsFilterBar";
+import { ContactsFilterBar } from "@/app/(app)/admin/_components/ContactsFilterBar";
 import {
   ContactBelongsToPicker,
   parseAssociation,
   encodeAssociation,
-} from "@/app/(app)/admin/components/ContactBelongsToPicker";
-import { useUrlFilters } from "@/app/(app)/admin/hooks/useUrlFilters";
+} from "@/app/(app)/admin/_components/ContactBelongsToPicker";
+import { useUrlFilters } from "@/app/(app)/admin/_hooks/useUrlFilters";
 
 const columns: ColumnDef<accounts.ContactResponse>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },

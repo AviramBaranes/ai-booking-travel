@@ -6,8 +6,8 @@ import type { Metadata } from "next";
 import type { Page } from "@/payload-types";
 import type { Populated } from "@/shared/types/payload";
 import Image from "next/image";
-import { BlocksRenderer } from "../components/blocks/BlocksRenderer";
-import { PagesDecorations } from "../components/decorations/PagesDecorations";
+import { BlocksRenderer } from "../_components/blocks/BlocksRenderer";
+import { PagesDecorations } from "../_components/decorations/PagesDecorations";
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;

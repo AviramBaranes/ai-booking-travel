@@ -1,7 +1,7 @@
 "use client";
 
-import { OrgCombobox } from "@/app/(app)/admin/components/OrgCombobox";
-import { OfficeCombobox } from "@/app/(app)/admin/components/OfficeCombobox";
+import { OrgCombobox } from "@/app/(app)/admin/_components/OrgCombobox";
+import { OfficeCombobox } from "@/app/(app)/admin/_components/OfficeCombobox";
 
 interface ContactsFilters {
   search: string;

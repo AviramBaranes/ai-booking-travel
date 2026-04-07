@@ -5,9 +5,9 @@ import { getPayload } from "payload";
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { Populated } from "@/shared/types/payload";
-import { Hero } from "./components/home/Hero";
-import { BlocksRenderer } from "./components/blocks/BlocksRenderer";
-import { HomepageDecorations } from "./components/decorations/HomepageDecorations";
+import { Hero } from "./_components/home/Hero";
+import { BlocksRenderer } from "./_components/blocks/BlocksRenderer";
+import { HomepageDecorations } from "./_components/decorations/HomepageDecorations";
 
 type Props = {
   params: Promise<{ lang: string }>;

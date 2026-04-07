@@ -14,10 +14,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { AgentLoginForm } from "./login/AgentLoginForm";
-import { AgentSuccessScreen } from "./login/AgentSuccessScreen";
-import { CustomerPhoneForm } from "./login/CustomerPhoneForm";
-import { CustomerOtpForm } from "./login/CustomerOtpForm";
+import { AgentLoginForm } from "./AgentLoginForm";
+import { AgentSuccessScreen } from "./AgentSuccessScreen";
+import { CustomerPhoneForm } from "./CustomerPhoneForm";
+import { CustomerOtpForm } from "./CustomerOtpForm";
 
 type LoginMode = "agent" | "customer";
 type AgentStep = "credentials" | "success";

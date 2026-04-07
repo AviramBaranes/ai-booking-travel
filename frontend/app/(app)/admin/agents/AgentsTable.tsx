@@ -2,15 +2,15 @@
 
 import { z } from "zod";
 import { accounts } from "@/shared/client";
-import { CrudTable } from "@/app/(app)/admin/components/crud-table/CrudTable";
+import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import {
   ColumnDef,
   SortState,
-} from "@/app/(app)/admin/components/crud-table/types";
+} from "@/app/(app)/admin/_components/crud-table/types";
 import { listAgents, createAgent, updateUser } from "@/shared/api/accounts-api";
-import { ContactsFilterBar } from "@/app/(app)/admin/components/ContactsFilterBar";
-import { OfficeCombobox } from "@/app/(app)/admin/components/OfficeCombobox";
-import { useUrlFilters } from "@/app/(app)/admin/hooks/useUrlFilters";
+import { ContactsFilterBar } from "@/app/(app)/admin/_components/ContactsFilterBar";
+import { OfficeCombobox } from "@/app/(app)/admin/_components/OfficeCombobox";
+import { useUrlFilters } from "@/app/(app)/admin/_hooks/useUrlFilters";
 import LoginAsAgentButton from "./LoginAsAgentButton";
 
 const formatDate = (v: unknown) => {

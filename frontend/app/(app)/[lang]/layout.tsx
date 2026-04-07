@@ -6,9 +6,9 @@ import { redirect } from "next/dist/client/components/navigation";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { authOptions } from "@/shared/auth/authOptions";
-import { Navbar } from "./components/navbar/Navbar";
-import { Footer } from "./components/footer/Footer";
-import { BackToAdminBanner } from "./components/BackToAdminBanner";
+import { Navbar } from "./_components/header/navbar/Navbar";
+import { Footer } from "./_components/footer/Footer";
+import { BackToAdminBanner } from "./_components/header/login/BackToAdminBanner";
 
 const polin = localFont({
   src: [

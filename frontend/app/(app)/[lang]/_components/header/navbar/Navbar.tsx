@@ -1,14 +1,12 @@
 import Image from "next/image";
-import { LangSwitcher } from "../LangSwitcher";
-import { LoginModal } from "../LoginModal";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import Link from "next/link";
 import { MegaDropdown } from "./MegaDropdown";
 import type { Populated } from "@/shared/types/payload";
-import { signOut } from "next-auth/react";
-import { LogOut } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
+import { LangSwitcher } from "../login/LangSwitcher";
+import { LoginModal } from "../login/LoginModal";
 
 async function getHeaderData(lang: string) {
   const payload = await getPayload({ config });
