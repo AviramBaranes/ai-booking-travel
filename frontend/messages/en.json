@@ -81,15 +81,13 @@
     "loadingTitle": "Searching for the best deal for you",
     "loadingMessage": "Cancellation fee 5% or 100 ILS, whichever is lower, up to 48 hours before car pickup"
   },
-  "SearchFormOptions": {
+  "SearchForm": {
     "returnDifferentLoc": "Return car at a different location?",
     "ageRange": "Driver age: 30 - 65",
     "agePopoverLabel": "What is the driver's age?",
     "save": "Save",
     "hasCoupon": "I have a voucher",
-    "couponPlaceholder": "Enter voucher"
-  },
-  "SearchForm": {
+    "couponPlaceholder": "Enter voucher",
     "pickupLocationPlaceholder": "Pick-up location",
     "dropoffLocationPlaceholder": "Drop-off location",
     "pickupDatePlaceholder": "Pick-up date",

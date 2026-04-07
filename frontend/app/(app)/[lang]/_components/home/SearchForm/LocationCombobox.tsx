@@ -13,13 +13,25 @@ import { booking } from "@/shared/client";
 
 interface LocationComboboxProps {
   placeholder: string;
+  onSelect: (locationId: number) => void;
 }
-export function LocationCombobox({ placeholder }: LocationComboboxProps) {
+export function LocationCombobox({
+  placeholder,
+  onSelect,
+}: LocationComboboxProps) {
   const [search, setSearch] = useState("");
   const { locations } = useLocations(search);
 
   return (
-    <Combobox items={locations}>
+    <Combobox
+      items={locations}
+      onValueChange={(val) => {
+        const loc = locations.find((l) => l.name === val);
+        if (loc) {
+          onSelect(loc.id);
+        }
+      }}
+    >
       <ComboboxInput
         placeholder={placeholder}
         className="search-form-input"

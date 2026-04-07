@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { he } from "react-day-picker/locale";
 import {
   Popover,
@@ -17,10 +16,18 @@ import { useParams } from "next/navigation";
 
 interface CalendarInputProps {
   placeholder: string;
+  value?: Date;
+  onSelect?: (date: Date | undefined) => void;
 }
 
-export function CalendarInput({ placeholder }: CalendarInputProps) {
+export function CalendarInput({
+  placeholder,
+  value,
+  onSelect,
+}: CalendarInputProps) {
   const { lang } = useParams();
+  const locale = lang === "he" ? he : undefined;
+  const displayValue = value ? value.toLocaleDateString(locale?.code) : "";
 
   return (
     <Popover>
@@ -29,8 +36,10 @@ export function CalendarInput({ placeholder }: CalendarInputProps) {
           <InputGroup className="search-form-input px-0">
             <InputGroupInput
               id="input-group-url"
+              value={displayValue}
               placeholder={placeholder}
               className="text-start px-2"
+              readOnly
             />
             <InputGroupAddon align="inline-start" className="pl-1 pr-0">
               <CalendarIcon className="size-5 mr-2 text-brand" />
@@ -41,8 +50,10 @@ export function CalendarInput({ placeholder }: CalendarInputProps) {
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
-          locale={lang === "he" ? he : undefined}
+          locale={locale}
           numberOfMonths={2}
+          selected={value}
+          onSelect={onSelect}
         />
       </PopoverContent>
     </Popover>

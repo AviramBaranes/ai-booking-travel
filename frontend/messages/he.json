@@ -81,15 +81,13 @@
     "loadingTitle": "מחפשים לכם את הדיל הטוב ביותר",
     "loadingMessage": "דמי ביטול 5% או 100 ש״ח הנמוך מביניהם עד 48 שעות לפני איסוף הרכב"
   },
-  "SearchFormOptions": {
+  "SearchForm": {
     "returnDifferentLoc": "החזרת הרכב במקום אחר?",
     "ageRange": "גיל הנהג/ת: 30 - 65",
     "agePopoverLabel": "מה גיל הנהג/ת",
     "save": "שמירה",
     "hasCoupon": "יש לי שובר",
-    "couponPlaceholder": "הזינו שובר"
-  },
-  "SearchForm": {
+    "couponPlaceholder": "הזינו שובר",
     "pickupLocationPlaceholder": "מהיכן תאספו את הרכב?",
     "dropoffLocationPlaceholder": "לאן תחזירו את הרכב?",
     "pickupDatePlaceholder": "מתי אוספים?",
