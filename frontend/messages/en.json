@@ -88,5 +88,13 @@
     "save": "Save",
     "hasCoupon": "I have a voucher",
     "couponPlaceholder": "Enter voucher"
+  },
+  "SearchForm": {
+    "pickupLocationPlaceholder": "Pick-up location",
+    "dropoffLocationPlaceholder": "Drop-off location",
+    "pickupDatePlaceholder": "Pick-up date",
+    "dropoffDatePlaceholder": "Return date",
+    "timePlaceholder": "Time",
+    "searchButton": "Search"
   }
 }

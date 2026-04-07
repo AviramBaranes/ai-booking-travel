@@ -88,5 +88,13 @@
     "save": "שמירה",
     "hasCoupon": "יש לי שובר",
     "couponPlaceholder": "הזינו שובר"
+  },
+  "SearchForm": {
+    "pickupLocationPlaceholder": "מהיכן תאספו את הרכב?",
+    "dropoffLocationPlaceholder": "לאן תחזירו את הרכב?",
+    "pickupDatePlaceholder": "מתי אוספים?",
+    "dropoffDatePlaceholder": "מתי מחזירים?",
+    "timePlaceholder": "בחרו שעה",
+    "searchButton": "יאללה, בוא נזוז"
   }
 }

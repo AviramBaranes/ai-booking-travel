@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { LocationCombobox } from "./LocationCombobox";
 import { SearchFormOptions } from "./SearchFormOptions";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { CalendarInput } from "./CalendarInput";
 import { TimeSelect } from "./TimeSelect";
 
 export function SearchForm() {
+  const t = useTranslations("SearchForm");
   const [isReturnDifferentLoc, setIsReturnDifferentLoc] = useState(false);
 
   return (
@@ -18,29 +20,29 @@ export function SearchForm() {
       />
       <div className="bg-white/95 w-full rounded-l-xl rounded-br-xl flex items-center gap-2 px-5">
         <div className="flex gap-2 flex-1 my-5 *:flex-1">
-          <LocationCombobox placeholder="מהיכן תאספו את הרכב?" />
+          <LocationCombobox placeholder={t("pickupLocationPlaceholder")} />
           {isReturnDifferentLoc && (
-            <LocationCombobox placeholder="לאן תחזירו את הרכב?" />
+            <LocationCombobox placeholder={t("dropoffLocationPlaceholder")} />
           )}
         </div>
         <div className={isReturnDifferentLoc ? "w-1/10" : "w-1/6"}>
-          <CalendarInput placeholder="מתי אוספים?" />
+          <CalendarInput placeholder={t("pickupDatePlaceholder")} />
         </div>
         <div className={isReturnDifferentLoc ? "w-1/12" : "w-1/10"}>
-          <TimeSelect placeholder="בחרו שעה" />
+          <TimeSelect placeholder={t("timePlaceholder")} />
         </div>
         <div className={isReturnDifferentLoc ? "w-1/10" : "w-1/6"}>
-          <CalendarInput placeholder="מתי מחזירים?" />
+          <CalendarInput placeholder={t("dropoffDatePlaceholder")} />
         </div>
         <div className={isReturnDifferentLoc ? "w-1/12" : "w-1/10"}>
-          <TimeSelect placeholder="בחרו שעה" />
+          <TimeSelect placeholder={t("timePlaceholder")} />
         </div>
         <div className="w-1/9">
           <Button
             variant="brand"
             className="w-full py-6.5 type-paragraph font-bold"
           >
-            יאללה, בוא נזוז
+            {t("searchButton")}
           </Button>
         </div>
       </div>
