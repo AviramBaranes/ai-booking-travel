@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { Populated } from "@/shared/types/payload";
 import { Hero } from "./components/home/Hero";
 import { BlocksRenderer } from "./components/blocks/BlocksRenderer";
+import { HomepageDecorations } from "./components/decorations/HomepageDecorations";
 
 type Props = {
   params: Promise<{ lang: string }>;
@@ -42,8 +43,8 @@ export default async function Homepage({ params }: Props) {
   const image = homepage.featuredImage as Populated<Homepage["featuredImage"]>;
 
   return (
-    <main className="relative">
-      {/* <PagesDecorations /> */}
+    <main className="relative overflow-hidden">
+      <HomepageDecorations />
       <Hero
         image={image}
         title={homepage.title}
