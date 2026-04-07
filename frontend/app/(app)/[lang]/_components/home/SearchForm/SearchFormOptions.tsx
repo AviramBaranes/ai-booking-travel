@@ -10,9 +10,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export function SearchFormOptions() {
+interface SearchFormOptionsProps {
+  isReturnDifferentLoc: boolean;
+  setIsReturnDifferentLoc: (value: boolean) => void;
+}
+
+export function SearchFormOptions({
+  isReturnDifferentLoc,
+  setIsReturnDifferentLoc,
+}: SearchFormOptionsProps) {
   const t = useTranslations("SearchFormOptions");
-  const [isReturnDifferentLoc, setIsReturnDifferentLoc] = useState(false);
   const [isAgeNormal, setIsAgeNormal] = useState(true);
   const [isChangedAge, setIsChangedAge] = useState(false);
   const [coupon, setCoupon] = useState("");
