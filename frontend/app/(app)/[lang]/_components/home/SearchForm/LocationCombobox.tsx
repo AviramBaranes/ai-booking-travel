@@ -10,14 +10,18 @@ import {
 } from "@/components/ui/combobox";
 import { Building2, MapPin, Plane } from "lucide-react";
 import { booking } from "@/shared/client";
+import { FieldError } from "react-hook-form";
+import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 
 interface LocationComboboxProps {
   placeholder: string;
+  error: FieldError | undefined;
   onSelect: (locationId: number) => void;
 }
 export function LocationCombobox({
   placeholder,
   onSelect,
+  error,
 }: LocationComboboxProps) {
   const [search, setSearch] = useState("");
   const { locations } = useLocations(search);
@@ -32,14 +36,18 @@ export function LocationCombobox({
         }
       }}
     >
-      <ComboboxInput
-        placeholder={placeholder}
-        className="search-form-input"
-        showTrigger={false}
-        onChange={(e) => setSearch(e.target.value)}
-      >
-        <MapPin className="absolute top-1/2 -translate-y-1/2 inset-s-3 size-4.5 text-brand pointer-events-none" />
-      </ComboboxInput>
+      <div className="flex flex-col">
+        <ComboboxInput
+          placeholder={placeholder}
+          aria-invalid={error ? "true" : "false"}
+          className="search-form-input"
+          showTrigger={false}
+          onChange={(e) => setSearch(e.target.value)}
+        >
+          <MapPin className="absolute top-1/2 -translate-y-1/2 inset-s-3 size-4.5 text-brand pointer-events-none" />
+        </ComboboxInput>
+        <ErrorDisplay>{error?.message}</ErrorDisplay>
+      </div>
       <ComboboxContent className="rounded-xl p-4">
         <ComboboxEmpty>לא נמצאו מיקומים</ComboboxEmpty>
         <ComboboxList className="divide-y divide-border" dir="ltr">

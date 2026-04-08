@@ -93,6 +93,12 @@
     "pickupDatePlaceholder": "מתי אוספים?",
     "dropoffDatePlaceholder": "מתי מחזירים?",
     "timePlaceholder": "בחרו שעה",
-    "searchButton": "יאללה, בוא נזוז"
+    "searchButton": "יאללה, בוא נזוז",
+    "validation": {
+      "required": "שדה חובה",
+      "dateInPast": "התאריך לא יכול להיות בעבר",
+      "dropoffBeforePickup": "תאריך ההחזרה חייב להיות אחרי תאריך האיסוף",
+      "dropoffTimeBeforePickup": "שעת ההחזרה חייבת להיות אחרי שעת האיסוף"
+    }
   }
 }

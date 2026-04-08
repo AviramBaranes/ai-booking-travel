@@ -13,16 +13,19 @@ interface AgePopoverProps {
   checkboxLabel: string;
   inputLabel: string;
   saveButtonText: string;
+  driverAge: number;
+  setDriverAge: (age: number) => void;
 }
 
 export function AgePopover({
   checkboxLabel,
   inputLabel,
   saveButtonText,
+  driverAge,
+  setDriverAge,
 }: AgePopoverProps) {
   const [isAgeNormal, setIsAgeNormal] = useState(true);
   const [isChangedAge, setIsChangedAge] = useState(false);
-  const [driverAge, setDriverAge] = useState(30);
 
   return (
     <Popover open={!isAgeNormal && !isChangedAge}>
@@ -46,13 +49,15 @@ export function AgePopover({
           </FieldLabel>
         </Field>
       </PopoverTrigger>
-      <PopoverContent className="py-2 w-auto min-w-max">
+      <PopoverContent className="py-2 w-auto min-w-max" align="end">
         <Field orientation="horizontal">
           <FieldLabel htmlFor="age" className="w-fit whitespace-nowrap">
             {inputLabel}
           </FieldLabel>
           <Input
             id="age"
+            min={18}
+            max={99}
             value={driverAge}
             onChange={(e) => {
               setDriverAge(Number(e.target.value));

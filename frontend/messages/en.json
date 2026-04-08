@@ -93,6 +93,12 @@
     "pickupDatePlaceholder": "Pick-up date",
     "dropoffDatePlaceholder": "Return date",
     "timePlaceholder": "Time",
-    "searchButton": "Search"
+    "searchButton": "Search",
+    "validation": {
+      "required": "Required field",
+      "dateInPast": "Date cannot be in the past",
+      "dropoffBeforePickup": "Return date must be after pickup date",
+      "dropoffTimeBeforePickup": "Return time must be after pickup time"
+    }
   }
 }

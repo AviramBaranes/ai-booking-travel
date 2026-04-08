@@ -1,45 +1,36 @@
 "use client";
-import z from "zod";
-import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { LocationCombobox } from "./LocationCombobox";
 import { Button } from "@/components/ui/button";
 import { CalendarInput } from "./CalendarInput";
 import { TimeSelect } from "./TimeSelect";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DifferentLocCheckbox } from "./DifferentLocCheckbox";
 import { AgePopover } from "./AgePopover";
 import { CouponPopover } from "./CouponPopover";
-
-const searchFormSchema = z.object({
-  pickupLocation: z.int().min(1, "Pickup location is required"),
-  dropoffLocation: z.int().min(1).optional(),
-  pickupDate: z.date().min(new Date(), "Pickup date must be in the future"),
-  pickupTime: z.string().min(1, "Pickup time is required"),
-  dropoffDate: z
-    .date()
-    .min(new Date(), "Dropoff date must be in the future")
-    .optional(),
-  dropoffTime: z.string().min(1, "Dropoff time is required").optional(),
-  driverAge: z.number().min(18, "Driver must be at least 18 years old"),
-  couponCode: z.string().optional(),
-});
+import { SearchFormValues, searchSchema } from "./searchFormSchema";
 
 export function SearchForm() {
   const t = useTranslations("SearchForm");
-  const [isReturnDifferentLoc, setIsReturnDifferentLoc] = useState(false);
+  const searchFormSchema = searchSchema(t);
 
-  const { control, handleSubmit } = useForm<z.infer<typeof searchFormSchema>>({
+  const { control, handleSubmit } = useForm<SearchFormValues>({
     resolver: zodResolver(searchFormSchema),
     defaultValues: {
+      isReturnDifferentLoc: false,
       driverAge: 30,
       pickupTime: "",
       dropoffTime: "",
     },
   });
+  const isReturnDifferentLoc =
+    useWatch({
+      control,
+      name: "isReturnDifferentLoc",
+    }) ?? false;
 
-  function onSubmit(data: z.infer<typeof searchFormSchema>) {
+  function onSubmit(data: SearchFormValues) {
     console.log("Form submitted with data:", data);
   }
 
@@ -49,33 +40,56 @@ export function SearchForm() {
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="bg-navy w-fit py-2 rounded-t-xl flex items-center text-white type-h6 px-6 gap-5">
-        <DifferentLocCheckbox
-          label={t("returnDifferentLoc")}
-          isReturnDifferentLoc={isReturnDifferentLoc}
-          setIsReturnDifferentLoc={setIsReturnDifferentLoc}
+        <Controller
+          name="isReturnDifferentLoc"
+          control={control}
+          render={({ field }) => (
+            <DifferentLocCheckbox
+              label={t("returnDifferentLoc")}
+              isReturnDifferentLoc={field.value ?? false}
+              setIsReturnDifferentLoc={field.onChange}
+            />
+          )}
         />
         <div className="h-4 w-px bg-white/40 shrink-0" />
-        <AgePopover
-          checkboxLabel={t("ageRange")}
-          inputLabel={t("agePopoverLabel")}
-          saveButtonText={t("save")}
+        <Controller
+          name="driverAge"
+          control={control}
+          render={({ field }) => (
+            <AgePopover
+              checkboxLabel={t("ageRange")}
+              inputLabel={t("agePopoverLabel")}
+              saveButtonText={t("save")}
+              driverAge={field.value}
+              setDriverAge={field.onChange}
+            />
+          )}
         />
         <div className="h-4 w-px bg-white/40 shrink-0" />
-        <CouponPopover
-          checkboxLabel={t("hasCoupon")}
-          inputLabel={t("couponPlaceholder")}
-          saveButtonText={t("save")}
+        <Controller
+          name="couponCode"
+          control={control}
+          render={({ field }) => (
+            <CouponPopover
+              checkboxLabel={t("hasCoupon")}
+              inputLabel={t("couponPlaceholder")}
+              saveButtonText={t("save")}
+              couponCode={field.value ?? ""}
+              setCouponCode={field.onChange}
+            />
+          )}
         />
       </div>
-      <div className="bg-white/95 w-full rounded-l-xl rounded-br-xl flex items-center gap-2 px-5">
-        <div className="flex gap-2 flex-1 my-5 *:flex-1">
+      <div className="bg-white/95 w-full py-6 rounded-l-xl max-h-35 min-h-25 justify-center rounded-br-xl flex items-start gap-2 px-5">
+        <div className="flex gap-2 flex-1 *:flex-1">
           <Controller
             name="pickupLocation"
             control={control}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <LocationCombobox
                 placeholder={t("pickupLocationPlaceholder")}
                 onSelect={(id) => field.onChange(id)}
+                error={fieldState.error}
               />
             )}
           />
@@ -83,10 +97,11 @@ export function SearchForm() {
             <Controller
               name="dropoffLocation"
               control={control}
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <LocationCombobox
                   placeholder={t("dropoffLocationPlaceholder")}
                   onSelect={(id) => field.onChange(id)}
+                  error={fieldState.error}
                 />
               )}
             />
@@ -96,11 +111,12 @@ export function SearchForm() {
           <Controller
             name="pickupDate"
             control={control}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <CalendarInput
                 placeholder={t("pickupDatePlaceholder")}
                 value={field.value}
                 onSelect={field.onChange}
+                error={fieldState.error}
               />
             )}
           />
@@ -109,11 +125,12 @@ export function SearchForm() {
           <Controller
             name="pickupTime"
             control={control}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <TimeSelect
                 placeholder={t("timePlaceholder")}
                 value={field.value}
                 onChange={field.onChange}
+                error={fieldState.error}
               />
             )}
           />
@@ -122,11 +139,12 @@ export function SearchForm() {
           <Controller
             name="dropoffDate"
             control={control}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <CalendarInput
                 placeholder={t("dropoffDatePlaceholder")}
                 value={field.value}
                 onSelect={field.onChange}
+                error={fieldState.error}
               />
             )}
           />
@@ -135,11 +153,12 @@ export function SearchForm() {
           <Controller
             name="dropoffTime"
             control={control}
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <TimeSelect
                 placeholder={t("timePlaceholder")}
-                value={field.value}
+                value={field.value ?? ""}
                 onChange={field.onChange}
+                error={fieldState.error}
               />
             )}
           />
@@ -148,7 +167,7 @@ export function SearchForm() {
           <Button
             type="submit"
             variant="brand"
-            className="w-full py-6.5 type-paragraph font-bold"
+            className="w-full py-6 type-paragraph font-bold"
           >
             {t("searchButton")}
           </Button>

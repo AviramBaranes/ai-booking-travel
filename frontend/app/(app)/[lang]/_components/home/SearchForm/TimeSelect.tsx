@@ -15,6 +15,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { FieldError } from "react-hook-form";
+import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
+
 const times = Array.from(
   { length: 48 },
   (_, i) =>
@@ -23,16 +26,16 @@ const times = Array.from(
 
 interface TimeSelectProps {
   placeholder: string;
-  value?: string;
-  onChange?: (value: string) => void;
-  name?: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: FieldError;
 }
 
 export function TimeSelect({
   placeholder,
   value,
   onChange,
-  name,
+  error,
 }: TimeSelectProps) {
   const [internalValue, setInternalValue] = React.useState("");
 
@@ -47,9 +50,7 @@ export function TimeSelect({
   };
 
   return (
-    <div className="w-full">
-      {name ? <input type="hidden" name={name} value={currentValue} /> : null}
-
+    <div className="w-full flex flex-col">
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <div className="w-full cursor-pointer">
@@ -57,6 +58,7 @@ export function TimeSelect({
               <InputGroup className="search-form-input px-0">
                 <InputGroupInput
                   value={currentValue}
+                  aria-invalid={!!error}
                   placeholder={placeholder}
                   readOnly
                   className="text-start px-2 cursor-pointer"
@@ -96,6 +98,7 @@ export function TimeSelect({
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
+      <ErrorDisplay>{error?.message}</ErrorDisplay>
     </div>
   );
 }

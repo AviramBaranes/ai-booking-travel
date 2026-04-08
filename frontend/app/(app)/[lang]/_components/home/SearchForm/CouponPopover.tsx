@@ -13,13 +13,16 @@ interface CouponPopoverProps {
   checkboxLabel: string;
   inputLabel: string;
   saveButtonText: string;
+  couponCode: string;
+  setCouponCode: (code: string) => void;
 }
 export function CouponPopover({
   checkboxLabel,
   inputLabel,
   saveButtonText,
+  couponCode,
+  setCouponCode,
 }: CouponPopoverProps) {
-  const [coupon, setCoupon] = useState("");
   const [hasCoupon, setHasCoupon] = useState(false);
   const [isCouponSaved, setIsCouponSaved] = useState(false);
 
@@ -33,7 +36,7 @@ export function CouponPopover({
               setHasCoupon(!!checked);
               if (!checked) {
                 setIsCouponSaved(false);
-                setCoupon("");
+                setCouponCode("");
               }
             }}
             id="has-coupon"
@@ -45,13 +48,13 @@ export function CouponPopover({
           </FieldLabel>
         </Field>
       </PopoverTrigger>
-      <PopoverContent className="py-2">
+      <PopoverContent className="py-2" align="start">
         <Field orientation="horizontal">
           <Input
             id="coupon"
-            value={coupon}
+            value={couponCode}
             onChange={(e) => {
-              setCoupon(e.target.value);
+              setCouponCode(e.target.value);
             }}
             placeholder={inputLabel}
             className="w-3/4 py-5 rounded-sm bg-background focus-visible:ring-0 focus-visible:border-transparent"
