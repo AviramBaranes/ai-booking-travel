@@ -100,5 +100,13 @@
       "dropoffBeforePickup": "Return date must be after pickup date",
       "dropoffTimeBeforePickup": "Return time must be after pickup time"
     }
+  },
+  "booking": {
+    "steps": {
+      "step": "Step",
+      "results": "Select Car",
+      "addOns": "Add-Ons",
+      "ordering": "Summary and Order"
+    }
   }
 }

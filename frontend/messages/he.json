@@ -100,5 +100,13 @@
       "dropoffBeforePickup": "תאריך ההחזרה חייב להיות אחרי תאריך האיסוף",
       "dropoffTimeBeforePickup": "שעת ההחזרה חייבת להיות אחרי שעת האיסוף"
     }
+  },
+  "booking": {
+    "steps": {
+      "step": "שלב",
+      "results": "בחירת רכב",
+      "addOns": "תוספות",
+      "ordering": "סיכום והזמנה"
+    }
   }
 }

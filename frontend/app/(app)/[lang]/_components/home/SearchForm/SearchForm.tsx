@@ -11,12 +11,15 @@ import { AgePopover } from "./AgePopover";
 import { CouponPopover } from "./CouponPopover";
 import { SearchFormValues, searchSchema } from "./searchFormSchema";
 import { useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
 
 export type SearchFieldHandle = {
   focus: () => void;
 };
 
 export function SearchForm() {
+  const router = useRouter();
+  const { lang } = useParams();
   const t = useTranslations("SearchForm");
   const searchFormSchema = searchSchema(t);
 
@@ -42,8 +45,34 @@ export function SearchForm() {
       name: "isReturnDifferentLoc",
     }) ?? false;
 
+  function formatDate(date: Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
   function onSubmit(data: SearchFormValues) {
-    console.log("Form submitted with data:", data);
+    const urlParams = new URLSearchParams();
+
+    urlParams.set("pickupLocation", data.pickupLocation.toString());
+    urlParams.set(
+      "dropoffLocation",
+      data.isReturnDifferentLoc
+        ? data.dropoffLocation!.toString()
+        : data.pickupLocation.toString(),
+    );
+    urlParams.set("pickupDate", formatDate(data.pickupDate!));
+    urlParams.set("pickupTime", data.pickupTime);
+    urlParams.set("dropoffDate", formatDate(data.dropoffDate!));
+    urlParams.set("dropoffTime", data.dropoffTime);
+    urlParams.set("driverAge", data.driverAge.toString());
+
+    if (data.couponCode) {
+      urlParams.set("couponCode", data.couponCode);
+    }
+
+    router.push(`/${lang}/results?${urlParams.toString()}`);
   }
 
   return (

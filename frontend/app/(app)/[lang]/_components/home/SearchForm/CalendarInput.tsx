@@ -43,8 +43,8 @@ export function CalendarInput({
     ref,
     () => ({
       focus() {
-        setOpen(true);
         requestAnimationFrame(() => {
+          setOpen(true);
           triggerRef.current?.focus();
         });
       },
