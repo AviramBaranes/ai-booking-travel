@@ -15,12 +15,15 @@ import {
 import { useParams } from "next/navigation";
 import { FieldError } from "react-hook-form";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
+import { SearchFieldHandle } from "./SearchForm";
+import { Ref, useImperativeHandle, useRef, useState } from "react";
 
 interface CalendarInputProps {
   placeholder: string;
+  ref: Ref<SearchFieldHandle>;
   value?: Date;
-  onSelect: (date: Date | undefined) => void;
   error?: FieldError;
+  onSelect: (date: Date | undefined) => void;
 }
 
 export function CalendarInput({
@@ -28,14 +31,30 @@ export function CalendarInput({
   value,
   onSelect,
   error,
+  ref,
 }: CalendarInputProps) {
   const { lang } = useParams();
   const locale = lang === "he" ? he : undefined;
   const displayValue = value ? value.toLocaleDateString(locale?.code) : "";
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLInputElement>(null);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus() {
+        setOpen(true);
+        requestAnimationFrame(() => {
+          triggerRef.current?.focus();
+        });
+      },
+    }),
+    [],
+  );
 
   return (
     <div className="flex flex-col items-start">
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Field>
             <InputGroup className="search-form-input px-0">
@@ -44,6 +63,7 @@ export function CalendarInput({
                 value={displayValue}
                 placeholder={placeholder}
                 className="text-start px-2"
+                ref={triggerRef}
                 readOnly
               />
               <InputGroupAddon align="inline-start" className="pl-1 pr-0">
@@ -58,7 +78,15 @@ export function CalendarInput({
             locale={locale}
             numberOfMonths={2}
             selected={value}
-            onSelect={onSelect}
+            onSelect={(d) => {
+              onSelect(d);
+              setOpen(false);
+            }}
+            classNames={{
+              today: "bg-brand/35",
+              day_button:
+                "text-navy data-[selected-single=true]:bg-brand data-[selected-single=true]:text-white",
+            }}
           />
         </PopoverContent>
       </Popover>

@@ -17,11 +17,13 @@ interface LocationComboboxProps {
   placeholder: string;
   error: FieldError | undefined;
   onSelect: (locationId: number) => void;
+  ref?: React.Ref<HTMLInputElement | null>;
 }
 export function LocationCombobox({
   placeholder,
   onSelect,
   error,
+  ref,
 }: LocationComboboxProps) {
   const [search, setSearch] = useState("");
   const { locations } = useLocations(search);
@@ -43,6 +45,7 @@ export function LocationCombobox({
           className="search-form-input"
           showTrigger={false}
           onChange={(e) => setSearch(e.target.value)}
+          ref={ref}
         >
           <MapPin className="absolute top-1/2 -translate-y-1/2 inset-s-3 size-4.5 text-brand pointer-events-none" />
         </ComboboxInput>
@@ -55,12 +58,12 @@ export function LocationCombobox({
             <ComboboxItem
               key={loc.id}
               value={loc.name}
-              className="flex items-center gap-3 px-3 py-3 text-base text-[#1b1b1b] rounded-none pr-3 pl-3 data-highlighted:bg-[#f0f3f9]"
+              className="flex items-center gap-3 px-3 py-3 text-base text-[#1b1b1b] rounded-none pr-3 pl-3 data-highlighted:text-brand data-highlighted:bg-[#f0f3f9]"
             >
               {loc.iata ? (
-                <Plane className="size-5 shrink-0 text-brand" />
+                <Plane className="size-5 shrink-0 text-brand!" />
               ) : (
-                <Building2 className="size-5 shrink-0 text-brand" />
+                <Building2 className="size-5 shrink-0 text-brand!" />
               )}
               <span className="flex-1">{loc.name}</span>
             </ComboboxItem>

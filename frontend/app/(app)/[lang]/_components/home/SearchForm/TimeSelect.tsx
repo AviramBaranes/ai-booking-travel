@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { Check, Clock } from "lucide-react";
 import { Field } from "@/components/ui/field";
 import {
@@ -17,6 +16,8 @@ import {
 
 import { FieldError } from "react-hook-form";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
+import { useImperativeHandle, useRef, useState } from "react";
+import { SearchFieldHandle } from "./SearchForm";
 
 const times = Array.from(
   { length: 48 },
@@ -27,6 +28,7 @@ const times = Array.from(
 interface TimeSelectProps {
   placeholder: string;
   value: string;
+  ref: React.Ref<SearchFieldHandle>;
   onChange: (value: string) => void;
   error?: FieldError;
 }
@@ -36,10 +38,26 @@ export function TimeSelect({
   value,
   onChange,
   error,
+  ref,
 }: TimeSelectProps) {
-  const [internalValue, setInternalValue] = React.useState("");
+  const [internalValue, setInternalValue] = useState("");
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
 
   const currentValue = value ?? internalValue;
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus() {
+        setOpen(true);
+        requestAnimationFrame(() => {
+          triggerRef.current?.focus();
+        });
+      },
+    }),
+    [],
+  );
 
   const handleSelect = (nextValue: string) => {
     if (value === undefined) {
@@ -47,13 +65,14 @@ export function TimeSelect({
     }
 
     onChange?.(nextValue);
+    setOpen(false);
   };
 
   return (
     <div className="w-full flex flex-col">
-      <DropdownMenu modal={false}>
+      <DropdownMenu modal={false} open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
-          <div className="w-full cursor-pointer">
+          <div ref={triggerRef} className="w-full cursor-pointer">
             <Field>
               <InputGroup className="search-form-input px-0">
                 <InputGroupInput

@@ -10,10 +10,21 @@ import { DifferentLocCheckbox } from "./DifferentLocCheckbox";
 import { AgePopover } from "./AgePopover";
 import { CouponPopover } from "./CouponPopover";
 import { SearchFormValues, searchSchema } from "./searchFormSchema";
+import { useRef } from "react";
+
+export type SearchFieldHandle = {
+  focus: () => void;
+};
 
 export function SearchForm() {
   const t = useTranslations("SearchForm");
   const searchFormSchema = searchSchema(t);
+
+  const dropoffLocationRef = useRef<HTMLInputElement | null>(null);
+  const pickupDateRef = useRef<SearchFieldHandle>(null);
+  const dropoffDateRef = useRef<SearchFieldHandle>(null);
+  const pickupTimeRef = useRef<SearchFieldHandle>(null);
+  const dropoffTimeRef = useRef<SearchFieldHandle>(null);
 
   const { control, handleSubmit } = useForm<SearchFormValues>({
     resolver: zodResolver(searchFormSchema),
@@ -24,6 +35,7 @@ export function SearchForm() {
       dropoffTime: "",
     },
   });
+
   const isReturnDifferentLoc =
     useWatch({
       control,
@@ -88,7 +100,14 @@ export function SearchForm() {
             render={({ field, fieldState }) => (
               <LocationCombobox
                 placeholder={t("pickupLocationPlaceholder")}
-                onSelect={(id) => field.onChange(id)}
+                onSelect={(id) => {
+                  field.onChange(id);
+                  if (isReturnDifferentLoc) {
+                    dropoffLocationRef.current?.focus();
+                  } else {
+                    pickupDateRef.current?.focus();
+                  }
+                }}
                 error={fieldState.error}
               />
             )}
@@ -100,8 +119,12 @@ export function SearchForm() {
               render={({ field, fieldState }) => (
                 <LocationCombobox
                   placeholder={t("dropoffLocationPlaceholder")}
-                  onSelect={(id) => field.onChange(id)}
+                  onSelect={(id) => {
+                    field.onChange(id);
+                    pickupDateRef.current?.focus();
+                  }}
                   error={fieldState.error}
+                  ref={dropoffLocationRef}
                 />
               )}
             />
@@ -115,8 +138,12 @@ export function SearchForm() {
               <CalendarInput
                 placeholder={t("pickupDatePlaceholder")}
                 value={field.value}
-                onSelect={field.onChange}
+                onSelect={(e) => {
+                  field.onChange(e);
+                  pickupTimeRef.current?.focus();
+                }}
                 error={fieldState.error}
+                ref={pickupDateRef}
               />
             )}
           />
@@ -127,9 +154,13 @@ export function SearchForm() {
             control={control}
             render={({ field, fieldState }) => (
               <TimeSelect
+                ref={pickupTimeRef}
                 placeholder={t("timePlaceholder")}
                 value={field.value}
-                onChange={field.onChange}
+                onChange={(e) => {
+                  field.onChange(e);
+                  dropoffDateRef.current?.focus();
+                }}
                 error={fieldState.error}
               />
             )}
@@ -141,9 +172,13 @@ export function SearchForm() {
             control={control}
             render={({ field, fieldState }) => (
               <CalendarInput
+                ref={dropoffDateRef}
                 placeholder={t("dropoffDatePlaceholder")}
                 value={field.value}
-                onSelect={field.onChange}
+                onSelect={(e) => {
+                  field.onChange(e);
+                  dropoffTimeRef.current?.focus();
+                }}
                 error={fieldState.error}
               />
             )}
@@ -155,6 +190,7 @@ export function SearchForm() {
             control={control}
             render={({ field, fieldState }) => (
               <TimeSelect
+                ref={dropoffTimeRef}
                 placeholder={t("timePlaceholder")}
                 value={field.value ?? ""}
                 onChange={field.onChange}
