@@ -25,7 +25,9 @@ export function AgePopover({
   driverAge,
   setDriverAge,
 }: AgePopoverProps) {
-  const [isAgeNormal, setIsAgeNormal] = useState(true);
+  const [isAgeNormal, setIsAgeNormal] = useState(
+    driverAge >= 30 && driverAge <= 65,
+  );
   const [isChangedAge, setIsChangedAge] = useState(false);
   const [isValid, setIsValid] = useState(true);
 

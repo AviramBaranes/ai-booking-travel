@@ -18,19 +18,24 @@ interface LocationComboboxProps {
   error: FieldError | undefined;
   onSelect: (locationId: number) => void;
   ref?: React.Ref<HTMLInputElement | null>;
+  initializedLocations?: { id: number; name: string }[];
+  value?: string;
 }
 export function LocationCombobox({
   placeholder,
   onSelect,
   error,
   ref,
+  value,
+  initializedLocations,
 }: LocationComboboxProps) {
   const [search, setSearch] = useState("");
   const { locations } = useLocations(search);
 
   return (
     <Combobox
-      items={locations}
+      items={locations?.length ? locations : initializedLocations || []}
+      value={value}
       onValueChange={(val) => {
         const loc = locations.find((l) => l.name === val);
         if (loc) {

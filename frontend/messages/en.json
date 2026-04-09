@@ -107,6 +107,12 @@
       "results": "Select Car",
       "addOns": "Add-Ons",
       "ordering": "Summary and Order"
+    },
+    "banner": {
+      "pickup": "Pick-up",
+      "dropoff": "Drop-off",
+      "editSearch": "Edit Search",
+      "driverAge": "Driver age: {age}"
     }
   }
 }

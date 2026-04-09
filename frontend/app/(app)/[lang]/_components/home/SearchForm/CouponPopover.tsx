@@ -23,7 +23,7 @@ export function CouponPopover({
   couponCode,
   setCouponCode,
 }: CouponPopoverProps) {
-  const [hasCoupon, setHasCoupon] = useState(false);
+  const [hasCoupon, setHasCoupon] = useState(!!couponCode);
   const [isCouponSaved, setIsCouponSaved] = useState(false);
 
   return (

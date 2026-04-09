@@ -12,12 +12,33 @@ import { CouponPopover } from "./CouponPopover";
 import { SearchFormValues, searchSchema } from "./searchFormSchema";
 import { useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import clsx from "clsx";
 
 export type SearchFieldHandle = {
   focus: () => void;
 };
 
-export function SearchForm() {
+interface Location {
+  id: number;
+  name: string;
+}
+
+export interface SearchFormFields {
+  pickUpLocation: Location;
+  dropOffLocation?: Location;
+  pickUpDate: Date;
+  dropOffDate: Date;
+  pickUpTime: string;
+  dropOffTime: string;
+  driverAge: number;
+  couponCode?: string;
+}
+
+interface SearchFormProps extends Partial<SearchFormFields> {
+  className?: string;
+}
+
+export function SearchForm({ className, ...fields }: SearchFormProps) {
   const router = useRouter();
   const { lang } = useParams();
   const t = useTranslations("SearchForm");
@@ -32,10 +53,17 @@ export function SearchForm() {
   const { control, handleSubmit } = useForm<SearchFormValues>({
     resolver: zodResolver(searchFormSchema),
     defaultValues: {
-      isReturnDifferentLoc: false,
-      driverAge: 30,
-      pickupTime: "",
-      dropoffTime: "",
+      isReturnDifferentLoc:
+        !!fields.dropOffLocation &&
+        fields.dropOffLocation.id !== fields.pickUpLocation?.id,
+      driverAge: fields.driverAge ?? 30,
+      pickupTime: fields.pickUpTime ?? "",
+      dropoffTime: fields.dropOffTime ?? "",
+      couponCode: fields.couponCode ?? "",
+      pickupLocation: fields.pickUpLocation?.id,
+      dropoffLocation: fields.dropOffLocation?.id,
+      pickupDate: fields.pickUpDate ?? undefined,
+      dropoffDate: fields.dropOffDate ?? undefined,
     },
   });
 
@@ -55,21 +83,21 @@ export function SearchForm() {
   function onSubmit(data: SearchFormValues) {
     const urlParams = new URLSearchParams();
 
-    urlParams.set("pickupLocation", data.pickupLocation.toString());
+    urlParams.set("pl", data.pickupLocation.toString());
     urlParams.set(
-      "dropoffLocation",
+      "rl",
       data.isReturnDifferentLoc
         ? data.dropoffLocation!.toString()
         : data.pickupLocation.toString(),
     );
-    urlParams.set("pickupDate", formatDate(data.pickupDate!));
-    urlParams.set("pickupTime", data.pickupTime);
-    urlParams.set("dropoffDate", formatDate(data.dropoffDate!));
-    urlParams.set("dropoffTime", data.dropoffTime);
-    urlParams.set("driverAge", data.driverAge.toString());
+    urlParams.set("pd", formatDate(data.pickupDate!));
+    urlParams.set("pt", data.pickupTime);
+    urlParams.set("rd", formatDate(data.dropoffDate!));
+    urlParams.set("rt", data.dropoffTime);
+    urlParams.set("da", data.driverAge.toString());
 
     if (data.couponCode) {
-      urlParams.set("couponCode", data.couponCode);
+      urlParams.set("cc", data.couponCode);
     }
 
     router.push(`/${lang}/results?${urlParams.toString()}`);
@@ -77,7 +105,7 @@ export function SearchForm() {
 
   return (
     <form
-      className="flex flex-col w-10/12 mx-auto mt-4"
+      className={clsx("flex flex-col w-10/12 mx-auto mt-4", className)}
       onSubmit={handleSubmit(onSubmit)}
     >
       <div className="bg-navy w-fit py-2 rounded-t-xl flex items-center text-white type-h6 px-6 gap-5">
@@ -138,6 +166,10 @@ export function SearchForm() {
                   }
                 }}
                 error={fieldState.error}
+                value={field.value ? fields.pickUpLocation?.name : ""}
+                initializedLocations={
+                  fields.pickUpLocation ? [fields.pickUpLocation] : undefined
+                }
               />
             )}
           />
@@ -154,6 +186,12 @@ export function SearchForm() {
                   }}
                   error={fieldState.error}
                   ref={dropoffLocationRef}
+                  value={field.value ? fields.dropOffLocation?.name : ""}
+                  initializedLocations={
+                    fields.dropOffLocation
+                      ? [fields.dropOffLocation]
+                      : undefined
+                  }
                 />
               )}
             />

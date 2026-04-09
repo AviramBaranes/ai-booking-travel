@@ -107,6 +107,12 @@
       "results": "בחירת רכב",
       "addOns": "תוספות",
       "ordering": "סיכום והזמנה"
+    },
+    "banner": {
+      "pickup": "איסוף",
+      "dropoff": "החזרה",
+      "editSearch": "עריכת חיפוש",
+      "driverAge": "גיל הנהג/ת הוא: {age}"
     }
   }
 }
