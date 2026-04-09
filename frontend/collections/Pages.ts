@@ -17,9 +17,6 @@ export const Pages: CollectionConfig = {
     defaultColumns: ["title", "slug", "template", "_status", "updatedAt"],
   },
   defaultSort: "-updatedAt",
-  versions: {
-    drafts: true,
-  },
   fields: [
     {
       type: "tabs",
