@@ -580,6 +580,7 @@ export namespace booking {
         addOns: broker.AddOn[]
         locationDetails: broker.LocationDetails
         priceDetails: broker.PriceDetails
+        signals?: BookingSignals
     }
 
     /**
@@ -600,6 +601,15 @@ export namespace booking {
 
     export interface BookResponse {
         reservationId: number
+    }
+
+    /**
+     * BookingSignals holds UI-facing demand and inventory indicators for a vehicle card.
+     */
+    export interface BookingSignals {
+        liveViewers: number
+        remainingCount: number
+        tags: string[]
     }
 
     export interface BrokerTranslationRow {
@@ -784,6 +794,8 @@ export namespace booking {
      */
     export interface SearchAvailabilityResponse {
         snapshotId: number
+        pickupLocationName: string
+        dropoffLocationName: string
         availableVehicles: AvailableVehicle[]
     }
 

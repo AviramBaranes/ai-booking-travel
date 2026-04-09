@@ -18,6 +18,14 @@ type AvailableVehicle struct {
 	AddOns          []broker.AddOn         `json:"addOns"`
 	LocationDetails broker.LocationDetails `json:"locationDetails"`
 	PriceDetails    broker.PriceDetails    `json:"priceDetails"`
+	Signals         *BookingSignals        `json:"signals,omitempty" encore:"optional"`
+}
+
+// BookingSignals holds UI-facing demand and inventory indicators for a vehicle card.
+type BookingSignals struct {
+	LiveViewers    int      `json:"liveViewers"`
+	RemainingCount int      `json:"remainingCount"`
+	Tags           []string `json:"tags,omitempty"`
 }
 
 // Plan represents a rental plan, including its ID, name, description, full price, discount, and other pricing details.
@@ -65,8 +73,10 @@ func (p SearchAvailabilityRequest) Validate() error {
 
 // SearchAvailabilityResponse represents the response for searching availability of vehicles.
 type SearchAvailabilityResponse struct {
-	SnapshotID        int64              `json:"snapshotId"`
-	AvailableVehicles []AvailableVehicle `json:"availableVehicles"`
+	SnapshotID          int64              `json:"snapshotId"`
+	PickupLocationName  string             `json:"pickupLocationName"`
+	DropoffLocationName string             `json:"dropoffLocationName"`
+	AvailableVehicles   []AvailableVehicle `json:"availableVehicles"`
 }
 
 // SearchAvailability handles the http request for searching availability of vehicles.
@@ -108,8 +118,10 @@ func (s *Service) SearchAvailability(ctx context.Context, p SearchAvailabilityRe
 	}
 
 	return &SearchAvailabilityResponse{
-		SnapshotID:        snapshotID,
-		AvailableVehicles: artifacts.availableCars,
+		SnapshotID:          snapshotID,
+		PickupLocationName:  extractPickupLocationName(locs),
+		DropoffLocationName: extractDropoffLocationName(locs),
+		AvailableVehicles:   artifacts.availableCars,
 	}, nil
 }
 

@@ -3,6 +3,7 @@ package booking
 import (
 	"context"
 	"fmt"
+	"math/rand/v2"
 	"sort"
 
 	"encore.app/internal/api_errors"
@@ -19,6 +20,15 @@ type availabilityArtifacts struct {
 	availableCars []AvailableVehicle
 	plansDetails  []planPriceDetails
 }
+
+const (
+	minLiveViewers       = 25
+	maxLiveViewers       = 112
+	minRemainingCount    = 1
+	maxRemainingCount    = 4
+	maxVehiclesWithFlags = 20
+	topChoiceTag         = "top choice"
+)
 
 // buildAvailabilityArtifacts applies markup, coupon discounts, and currency data to produce the final response vehicles and plan snapshots.
 func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvailabilityRequest, locs availabilityLocations, rawVehicles []broker.AvailableVehicle, couponDiscount int) (availabilityArtifacts, error) {
@@ -134,7 +144,52 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 		artifacts.availableCars = append(artifacts.availableCars, av)
 	}
 
+	assignRandomBookingSignals(artifacts.availableCars)
+
 	return artifacts, nil
+}
+
+func assignRandomBookingSignals(vs []AvailableVehicle) {
+	if len(vs) == 0 {
+		return
+	}
+
+	selectedCount := randomSignalVehicleCount(len(vs))
+	selectedIndices := randomVehicleIndices(len(vs), selectedCount)
+
+	for _, idx := range selectedIndices {
+		vs[idx].Signals = newRandomBookingSignals()
+	}
+}
+
+func randomSignalVehicleCount(totalVehicles int) int {
+	maxSelected := min(totalVehicles, maxVehiclesWithFlags)
+	return randomIntInRange(1, maxSelected)
+}
+
+func randomVehicleIndices(totalVehicles, selectedCount int) []int {
+	indices := make([]int, totalVehicles)
+	for i := 0; i < totalVehicles; i++ {
+		indices[i] = i
+	}
+
+	rand.Shuffle(len(indices), func(i, j int) {
+		indices[i], indices[j] = indices[j], indices[i]
+	})
+
+	return indices[:selectedCount]
+}
+
+func newRandomBookingSignals() *BookingSignals {
+	return &BookingSignals{
+		LiveViewers:    randomIntInRange(minLiveViewers, maxLiveViewers),
+		RemainingCount: randomIntInRange(minRemainingCount, maxRemainingCount),
+		Tags:           []string{topChoiceTag},
+	}
+}
+
+func randomIntInRange(minValue, maxValue int) int {
+	return rand.IntN(maxValue-minValue+1) + minValue
 }
 
 // sortPlansByPrice sorts the plans in-place by their price in ascending order.

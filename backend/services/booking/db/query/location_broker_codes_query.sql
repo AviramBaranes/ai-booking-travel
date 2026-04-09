@@ -56,7 +56,8 @@ WHERE
 -- name: GetAllLocationBrokerCodesByLocationIDs :many
 SELECT
     lbc.*,
-    l.country_code AS location_country_code
+    l.country_code AS location_country_code,
+    l.name AS location_name
 FROM
     location_broker_codes lbc
     JOIN locations l ON l.id = lbc.location_id

@@ -101,7 +101,8 @@ func (q *Queries) EnableLocationBrokerCode(ctx context.Context, id int64) error 
 const getAllLocationBrokerCodesByLocationIDs = `-- name: GetAllLocationBrokerCodesByLocationIDs :many
 SELECT
     lbc.id, lbc.location_id, lbc.broker, lbc.broker_location_id, lbc.enabled, lbc.created_at, lbc.updated_at,
-    l.country_code AS location_country_code
+    l.country_code AS location_country_code,
+    l.name AS location_name
 FROM
     location_broker_codes lbc
     JOIN locations l ON l.id = lbc.location_id
@@ -118,6 +119,7 @@ type GetAllLocationBrokerCodesByLocationIDsRow struct {
 	CreatedAt           pgtype.Timestamptz
 	UpdatedAt           pgtype.Timestamptz
 	LocationCountryCode string
+	LocationName        string
 }
 
 func (q *Queries) GetAllLocationBrokerCodesByLocationIDs(ctx context.Context, locationIds []int64) ([]GetAllLocationBrokerCodesByLocationIDsRow, error) {
@@ -138,6 +140,7 @@ func (q *Queries) GetAllLocationBrokerCodesByLocationIDs(ctx context.Context, lo
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.LocationCountryCode,
+			&i.LocationName,
 		); err != nil {
 			return nil, err
 		}

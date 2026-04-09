@@ -25,11 +25,13 @@ var (
 	})
 )
 
-// availabilityLocationQuery holds broker-specific location IDs and country codes for a single availability search.
+// availabilityLocationQuery holds broker-specific location IDs, country codes, and canonical location names for a single availability search.
 type availabilityLocationQuery struct {
 	pickupCountryCode       string
 	pickupBrokerLocationID  string
 	dropoffBrokerLocationID string
+	pickupLocationName      string
+	dropoffLocationName     string
 }
 
 // availabilityLocations maps each broker to the location query details needed to call its API.
@@ -69,10 +71,11 @@ func getLocations(ctx context.Context, query db.Querier, params SearchAvailabili
 	return al, nil
 }
 
-// brokerLocation pairs a broker-specific location ID with the location's country code.
+// brokerLocation pairs a broker-specific location ID with the location's country code and canonical name.
 type brokerLocation struct {
 	locationID  string
 	countryCode string
+	name        string
 }
 
 // createBrokersMap splits location rows into pickup and dropoff maps keyed by broker.
@@ -89,6 +92,7 @@ func createBrokersMap(locs []db.GetAllLocationBrokerCodesByLocationIDsRow, param
 			pickupsByBroker[loc.Broker] = brokerLocation{
 				locationID:  loc.BrokerLocationID,
 				countryCode: loc.LocationCountryCode,
+				name:        loc.LocationName,
 			}
 		}
 
@@ -96,6 +100,7 @@ func createBrokersMap(locs []db.GetAllLocationBrokerCodesByLocationIDsRow, param
 			dropoffsByBroker[loc.Broker] = brokerLocation{
 				locationID:  loc.BrokerLocationID,
 				countryCode: loc.LocationCountryCode,
+				name:        loc.LocationName,
 			}
 		}
 	}
@@ -121,6 +126,8 @@ func buildAvailabilityLocations(pickupsByBroker, dropoffsByBroker map[db.Broker]
 			pickupBrokerLocationID:  pickupBrokerLoc.locationID,
 			dropoffBrokerLocationID: dropoffBrokerLoc.locationID,
 			pickupCountryCode:       pickupBrokerLoc.countryCode,
+			pickupLocationName:      pickupBrokerLoc.name,
+			dropoffLocationName:     dropoffBrokerLoc.name,
 		}
 	}
 
@@ -131,6 +138,24 @@ func buildAvailabilityLocations(pickupsByBroker, dropoffsByBroker map[db.Broker]
 func extractCountryCode(al availabilityLocations) string {
 	for _, loc := range al {
 		return loc.pickupCountryCode
+	}
+
+	return ""
+}
+
+// extractPickupLocationName returns the canonical pickup location name from the first broker in the map.
+func extractPickupLocationName(al availabilityLocations) string {
+	for _, loc := range al {
+		return loc.pickupLocationName
+	}
+
+	return ""
+}
+
+// extractDropoffLocationName returns the canonical dropoff location name from the first broker in the map.
+func extractDropoffLocationName(al availabilityLocations) string {
+	for _, loc := range al {
+		return loc.dropoffLocationName
 	}
 
 	return ""
