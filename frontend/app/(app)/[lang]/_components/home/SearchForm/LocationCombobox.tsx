@@ -30,13 +30,15 @@ export function LocationCombobox({
   initializedLocations,
 }: LocationComboboxProps) {
   const [search, setSearch] = useState("");
+  const [selectedName, setSelectedName] = useState(value ?? "");
   const { locations } = useLocations(search);
 
   return (
     <Combobox
       items={locations?.length ? locations : initializedLocations || []}
-      value={value}
+      value={selectedName}
       onValueChange={(val) => {
+        setSelectedName(val ?? "");
         const loc = locations.find((l) => l.name === val);
         if (loc) {
           onSelect(loc.id);

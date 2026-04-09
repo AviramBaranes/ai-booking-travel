@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,11 +19,13 @@ const languages = [
 export function LangSwitcher({ lang }: { lang: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations("LangSwitcher");
 
   function handleSelect(newLang: string) {
     const rest = pathname.replace(/^\/[^/]+/, "");
-    router.push(`/${newLang}${rest}`);
+    const query = searchParams.toString();
+    router.push(`/${newLang}${rest}${query ? `?${query}` : ""}`);
   }
 
   const current = languages.find((l) => l.code === lang);

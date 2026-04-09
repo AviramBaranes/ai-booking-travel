@@ -166,7 +166,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
                   }
                 }}
                 error={fieldState.error}
-                value={field.value ? fields.pickUpLocation?.name : ""}
+                value={fields.pickUpLocation?.name ?? ""}
                 initializedLocations={
                   fields.pickUpLocation ? [fields.pickUpLocation] : undefined
                 }
@@ -186,7 +186,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
                   }}
                   error={fieldState.error}
                   ref={dropoffLocationRef}
-                  value={field.value ? fields.dropOffLocation?.name : ""}
+                  value={fields.dropOffLocation?.name ?? ""}
                   initializedLocations={
                     fields.dropOffLocation
                       ? [fields.dropOffLocation]
