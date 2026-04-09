@@ -1,30 +1,49 @@
 import { SearchDataBanner } from "@/shared/components/booking/SearchDataBanner";
 import { BookingStepper } from "../_components/BookingStepper";
+import { getMessages } from "next-intl/server";
+import { getLang } from "@/shared/lang/lang";
+import { NextIntlClientProvider } from "next-intl";
+import { redirect } from "next/navigation";
+import { parseSearchQuery } from "./searchQuery";
 
-export default async function ResultsPage() {
-  await new Promise((resolve) => setTimeout(resolve, 100));
+export default async function ResultsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string>>;
+}) {
+  const lang = await getLang();
+  const resolvedParams = await searchParams;
+  const query = parseSearchQuery(new URLSearchParams(resolvedParams));
+
+  if (!query) {
+    redirect(`/${lang}`);
+  }
+  const messages = await getMessages({ locale: lang });
+
   return (
     <main className="w-2/3 mx-auto pt-15 pb-300">
       <BookingStepper currentStep="results" />
-      <div className="my-4">
-        <SearchDataBanner
-          pickUpLocation={{
-            id: 1,
-            name: "Holland, Amsterdam - Schiphol Airport",
-          }}
-          dropOffLocation={{
-            id: 1,
-            name: "Holland, Amsterdam - Schiphol Airport",
-          }}
-          pickUpTime="12:00"
-          dropOffTime="10:00"
-          pickUpDate={new Date(2025, 4, 10)}
-          dropOffDate={new Date(2025, 4, 16)}
-          driverAge={28}
-          couponCode="test"
-          showButton
-        />
-      </div>
+      <NextIntlClientProvider locale={lang} messages={messages}>
+        <div className="my-4">
+          <SearchDataBanner
+            pickUpLocation={{
+              id: query.pickupLocationId,
+              name: "Holland, Amsterdam - Schiphol Airport",
+            }}
+            dropOffLocation={{
+              id: query.returnLocationId,
+              name: "Holland, Amsterdam - Schiphol Airport",
+            }}
+            pickUpTime={query.pickupTime}
+            dropOffTime={query.returnTime}
+            pickUpDate={query.pickupDate}
+            dropOffDate={query.returnDate}
+            driverAge={query.driverAge}
+            couponCode={query.couponCode}
+            showButton
+          />
+        </div>
+      </NextIntlClientProvider>
     </main>
   );
 }
