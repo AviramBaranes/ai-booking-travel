@@ -4,7 +4,7 @@ import { BookingStepper } from "../_components/BookingStepper";
 export default async function ResultsPage() {
   await new Promise((resolve) => setTimeout(resolve, 100));
   return (
-    <main className="w-2/3 mx-auto pt-10 pb-300">
+    <main className="w-2/3 mx-auto pt-15 pb-300">
       <BookingStepper currentStep="results" />
       <div className="my-4">
         <SearchDataBanner

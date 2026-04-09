@@ -3,7 +3,7 @@ import Image from "next/image";
 export function HomepageDecorations() {
   return (
     <div dir="rtl">
-      <div className="absolute -z-10 top-130">
+      <div className="absolute -z-10 top-150">
         <Image
           src="/assets/home/paper-plane.png"
           alt="Paper Plane"
@@ -11,7 +11,7 @@ export function HomepageDecorations() {
           height={360}
         />
       </div>
-      <div className="absolute top-300 -z-10 -left-10">
+      <div className="absolute top-325 -z-10 -left-10">
         <Image
           src="/assets/home/suitcase.png"
           alt="Suitcase"
@@ -30,7 +30,7 @@ export function HomepageDecorations() {
           height={225}
         />
       </div>
-      <div className="absolute top-400 -z-10 -left-25">
+      <div className="absolute top-430 -z-10 -left-25">
         <Image
           src="/assets/home/airplane.png"
           alt="Airplane"

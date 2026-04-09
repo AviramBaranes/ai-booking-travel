@@ -7,6 +7,8 @@ import type { Populated } from "@/shared/types/payload";
 import { LogoutButton } from "./LogoutButton";
 import { LangSwitcher } from "../login/LangSwitcher";
 import { LoginModal } from "../login/LoginModal";
+import { AppProviders } from "../../providers/AppProviders";
+import { getMessages } from "next-intl/server";
 
 async function getHeaderData(lang: string) {
   const payload = await getPayload({ config });
@@ -30,6 +32,7 @@ export async function Navbar({
   isRootLayout = false,
 }: NavbarProps) {
   const headerData = await getHeaderData(lang);
+  const messages = await getMessages({ locale: lang });
   return (
     <header className="sticky top-0 z-40 bg-white">
       <nav className="mx-auto flex h-20 w-11/12 items-center justify-between px-6">
@@ -64,10 +67,12 @@ export async function Navbar({
         </div>
 
         {!isRootLayout && (
-          <div className="flex items-center gap-4">
-            <LangSwitcher lang={lang} />
-            {isAuthenticated ? <LogoutButton /> : <LoginModal />}
-          </div>
+          <AppProviders lang={lang} messages={messages}>
+            <div className="flex items-center gap-4">
+              <LangSwitcher lang={lang} />
+              {isAuthenticated ? <LogoutButton /> : <LoginModal />}
+            </div>
+          </AppProviders>
         )}
       </nav>
     </header>
