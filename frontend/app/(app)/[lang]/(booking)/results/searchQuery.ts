@@ -1,3 +1,5 @@
+import { booking } from "@/shared/client";
+
 export interface SearchQuery {
   pickupLocationId: number;
   returnLocationId: number;
@@ -7,6 +9,22 @@ export interface SearchQuery {
   returnTime: string;
   driverAge: number;
   couponCode?: string;
+}
+
+export function toSearchRequest(
+  query: SearchQuery,
+): booking.SearchAvailabilityRequest {
+  const fmt = (d: Date) => d.toISOString().split("T")[0];
+  return {
+    PickupLocationID: query.pickupLocationId,
+    DropoffLocationID: query.returnLocationId,
+    PickupDate: fmt(query.pickupDate),
+    DropoffDate: fmt(query.returnDate),
+    PickupTime: query.pickupTime,
+    DropoffTime: query.returnTime,
+    DriverAge: query.driverAge,
+    CouponCode: query.couponCode ?? "",
+  };
 }
 
 export function parseSearchQuery(params: URLSearchParams): SearchQuery | null {

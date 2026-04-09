@@ -4,7 +4,12 @@ import { getMessages } from "next-intl/server";
 import { getLang } from "@/shared/lang/lang";
 import { NextIntlClientProvider } from "next-intl";
 import { redirect } from "next/navigation";
-import { parseSearchQuery } from "./searchQuery";
+import { parseSearchQuery, toSearchRequest } from "./searchQuery";
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { getQueryClient } from "@/shared/hooks/getQueryClient";
+import { bookingKeys } from "@/shared/hooks/useAvailableCars";
+import { searchAvailableCars } from "@/shared/api/booking-api";
+import { CarResults } from "./CarResults";
 
 export default async function ResultsPage({
   searchParams,
@@ -20,6 +25,13 @@ export default async function ResultsPage({
   }
   const messages = await getMessages({ locale: lang });
 
+  const searchRequest = toSearchRequest(query);
+  const queryClient = getQueryClient();
+  const availability = await queryClient.fetchQuery({
+    queryKey: bookingKeys.availability(searchRequest),
+    queryFn: () => searchAvailableCars(searchRequest),
+  });
+
   return (
     <main className="w-2/3 mx-auto pt-15 pb-300">
       <BookingStepper currentStep="results" />
@@ -28,11 +40,11 @@ export default async function ResultsPage({
           <SearchDataBanner
             pickUpLocation={{
               id: query.pickupLocationId,
-              name: "Holland, Amsterdam - Schiphol Airport",
+              name: availability.pickupLocationName,
             }}
             dropOffLocation={{
               id: query.returnLocationId,
-              name: "Holland, Amsterdam - Schiphol Airport",
+              name: availability.dropoffLocationName,
             }}
             pickUpTime={query.pickupTime}
             dropOffTime={query.returnTime}
@@ -43,6 +55,9 @@ export default async function ResultsPage({
             showButton
           />
         </div>
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <CarResults searchRequest={searchRequest} />
+        </HydrationBoundary>
       </NextIntlClientProvider>
     </main>
   );
