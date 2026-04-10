@@ -113,6 +113,9 @@
       "dropoff": "החזרה",
       "editSearch": "עריכת חיפוש",
       "driverAge": "גיל הנהג/ת הוא: {age}"
+    },
+    "results": {
+      "carGroupsFiltersTitle": "באפשרותך לסנן תוצאות לפי קבוצות רכבים:"
     }
   }
 }

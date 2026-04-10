@@ -113,6 +113,9 @@
       "dropoff": "Drop-off",
       "editSearch": "Edit Search",
       "driverAge": "Driver age: {age}"
+    },
+    "results": {
+      "carGroupsFiltersTitle": "You can filter results by car groups:"
     }
   }
 }
