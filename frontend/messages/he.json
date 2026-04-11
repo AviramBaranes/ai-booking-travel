@@ -149,6 +149,10 @@
         "ac": "מזגן",
         "shuttlePickup": "איסוף בשאטל",
         "terminalPickup": "איסוף משדה התעופה"
+      },
+      "signals": {
+        "remainingCount": "{count, plural, one {נשאר # אחרון} other {נשארו # אחרונים}}",
+        "liveViewers": "{count} צופים במודעה זאת"
       }
     }
   }

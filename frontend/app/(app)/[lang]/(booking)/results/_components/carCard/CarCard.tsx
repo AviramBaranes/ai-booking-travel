@@ -7,6 +7,7 @@ import { CarTags } from "./CarTags";
 import { CarModel } from "./CarModel";
 import { CarDetailsPills } from "./CarDetailsPills";
 import { CarChecks } from "./CarChecks";
+import { CarSignals } from "./CarSignals";
 
 interface CarCardProps {
   supplierGallery: SuppliersGallery;
@@ -17,7 +18,7 @@ export function CarCard({ vehicle, supplierGallery }: CarCardProps) {
   const t = useTranslations("booking.results");
 
   return (
-    <div className="shadow-[0_4px_12px_0_rgba(63,63,63,0.10)] rounded-2xl border-cars-border relative pr-4 flex gap-2 bg-white">
+    <div className="shadow-[0_4px_12px_0_rgba(63,63,63,0.10)] rounded-2xl border-cars-border relative pr-4 flex gap-2 bg-white overflow-hidden">
       <div className="flex flex-col items-center gap-6 mt-10 mb-12">
         <SupplierLogo
           supplierName={vehicle.carDetails.supplierName}
@@ -45,6 +46,7 @@ export function CarCard({ vehicle, supplierGallery }: CarCardProps) {
           ]}
         />
       </div>
+      <CarSignals vehicle={vehicle} />
     </div>
   );
 }

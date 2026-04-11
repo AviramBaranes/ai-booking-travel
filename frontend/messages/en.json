@@ -149,6 +149,10 @@
         "ac": "AC",
         "shuttlePickup": "Shuttle Pickup",
         "terminalPickup": "Terminal Pickup"
+      },
+      "signals": {
+        "remainingCount": "{count, plural, one {Only # left} other {Only # left}}",
+        "liveViewers": "{count} people are viewing this listing"
       }
     }
   }
