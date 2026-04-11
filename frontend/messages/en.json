@@ -115,7 +115,32 @@
       "driverAge": "Driver age: {age}"
     },
     "results": {
-      "carGroupsFiltersTitle": "You can filter results by car groups:"
+      "carGroupsFiltersTitle": "You can filter results by car groups:",
+      "clearFilters": "Clear filters",
+      "filters": {
+        "pickupLocation": {
+          "title": "Pickup location",
+          "terminal": "Terminal",
+          "shuttleService": "Shuttle service"
+        },
+        "transmissionType": {
+          "title": "Transmission type",
+          "automatic": "Automatic",
+          "manual": "Manual"
+        },
+        "electricCar": {
+          "title": "Electric car",
+          "fullElectric": "Fully electric",
+          "regular": "Regular"
+        },
+        "passengersCount": {
+          "title": "Number of passengers",
+          "option": "{count} passengers"
+        },
+        "rentalCompany": {
+          "title": "Rental company"
+        }
+      }
     }
   }
 }

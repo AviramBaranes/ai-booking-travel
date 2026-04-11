@@ -115,7 +115,32 @@
       "driverAge": "גיל הנהג/ת הוא: {age}"
     },
     "results": {
-      "carGroupsFiltersTitle": "באפשרותך לסנן תוצאות לפי קבוצות רכבים:"
+      "carGroupsFiltersTitle": "באפשרותך לסנן תוצאות לפי קבוצות רכבים:",
+      "clearFilters": "נקה פילטר",
+      "filters": {
+        "pickupLocation": {
+          "title": "מיקום איסוף",
+          "terminal": "טרמינל",
+          "shuttleService": "שירות שאטל"
+        },
+        "transmissionType": {
+          "title": "תיבת הילוכים",
+          "automatic": "אוטומטי",
+          "manual": "ידני"
+        },
+        "electricCar": {
+          "title": "רכב חשמלי",
+          "fullElectric": "חשמלי מלא",
+          "regular": "רגיל"
+        },
+        "passengersCount": {
+          "title": "מספר נוסעים",
+          "option": "{count} נוסעים"
+        },
+        "rentalCompany": {
+          "title": "חברת השכרה"
+        }
+      }
     }
   }
 }

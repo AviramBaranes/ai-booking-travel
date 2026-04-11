@@ -1,19 +1,18 @@
 import Image from "next/image";
-import { CAR_GROUPS_FILTERS } from "./carGroupsFilters";
-import { useState } from "react";
+import { CAR_GROUPS_FILTERS } from "../../../_components/_constants/carGroupsFilters";
 import clsx from "clsx";
 
 interface CarGroupFiltersProps {
   title: string;
-  setAcrissCodes: (codes: Set<string>) => void;
+  selectedGroups: Set<string>;
+  setSelectedGroups: React.Dispatch<React.SetStateAction<Set<string>>>;
 }
 
 export function CarGroupsFilter({
   title,
-  setAcrissCodes,
+  selectedGroups,
+  setSelectedGroups,
 }: CarGroupFiltersProps) {
-  const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
-
   function toggleGroup(groupName: string) {
     setSelectedGroups((prev) => {
       const newSet = new Set(prev);
@@ -22,16 +21,6 @@ export function CarGroupsFilter({
       } else {
         newSet.add(groupName);
       }
-
-      setAcrissCodes(
-        new Set(
-          Array.from(newSet).flatMap((groupName) => {
-            const group = CAR_GROUPS_FILTERS.find((g) => g.name === groupName);
-            return group ? group.acrissCodes : [];
-          }),
-        ),
-      );
-
       return newSet;
     });
   }
