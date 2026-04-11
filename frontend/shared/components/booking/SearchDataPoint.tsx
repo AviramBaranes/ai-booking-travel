@@ -28,7 +28,7 @@ export function SearchDataPoint({
         <Icon className="size-3 text-white" />
         <span className="type-paragraph text-white">{label}</span>
       </span>
-      <p className="type-h6 w-full text-white">{location}</p>
+      <p className="type-h6 w-full text-white mb-4">{location}</p>
       <p className="type-paragraph w-full text-white">
         {formatDateTime(date, time)}
       </p>

@@ -43,16 +43,18 @@ export function CarResults({ searchRequest }: CarResultsProps) {
         setSelectedGroups={setSelectedGroups}
       />
 
-      <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-[312px_1fr]">
-        <FiltersPanel
-          cars={cars}
-          selectedFilters={selectedFilters}
-          onToggle={toggleOption}
-          onClear={clearAll}
-          hasActiveFilters={hasActiveFilters}
-        />
+      <div className="mt-10 flex gap-6 justify-between">
+        <div className="w-1/4">
+          <FiltersPanel
+            cars={cars}
+            selectedFilters={selectedFilters}
+            onToggle={toggleOption}
+            onClear={clearAll}
+            hasActiveFilters={hasActiveFilters}
+          />
+        </div>
 
-        <div>
+        <div className="w-3/4">
           {filteredCars.map((vehicle, i) => (
             <div key={i}>
               {vehicle.carDetails.model}------{vehicle.carDetails.acriss}

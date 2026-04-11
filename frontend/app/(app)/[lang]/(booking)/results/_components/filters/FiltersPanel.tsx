@@ -34,7 +34,7 @@ export function FiltersPanel({
   }
 
   return (
-    <aside className="p-6">
+    <aside className="py-6">
       {visibleFilters.map((filter, index) => (
         <CheckboxFilter
           key={filter.id}

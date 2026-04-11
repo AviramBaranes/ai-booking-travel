@@ -97,7 +97,7 @@ export function SearchDataBanner({
         <Button
           variant="ghost"
           className={clsx(
-            "absolute cursor-pointer -top-px flex items-center gap-2 rounded-none bg-white px-5 py-6.5 hover:bg-white/90",
+            "absolute cursor-pointer -top-px flex items-center gap-2 rounded-none bg-white px-3 py-6 hover:bg-white/90",
             {
               "-left-px rounded-br-xl rounded-tl-3xl": dir === "rtl",
               "-right-px rounded-bl-xl rounded-tr-3xl": dir === "ltr",
@@ -106,13 +106,15 @@ export function SearchDataBanner({
           onClick={() => setShowForm(true)}
         >
           <Pencil className="size-4 text-brand" />
-          <span className="type-h6 text-brand">{t("editSearch")}</span>
+          <span className="text-[17px] font-semibold text-brand">
+            {t("editSearch")}
+          </span>
         </Button>
       )}
 
       <div
         className={clsx(
-          "absolute bottom-0 flex items-center gap-2 border-t border-white px-4 py-5",
+          "absolute bottom-0 flex items-center gap-2 border-t border-white px-3 py-4",
           {
             "left-0 rounded-bl-3xl rounded-tr-3xl border-r": dir === "rtl",
             "right-0 rounded-br-3xl rounded-tl-3xl border-l": dir === "ltr",

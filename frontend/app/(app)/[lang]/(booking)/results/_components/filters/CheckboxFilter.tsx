@@ -20,13 +20,13 @@ export function CheckboxFilter({
 }: CheckboxFilterProps) {
   return (
     <section
-      className={showDivider ? "mt-10 border-t border-[#d5d6e1] pt-10" : ""}
+      className={showDivider ? "mt-5 border-t border-[#D4D4D4] pt-5" : ""}
     >
-      <h5 className="type-h5 mb-8 text-navy flex items-center gap-2">
+      <h6 className="type-h6 mb-8 text-navy flex items-center gap-2">
         <Icon size={20} className="text-brand" />
         {title}
-      </h5>
-      <div className="flex flex-col gap-4">
+      </h6>
+      <div className="flex flex-col gap-2">
         {options.map((option) => (
           <label
             key={option.value}
