@@ -8,12 +8,18 @@ import { FiltersPanel } from "./_components/filters/FiltersPanel";
 import { useCheckboxFilters } from "./_hooks/useCheckboxFilters";
 import { useTranslations } from "next-intl";
 import { useAcrissCodesFilter } from "./_hooks/useAcrissCodesFilter";
+import { CarCard } from "./_components/carCard/CarCard";
+import { SuppliersGallery } from "@/payload-types";
 
 interface CarResultsProps {
+  supplierGallery: SuppliersGallery;
   searchRequest: booking.SearchAvailabilityRequest;
 }
 
-export function CarResults({ searchRequest }: CarResultsProps) {
+export function CarResults({
+  searchRequest,
+  supplierGallery,
+}: CarResultsProps) {
   const t = useTranslations("booking.results");
   const { data } = useAvailableCars(searchRequest);
 
@@ -35,6 +41,8 @@ export function CarResults({ searchRequest }: CarResultsProps) {
     ...filterFunctions,
   ]);
 
+  console.log(supplierGallery);
+
   return (
     <div>
       <CarGroupsFilter
@@ -54,11 +62,17 @@ export function CarResults({ searchRequest }: CarResultsProps) {
           />
         </div>
 
-        <div className="w-3/4">
-          {filteredCars.map((vehicle, i) => (
-            <div key={i}>
-              {vehicle.carDetails.model}------{vehicle.carDetails.acriss}
-            </div>
+        <div className="w-3/4 flex flex-col gap-6">
+          {filteredCars.map((vehicle) => (
+            <CarCard
+              key={
+                vehicle.carDetails.model +
+                vehicle.carDetails.acriss +
+                vehicle.carDetails.supplierName
+              }
+              supplierGallery={supplierGallery}
+              vehicle={vehicle}
+            />
           ))}
         </div>
       </div>

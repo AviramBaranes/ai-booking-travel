@@ -10,6 +10,16 @@ import { getQueryClient } from "@/shared/hooks/getQueryClient";
 import { bookingKeys } from "@/shared/hooks/useAvailableCars";
 import { searchAvailableCars } from "@/shared/api/booking-api";
 import { CarResults } from "./CarResults";
+import { getPayload } from "payload";
+import config from "@payload-config";
+
+async function getSupplierGallery(lang: string) {
+  const payload = await getPayload({ config });
+  return payload.findGlobal({
+    slug: "suppliersGallery",
+    draft: false,
+  });
+}
 
 export default async function ResultsPage({
   searchParams,
@@ -27,10 +37,13 @@ export default async function ResultsPage({
 
   const searchRequest = toSearchRequest(query);
   const queryClient = getQueryClient();
-  const availability = await queryClient.fetchQuery({
-    queryKey: bookingKeys.availability(searchRequest),
-    queryFn: () => searchAvailableCars(searchRequest),
-  });
+  const [availability, supplierGallery] = await Promise.all([
+    queryClient.fetchQuery({
+      queryKey: bookingKeys.availability(searchRequest),
+      queryFn: () => searchAvailableCars(searchRequest),
+    }),
+    getSupplierGallery(lang),
+  ]);
 
   return (
     <main className="w-2/3 mx-auto pt-15 pb-300">
@@ -56,7 +69,10 @@ export default async function ResultsPage({
           />
         </div>
         <HydrationBoundary state={dehydrate(queryClient)}>
-          <CarResults searchRequest={searchRequest} />
+          <CarResults
+            searchRequest={searchRequest}
+            supplierGallery={supplierGallery}
+          />
         </HydrationBoundary>
       </NextIntlClientProvider>
     </main>

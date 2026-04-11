@@ -14,7 +14,6 @@ export const SuppliersGallery: GlobalConfig = {
           name: "name",
           label: "שם",
           type: "text",
-          localized: true,
           required: true,
         },
         {

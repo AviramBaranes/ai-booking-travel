@@ -140,6 +140,15 @@
         "rentalCompany": {
           "title": "חברת השכרה"
         }
+      },
+      "carDetails": {
+        "top choice": "בחירה מובילה",
+        "orSimilar": "או דומה",
+        "auto": "אוטומטי",
+        "electric": "חשמלי",
+        "ac": "מזגן",
+        "shuttlePickup": "איסוף בשאטל",
+        "terminalPickup": "איסוף משדה התעופה"
       }
     }
   }

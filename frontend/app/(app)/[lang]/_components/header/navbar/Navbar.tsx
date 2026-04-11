@@ -34,7 +34,7 @@ export async function Navbar({
   const headerData = await getHeaderData(lang);
   const messages = await getMessages({ locale: lang });
   return (
-    <header className="sticky top-0 z-40 bg-white">
+    <header className="sticky top-0 z-40 bg-white shadow-card">
       <nav className="mx-auto flex h-20 w-11/12 items-center justify-between px-6">
         <div className="flex items-center gap-8">
           <Link href={`/${lang}`}>

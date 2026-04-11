@@ -140,6 +140,15 @@
         "rentalCompany": {
           "title": "Rental company"
         }
+      },
+      "carDetails": {
+        "top choice": "Top Choice",
+        "orSimilar": "or similar",
+        "auto": "Automatic",
+        "electric": "Electric",
+        "ac": "AC",
+        "shuttlePickup": "Shuttle Pickup",
+        "terminalPickup": "Terminal Pickup"
       }
     }
   }

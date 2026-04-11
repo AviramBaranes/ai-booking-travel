@@ -20,7 +20,7 @@ export function CheckboxFilter({
 }: CheckboxFilterProps) {
   return (
     <section
-      className={showDivider ? "mt-5 border-t border-[#D4D4D4] pt-5" : ""}
+      className={showDivider ? "mt-5 border-t border-cars-border pt-5" : ""}
     >
       <h6 className="type-h6 mb-8 text-navy flex items-center gap-2">
         <Icon size={20} className="text-brand" />

@@ -10,6 +10,7 @@ import { Metadata } from "next";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
 import { AuthTokenProvider } from "@/shared/components/providers/AuthTokenProvider";
+import { Providers } from "./Providers";
 
 export const metadata: Metadata = {
   title: "BT Admin Panel",
@@ -32,20 +33,15 @@ export default async function AdminRootLayout({
   }
 
   const messages = await getMessages();
-  const queryClient = new QueryClient();
 
   return (
     <html lang="he" dir="rtl" className="h-full antialiased">
       <body className="h-full">
-        <QueryClientProvider client={queryClient}>
-          <SessionProvider>
-            <AuthTokenProvider>
-              <NextIntlClientProvider locale="he" messages={messages}>
-                <AdminShell>{children}</AdminShell>
-              </NextIntlClientProvider>
-            </AuthTokenProvider>
-          </SessionProvider>
-        </QueryClientProvider>
+        <Providers>
+          <NextIntlClientProvider locale="he" messages={messages}>
+            <AdminShell>{children}</AdminShell>
+          </NextIntlClientProvider>
+        </Providers>
       </body>
     </html>
   );
