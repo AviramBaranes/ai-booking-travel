@@ -16,6 +16,7 @@ import { Homepage } from "./globals/Homepage";
 import { Header } from "./globals/Header";
 import { Footer } from "./globals/Footer";
 import { NotFoundConfig } from "./globals/NotFound";
+import { SuppliersGallery } from "./globals/SupplierGallery";
 
 export default buildConfig({
   // If you'd like to use Rich Text, pass your editor here
@@ -71,7 +72,7 @@ export default buildConfig({
   // Define and configure your collections in this array
   collections: [Admins, Media, AddonImages, Pages, SharedSections],
 
-  globals: [Header, Footer, NotFoundConfig, Homepage],
+  globals: [Header, Footer, NotFoundConfig, Homepage, SuppliersGallery],
 
   plugins: [
     seoPlugin({

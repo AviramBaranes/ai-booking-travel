@@ -98,12 +98,14 @@ export interface Config {
     footer: Footer;
     'not-found': NotFound;
     homepage: Homepage;
+    suppliersGallery: SuppliersGallery;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'not-found': NotFoundSelect<false> | NotFoundSelect<true>;
     homepage: HomepageSelect<false> | HomepageSelect<true>;
+    suppliersGallery: SuppliersGallerySelect<false> | SuppliersGallerySelect<true>;
   };
   locale: 'he' | 'en';
   widgets: {
@@ -223,7 +225,6 @@ export interface Page {
   };
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -600,7 +601,6 @@ export interface PagesSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
-  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -905,6 +905,22 @@ export interface BenefitsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "suppliersGallery".
+ */
+export interface SuppliersGallery {
+  id: number;
+  suppliers?:
+    | {
+        name: string;
+        media: number | Media;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -1031,6 +1047,22 @@ export interface BenefitsBlockSelect<T extends boolean = true> {
       };
   id?: T;
   blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "suppliersGallery_select".
+ */
+export interface SuppliersGallerySelect<T extends boolean = true> {
+  suppliers?:
+    | T
+    | {
+        name?: T;
+        media?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
