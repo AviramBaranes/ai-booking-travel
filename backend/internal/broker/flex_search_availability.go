@@ -218,7 +218,7 @@ func flexCarToBrokerCar(c flexCar, supplierName string) (CarDetails, error) {
 	}
 
 	return CarDetails{
-		Model:        c.Name,
+		Model:        normalizeModelName(c.Name),
 		ImageURL:     c.URL,
 		SupplierName: supplierName,
 		CarType:      c.CarType,

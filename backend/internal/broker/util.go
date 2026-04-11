@@ -2,6 +2,7 @@ package broker
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"encore.dev/rlog"
@@ -27,10 +28,19 @@ func CalculateDaysCount(pickupDate, pickupTime, dropoffDate, dropoffTime string)
 	return days, nil
 }
 
+// isElectric checks if the car is electric based on the ACRISS code
 func isElectric(acrissCode string) bool {
 	if len(acrissCode) < 4 {
 		rlog.Warn("invalid acriss code, cannot determine if the car is electric", "acrissCode", acrissCode)
 		return false
 	}
 	return acrissCode[3] == 'E' || acrissCode[3] == 'C'
+}
+
+// normalizeModelName removes the "or similar" suffix from the model name if it exists
+func normalizeModelName(model string) string {
+	if len(model) > 12 && strings.HasSuffix(strings.ToLower(model), " or similar") {
+		return model[:len(model)-12]
+	}
+	return model
 }

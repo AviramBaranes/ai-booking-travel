@@ -155,7 +155,7 @@ func (h Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, r
 		availableVehicles = append(availableVehicles, AvailableVehicle{
 			Broker: h.Name(),
 			CarDetails: CarDetails{
-				Model:        model,
+				Model:        normalizeModelName(model),
 				CarGroup:     carGroup,
 				ImageURL:     hertzImageBaseURL + strings.TrimSpace(car.ImageURL),
 				SupplierName: mapBrandIDToSupplierName(brandID),
