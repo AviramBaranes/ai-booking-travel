@@ -9,9 +9,9 @@ import { seoPlugin } from "@payloadcms/plugin-seo";
 import { Admins } from "./collections/Admins";
 import { Media } from "./collections/Media";
 import { he } from "@payloadcms/translations/languages/he";
-import { AddonImages } from "./collections/AddonImages";
 import { Pages } from "./collections/Pages";
 import { SharedSections } from "./collections/SharedSections";
+import { AddonImagesGlobal } from "./globals/AddonImages";
 import { Homepage } from "./globals/Homepage";
 import { Header } from "./globals/Header";
 import { Footer } from "./globals/Footer";
@@ -70,9 +70,16 @@ export default buildConfig({
     admin: "/cms",
   },
   // Define and configure your collections in this array
-  collections: [Admins, Media, AddonImages, Pages, SharedSections],
+  collections: [Admins, Media, Pages, SharedSections],
 
-  globals: [Header, Footer, NotFoundConfig, Homepage, SuppliersGallery],
+  globals: [
+    Header,
+    Footer,
+    NotFoundConfig,
+    Homepage,
+    SuppliersGallery,
+    AddonImagesGlobal,
+  ],
 
   plugins: [
     seoPlugin({

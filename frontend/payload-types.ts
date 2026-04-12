@@ -69,7 +69,6 @@ export interface Config {
   collections: {
     admins: Admin;
     media: Media;
-    'addon-images': AddonImage;
     pages: Page;
     sharedSections: SharedSection;
     'payload-kv': PayloadKv;
@@ -81,7 +80,6 @@ export interface Config {
   collectionsSelect: {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    'addon-images': AddonImagesSelect<false> | AddonImagesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     sharedSections: SharedSectionsSelect<false> | SharedSectionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -99,6 +97,7 @@ export interface Config {
     'not-found': NotFound;
     homepage: Homepage;
     suppliersGallery: SuppliersGallery;
+    addonsGallery: AddonsGallery;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -106,6 +105,7 @@ export interface Config {
     'not-found': NotFoundSelect<false> | NotFoundSelect<true>;
     homepage: HomepageSelect<false> | HomepageSelect<true>;
     suppliersGallery: SuppliersGallerySelect<false> | SuppliersGallerySelect<true>;
+    addonsGallery: AddonsGallerySelect<false> | AddonsGallerySelect<true>;
   };
   locale: 'he' | 'en';
   widgets: {
@@ -180,19 +180,6 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "addon-images".
- */
-export interface AddonImage {
-  id: number;
-  addonId: string;
-  englishName: string;
-  hebrewName: string;
-  image: number | Media;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -464,10 +451,6 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'addon-images';
-        value: number | AddonImage;
-      } | null)
-    | ({
         relationTo: 'pages';
         value: number | Page;
       } | null)
@@ -558,18 +541,6 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "addon-images_select".
- */
-export interface AddonImagesSelect<T extends boolean = true> {
-  addonId?: T;
-  englishName?: T;
-  hebrewName?: T;
-  image?: T;
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -921,6 +892,24 @@ export interface SuppliersGallery {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "addonsGallery".
+ */
+export interface AddonsGallery {
+  id: number;
+  addons?:
+    | {
+        addonId: string;
+        englishName: string;
+        hebrewName: string;
+        image: number | Media;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -1058,6 +1047,24 @@ export interface SuppliersGallerySelect<T extends boolean = true> {
     | {
         name?: T;
         media?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "addonsGallery_select".
+ */
+export interface AddonsGallerySelect<T extends boolean = true> {
+  addons?:
+    | T
+    | {
+        addonId?: T;
+        englishName?: T;
+        hebrewName?: T;
+        image?: T;
         id?: T;
       };
   updatedAt?: T;
