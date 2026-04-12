@@ -150,16 +150,19 @@
       },
       "carDetails": {
         "top choice": "Top Choice",
+        "erpRecommendation": "Recommended to take an insurance package",
         "orSimilar": "or similar",
         "auto": "Automatic",
         "electric": "Electric",
         "ac": "AC",
         "shuttlePickup": "Shuttle Pickup",
         "terminalPickup": "Terminal Pickup",
-        "rentalPriceForDays": "Rental price for {daysCount} days:",
+        "rentalPriceForDays": "Rental price for {daysCount} days",
         "priceBeforeDiscount": "Price before discount:",
         "freeCancellation": "Free cancellation",
-        "continueCta": "Let’s continue"
+        "continueCta": "Let’s continue",
+        "savings": "Savings",
+        "sum": "Total"
       },
       "signals": {
         "remainingCount": "{count, plural, one {Only # left} other {Only # left}}",

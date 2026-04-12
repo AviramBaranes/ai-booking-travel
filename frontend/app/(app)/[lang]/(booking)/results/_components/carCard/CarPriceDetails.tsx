@@ -25,24 +25,48 @@ export function CarPriceDetails({
 
   return (
     <div
-      className={clsx("absolute bottom-0 flex flex-col items-end gap-3", {
+      className={clsx("absolute bottom-0 flex flex-col items-end gap-2", {
         "right-0": dir === "ltr",
         "left-0": dir === "rtl",
       })}
     >
-      <p className="type-paragraph mx-4">
-        {t("rentalPriceForDays", { daysCount })}
-      </p>
       {firstPlan.fullPrice !== firstPlan.price && (
-        <p className="type-label mx-4">
-          {t("priceBeforeDiscount")}{" "}
-          {formatPrice(firstPlan.fullPrice, vehicle.priceDetails.currency)}
-        </p>
+        <>
+          <p className="type-label mx-4 flex items-center gap-2 text-navy">
+            <Image
+              src="/assets/icons/coins.svg"
+              alt="Coins Icon"
+              width={24}
+              height={24}
+              className="w-6 h-6"
+            />
+            {t("priceBeforeDiscount")}{" "}
+            {formatPrice(firstPlan.fullPrice, vehicle.priceDetails.currency)}
+          </p>
+          <p className="type-label mx-4 bg-success rounded-md px-2 py-1 text-white flex items-center gap-2">
+            <Image
+              src="/assets/icons/discount.svg"
+              alt="Discount Icon"
+              width={24}
+              height={24}
+              className="w-6 h-6"
+            />
+            {t("savings")}{" "}
+            {formatPrice(
+              firstPlan.fullPrice - firstPlan.price,
+              vehicle.priceDetails.currency,
+            )}
+          </p>
+        </>
       )}
-      <p className="type-h4 mx-4 text-navy">
+      <p className="type-h4 mx-4 text-navy flex items-center gap-2">
+        <span className="type-paragraph text-text-secondary">{t("sum")}</span>
         {formatPrice(firstPlan.price, vehicle.priceDetails.currency)}
       </p>
 
+      <p className="type-paragraph mx-4 text-text-secondary">
+        {t("rentalPriceForDays", { daysCount })}
+      </p>
       {isFutureWithinHours(
         new Date(searchRequest.PickupDate),
         searchRequest.PickupTime,
@@ -52,11 +76,11 @@ export function CarPriceDetails({
           <Image
             src="/assets/icons/V.svg"
             alt="Checked Icon"
-            width={16}
-            height={4}
-            className="w-4"
+            width={28}
+            height={28}
+            className="w-7 h-7"
           />
-          <span className="type-label text-[#16A34A]">
+          <span className="type-label text-success">
             {t("freeCancellation")}
           </span>
         </div>

@@ -26,7 +26,7 @@ export function CarCard({
   const t = useTranslations("booking.results");
 
   return (
-    <div className="shadow-[0_4px_12px_0_rgba(63,63,63,0.10)] rounded-2xl h-70 border-cars-border relative pr-4 flex gap-2 bg-white overflow-hidden">
+    <div className="shadow-[0_4px_12px_0_rgba(63,63,63,0.10)] rounded-2xl h-80 border-cars-border relative pr-4 flex gap-2 bg-white overflow-hidden">
       <div className="flex flex-col items-center gap-6 mt-10 mb-12">
         <SupplierLogo
           supplierName={vehicle.carDetails.supplierName}
@@ -40,7 +40,7 @@ export function CarCard({
           className="w-44 h-25 object-cover"
         />
       </div>
-      <div className="flex flex-col items-start gap-2 mt-5">
+      <div className="flex flex-col items-start gap-2 my-auto">
         <CarTags vehicle={vehicle} />
         <CarModel
           model={vehicle.carDetails.model}
@@ -49,9 +49,17 @@ export function CarCard({
         <CarDetailsPills vehicle={vehicle} />
         <CarChecks
           checks={[
-            vehicle.locationDetails.locationType === "Shuttle"
-              ? t(`carDetails.shuttlePickup`)
-              : t(`carDetails.terminalPickup`),
+            {
+              text:
+                vehicle.locationDetails.locationType === "Shuttle"
+                  ? t(`carDetails.shuttlePickup`)
+                  : t(`carDetails.terminalPickup`),
+              image: "/assets/icons/V.svg",
+            },
+            {
+              text: t(`carDetails.erpRecommendation`),
+              image: "/assets/icons/stamp.gif",
+            },
           ]}
         />
       </div>
