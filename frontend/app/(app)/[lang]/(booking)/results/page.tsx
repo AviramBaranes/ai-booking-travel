@@ -13,7 +13,7 @@ import { CarResults } from "./CarResults";
 import { getPayload } from "payload";
 import config from "@payload-config";
 
-async function getSupplierGallery(lang: string) {
+async function getSupplierGallery() {
   const payload = await getPayload({ config });
   return payload.findGlobal({
     slug: "suppliersGallery",
@@ -42,11 +42,11 @@ export default async function ResultsPage({
       queryKey: bookingKeys.availability(searchRequest),
       queryFn: () => searchAvailableCars(searchRequest),
     }),
-    getSupplierGallery(lang),
+    getSupplierGallery(),
   ]);
 
   return (
-    <main className="w-2/3 mx-auto pt-15 pb-300">
+    <main className="w-2/3 mx-auto pt-15 pb-6">
       <BookingStepper currentStep="results" />
       <NextIntlClientProvider locale={lang} messages={messages}>
         <div className="my-4">

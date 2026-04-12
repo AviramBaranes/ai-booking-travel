@@ -63,11 +63,7 @@ export function CarResults({
         <div className="w-3/4 flex flex-col gap-6">
           {filteredCars.map((vehicle) => (
             <CarCard
-              key={
-                vehicle.carDetails.model +
-                vehicle.carDetails.acriss +
-                vehicle.carDetails.supplierName
-              }
+              key={vehicle.id}
               daysCount={data?.daysCount ?? 0}
               supplierGallery={supplierGallery}
               vehicle={vehicle}

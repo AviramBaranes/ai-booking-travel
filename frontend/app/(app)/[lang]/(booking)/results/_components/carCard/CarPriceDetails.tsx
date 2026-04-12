@@ -6,6 +6,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { ContinueToPlansLink } from "./ContinueToPlansLink";
 
 export const HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION = 48;
 
@@ -61,15 +62,15 @@ export function CarPriceDetails({
         </div>
       )}
 
-      <Link
-        href={`/add-ons/?sid=`}
+      <ContinueToPlansLink
+        carIndex={vehicle.id}
         className={clsx("bg-brand type-label p-6 text-white", {
           "rounded-tr-2xl": dir === "rtl",
           "rounded-tl-2xl": dir === "ltr",
         })}
       >
         {t("continueCta")}
-      </Link>
+      </ContinueToPlansLink>
     </div>
   );
 }

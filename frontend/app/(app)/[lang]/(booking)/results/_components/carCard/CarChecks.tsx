@@ -7,7 +7,7 @@ export function CarChecks({ checks }: CarChecksProps) {
   return (
     <div className="flex flex-col mt-4">
       {checks.map((check) => (
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center" key={check}>
           <Image
             src="/assets/icons/V.svg"
             alt="Checked Icon"

@@ -574,6 +574,7 @@ export namespace booking {
      * AvailableVehicle represents a vehicle that is available for rent, including details about the car, the rental plans, add-ons, location details, and price details.
      */
     export interface AvailableVehicle {
+        id: number
         broker: broker.Name
         carDetails: broker.CarDetails
         plans: Plan[]

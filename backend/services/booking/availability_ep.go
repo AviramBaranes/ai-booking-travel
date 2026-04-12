@@ -12,6 +12,7 @@ import (
 
 // AvailableVehicle represents a vehicle that is available for rent, including details about the car, the rental plans, add-ons, location details, and price details.
 type AvailableVehicle struct {
+	ID              int                    `json:"id"`
 	Broker          broker.Name            `json:"broker"`
 	CarDetails      broker.CarDetails      `json:"carDetails"`
 	Plans           []Plan                 `json:"plans"`

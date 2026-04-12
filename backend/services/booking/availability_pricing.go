@@ -57,7 +57,7 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 		return artifacts, api_errors.ErrInternalError
 	}
 
-	for _, v := range rawVehicles {
+	for i, v := range rawVehicles {
 		mp, ok := markupProviders[v.Broker]
 		if !ok {
 			rlog.Warn("no markup provider found for broker, skipping applying markup", "broker", v.Broker)
@@ -65,6 +65,7 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 		}
 
 		av := AvailableVehicle{
+			ID:              i,
 			CarDetails:      v.CarDetails,
 			Broker:          v.Broker,
 			AddOns:          v.AddOns,
