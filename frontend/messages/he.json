@@ -109,6 +109,12 @@
       "ordering": "סיכום והזמנה",
       "backToResults": "חזרה לתוצאות החיפוש"
     },
+    "expiredSearch": {
+      "title": "תוקף החיפוש פג",
+      "message": "החיפוש הזה כבר לא זמין או שאינו תקין. תועברו לעמוד התוצאות.",
+      "redirecting": "מעבירים בעוד {seconds} שניות...",
+      "redirectNow": "מעבר מיידי לתוצאות"
+    },
     "banner": {
       "pickup": "איסוף",
       "dropoff": "החזרה",

@@ -27,6 +27,26 @@ export function toSearchRequest(
   };
 }
 
+export function searchRequestToParams(
+  request: booking.SearchAvailabilityRequest,
+): string {
+  const params = new URLSearchParams({
+    pl: String(request.PickupLocationID),
+    rl: String(request.DropoffLocationID),
+    pd: request.PickupDate,
+    pt: request.PickupTime,
+    rd: request.DropoffDate,
+    rt: request.DropoffTime,
+    da: String(request.DriverAge),
+  });
+
+  if (request.CouponCode) {
+    params.set("cc", request.CouponCode);
+  }
+
+  return params.toString();
+}
+
 export function parseSearchQuery(params: URLSearchParams): SearchQuery | null {
   const pl = params.get("pl");
   const rl = params.get("rl");

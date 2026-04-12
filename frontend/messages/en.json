@@ -109,6 +109,12 @@
       "ordering": "Summary and Order",
       "backToResults": "Back to Search Results"
     },
+    "expiredSearch": {
+      "title": "Search expired",
+      "message": "This search is no longer available or invalid. You will be redirected to the results page.",
+      "redirecting": "Redirecting in {seconds} seconds...",
+      "redirectNow": "Go to results now"
+    },
     "banner": {
       "pickup": "Pick-up",
       "dropoff": "Drop-off",

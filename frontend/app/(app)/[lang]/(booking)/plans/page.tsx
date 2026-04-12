@@ -8,6 +8,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { SearchDataBanner } from "@/shared/components/booking/SearchDataBanner";
 import { BackButton } from "../_components/BackButton";
+import { ExpiredSearchGate } from "../_components/ExpiredSearchGate";
 
 async function getAddOnsGallery() {
   const payload = await getPayload({ config });
@@ -36,22 +37,24 @@ export default async function PlansPage({
   return (
     <main className="w-2/3 mx-auto pt-15 pb-6">
       <NextIntlClientProvider locale={lang} messages={messages}>
-        <BookingStepper currentStep="plans" />
-        <div className="my-4">
-          <SearchDataBanner
-            pickUpLocationId={query.pickupLocationId}
-            dropOffLocationId={query.returnLocationId}
-            pickUpTime={query.pickupTime}
-            dropOffTime={query.returnTime}
-            pickUpDate={query.pickupDate}
-            dropOffDate={query.returnDate}
-            driverAge={query.driverAge}
-            couponCode={query.couponCode}
-            searchRequest={searchRequest}
-            showButton
-          />
-        </div>
-        <BackButton />
+        <ExpiredSearchGate searchRequest={searchRequest}>
+          <BookingStepper currentStep="plans" />
+          <div className="my-4">
+            <SearchDataBanner
+              pickUpLocationId={query.pickupLocationId}
+              dropOffLocationId={query.returnLocationId}
+              pickUpTime={query.pickupTime}
+              dropOffTime={query.returnTime}
+              pickUpDate={query.pickupDate}
+              dropOffDate={query.returnDate}
+              driverAge={query.driverAge}
+              couponCode={query.couponCode}
+              searchRequest={searchRequest}
+              showButton
+            />
+          </div>
+          <BackButton />
+        </ExpiredSearchGate>
       </NextIntlClientProvider>
     </main>
   );
