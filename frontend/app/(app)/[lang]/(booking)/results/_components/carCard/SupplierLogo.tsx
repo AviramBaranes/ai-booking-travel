@@ -27,9 +27,9 @@ export function SupplierLogo({
     <Image
       src={media.url}
       alt={supplier.name}
-      width={80}
+      width={112}
       height={40}
-      className="w-25 h-auto"
+      className="w-28 h-10 object-cover"
     />
   );
 }

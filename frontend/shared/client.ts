@@ -796,6 +796,7 @@ export namespace booking {
         snapshotId: number
         pickupLocationName: string
         dropoffLocationName: string
+        daysCount: number
         availableVehicles: AvailableVehicle[]
     }
 

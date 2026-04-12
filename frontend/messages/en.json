@@ -120,8 +120,8 @@
       "filters": {
         "pickupLocation": {
           "title": "Pickup location",
-          "terminal": "Terminal",
-          "shuttleService": "Shuttle service"
+          "Airport": "Terminal",
+          "Shuttle": "Shuttle service"
         },
         "transmissionType": {
           "title": "Transmission type",
@@ -148,7 +148,11 @@
         "electric": "Electric",
         "ac": "AC",
         "shuttlePickup": "Shuttle Pickup",
-        "terminalPickup": "Terminal Pickup"
+        "terminalPickup": "Terminal Pickup",
+        "rentalPriceForDays": "Rental price for {daysCount} days:",
+        "priceBeforeDiscount": "Price before discount:",
+        "freeCancellation": "Free cancellation",
+        "continueCta": "Let’s continue"
       },
       "signals": {
         "remainingCount": "{count, plural, one {Only # left} other {Only # left}}",

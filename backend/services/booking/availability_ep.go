@@ -76,6 +76,7 @@ type SearchAvailabilityResponse struct {
 	SnapshotID          int64              `json:"snapshotId"`
 	PickupLocationName  string             `json:"pickupLocationName"`
 	DropoffLocationName string             `json:"dropoffLocationName"`
+	DaysCount           int                `json:"daysCount"`
 	AvailableVehicles   []AvailableVehicle `json:"availableVehicles"`
 }
 
@@ -85,6 +86,12 @@ func (s *Service) SearchAvailability(ctx context.Context, p SearchAvailabilityRe
 	locs, err := getLocations(ctx, s.query, p)
 	if err != nil {
 		return nil, err
+	}
+
+	dayCount, err := broker.CalculateDaysCount(p.PickupDate, p.PickupTime, p.DropoffDate, p.DropoffTime)
+	if err != nil {
+		rlog.Error("failed to calculate rental days count", "error", err)
+		return nil, api_errors.ErrInternalError
 	}
 
 	couponDiscount, err := s.getCouponDiscount(ctx, p.CouponCode)
@@ -121,6 +128,7 @@ func (s *Service) SearchAvailability(ctx context.Context, p SearchAvailabilityRe
 		SnapshotID:          snapshotID,
 		PickupLocationName:  extractPickupLocationName(locs),
 		DropoffLocationName: extractDropoffLocationName(locs),
+		DaysCount:           dayCount,
 		AvailableVehicles:   artifacts.availableCars,
 	}, nil
 }

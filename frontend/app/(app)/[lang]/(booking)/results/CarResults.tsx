@@ -41,8 +41,6 @@ export function CarResults({
     ...filterFunctions,
   ]);
 
-  console.log(supplierGallery);
-
   return (
     <div>
       <CarGroupsFilter
@@ -70,8 +68,10 @@ export function CarResults({
                 vehicle.carDetails.acriss +
                 vehicle.carDetails.supplierName
               }
+              daysCount={data?.daysCount ?? 0}
               supplierGallery={supplierGallery}
               vehicle={vehicle}
+              searchRequest={searchRequest}
             />
           ))}
         </div>

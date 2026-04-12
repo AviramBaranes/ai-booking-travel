@@ -120,8 +120,8 @@
       "filters": {
         "pickupLocation": {
           "title": "מיקום איסוף",
-          "terminal": "טרמינל",
-          "shuttleService": "שירות שאטל"
+          "Airport": "טרמינל",
+          "Shuttle": "שירות שאטל"
         },
         "transmissionType": {
           "title": "תיבת הילוכים",
@@ -148,7 +148,11 @@
         "electric": "חשמלי",
         "ac": "מזגן",
         "shuttlePickup": "איסוף בשאטל",
-        "terminalPickup": "איסוף משדה התעופה"
+        "terminalPickup": "איסוף משדה התעופה",
+        "rentalPriceForDays": "מחיר השכרה ל- {daysCount} ימים:",
+        "priceBeforeDiscount": "מחיר לפני הנחה:",
+        "freeCancellation": "ביטול בחינם",
+        "continueCta": "יאללה, בוא נתקדם"
       },
       "signals": {
         "remainingCount": "{count, plural, one {נשאר # אחרון} other {נשארו # אחרונים}}",
