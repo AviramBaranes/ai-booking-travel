@@ -15,7 +15,7 @@ export function BackButton() {
   return (
     <Button
       variant="ghost"
-      className="flex gap-2 cursor-pointer"
+      className="flex gap-2 cursor-pointer mt-8"
       onClick={() => router.back()}
     >
       <span className="text-link text-sm">

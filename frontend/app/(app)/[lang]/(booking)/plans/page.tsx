@@ -9,6 +9,7 @@ import { getMessages } from "next-intl/server";
 import { SearchDataBanner } from "@/shared/components/booking/SearchDataBanner";
 import { BackButton } from "../_components/BackButton";
 import { ExpiredSearchGate } from "../_components/ExpiredSearchGate";
+import { PlansPageContent } from "./_components/PlansPageContent";
 
 async function getAddOnsGallery() {
   const payload = await getPayload({ config });
@@ -54,6 +55,7 @@ export default async function PlansPage({
             />
           </div>
           <BackButton />
+          <PlansPageContent searchRequest={searchRequest} />
         </ExpiredSearchGate>
       </NextIntlClientProvider>
     </main>
