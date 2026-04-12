@@ -105,8 +105,9 @@
     "steps": {
       "step": "Step",
       "results": "Select Car",
-      "addOns": "Add-Ons",
-      "ordering": "Summary and Order"
+      "plans": "Select Plan and Add-Ons",
+      "ordering": "Summary and Order",
+      "backToResults": "Back to Search Results"
     },
     "banner": {
       "pickup": "Pick-up",

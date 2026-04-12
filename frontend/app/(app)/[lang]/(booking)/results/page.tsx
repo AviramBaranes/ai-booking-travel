@@ -47,28 +47,23 @@ export default async function ResultsPage({
 
   return (
     <main className="w-2/3 mx-auto pt-15 pb-6">
-      <BookingStepper currentStep="results" />
       <NextIntlClientProvider locale={lang} messages={messages}>
-        <div className="my-4">
-          <SearchDataBanner
-            pickUpLocation={{
-              id: query.pickupLocationId,
-              name: availability.pickupLocationName,
-            }}
-            dropOffLocation={{
-              id: query.returnLocationId,
-              name: availability.dropoffLocationName,
-            }}
-            pickUpTime={query.pickupTime}
-            dropOffTime={query.returnTime}
-            pickUpDate={query.pickupDate}
-            dropOffDate={query.returnDate}
-            driverAge={query.driverAge}
-            couponCode={query.couponCode}
-            showButton
-          />
-        </div>
+        <BookingStepper currentStep="results" />
         <HydrationBoundary state={dehydrate(queryClient)}>
+          <div className="my-4">
+            <SearchDataBanner
+              pickUpLocationId={query.pickupLocationId}
+              dropOffLocationId={query.returnLocationId}
+              pickUpTime={query.pickupTime}
+              dropOffTime={query.returnTime}
+              pickUpDate={query.pickupDate}
+              dropOffDate={query.returnDate}
+              driverAge={query.driverAge}
+              couponCode={query.couponCode}
+              searchRequest={searchRequest}
+              showButton
+            />
+          </div>
           <CarResults
             searchRequest={searchRequest}
             supplierGallery={supplierGallery}

@@ -11,9 +11,15 @@ import {
 import { useDirection } from "@/shared/hooks/useDirection";
 import { clsx } from "clsx";
 import { useTranslations } from "next-intl";
+import { booking } from "@/shared/client";
+import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 
-interface SearchDataBannerProps extends SearchFormFields {
-  showButton?: boolean;
+interface SearchDataBannerProps extends Omit<SearchFormFields, "pickUpLocation" | "dropOffLocation"> {
+  pickUpLocationId: number;
+  dropOffLocationId: number;
+  searchRequest: booking.SearchAvailabilityRequest;
+  showButton?: boolean; 
+  
 }
 
 function formatDriverAge(age: number) {
@@ -25,18 +31,21 @@ function formatDriverAge(age: number) {
 }
 
 export function SearchDataBanner({
-  pickUpLocation,
-  dropOffLocation,
+  pickUpLocationId,
+  dropOffLocationId,
   pickUpTime,
   dropOffTime,
   pickUpDate,
   dropOffDate,
   driverAge,
   couponCode,
-  showButton,
+  showButton,searchRequest,
 }: SearchDataBannerProps) {
   const t = useTranslations("booking.banner");
   const dir = useDirection();
+    const { data } = useAvailableCars(searchRequest);
+    const pickUpLocationName = data?.pickupLocationName ?? "";
+    const dropOffLocationName = data?.dropoffLocationName ?? "";
   const [showForm, setShowForm] = useState(false);
 
   if (showForm) {
@@ -51,8 +60,14 @@ export function SearchDataBanner({
         />
         <SearchForm
           className="w-full"
-          pickUpLocation={pickUpLocation}
-          dropOffLocation={dropOffLocation}
+          pickUpLocation={{
+            id: pickUpLocationId,
+            name: pickUpLocationName,
+          }}
+          dropOffLocation={{
+            id: dropOffLocationId,
+            name: dropOffLocationName,
+          }}
           pickUpDate={pickUpDate}
           dropOffDate={dropOffDate}
           pickUpTime={pickUpTime}
@@ -76,7 +91,7 @@ export function SearchDataBanner({
           <SearchDataPoint
             icon={ArrowUp}
             label={t("pickup")}
-            location={pickUpLocation.name}
+            location={pickUpLocationName}
             date={pickUpDate}
             time={pickUpTime}
           />
@@ -86,7 +101,7 @@ export function SearchDataBanner({
           <SearchDataPoint
             icon={ArrowDown}
             label={t("dropoff")}
-            location={dropOffLocation?.name ?? pickUpLocation.name}
+            location={dropOffLocationName ?? pickUpLocationName}
             date={dropOffDate}
             time={dropOffTime}
           />

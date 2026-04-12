@@ -105,8 +105,9 @@
     "steps": {
       "step": "שלב",
       "results": "בחירת רכב",
-      "addOns": "תוספות",
-      "ordering": "סיכום והזמנה"
+      "plans": "בחירת תוכנית ותוספות",
+      "ordering": "סיכום והזמנה",
+      "backToResults": "חזרה לתוצאות החיפוש"
     },
     "banner": {
       "pickup": "איסוף",
