@@ -32,6 +32,7 @@ type Querier interface {
 	FindCouponByCode(ctx context.Context, code string) (Coupon, error)
 	FindCurrencyByISOName(ctx context.Context, currencyIsoName string) (Currency, error)
 	GetAllLocationBrokerCodesByLocationIDs(ctx context.Context, locationIds []int64) ([]GetAllLocationBrokerCodesByLocationIDsRow, error)
+	GetAllTranslationSourceTexts(ctx context.Context) ([]string, error)
 	GetAllVerifiedTranslations(ctx context.Context) ([]GetAllVerifiedTranslationsRow, error)
 	// Used by the markup logic to fetch rates for a given search.
 	GetHertzMarkupRates(ctx context.Context, arg GetHertzMarkupRatesParams) ([]GetHertzMarkupRatesRow, error)

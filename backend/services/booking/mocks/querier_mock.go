@@ -334,6 +334,21 @@ func (mr *MockQuerierMockRecorder) GetAllLocationBrokerCodesByLocationIDs(ctx, l
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllLocationBrokerCodesByLocationIDs", reflect.TypeOf((*MockQuerier)(nil).GetAllLocationBrokerCodesByLocationIDs), ctx, locationIds)
 }
 
+// GetAllTranslationSourceTexts mocks base method.
+func (m *MockQuerier) GetAllTranslationSourceTexts(ctx context.Context) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllTranslationSourceTexts", ctx)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllTranslationSourceTexts indicates an expected call of GetAllTranslationSourceTexts.
+func (mr *MockQuerierMockRecorder) GetAllTranslationSourceTexts(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllTranslationSourceTexts", reflect.TypeOf((*MockQuerier)(nil).GetAllTranslationSourceTexts), ctx)
+}
+
 // GetAllVerifiedTranslations mocks base method.
 func (m *MockQuerier) GetAllVerifiedTranslations(ctx context.Context) ([]db.GetAllVerifiedTranslationsRow, error) {
 	m.ctrl.T.Helper()

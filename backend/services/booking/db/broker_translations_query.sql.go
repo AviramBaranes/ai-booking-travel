@@ -67,6 +67,33 @@ func (q *Queries) DeleteBrokerTranslation(ctx context.Context, id int32) error {
 	return err
 }
 
+const getAllTranslationSourceTexts = `-- name: GetAllTranslationSourceTexts :many
+SELECT
+    source_text
+FROM
+    broker_translations
+`
+
+func (q *Queries) GetAllTranslationSourceTexts(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, getAllTranslationSourceTexts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var source_text string
+		if err := rows.Scan(&source_text); err != nil {
+			return nil, err
+		}
+		items = append(items, source_text)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAllVerifiedTranslations = `-- name: GetAllVerifiedTranslations :many
 SELECT
     id,

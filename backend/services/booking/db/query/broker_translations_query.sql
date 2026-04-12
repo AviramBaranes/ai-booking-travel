@@ -8,6 +8,12 @@ FROM
 WHERE
     status = 'verified';
 
+-- name: GetAllTranslationSourceTexts :many
+SELECT
+    source_text
+FROM
+    broker_translations;
+
 -- name: UpdateBrokerTranslation :exec
 UPDATE broker_translations
 SET

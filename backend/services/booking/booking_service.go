@@ -27,21 +27,31 @@ var query *db.Queries
 type TranslationCache struct {
 	mu           sync.RWMutex
 	translations map[string]string
+	known        map[string]struct{}
 }
 
-// Get retrieves the translated text for a given source text, if it exists.
-func (c *TranslationCache) Get(sourceText string) (string, bool) {
+// GetVerified retrieves the translated text for a given source text, if it exists in the verified cache.
+func (c *TranslationCache) GetVerified(sourceText string) (string, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	targetText, exists := c.translations[sourceText]
 	return targetText, exists
 }
 
-// Replace swaps the entire translations map with a new one in a thread-safe manner.
-func (c *TranslationCache) Replace(newTranslations map[string]string) {
+// Exists reports whether the source text exists in the database, regardless of translation status.
+func (c *TranslationCache) Exists(sourceText string) bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	_, exists := c.known[sourceText]
+	return exists
+}
+
+// Replace swaps the in-memory verified and known translation sets in a thread-safe manner.
+func (c *TranslationCache) Replace(newTranslations map[string]string, knownTranslations map[string]struct{}) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.translations = newTranslations
+	c.known = knownTranslations
 }
 
 // initService initializes the booking service by setting up the database connection and loading translations into the cache.
@@ -51,7 +61,10 @@ func initService() (*Service, error) {
 
 	svc := &Service{
 		query: query,
-		t:     &TranslationCache{translations: make(map[string]string)},
+		t: &TranslationCache{
+			translations: make(map[string]string),
+			known:        make(map[string]struct{}),
+		},
 	}
 
 	if err := svc.refreshTranslations(context.Background()); err != nil {
@@ -69,14 +82,25 @@ func (s *Service) refreshTranslations(ctx context.Context) error {
 		return err
 	}
 
+	knownSourceTexts, err := s.query.GetAllTranslationSourceTexts(ctx)
+	if err != nil {
+		rlog.Error("failed to fetch known translation source texts from database", "error", err)
+		return err
+	}
+
 	translationMap := make(map[string]string, len(translations))
 	for _, t := range translations {
 		translationMap[t.SourceText] = *t.TargetText
 	}
 
+	knownTranslations := make(map[string]struct{}, len(knownSourceTexts))
+	for _, sourceText := range knownSourceTexts {
+		knownTranslations[sourceText] = struct{}{}
+	}
+
 	go s.startBackgroundRefresh()
 
-	s.t.Replace(translationMap)
+	s.t.Replace(translationMap, knownTranslations)
 	return nil
 }
 
