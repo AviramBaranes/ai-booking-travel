@@ -263,14 +263,15 @@ func buildCurrencyMap(ctx context.Context, q db.Querier) (map[string]float64, er
 func (s Service) translatePlanDetails(ctx context.Context, details []string) []string {
 	translatedDetails := make([]string, len(details))
 	for i, detail := range details {
-		if translated, exists := s.t.GetVerified(detail); exists {
-			translatedDetails[i] = translated
+		template, values := normalizeSentence(detail)
+		if translated, exists := s.t.GetVerified(template); exists {
+			translatedDetails[i] = insertValuesToSentence(translated, values)
 		} else {
 			translatedDetails[i] = detail
-			if !s.t.Exists(detail) {
-				_, err := s.query.InsertBrokerTranslation(ctx, detail)
+			if !s.t.Exists(template) {
+				_, err := s.query.InsertBrokerTranslation(ctx, template)
 				if err != nil {
-					rlog.Error("failed to insert missing translation to db", "detail", detail, "error", err)
+					rlog.Error("failed to insert missing translation to db", "template", template, "error", err)
 				}
 			}
 		}
