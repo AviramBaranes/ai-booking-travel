@@ -103,3 +103,23 @@ WHERE
         sqlc.narg (status)::broker_translation_status IS NULL
         OR status = sqlc.narg (status)::broker_translation_status
     );
+
+-- name: ListPendingTranslations :many
+SELECT
+    *
+FROM
+    broker_translations
+WHERE
+    status = 'pending'
+ORDER BY
+    id ASC;
+
+-- name: TranslatePendingTranslation :exec
+UPDATE broker_translations
+SET
+    target_text = sqlc.arg (target_text),
+    status = 'translated',
+    confidence_score = sqlc.arg (confidence_score),
+    updated_at = CURRENT_TIMESTAMP
+WHERE
+    id = sqlc.arg (id);

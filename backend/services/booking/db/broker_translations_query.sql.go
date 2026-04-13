@@ -242,6 +242,67 @@ func (q *Queries) ListAllTranslations(ctx context.Context, arg ListAllTranslatio
 	return items, nil
 }
 
+const listPendingTranslations = `-- name: ListPendingTranslations :many
+SELECT
+    id, source_text, target_text, status, confidence_score, created_at, updated_at
+FROM
+    broker_translations
+WHERE
+    status = 'pending'
+ORDER BY
+    id ASC
+`
+
+func (q *Queries) ListPendingTranslations(ctx context.Context) ([]BrokerTranslation, error) {
+	rows, err := q.db.Query(ctx, listPendingTranslations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []BrokerTranslation
+	for rows.Next() {
+		var i BrokerTranslation
+		if err := rows.Scan(
+			&i.ID,
+			&i.SourceText,
+			&i.TargetText,
+			&i.Status,
+			&i.ConfidenceScore,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const translatePendingTranslation = `-- name: TranslatePendingTranslation :exec
+UPDATE broker_translations
+SET
+    target_text = $1,
+    status = 'translated',
+    confidence_score = $2,
+    updated_at = CURRENT_TIMESTAMP
+WHERE
+    id = $3
+`
+
+type TranslatePendingTranslationParams struct {
+	TargetText      *string
+	ConfidenceScore *int32
+	ID              int32
+}
+
+func (q *Queries) TranslatePendingTranslation(ctx context.Context, arg TranslatePendingTranslationParams) error {
+	_, err := q.db.Exec(ctx, translatePendingTranslation, arg.TargetText, arg.ConfidenceScore, arg.ID)
+	return err
+}
+
 const updateBrokerTranslation = `-- name: UpdateBrokerTranslation :exec
 UPDATE broker_translations
 SET

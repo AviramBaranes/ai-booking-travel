@@ -619,6 +619,21 @@ func (mr *MockQuerierMockRecorder) ListLocationBrokerCodesWithLocation(ctx, arg 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListLocationBrokerCodesWithLocation", reflect.TypeOf((*MockQuerier)(nil).ListLocationBrokerCodesWithLocation), ctx, arg)
 }
 
+// ListPendingTranslations mocks base method.
+func (m *MockQuerier) ListPendingTranslations(ctx context.Context) ([]db.BrokerTranslation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPendingTranslations", ctx)
+	ret0, _ := ret[0].([]db.BrokerTranslation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListPendingTranslations indicates an expected call of ListPendingTranslations.
+func (mr *MockQuerierMockRecorder) ListPendingTranslations(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPendingTranslations", reflect.TypeOf((*MockQuerier)(nil).ListPendingTranslations), ctx)
+}
+
 // SearchLocations mocks base method.
 func (m *MockQuerier) SearchLocations(ctx context.Context, search string) ([]db.Location, error) {
 	m.ctrl.T.Helper()
@@ -632,6 +647,20 @@ func (m *MockQuerier) SearchLocations(ctx context.Context, search string) ([]db.
 func (mr *MockQuerierMockRecorder) SearchLocations(ctx, search any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchLocations", reflect.TypeOf((*MockQuerier)(nil).SearchLocations), ctx, search)
+}
+
+// TranslatePendingTranslation mocks base method.
+func (m *MockQuerier) TranslatePendingTranslation(ctx context.Context, arg db.TranslatePendingTranslationParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TranslatePendingTranslation", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TranslatePendingTranslation indicates an expected call of TranslatePendingTranslation.
+func (mr *MockQuerierMockRecorder) TranslatePendingTranslation(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TranslatePendingTranslation", reflect.TypeOf((*MockQuerier)(nil).TranslatePendingTranslation), ctx, arg)
 }
 
 // UpdateBrokerTranslation mocks base method.
