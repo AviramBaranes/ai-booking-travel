@@ -43,7 +43,7 @@ type flexCost struct {
 // flexSupplierDetails holds supplier-specific info: inclusions, policies, location details, and extras.
 type flexSupplierDetails struct {
 	Supplier        string              `xml:"Supplier"`
-	Inclusions      []flexInclusion     `xml:"Inclusions>Inclusion"`
+	Inclusions      []flexInclusion     `xml:"Inclusions>Inclusions"`
 	FuelPolicy      string              `xml:"FuelPolicy"`
 	ExcessPolicy    string              `xml:"ExcessPolicy"`
 	PickUpDetails   flexLocationDetails `xml:"PickUpDetails"`

@@ -179,7 +179,12 @@ func (f Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDeta
 		var planInclusions []string
 		for _, inc := range supplierDetails.Inclusions {
 			if inc.Product == p.Product {
-				planInclusions = strings.Split(inc.Inclusion, ";")
+				raw := strings.Split(inc.Inclusion, ";")
+				for _, inclusion := range raw {
+					if trimmed := strings.TrimSpace(inclusion); trimmed != "" {
+						planInclusions = append(planInclusions, trimmed)
+					}
+				}
 				break
 			}
 		}
