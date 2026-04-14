@@ -1,6 +1,6 @@
 "use client";
 
-import { booking } from "@/shared/client";
+import { booking, broker } from "@/shared/client";
 import { InclusionsDisplay } from "./InclustionsDisplay";
 import { useState } from "react";
 import { useSelectedVehicle } from "../_hooks/useSelectedVehicle";
@@ -11,17 +11,26 @@ import { OtherPlansButton } from "./OtherPlansButton";
 import { ImportantInfoButton } from "./ImportantInfoButton";
 import { SignalsDisplay } from "../../_components/SignalsDisplay";
 import { ErpCheckbox } from "./ErpCheckbox";
+import { AddOnsDisplay } from "./AddOnsDisplay";
+import { AddonsGallery } from "@/payload-types";
 
 interface PlansPageContentProps {
+  addonsGallery: AddonsGallery;
   searchRequest: booking.SearchAvailabilityRequest;
 }
 
-export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
+export function PlansPageContent({
+  addonsGallery,
+  searchRequest,
+}: PlansPageContentProps) {
   const { lang } = useParams();
   const [selectedPlan, setSelectedPlan] = useState(0);
   const vehicle = useSelectedVehicle(searchRequest);
   const { data } = useAvailableCars(searchRequest);
   const [isErpSelected, setIsErpSelected] = useState(false);
+  const [selectedAddons, setSelectedAddons] = useState<broker.SelectAddOn[]>(
+    [],
+  );
 
   if (!vehicle) {
     return <Loading />;
@@ -74,6 +83,17 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
           selectedPlan={selectedPlan}
           daysCount={data?.daysCount ?? 0}
         />
+        {!!vehicle.addOns?.length && (
+          <>
+            <hr className="mt-10 mb-6" />
+            <AddOnsDisplay
+              addons={vehicle.addOns}
+              addOnsGallery={addonsGallery}
+              selectedAddons={selectedAddons}
+              setSelectedAddons={setSelectedAddons}
+            />
+          </>
+        )}
       </div>
       <div className="w-1/4"></div>
     </div>

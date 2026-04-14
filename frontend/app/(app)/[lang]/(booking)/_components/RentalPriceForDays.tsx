@@ -10,7 +10,7 @@ export function RentalPriceForDays({ daysCount }: RentalPriceForDaysProps) {
   const t = useTranslations("booking.shared");
 
   return (
-    <span className="text-[14px] leading-4.5 text-[#676767]">
+    <span className="text-[14px] leading-4.5 text-border-muted">
       {t("rentalPriceForDays", { daysCount })}
     </span>
   );

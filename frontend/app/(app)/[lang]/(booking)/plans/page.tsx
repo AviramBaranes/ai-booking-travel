@@ -55,7 +55,10 @@ export default async function PlansPage({
             />
           </div>
           <BackButton />
-          <PlansPageContent searchRequest={searchRequest} />
+          <PlansPageContent
+            searchRequest={searchRequest}
+            addonsGallery={addOnsGallery}
+          />
         </ExpiredSearchGate>
       </NextIntlClientProvider>
     </main>

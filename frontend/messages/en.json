@@ -136,6 +136,12 @@
       "readMore": "More information",
       "readLess": "Hide information"
     },
+    "addOns": {
+      "title": "Pre-order Add-Ons - Subject to Supplier Approval and Payment at the Station",
+      "Daily": "Per day",
+      "quantity": "Quantity",
+      "payAtPickup": "Payment at the station"
+    },
     "banner": {
       "pickup": "Pick-up",
       "dropoff": "Drop-off",
