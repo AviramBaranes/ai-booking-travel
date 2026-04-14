@@ -5,7 +5,7 @@ import { isFutureWithinHours } from "@/shared/utils/isFutureWithinHours";
 import clsx from "clsx";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { RentalPriceForDays } from "../../../_components/RentalPriceForDays";
+import { RentalPriceForDays } from "../../../../../../../shared/components/booking/RentalPriceForDays";
 import { ContinueToPlansLink } from "./ContinueToPlansLink";
 
 export const HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION = 48;

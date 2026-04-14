@@ -2,28 +2,36 @@
 
 import { booking, broker } from "@/shared/client";
 import { InclusionsDisplay } from "./InclustionsDisplay";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSelectedVehicle } from "../_hooks/useSelectedVehicle";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
-import { redirect, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Loading } from "@/shared/components/Loading";
 import { OtherPlansButton } from "./OtherPlansButton";
 import { ImportantInfoButton } from "./ImportantInfoButton";
 import { SignalsDisplay } from "../../_components/SignalsDisplay";
 import { ErpCheckbox } from "./ErpCheckbox";
 import { AddOnsDisplay } from "./AddOnsDisplay";
-import { AddonsGallery } from "@/payload-types";
+import { AddonsGallery, SuppliersGallery } from "@/payload-types";
+import { SelectedCarCard } from "@/shared/components/booking/SelectedCarCard";
+import { isFutureWithinHours } from "@/shared/utils/isFutureWithinHours";
+import { HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION } from "../../results/_components/carCard/CarPriceDetails";
+import Image from "next/image";
+import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
 
 interface PlansPageContentProps {
   addonsGallery: AddonsGallery;
+  supplierGallery: SuppliersGallery;
   searchRequest: booking.SearchAvailabilityRequest;
 }
 
 export function PlansPageContent({
   addonsGallery,
+  supplierGallery,
   searchRequest,
 }: PlansPageContentProps) {
-  const { lang } = useParams();
+  const t = useTranslations("booking.plansPage");
   const [selectedPlan, setSelectedPlan] = useState(0);
   const vehicle = useSelectedVehicle(searchRequest);
   const { data } = useAvailableCars(searchRequest);
@@ -37,18 +45,18 @@ export function PlansPageContent({
   }
 
   return (
-    <div className="flex">
+    <div className="flex gap-4">
       <div className="w-3/4">
         <div className="flex gap-4">
           <div className="w-1/2">
             <InclusionsDisplay
-              title="מה התוכנית כוללת?"
+              title={t("inclusionsTitle")}
               inclusions={vehicle.plans[selectedPlan].planInclusions}
             />
           </div>
           <div className="w-1/2">
             <InclusionsDisplay
-              title="תנאי התוכנית"
+              title={t("rentalTerms")}
               inclusions={vehicle.plans[selectedPlan].info}
             />
           </div>
@@ -95,7 +103,42 @@ export function PlansPageContent({
           </>
         )}
       </div>
-      <div className="w-1/4"></div>
+      <div className="w-1/4">
+        <SelectedCarCard
+          isErpSelected={isErpSelected}
+          supplierGallery={supplierGallery}
+          daysCount={data?.daysCount ?? 0}
+          vehicle={vehicle}
+          selectedPlanIndex={selectedPlan}
+        >
+          <>
+            {isFutureWithinHours(
+              new Date(searchRequest.PickupDate),
+              searchRequest.PickupTime,
+              HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION,
+            ) && (
+              <div className="flex gap-1 items-center ">
+                <Image
+                  src="/assets/icons/V.svg"
+                  alt="Checked Icon"
+                  width={28}
+                  height={28}
+                  className="w-7 h-7"
+                />
+                <span className="type-label text-success">
+                  {t("freeCancellation")}
+                </span>
+              </div>
+            )}
+            <Button
+              variant="brand"
+              className="mt-4 mx-auto type-paragraph font-bold py-6 px-8 cursor-pointer"
+            >
+              {t("continueCta")}
+            </Button>
+          </>
+        </SelectedCarCard>
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { booking } from "@/shared/client";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
-import { RentalPriceForDays } from "../../_components/RentalPriceForDays";
+import { RentalPriceForDays } from "../../../../../../shared/components/booking/RentalPriceForDays";
 import { formatPrice } from "@/shared/utils/formatPrice";
 
 interface ErpCheckboxProps {

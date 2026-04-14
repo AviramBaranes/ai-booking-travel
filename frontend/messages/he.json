@@ -112,6 +112,12 @@
     "shared": {
       "rentalPriceForDays": "מחיר השכרה ל- {daysCount} ימים"
     },
+    "plansPage": {
+      "inclusionsTitle": "מה התוכנית כוללת?",
+      "rentalTerms": "תנאי השכרה",
+      "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
+      "continueCta": "יאללה, בוא נתקדם"
+    },
     "plansDialog": {
       "title": "כל התוכניות",
       "rentalTerms": "תנאי ההשכרה",
@@ -139,6 +145,7 @@
     "addOns": {
       "title": "תוספות להזמנה מראש - בכפוף לאישור ספק ולתשלום בתחנה",
       "Daily": "ליום",
+      "Per Rental": "לכל ההשכרה",
       "quantity": "כמות:",
       "payAtPickup": "התשלום בתחנה"
     },
@@ -193,7 +200,9 @@
         "priceBeforeDiscount": "מחיר לפני הנחה:",
         "freeCancellation": "ביטול בחינם",
         "continueCta": "יאללה, בוא נתקדם",
-        "savings": "חיסכון",
+        "savings": "חיסכון:",
+        "coveragePackage": "חבילת כיסוי:",
+        "totalToPay": "סה\"כ לתשלום",
         "sum": "סה\"כ"
       },
       "signals": {

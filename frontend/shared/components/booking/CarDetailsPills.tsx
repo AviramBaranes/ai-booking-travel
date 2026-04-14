@@ -41,7 +41,7 @@ export function CarDetailsPills({
 }) {
   const t = useTranslations("booking.results");
   return (
-    <div className="flex items-center gap-2 mt-4">
+    <div className="flex flex-wrap items-center gap-2 mt-4">
       {CAR_DETAILS_PILLS.map(({ key, icon: Icon, translationKey, image }) => {
         const value =
           vehicle.carDetails[key as keyof typeof vehicle.carDetails];

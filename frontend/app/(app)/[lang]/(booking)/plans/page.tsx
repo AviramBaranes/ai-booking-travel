@@ -10,6 +10,7 @@ import { SearchDataBanner } from "@/shared/components/booking/SearchDataBanner";
 import { BackButton } from "../_components/BackButton";
 import { ExpiredSearchGate } from "../_components/ExpiredSearchGate";
 import { PlansPageContent } from "./_components/PlansPageContent";
+import { getSupplierGallery } from "../results/page";
 
 async function getAddOnsGallery() {
   const payload = await getPayload({ config });
@@ -31,8 +32,12 @@ export default async function PlansPage({
   if (!query) {
     redirect(`/${lang}`);
   }
-  const messages = await getMessages({ locale: lang });
-  const addOnsGallery = await getAddOnsGallery();
+
+  const [messages, addOnsGallery, suppliersGallery] = await Promise.all([
+    getMessages({ locale: lang }),
+    getAddOnsGallery(),
+    getSupplierGallery(),
+  ]);
   const searchRequest = toSearchRequest(query);
 
   return (
@@ -58,6 +63,7 @@ export default async function PlansPage({
           <PlansPageContent
             searchRequest={searchRequest}
             addonsGallery={addOnsGallery}
+            supplierGallery={suppliersGallery}
           />
         </ExpiredSearchGate>
       </NextIntlClientProvider>

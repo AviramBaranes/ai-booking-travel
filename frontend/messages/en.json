@@ -112,6 +112,12 @@
     "shared": {
       "rentalPriceForDays": "Rental price for {daysCount} days:"
     },
+    "plansPage": {
+      "inclusionsTitle": "What does the plan include?",
+      "rentalTerms": "Rental Terms",
+      "freeCancellation": "Free cancellation up to 48 hours before pickup",
+      "continueCta": "Let's continue"
+    },
     "plansDialog": {
       "title": "All Plans",
       "rentalTerms": "Rental Terms",
@@ -139,6 +145,7 @@
     "addOns": {
       "title": "Pre-order Add-Ons - Subject to Supplier Approval and Payment at the Station",
       "Daily": "Per day",
+      "Per Rental": "Per rental",
       "quantity": "Quantity",
       "payAtPickup": "Payment at the station"
     },
@@ -187,7 +194,9 @@
         "priceBeforeDiscount": "Price before discount:",
         "freeCancellation": "Free cancellation",
         "continueCta": "Let’s continue",
-        "savings": "Savings",
+        "savings": "Savings:",
+        "coveragePackage": "Coverage package:",
+        "totalToPay": "Total to pay",
         "sum": "Total"
       },
       "signals": {

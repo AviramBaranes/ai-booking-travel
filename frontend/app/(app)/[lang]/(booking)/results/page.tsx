@@ -13,7 +13,7 @@ import { CarResults } from "./CarResults";
 import { getPayload } from "payload";
 import config from "@payload-config";
 
-async function getSupplierGallery() {
+export async function getSupplierGallery() {
   const payload = await getPayload({ config });
   return payload.findGlobal({
     slug: "suppliersGallery",
@@ -37,7 +37,7 @@ export default async function ResultsPage({
 
   const searchRequest = toSearchRequest(query);
   const queryClient = getQueryClient();
-  const [availability, supplierGallery] = await Promise.all([
+  const [_, supplierGallery] = await Promise.all([
     queryClient.fetchQuery({
       queryKey: bookingKeys.availability(searchRequest),
       queryFn: () => searchAvailableCars(searchRequest),

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { RentalPriceForDays } from "../../_components/RentalPriceForDays";
+import { RentalPriceForDays } from "../../../../../../shared/components/booking/RentalPriceForDays";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { booking } from "@/shared/client";
