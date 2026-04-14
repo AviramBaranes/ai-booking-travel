@@ -109,6 +109,24 @@
       "ordering": "סיכום והזמנה",
       "backToResults": "חזרה לתוצאות החיפוש"
     },
+    "plansDialog": {
+      "title": "כל התוכניות",
+      "rentalTerms": "תנאי ההשכרה",
+      "whatsIncluded": "מה כלול?",
+      "totalToPayLine1": "סה\"כ",
+      "totalToPayLine2": "לתשלום",
+      "rentalPriceForDays": "מחיר השכרה ל- {daysCount} ימים",
+      "selectThisPlan": "אני רוצה את התכנית הזאת",
+      "selectedPlan": "בחרתי בתכנית הזאת",
+      "otherPlans": "תוכניות אחרות",
+      "planNames": {
+        "Basic": "בייסיק",
+        "Standard": "סטנדרד",
+        "Normal": "רגיל",
+        "Premium": "פרמיום",
+        "Gold": "זהב"
+      }
+    },
     "expiredSearch": {
       "title": "תוקף החיפוש פג",
       "message": "החיפוש הזה כבר לא זמין או שאינו תקין. תועברו לעמוד התוצאות.",

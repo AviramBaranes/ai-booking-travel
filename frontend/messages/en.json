@@ -109,6 +109,24 @@
       "ordering": "Summary and Order",
       "backToResults": "Back to Search Results"
     },
+    "plansDialog": {
+      "title": "All Plans",
+      "rentalTerms": "Rental Terms",
+      "whatsIncluded": "What's Included?",
+      "totalToPayLine1": "Total",
+      "totalToPayLine2": "to pay",
+      "rentalPriceForDays": "Rental price for {daysCount} days:",
+      "selectThisPlan": "I want this plan",
+      "selectedPlan": "Selected plan",
+      "otherPlans": "Other plans",
+      "planNames": {
+        "Basic": "Basic",
+        "Standard": "Standard",
+        "Normal": "Normal",
+        "Premium": "Premium",
+        "Gold": "Gold"
+      }
+    },
     "expiredSearch": {
       "title": "Search expired",
       "message": "This search is no longer available or invalid. You will be redirected to the results page.",

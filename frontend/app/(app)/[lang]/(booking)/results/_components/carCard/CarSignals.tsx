@@ -3,6 +3,7 @@ import { useDirection } from "@/shared/hooks/useDirection";
 import clsx from "clsx";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
+import { SignalsDisplay } from "../../../_components/SignalsDisplay";
 
 export function CarSignals({ vehicle }: { vehicle: booking.AvailableVehicle }) {
   const t = useTranslations("booking.results");
@@ -37,28 +38,10 @@ export function CarSignals({ vehicle }: { vehicle: booking.AvailableVehicle }) {
           },
         )}
       >
-        <Image
-          src="/assets/booking/signals/bell.gif"
-          alt="Signal Bell"
-          width={16}
-          height={16}
+        <SignalsDisplay
+          remainingCount={vehicle.signals.remainingCount}
+          liveViewers={vehicle.signals.liveViewers}
         />
-        <span className="type-label text-navy">
-          {t("signals.remainingCount", {
-            count: vehicle.signals.remainingCount,
-          })}
-        </span>
-        <Image
-          src="/assets/booking/signals/eye.gif"
-          alt="Signal Eye"
-          width={16}
-          height={16}
-        />
-        <span className="type-label text-navy">
-          {t("signals.liveViewers", {
-            count: vehicle.signals.liveViewers,
-          })}
-        </span>
       </div>
     </div>
   );
