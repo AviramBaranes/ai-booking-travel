@@ -1,15 +1,17 @@
 "use client";
 
+import { SuppliersGallery } from "@/payload-types";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 import { booking } from "@/shared/client";
+import { useTranslations } from "next-intl";
 import { useFilteredCars } from "./useFilteredCars";
+import { CarCard } from "./_components/carCard/CarCard";
 import { CarGroupsFilter } from "./_components/filters/CarGroupsFilter";
 import { FiltersPanel } from "./_components/filters/FiltersPanel";
 import { useCheckboxFilters } from "./_hooks/useCheckboxFilters";
-import { useTranslations } from "next-intl";
 import { useAcrissCodesFilter } from "./_hooks/useAcrissCodesFilter";
-import { CarCard } from "./_components/carCard/CarCard";
-import { SuppliersGallery } from "@/payload-types";
+import { DevFilters } from "./_components/filters/DevFilters";
+import { useDevFilters } from "./_hooks/useDevFilters";
 
 interface CarResultsProps {
   supplierGallery: SuppliersGallery;
@@ -22,9 +24,17 @@ export function CarResults({
 }: CarResultsProps) {
   const t = useTranslations("booking.results");
   const { data } = useAvailableCars(searchRequest);
-
   const { acrissFilterFn, selectedGroups, setSelectedGroups } =
     useAcrissCodesFilter();
+
+  const {
+    isDevelopment,
+    plansCountFilter,
+    addOnsFilter,
+    togglePlansCount,
+    toggleAddOns,
+    filterFn: devFilterFn,
+  } = useDevFilters();
 
   const {
     selectedFilters,
@@ -39,6 +49,7 @@ export function CarResults({
   const filteredCars = useFilteredCars(cars, [
     acrissFilterFn,
     ...filterFunctions,
+    devFilterFn,
   ]);
 
   return (
@@ -48,6 +59,15 @@ export function CarResults({
         selectedGroups={selectedGroups}
         setSelectedGroups={setSelectedGroups}
       />
+
+      {isDevelopment && (
+        <DevFilters
+          plansCountFilter={plansCountFilter}
+          addOnsFilter={addOnsFilter}
+          onPlansCountChange={togglePlansCount}
+          onAddOnsChange={toggleAddOns}
+        />
+      )}
 
       <div className="mt-10 flex gap-6 justify-between">
         <div className="w-1/4">
