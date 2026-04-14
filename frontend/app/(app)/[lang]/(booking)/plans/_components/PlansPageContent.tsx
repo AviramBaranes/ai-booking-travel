@@ -10,6 +10,7 @@ import { Loading } from "@/shared/components/Loading";
 import { OtherPlansButton } from "./OtherPlansButton";
 import { ImportantInfoButton } from "./ImportantInfoButton";
 import { SignalsDisplay } from "../../_components/SignalsDisplay";
+import { ErpCheckbox } from "./ErpCheckbox";
 
 interface PlansPageContentProps {
   searchRequest: booking.SearchAvailabilityRequest;
@@ -20,6 +21,7 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
   const [selectedPlan, setSelectedPlan] = useState(0);
   const vehicle = useSelectedVehicle(searchRequest);
   const { data } = useAvailableCars(searchRequest);
+  const [isErpSelected, setIsErpSelected] = useState(false);
 
   if (!vehicle) {
     return <Loading />;
@@ -64,6 +66,14 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
             </div>
           )}
         </div>
+        <hr />
+        <ErpCheckbox
+          isSelected={isErpSelected}
+          setSelected={setIsErpSelected}
+          vehicle={vehicle}
+          selectedPlan={selectedPlan}
+          daysCount={data?.daysCount ?? 0}
+        />
       </div>
       <div className="w-1/4"></div>
     </div>

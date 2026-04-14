@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { RentalPriceForDays } from "../../_components/RentalPriceForDays";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { booking } from "@/shared/client";
@@ -135,9 +136,7 @@ export function OtherPlansButton({
                         <span className="type-h4 text-brand">
                           {formatPrice(plan.price, currency)}
                         </span>
-                        <span className="text-[14px] leading-4.5 text-[#676767]">
-                          {t("rentalPriceForDays", { daysCount })}
-                        </span>
+                        <RentalPriceForDays daysCount={daysCount} />
                       </div>
                     </div>
                   </div>

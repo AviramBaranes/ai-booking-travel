@@ -3,9 +3,9 @@ import { useDirection } from "@/shared/hooks/useDirection";
 import { formatPrice } from "@/shared/utils/formatPrice";
 import { isFutureWithinHours } from "@/shared/utils/isFutureWithinHours";
 import clsx from "clsx";
-import Link from "next/link";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { RentalPriceForDays } from "../../../_components/RentalPriceForDays";
 import { ContinueToPlansLink } from "./ContinueToPlansLink";
 
 export const HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION = 48;
@@ -64,9 +64,9 @@ export function CarPriceDetails({
         {formatPrice(firstPlan.price, vehicle.priceDetails.currency)}
       </p>
 
-      <p className="type-paragraph mx-4 text-text-secondary">
-        {t("rentalPriceForDays", { daysCount })}
-      </p>
+      <div className="mx-4">
+        <RentalPriceForDays daysCount={daysCount} />
+      </div>
       {isFutureWithinHours(
         new Date(searchRequest.PickupDate),
         searchRequest.PickupTime,
