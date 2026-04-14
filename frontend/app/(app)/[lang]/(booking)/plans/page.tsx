@@ -57,6 +57,7 @@ export default async function PlansPage({
               couponCode={query.couponCode}
               searchRequest={searchRequest}
               showButton
+              fromCache
             />
           </div>
           <BackButton />

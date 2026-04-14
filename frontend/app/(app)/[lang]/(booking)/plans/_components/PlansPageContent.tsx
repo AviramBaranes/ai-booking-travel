@@ -34,7 +34,7 @@ export function PlansPageContent({
   const t = useTranslations("booking.plansPage");
   const [selectedPlan, setSelectedPlan] = useState(0);
   const vehicle = useSelectedVehicle(searchRequest);
-  const { data } = useAvailableCars(searchRequest);
+  const { data } = useAvailableCars(searchRequest, { fromCache: true });
   const [isErpSelected, setIsErpSelected] = useState(false);
   const [selectedAddons, setSelectedAddons] = useState<broker.SelectAddOn[]>(
     [],

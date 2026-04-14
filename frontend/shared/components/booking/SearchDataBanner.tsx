@@ -14,12 +14,15 @@ import { useTranslations } from "next-intl";
 import { booking } from "@/shared/client";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 
-interface SearchDataBannerProps extends Omit<SearchFormFields, "pickUpLocation" | "dropOffLocation"> {
+interface SearchDataBannerProps extends Omit<
+  SearchFormFields,
+  "pickUpLocation" | "dropOffLocation"
+> {
   pickUpLocationId: number;
   dropOffLocationId: number;
   searchRequest: booking.SearchAvailabilityRequest;
-  showButton?: boolean; 
-  
+  showButton?: boolean;
+  fromCache?: boolean;
 }
 
 function formatDriverAge(age: number) {
@@ -39,13 +42,15 @@ export function SearchDataBanner({
   dropOffDate,
   driverAge,
   couponCode,
-  showButton,searchRequest,
+  showButton,
+  searchRequest,
+  fromCache,
 }: SearchDataBannerProps) {
   const t = useTranslations("booking.banner");
   const dir = useDirection();
-    const { data } = useAvailableCars(searchRequest);
-    const pickUpLocationName = data?.pickupLocationName ?? "";
-    const dropOffLocationName = data?.dropoffLocationName ?? "";
+  const { data } = useAvailableCars(searchRequest, { fromCache });
+  const pickUpLocationName = data?.pickupLocationName ?? "";
+  const dropOffLocationName = data?.dropoffLocationName ?? "";
   const [showForm, setShowForm] = useState(false);
 
   if (showForm) {

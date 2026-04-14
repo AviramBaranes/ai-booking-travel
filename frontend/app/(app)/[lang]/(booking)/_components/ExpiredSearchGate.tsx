@@ -12,6 +12,7 @@ import { bookingKeys } from "@/shared/hooks/useAvailableCars";
 import { searchRequestToParams } from "../results/searchQuery";
 
 const REDIRECT_SECONDS = 5;
+const SEARCH_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
 interface ExpiredSearchGateProps {
   children: React.ReactNode;
@@ -30,12 +31,9 @@ export function ExpiredSearchGate({
   const langParam = params.lang;
   const lang = Array.isArray(langParam) ? langParam[0] : langParam;
 
+  const [isExpired, setIsExpired] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(REDIRECT_SECONDS);
   const redirectedRef = useRef(false);
-
-  const hasAvailabilityData =
-    queryClient.getQueryData(bookingKeys.availability(searchRequest)) !==
-    undefined;
 
   const redirectHref = useMemo(
     () => `/${lang}/results?${searchRequestToParams(searchRequest)}`,
@@ -48,8 +46,40 @@ export function ExpiredSearchGate({
     router.push(redirectHref);
   }, [router, redirectHref]);
 
+  // On mount: compute time remaining based on when data was originally fetched.
+  // If there's no data at all, redirect immediately.
   useEffect(() => {
-    if (hasAvailabilityData) return;
+    const queryKey = bookingKeys.availability(searchRequest);
+    const state = queryClient.getQueryState(queryKey);
+
+    if (!state?.dataUpdatedAt) {
+      redirectToResults();
+      return;
+    }
+
+    const msRemaining = SEARCH_TTL_MS - (Date.now() - state.dataUpdatedAt);
+
+    if (msRemaining <= 0) {
+      // Already expired — evict the stale data so we don't show wrong results,
+      // then start the redirect countdown.
+      queryClient.removeQueries({ queryKey });
+      setIsExpired(true);
+      return;
+    }
+
+    // Schedule expiry exactly when the TTL elapses.
+    const expiryTimer = setTimeout(() => {
+      queryClient.removeQueries({ queryKey });
+      setIsExpired(true);
+    }, msRemaining);
+
+    return () => clearTimeout(expiryTimer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Start redirect countdown once expired.
+  useEffect(() => {
+    if (!isExpired) return;
 
     const interval = setInterval(() => {
       setSecondsLeft((previous) => {
@@ -63,9 +93,9 @@ export function ExpiredSearchGate({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [hasAvailabilityData, redirectToResults]);
+  }, [isExpired, redirectToResults]);
 
-  if (hasAvailabilityData) {
+  if (!isExpired) {
     return <>{children}</>;
   }
 

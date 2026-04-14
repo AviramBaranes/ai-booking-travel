@@ -7,10 +7,18 @@ export const bookingKeys = {
     ["booking", "availability", params] as const,
 };
 
-export function useAvailableCars(params: booking.SearchAvailabilityRequest) {
+interface UseAvailableCarsOptions {
+  fromCache?: boolean;
+}
+
+export function useAvailableCars(
+  params: booking.SearchAvailabilityRequest,
+  opts?: UseAvailableCarsOptions,
+) {
   return useQuery({
     queryKey: bookingKeys.availability(params),
     queryFn: () => searchAvailableCars(params),
     staleTime: 15 * 60 * 1000,
+    enabled: opts?.fromCache !== true,
   });
 }

@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 
 export function useSelectedVehicle(params: booking.SearchAvailabilityRequest) {
   const searchParams = useSearchParams();
-  const { data } = useAvailableCars(params);
+  const { data } = useAvailableCars(params, { fromCache: true });
   const cid = searchParams.get("cid");
   const cidNumber = cid ? Number(cid) : NaN;
 
