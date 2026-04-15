@@ -26,7 +26,9 @@ export function OtherPlansButton({
 }: OtherPlansButtonProps) {
   const t = useTranslations("booking.plansDialog");
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"terms" | "inclusions">("terms");
+  const [activeTab, setActiveTab] = useState<"terms" | "inclusions">(
+    "inclusions",
+  );
 
   const handleSelectPlan = (index: number) => {
     onSelectPlan(index);

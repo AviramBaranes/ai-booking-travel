@@ -67,7 +67,7 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 			continue
 		}
 
-		supplierDetails, ok := supplierDetailsMap[s.name]
+		supplierDetails, ok := supplierDetailsMap[c.Supplier]
 		if !ok {
 			rlog.Warn("no supplier details found for supplier in CarAvailability response, using empty details", "supplier_name", s.name)
 			continue
