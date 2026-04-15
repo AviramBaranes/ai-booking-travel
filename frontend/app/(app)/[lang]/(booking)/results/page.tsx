@@ -12,6 +12,7 @@ import { searchAvailableCars } from "@/shared/api/booking-api";
 import { CarResults } from "./CarResults";
 import { getPayload } from "payload";
 import config from "@payload-config";
+import { ErrorPageWrapper } from "./_components/ErrorPageWrapper";
 
 export async function getSupplierGallery() {
   const payload = await getPayload({ config });
@@ -37,13 +38,21 @@ export default async function ResultsPage({
 
   const searchRequest = toSearchRequest(query);
   const queryClient = getQueryClient();
-  const [_, supplierGallery] = await Promise.all([
-    queryClient.fetchQuery({
-      queryKey: bookingKeys.availability(searchRequest),
-      queryFn: () => searchAvailableCars(searchRequest),
-    }),
-    getSupplierGallery(),
-  ]);
+  let supplierGallery:
+    | Awaited<ReturnType<typeof getSupplierGallery>>
+    | undefined;
+  try {
+    const [_, gallery] = await Promise.all([
+      queryClient.fetchQuery({
+        queryKey: bookingKeys.availability(searchRequest),
+        queryFn: () => searchAvailableCars(searchRequest),
+      }),
+      getSupplierGallery(),
+    ]);
+    supplierGallery = gallery;
+  } catch {
+    return <ErrorPageWrapper locale={lang} messages={messages} />;
+  }
 
   return (
     <main className="w-2/3 mx-auto pt-15 pb-6">

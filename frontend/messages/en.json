@@ -156,6 +156,9 @@
       "driverAge": "Driver age: {age}"
     },
     "results": {
+      "error": {
+        "noResults": "Oops... no results found for the requested search"
+      },
       "carGroupsFiltersTitle": "You can filter results by car groups:",
       "clearFilters": "Clear filters",
       "filters": {

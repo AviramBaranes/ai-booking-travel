@@ -162,6 +162,9 @@
       "driverAge": "גיל הנהג/ת הוא: {age}"
     },
     "results": {
+      "error": {
+        "noResults": "אופס... לא נמצאו תוצאות לחיפוש המתבקש"
+      },
       "carGroupsFiltersTitle": "באפשרותך לסנן תוצאות לפי קבוצות רכבים:",
       "clearFilters": "נקה פילטר",
       "filters": {
