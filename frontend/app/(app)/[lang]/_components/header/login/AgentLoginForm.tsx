@@ -51,7 +51,6 @@ export function AgentLoginForm({ onSuccess }: Props) {
       return result;
     },
     onSuccess: () => {
-      sessionStorage.setItem("agentLoginSuccess", "1");
       onSuccess();
     },
   });

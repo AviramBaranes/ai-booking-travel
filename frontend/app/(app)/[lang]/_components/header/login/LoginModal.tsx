@@ -3,7 +3,7 @@
 import { getSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { User, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -33,15 +33,6 @@ export function LoginModal() {
   const [agentStep, setAgentStep] = useState<AgentStep>("credentials");
   const [customerStep, setCustomerStep] = useState<CustomerStep>("phone");
   const [customerPhone, setCustomerPhone] = useState("");
-
-  // Restore success screen if next-auth's session update caused a remount
-  useEffect(() => {
-    if (sessionStorage.getItem("agentLoginSuccess")) {
-      sessionStorage.removeItem("agentLoginSuccess");
-      setOpen(true);
-      setAgentStep("success");
-    }
-  }, []);
 
   const openDialog = useCallback(() => {
     setOpen(true);
