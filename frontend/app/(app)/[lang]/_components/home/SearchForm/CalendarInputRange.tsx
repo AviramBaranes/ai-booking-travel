@@ -17,26 +17,29 @@ import { FieldError } from "react-hook-form";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { SearchFieldHandle } from "./SearchForm";
 import { Ref, useImperativeHandle, useRef, useState } from "react";
+import { DateRange } from "react-day-picker";
 
-interface CalendarInputProps {
+interface CalendarInputRangeProps {
   placeholder: string;
   ref: Ref<SearchFieldHandle>;
-  value?: Date;
+  value?: DateRange;
   error?: FieldError;
-  onSelect: (date: Date | undefined) => void;
+  onSelect: (date: DateRange | undefined) => void;
 }
 
-export function CalendarInput({
+// CalenderInputRange is used only for a return date, showing only the return but showing a range while selecting
+export function CalendarInputRange({
   placeholder,
   value,
   onSelect,
   error,
   ref,
-}: CalendarInputProps) {
+}: CalendarInputRangeProps) {
   const { lang } = useParams();
   const locale = lang === "he" ? he : undefined;
-  const displayValue = value ? value.toLocaleDateString(locale?.code) : "";
+  const displayValue = value?.to?.toLocaleDateString(locale?.code) ?? "";
   const [open, setOpen] = useState(false);
+  const [hoverDate, setHoverDate] = useState<Date | undefined>(undefined);
   const triggerRef = useRef<HTMLInputElement>(null);
 
   useImperativeHandle(
@@ -54,7 +57,13 @@ export function CalendarInput({
 
   return (
     <div className="flex flex-col items-start">
-      <Popover open={open} onOpenChange={setOpen}>
+      <Popover
+        open={open}
+        onOpenChange={(nextOpen) => {
+          setOpen(nextOpen);
+          if (!nextOpen) setHoverDate(undefined);
+        }}
+      >
         <PopoverTrigger asChild>
           <Field>
             <InputGroup className="search-form-input px-0">
@@ -74,23 +83,31 @@ export function CalendarInput({
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
-            mode="single"
+            mode="range"
             locale={locale}
             numberOfMonths={2}
             selected={value}
             onSelect={(d) => {
               onSelect(d);
+              setHoverDate(undefined);
               setOpen(false);
             }}
             classNames={{
               today: "bg-brand/35",
+
               day_button:
                 "text-navy data-[selected-single=true]:bg-brand data-[selected-single=true]:text-white",
             }}
             disabled={(date) =>
               date < new Date() ||
-              date > new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+              date > new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) ||
+              !value?.from ||
+              date < value.from
             }
+            previewFrom={value?.from && !value?.to ? value.from : undefined}
+            previewTo={value?.from && !value?.to ? hoverDate : undefined}
+            onPreviewDayEnter={(date) => setHoverDate(date)}
+            onPreviewDayLeave={() => setHoverDate(undefined)}
           />
         </PopoverContent>
       </Popover>

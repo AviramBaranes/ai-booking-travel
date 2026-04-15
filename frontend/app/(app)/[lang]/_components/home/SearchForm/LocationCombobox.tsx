@@ -47,11 +47,13 @@ export function LocationCombobox({
     >
       <div className="flex flex-col">
         <ComboboxInput
+          showClear={!!selectedName}
           placeholder={placeholder}
           aria-invalid={error ? "true" : "false"}
           className="search-form-input"
           showTrigger={false}
           onChange={(e) => setSearch(e.target.value)}
+          readOnly={!!selectedName}
           ref={ref}
         >
           <MapPin className="absolute top-1/2 -translate-y-1/2 inset-s-3 size-4.5 text-brand pointer-events-none" />

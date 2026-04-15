@@ -13,6 +13,7 @@ import { SearchFormValues, searchSchema } from "./searchFormSchema";
 import { useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import clsx from "clsx";
+import { CalendarInputRange } from "./CalendarInputRange";
 
 export type SearchFieldHandle = {
   focus: () => void;
@@ -50,7 +51,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
   const pickupTimeRef = useRef<SearchFieldHandle>(null);
   const dropoffTimeRef = useRef<SearchFieldHandle>(null);
 
-  const { control, handleSubmit } = useForm<SearchFormValues>({
+  const { control, handleSubmit, setValue } = useForm<SearchFormValues>({
     resolver: zodResolver(searchFormSchema),
     defaultValues: {
       isReturnDifferentLoc:
@@ -72,6 +73,11 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
       control,
       name: "isReturnDifferentLoc",
     }) ?? false;
+
+  const pickupDate = useWatch({
+    control,
+    name: "pickupDate",
+  });
 
   function formatDate(date: Date) {
     const year = date.getFullYear();
@@ -135,6 +141,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
           )}
         />
         <div className="h-4 w-px bg-white/40 shrink-0" />
+
         <Controller
           name="couponCode"
           control={control}
@@ -207,6 +214,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
                 value={field.value}
                 onSelect={(e) => {
                   field.onChange(e);
+                  setValue("dropoffDate", null);
                   pickupTimeRef.current?.focus();
                 }}
                 error={fieldState.error}
@@ -238,12 +246,12 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
             name="dropoffDate"
             control={control}
             render={({ field, fieldState }) => (
-              <CalendarInput
+              <CalendarInputRange
                 ref={dropoffDateRef}
                 placeholder={t("dropoffDatePlaceholder")}
-                value={field.value}
+                value={{ from: pickupDate, to: field.value }}
                 onSelect={(e) => {
-                  field.onChange(e);
+                  field.onChange(e?.to);
                   dropoffTimeRef.current?.focus();
                 }}
                 error={fieldState.error}
