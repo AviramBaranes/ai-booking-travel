@@ -18,9 +18,14 @@ export function useAcrissCodesFilter() {
     return acrissCodes.size === 0 || acrissCodes.has(car.carDetails.acriss);
   };
 
+  const clearAcrissFilters = () => {
+    setSelectedGroups(new Set());
+  };
+
   return {
     selectedGroups,
     setSelectedGroups,
+    clearAcrissFilters,
     acrissFilterFn: filterFunction,
   };
 }

@@ -157,7 +157,8 @@
     },
     "results": {
       "error": {
-        "noResults": "Oops... no results found for the requested search"
+        "noResults": "Oops... no results found for the requested search",
+        "filterNoResults": "Oops... no results found with the current filters"
       },
       "carGroupsFiltersTitle": "You can filter results by car groups:",
       "clearFilters": "Clear filters",

@@ -42,13 +42,14 @@ export default async function ResultsPage({
     | Awaited<ReturnType<typeof getSupplierGallery>>
     | undefined;
   try {
-    const [_, gallery] = await Promise.all([
+    const [result, gallery] = await Promise.all([
       queryClient.fetchQuery({
         queryKey: bookingKeys.availability(searchRequest),
         queryFn: () => searchAvailableCars(searchRequest),
       }),
       getSupplierGallery(),
     ]);
+    if (!result.availableVehicles.length) throw new Error("No results");
     supplierGallery = gallery;
   } catch {
     return <ErrorPageWrapper locale={lang} messages={messages} />;
