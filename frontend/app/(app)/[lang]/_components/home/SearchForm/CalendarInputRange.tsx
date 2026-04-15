@@ -46,10 +46,7 @@ export function CalendarInputRange({
     ref,
     () => ({
       focus() {
-        requestAnimationFrame(() => {
-          setOpen(true);
-          triggerRef.current?.focus();
-        });
+        setOpen(true);
       },
     }),
     [],
@@ -84,6 +81,7 @@ export function CalendarInputRange({
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="range"
+            showOutsideDays={false}
             locale={locale}
             numberOfMonths={2}
             selected={value}
