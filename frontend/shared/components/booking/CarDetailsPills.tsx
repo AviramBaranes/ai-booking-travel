@@ -60,7 +60,7 @@ export function CarDetailsPills({
                 alt={`${key} icon`}
                 width={16}
                 height={16}
-                className="w-4"
+                className="w-4 h-4"
               />
             )}
             <span className="text-navy">

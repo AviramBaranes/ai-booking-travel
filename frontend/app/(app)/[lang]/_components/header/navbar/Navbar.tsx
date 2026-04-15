@@ -43,6 +43,8 @@ export async function Navbar({
               alt="AIBookingTravel"
               width={160}
               height={40}
+              className="w-40 h-10"
+              priority
             />
           </Link>
 

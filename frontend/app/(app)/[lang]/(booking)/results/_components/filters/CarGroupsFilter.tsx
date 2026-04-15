@@ -47,7 +47,13 @@ export function CarGroupsFilter({
             >
               {group.name}
             </p>
-            <Image src={group.image} alt={group.name} width={125} height={90} />
+            <Image
+              src={group.image}
+              alt={group.name}
+              width={124}
+              height={90}
+              className="w-31 h-22.5"
+            />
           </div>
         ))}
       </div>

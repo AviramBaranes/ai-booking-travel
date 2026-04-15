@@ -9,6 +9,7 @@ export function HomepageDecorations() {
           alt="Paper Plane"
           width={360}
           height={360}
+          className="w-90 h-90"
         />
       </div>
       <div className="absolute top-325 -z-10 -left-10">
@@ -16,11 +17,18 @@ export function HomepageDecorations() {
           src="/assets/home/suitcase.png"
           alt="Suitcase"
           width={380}
-          height={380}
+          height={360}
+          className="w-95 h-90"
         />
       </div>
       <div className="absolute -z-10 top-550">
-        <Image src="/assets/home/car.png" alt="Car" width={225} height={225} />
+        <Image
+          src="/assets/home/car.png"
+          alt="Car"
+          width={225}
+          height={225}
+          className="w-56 h-56"
+        />
       </div>
       <div className="absolute -z-10 top-550">
         <Image
@@ -36,6 +44,7 @@ export function HomepageDecorations() {
           alt="Airplane"
           width={500}
           height={500}
+          className="w-125 h-125"
         />
       </div>
       <div className="absolute top-740 -z-10 -left-10">
@@ -44,6 +53,7 @@ export function HomepageDecorations() {
           alt="Location"
           width={300}
           height={300}
+          className="w-75 h-75"
         />
       </div>
       {/* <div className="absolute top-800 -z-10 -left-25">

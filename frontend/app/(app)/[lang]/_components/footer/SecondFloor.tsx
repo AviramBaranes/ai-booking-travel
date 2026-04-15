@@ -20,7 +20,8 @@ export function FooterSecondFloor({
             src="/logo-dark.png"
             alt="AIBookingTravel"
             width={200}
-            height={50}
+            height={40}
+            className="w-50 h-10"
           />
         </Link>
         <p className="text-white type-paragraph font-normal mt-4">
