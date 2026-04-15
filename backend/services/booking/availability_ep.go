@@ -6,6 +6,7 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	"encore.app/internal/validation"
+	auth "encore.app/services/accounts"
 	"encore.dev/config"
 	"encore.dev/rlog"
 )
@@ -95,9 +96,14 @@ func (s *Service) SearchAvailability(ctx context.Context, p SearchAvailabilityRe
 		return nil, api_errors.ErrInternalError
 	}
 
-	couponDiscount, err := s.getCouponDiscount(ctx, p.CouponCode)
-	if err != nil {
-		return nil, err
+	authData := auth.GetAuthData()
+	isAgent := authData != nil && (authData.Role == auth.UserRoleAgent)
+	couponDiscount := 0
+	if !isAgent {
+		couponDiscount, err = s.getCouponDiscount(ctx, p.CouponCode)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	rawVehicles, err := searchAvailabilityAcrossBrokers(p, locs)

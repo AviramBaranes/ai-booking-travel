@@ -47,6 +47,7 @@ interface SearchFormProps extends Partial<SearchFormFields> {
 export function SearchForm({ className, ...fields }: SearchFormProps) {
   const session = useSession();
   const isAuthenticated = session.status === "authenticated";
+  const isAgent = session.data?.user?.role === "agent";
   const router = useRouter();
   const { lang } = useParams();
   const t = useTranslations("SearchForm");
@@ -155,21 +156,25 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
             />
           )}
         />
-        <div className="h-4 w-px bg-white/40 shrink-0" />
+        {!isAgent && (
+          <>
+            <div className="h-4 w-px bg-white/40 shrink-0" />
 
-        <Controller
-          name="couponCode"
-          control={control}
-          render={({ field }) => (
-            <CouponPopover
-              checkboxLabel={t("hasCoupon")}
-              inputLabel={t("couponPlaceholder")}
-              saveButtonText={t("save")}
-              couponCode={field.value ?? ""}
-              setCouponCode={field.onChange}
+            <Controller
+              name="couponCode"
+              control={control}
+              render={({ field }) => (
+                <CouponPopover
+                  checkboxLabel={t("hasCoupon")}
+                  inputLabel={t("couponPlaceholder")}
+                  saveButtonText={t("save")}
+                  couponCode={field.value ?? ""}
+                  setCouponCode={field.onChange}
+                />
+              )}
             />
-          )}
-        />
+          </>
+        )}
       </div>
       <div className="bg-white/95 w-full py-6 rounded-l-xl max-h-35 min-h-25 justify-center rounded-br-xl flex items-start gap-2 px-5">
         <div className="flex gap-2 flex-1 *:flex-1">
