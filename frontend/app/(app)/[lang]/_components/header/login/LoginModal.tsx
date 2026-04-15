@@ -3,7 +3,7 @@
 import { getSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { User, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { AgentLoginForm } from "./AgentLoginForm";
 import { AgentSuccessScreen } from "./AgentSuccessScreen";
 import { CustomerPhoneForm } from "./CustomerPhoneForm";
 import { CustomerOtpForm } from "./CustomerOtpForm";
+import { useDialogOpenFromQuery } from "./useDialogOpenFromQuery";
 
 type LoginMode = "agent" | "customer";
 type AgentStep = "credentials" | "success";
@@ -42,12 +43,21 @@ export function LoginModal() {
     }
   }, []);
 
+  const openDialog = useCallback(() => {
+    setOpen(true);
+  }, []);
+
+  const { clearQueryFlag } = useDialogOpenFromQuery({
+    open: openDialog,
+  });
+
   const handleOpenChange = (next: boolean) => {
     if (!next) {
       setMode("agent");
       setAgentStep("credentials");
       setCustomerStep("phone");
       setCustomerPhone("");
+      clearQueryFlag();
     }
     setOpen(next);
   };

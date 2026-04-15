@@ -14,6 +14,11 @@ import { useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import clsx from "clsx";
 import { CalendarInputRange } from "./CalendarInputRange";
+import { useSession } from "next-auth/react";
+import {
+  OPEN_DIALOG_QUERY_KEY,
+  OPEN_DIALOG_QUERY_VALUE,
+} from "../../header/login/useDialogOpenFromQuery";
 
 export type SearchFieldHandle = {
   focus: () => void;
@@ -40,6 +45,8 @@ interface SearchFormProps extends Partial<SearchFormFields> {
 }
 
 export function SearchForm({ className, ...fields }: SearchFormProps) {
+  const session = useSession();
+  const isAuthenticated = session.status === "authenticated";
   const router = useRouter();
   const { lang } = useParams();
   const t = useTranslations("SearchForm");
@@ -113,6 +120,14 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
     <form
       className={clsx("flex flex-col w-10/12 mx-auto mt-4", className)}
       onSubmit={handleSubmit(onSubmit)}
+      onClick={(e) => {
+        if (!isAuthenticated) {
+          e.stopPropagation();
+          router.push(
+            `/${lang}?${OPEN_DIALOG_QUERY_KEY}=${OPEN_DIALOG_QUERY_VALUE}`,
+          );
+        }
+      }}
     >
       <div className="bg-navy w-fit py-2 rounded-t-xl flex items-center text-white type-h6 px-6 gap-5">
         <Controller
