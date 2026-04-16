@@ -1,26 +1,27 @@
 import { Button } from "@/components/ui/button";
-import { AddonsGallery, Media } from "@/payload-types";
+import { Media } from "@/payload-types";
 import { broker } from "@/shared/client";
 import { Populated } from "@/shared/types/payload";
 import { formatPrice } from "@/shared/utils/formatPrice";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import { useAddonsGallery } from "@/shared/hooks/useAddonsGallery";
+
 interface AddOnsDisplayProps {
   addons: broker.AddOn[];
-  addOnsGallery: Populated<AddonsGallery>;
   selectedAddons: broker.SelectAddOn[];
   setSelectedAddons: (addons: broker.SelectAddOn[]) => void;
 }
 
 export function AddOnsDisplay({
   addons,
-  addOnsGallery,
   selectedAddons,
   setSelectedAddons,
 }: AddOnsDisplayProps) {
   const t = useTranslations("booking.addOns");
   const { lang } = useParams();
+  const { data: addOnsGallery } = useAddonsGallery();
 
   function addQuantity(addOnId: number) {
     const existing = selectedAddons.find((a) => a.id === addOnId);

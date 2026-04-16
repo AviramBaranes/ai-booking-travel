@@ -1,4 +1,3 @@
-import { SuppliersGallery } from "@/payload-types";
 import { booking } from "@/shared/client";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -13,14 +12,12 @@ import { CarPriceDetails } from "./CarPriceDetails";
 interface CarCardProps {
   vehicle: booking.AvailableVehicle;
   daysCount: number;
-  supplierGallery: SuppliersGallery;
   searchRequest: booking.SearchAvailabilityRequest;
 }
 
 export function CarCard({
   vehicle,
   daysCount,
-  supplierGallery,
   searchRequest,
 }: CarCardProps) {
   const t = useTranslations("booking.results");
@@ -30,7 +27,6 @@ export function CarCard({
       <div className="flex flex-col items-center gap-6 mt-10 mb-12">
         <SupplierLogo
           supplierName={vehicle.carDetails.supplierName}
-          supplierGallery={supplierGallery}
         />
         <Image
           src={vehicle.carDetails.imageUrl}

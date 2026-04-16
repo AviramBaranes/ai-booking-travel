@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { RentalPriceForDays } from "../../../../../../shared/components/booking/RentalPriceForDays";
 import { formatPrice } from "@/shared/utils/formatPrice";
+import { useBookingSettings } from "@/shared/hooks/useBookingSettings";
 
 interface ErpCheckboxProps {
   vehicle: booking.AvailableVehicle;
@@ -21,10 +22,11 @@ export function ErpCheckbox({
   setSelected,
 }: ErpCheckboxProps) {
   const t = useTranslations("booking.erpCheckbox");
+  const { data: bookingSettings } = useBookingSettings();
 
   const [isReadMore, setIsReadMore] = useState(false);
   const description = useMemo(() => {
-    const fullText = t("description");
+    const fullText = bookingSettings.erpContent;
     if (isReadMore) {
       return fullText;
     }
@@ -34,7 +36,7 @@ export function ErpCheckbox({
       return fullText;
     }
     return words.slice(0, 24).join(" ");
-  }, [t, isReadMore]);
+  }, [bookingSettings.erpContent, isReadMore]);
 
   return (
     <>
@@ -47,7 +49,9 @@ export function ErpCheckbox({
               onCheckedChange={setSelected}
               className="border-[#a9a8b3] data-checked:border-brand data-checked:bg-brand"
             />
-            <span className="type-label text-navy ">{t("label")}</span>
+            <span className="type-label text-navy ">
+              {bookingSettings.erpTitle}
+            </span>
           </label>
           <p className="type-paragraph text-text-secondary ">
             {description}

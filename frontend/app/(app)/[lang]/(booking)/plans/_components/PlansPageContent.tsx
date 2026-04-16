@@ -12,7 +12,6 @@ import { ImportantInfoButton } from "./ImportantInfoButton";
 import { SignalsDisplay } from "../../_components/SignalsDisplay";
 import { ErpCheckbox } from "./ErpCheckbox";
 import { AddOnsDisplay } from "./AddOnsDisplay";
-import { AddonsGallery, SuppliersGallery } from "@/payload-types";
 import { SelectedCarCard } from "@/shared/components/booking/SelectedCarCard";
 import { isFutureWithinHours } from "@/shared/utils/isFutureWithinHours";
 import { HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION } from "../../results/_components/carCard/CarPriceDetails";
@@ -23,14 +22,10 @@ import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import { useSearchParams, useRouter } from "next/navigation";
 
 interface PlansPageContentProps {
-  addonsGallery: AddonsGallery;
-  supplierGallery: SuppliersGallery;
   searchRequest: booking.SearchAvailabilityRequest;
 }
 
 export function PlansPageContent({
-  addonsGallery,
-  supplierGallery,
   searchRequest,
 }: PlansPageContentProps) {
   const t = useTranslations("booking.plansPage");
@@ -104,7 +99,6 @@ export function PlansPageContent({
             <hr className="mt-10 mb-6" />
             <AddOnsDisplay
               addons={vehicle.addOns}
-              addOnsGallery={addonsGallery}
               selectedAddons={selectedAddons}
               setSelectedAddons={setSelectedAddons}
             />
@@ -114,7 +108,6 @@ export function PlansPageContent({
       <div className="w-1/4">
         <SelectedCarCard
           isErpSelected={isErpSelected}
-          supplierGallery={supplierGallery}
           daysCount={data?.daysCount ?? 0}
           vehicle={vehicle}
           selectedPlanIndex={selectedPlan}

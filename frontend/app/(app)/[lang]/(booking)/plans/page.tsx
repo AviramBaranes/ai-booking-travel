@@ -1,5 +1,3 @@
-import { getPayload } from "payload";
-import config from "@payload-config";
 import { parseSearchQuery, toSearchRequest } from "../results/searchQuery";
 import { redirect } from "next/navigation";
 import { getLang } from "@/shared/lang/lang";
@@ -10,15 +8,6 @@ import { SearchDataBanner } from "@/shared/components/booking/SearchDataBanner";
 import { BackButton } from "../_components/BackButton";
 import { ExpiredSearchGate } from "../_components/ExpiredSearchGate";
 import { PlansPageContent } from "./_components/PlansPageContent";
-import { getSupplierGallery } from "../results/page";
-
-async function getAddOnsGallery() {
-  const payload = await getPayload({ config });
-  return payload.findGlobal({
-    slug: "addonsGallery",
-    draft: false,
-  });
-}
 
 export default async function PlansPage({
   searchParams,
@@ -33,11 +22,7 @@ export default async function PlansPage({
     redirect(`/${lang}`);
   }
 
-  const [messages, addOnsGallery, suppliersGallery] = await Promise.all([
-    getMessages({ locale: lang }),
-    getAddOnsGallery(),
-    getSupplierGallery(),
-  ]);
+  const messages = await getMessages({ locale: lang });
   const searchRequest = toSearchRequest(query);
 
   return (
@@ -61,11 +46,7 @@ export default async function PlansPage({
             />
           </div>
           <BackButton />
-          <PlansPageContent
-            searchRequest={searchRequest}
-            addonsGallery={addOnsGallery}
-            supplierGallery={suppliersGallery}
-          />
+          <PlansPageContent searchRequest={searchRequest} />
         </ExpiredSearchGate>
       </NextIntlClientProvider>
     </main>

@@ -1,7 +1,6 @@
 import { RentalPriceForDays } from "@/shared/components/booking/RentalPriceForDays";
 import { CarDetailsPills } from "@/shared/components/booking/CarDetailsPills";
 import { SupplierLogo } from "@/shared/components/booking/SupplierLogo";
-import { SuppliersGallery } from "@/payload-types";
 import { booking } from "@/shared/client";
 import { formatPrice } from "@/shared/utils/formatPrice";
 import { useTranslations } from "next-intl";
@@ -11,7 +10,6 @@ import { PriceDetailRow } from "./PriceDetailRow";
 interface SelectedCarCardProps {
   daysCount: number;
   selectedPlanIndex: number;
-  supplierGallery: SuppliersGallery;
   vehicle: booking.AvailableVehicle;
   isErpSelected: boolean;
   children?: React.ReactNode;
@@ -22,7 +20,6 @@ export function SelectedCarCard({
   vehicle,
   daysCount,
   selectedPlanIndex,
-  supplierGallery,
   isErpSelected,
 }: SelectedCarCardProps) {
   const t = useTranslations("booking.results");
@@ -32,10 +29,7 @@ export function SelectedCarCard({
     <div className="bg-white shadow-card p-6 flex rounded-2xl flex-col gap-2 justify-between border border-cars-border">
       <div className="flex-col flex items-center">
         <div className="mb-12">
-          <SupplierLogo
-            supplierGallery={supplierGallery}
-            supplierName={vehicle.carDetails.supplierName}
-          />
+          <SupplierLogo supplierName={vehicle.carDetails.supplierName} />
         </div>
 
         <Image

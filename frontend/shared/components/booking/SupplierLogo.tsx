@@ -1,17 +1,13 @@
-import { SuppliersGallery } from "@/payload-types";
 import { Populated } from "@/shared/types/payload";
+import { useSupplierGallery } from "@/shared/hooks/useSuppliersGallery";
+import { SuppliersGallery } from "@/payload-types";
 import Image from "next/image";
 
 type Supplier = NonNullable<SuppliersGallery["suppliers"]>[number];
 type SupplierMedia = Supplier["media"];
 
-export function SupplierLogo({
-  supplierName,
-  supplierGallery,
-}: {
-  supplierName: string;
-  supplierGallery: SuppliersGallery;
-}) {
+export function SupplierLogo({ supplierName }: { supplierName: string }) {
+  const { data: supplierGallery } = useSupplierGallery();
   const supplier = supplierGallery.suppliers?.find(
     (s) => s.name.trim() === supplierName.trim(),
   );

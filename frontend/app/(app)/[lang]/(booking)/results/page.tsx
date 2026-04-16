@@ -10,17 +10,15 @@ import { getQueryClient } from "@/shared/hooks/getQueryClient";
 import { bookingKeys } from "@/shared/hooks/useAvailableCars";
 import { searchAvailableCars } from "@/shared/api/booking-api";
 import { CarResults } from "./CarResults";
-import { getPayload } from "payload";
-import config from "@payload-config";
 import { ErrorPageWrapper } from "./_components/ErrorPageWrapper";
-
-export async function getSupplierGallery() {
-  const payload = await getPayload({ config });
-  return payload.findGlobal({
-    slug: "suppliersGallery",
-    draft: false,
-  });
-}
+import {
+  fetchSuppliersGallery,
+  fetchAddonsGallery,
+  fetchBookingSettings,
+} from "@/shared/server/cms";
+import { suppliersGalleryKey } from "@/shared/hooks/useSuppliersGallery";
+import { addonsGalleryKey } from "@/shared/hooks/useAddonsGallery";
+import { bookingSettingsKey } from "@/shared/hooks/useBookingSettings";
 
 export default async function ResultsPage({
   searchParams,
@@ -38,19 +36,27 @@ export default async function ResultsPage({
 
   const searchRequest = toSearchRequest(query);
   const queryClient = getQueryClient();
-  let supplierGallery:
-    | Awaited<ReturnType<typeof getSupplierGallery>>
-    | undefined;
+
   try {
-    const [result, gallery] = await Promise.all([
+    const [result] = await Promise.all([
       queryClient.fetchQuery({
         queryKey: bookingKeys.availability(searchRequest),
         queryFn: () => searchAvailableCars(searchRequest),
       }),
-      getSupplierGallery(),
+      queryClient.fetchQuery({
+        queryKey: suppliersGalleryKey,
+        queryFn: fetchSuppliersGallery,
+      }),
+      queryClient.fetchQuery({
+        queryKey: addonsGalleryKey,
+        queryFn: fetchAddonsGallery,
+      }),
+      queryClient.fetchQuery({
+        queryKey: bookingSettingsKey,
+        queryFn: fetchBookingSettings,
+      }),
     ]);
     if (!result.availableVehicles.length) throw new Error("No results");
-    supplierGallery = gallery;
   } catch {
     return <ErrorPageWrapper locale={lang} messages={messages} />;
   }
@@ -74,10 +80,7 @@ export default async function ResultsPage({
               showButton
             />
           </div>
-          <CarResults
-            searchRequest={searchRequest}
-            supplierGallery={supplierGallery}
-          />
+          <CarResults searchRequest={searchRequest} />
         </HydrationBoundary>
       </NextIntlClientProvider>
     </main>

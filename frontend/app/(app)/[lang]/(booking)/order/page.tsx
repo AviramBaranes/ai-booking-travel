@@ -8,7 +8,6 @@ import { SearchDataBanner } from "@/shared/components/booking/SearchDataBanner";
 import { BackButton } from "../_components/BackButton";
 import { ExpiredSearchGate } from "../_components/ExpiredSearchGate";
 import { OrderPageContent } from "./_components/OrderPageContent";
-import { getSupplierGallery } from "../results/page";
 import { OrderProviders } from "./_components/OrderProviders";
 
 export default async function OrderPage({
@@ -24,10 +23,7 @@ export default async function OrderPage({
     redirect(`/${lang}`);
   }
 
-  const [messages, supplierGallery] = await Promise.all([
-    getMessages({ locale: lang }),
-    getSupplierGallery(),
-  ]);
+  const messages = await getMessages({ locale: lang });
 
   const searchRequest = toSearchRequest(query);
 
@@ -53,10 +49,7 @@ export default async function OrderPage({
               />
             </div>
             <BackButton />
-            <OrderPageContent
-              searchRequest={searchRequest}
-              supplierGallery={supplierGallery}
-            />
+            <OrderPageContent searchRequest={searchRequest} />
           </OrderProviders>
         </ExpiredSearchGate>
       </NextIntlClientProvider>

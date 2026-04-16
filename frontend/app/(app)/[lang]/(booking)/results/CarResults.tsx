@@ -1,6 +1,5 @@
 "use client";
 
-import { SuppliersGallery } from "@/payload-types";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 import { booking } from "@/shared/client";
 import { useTranslations } from "next-intl";
@@ -16,13 +15,11 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
 interface CarResultsProps {
-  supplierGallery: SuppliersGallery;
   searchRequest: booking.SearchAvailabilityRequest;
 }
 
 export function CarResults({
   searchRequest,
-  supplierGallery,
 }: CarResultsProps) {
   const t = useTranslations("booking.results");
   const { data } = useAvailableCars(searchRequest);
@@ -92,7 +89,6 @@ export function CarResults({
               <CarCard
                 key={vehicle.id}
                 daysCount={data?.daysCount ?? 0}
-                supplierGallery={supplierGallery}
                 vehicle={vehicle}
                 searchRequest={searchRequest}
               />

@@ -1,9 +1,10 @@
 "use client";
 
 import { booking } from "@/shared/client";
-import { SuppliersGallery } from "@/payload-types";
+import { Page } from "@/payload-types";
 import { useSelectedVehicle } from "../../plans/_hooks/useSelectedVehicle";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
+import { useBookingSettings } from "@/shared/hooks/useBookingSettings";
 import { Loading } from "@/shared/components/Loading";
 import { SelectedCarCard } from "@/shared/components/booking/SelectedCarCard";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
@@ -33,17 +34,14 @@ import { ChevronDown } from "lucide-react";
 
 interface OrderPageContentProps {
   searchRequest: booking.SearchAvailabilityRequest;
-  supplierGallery: SuppliersGallery;
 }
 
-export function OrderPageContent({
-  searchRequest,
-  supplierGallery,
-}: OrderPageContentProps) {
+export function OrderPageContent({ searchRequest }: OrderPageContentProps) {
   const t = useTranslations("booking.orderPage");
   const tError = useTranslations("ApiErrors");
   const { lang } = useParams();
   const router = useRouter();
+  const { data: bookingSettings } = useBookingSettings();
 
   const vehicle = useSelectedVehicle(searchRequest);
   const { data } = useAvailableCars(searchRequest, { fromCache: true });
@@ -214,7 +212,6 @@ export function OrderPageContent({
       <div className="w-1/4">
         <SelectedCarCard
           isErpSelected={isErpSelected}
-          supplierGallery={supplierGallery}
           daysCount={data.daysCount}
           vehicle={vehicle}
           selectedPlanIndex={selectedPlanIndex}
@@ -250,7 +247,14 @@ export function OrderPageContent({
                   />
                   <span className="type-paragraph text-navy">
                     {t("termsCheckbox")}{" "}
-                    <a href="#" className="text-link underline type-label">
+                    <a
+                      href={
+                        typeof bookingSettings.orderTermsLink === "object"
+                          ? `/${lang}/${(bookingSettings.orderTermsLink as Page).slug}`
+                          : "#"
+                      }
+                      className="text-link underline type-label"
+                    >
                       {t("termsLink")}
                     </a>
                   </span>
