@@ -19,6 +19,8 @@ import {
 import { suppliersGalleryKey } from "@/shared/hooks/useSuppliersGallery";
 import { addonsGalleryKey } from "@/shared/hooks/useAddonsGallery";
 import { bookingSettingsKey } from "@/shared/hooks/useBookingSettings";
+import ErrorResultPageContent from "./_components/ErrorPage";
+import { ExpiredSearchGate } from "../_components/ExpiredSearchGate";
 
 export default async function ResultsPage({
   searchParams,
@@ -32,8 +34,6 @@ export default async function ResultsPage({
   if (!query) {
     redirect(`/${lang}`);
   }
-  const messages = await getMessages({ locale: lang });
-
   const searchRequest = toSearchRequest(query);
   const queryClient = getQueryClient();
 
@@ -58,31 +58,31 @@ export default async function ResultsPage({
     ]);
     if (!result.availableVehicles.length) throw new Error("No results");
   } catch {
-    return <ErrorPageWrapper locale={lang} messages={messages} />;
+    return <ErrorResultPageContent />;
   }
 
   return (
     <main className="w-2/3 mx-auto pt-15 pb-6">
-      <NextIntlClientProvider locale={lang} messages={messages}>
-        <BookingStepper currentStep="results" />
-        <HydrationBoundary state={dehydrate(queryClient)}>
-          <div className="my-4">
-            <SearchDataBanner
-              pickUpLocationId={query.pickupLocationId}
-              dropOffLocationId={query.returnLocationId}
-              pickUpTime={query.pickupTime}
-              dropOffTime={query.returnTime}
-              pickUpDate={query.pickupDate}
-              dropOffDate={query.returnDate}
-              driverAge={query.driverAge}
-              couponCode={query.couponCode}
-              searchRequest={searchRequest}
-              showButton
-            />
-          </div>
+      <BookingStepper currentStep="results" />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <div className="my-4">
+          <SearchDataBanner
+            pickUpLocationId={query.pickupLocationId}
+            dropOffLocationId={query.returnLocationId}
+            pickUpTime={query.pickupTime}
+            dropOffTime={query.returnTime}
+            pickUpDate={query.pickupDate}
+            dropOffDate={query.returnDate}
+            driverAge={query.driverAge}
+            couponCode={query.couponCode}
+            searchRequest={searchRequest}
+            showButton
+          />
+        </div>
+        <ExpiredSearchGate searchRequest={searchRequest}>
           <CarResults searchRequest={searchRequest} />
-        </HydrationBoundary>
-      </NextIntlClientProvider>
+        </ExpiredSearchGate>
+      </HydrationBoundary>
     </main>
   );
 }

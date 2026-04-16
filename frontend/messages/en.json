@@ -112,7 +112,8 @@
       "results": "Select Car",
       "plans": "Select Plan and Add-Ons",
       "ordering": "Summary and Order",
-      "backToResults": "Back to Search Results"
+      "backToResults": "Back to Search Results",
+      "backToPlans": "Back to Plan Selection"
     },
     "shared": {
       "rentalPriceForDays": "Rental price for {daysCount} days:"

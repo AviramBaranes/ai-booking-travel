@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 const ARROW_RIGHT = "\u2192";
 const ARROW_LEFT = "\u2190";
-export function BackButton() {
+export function BackButton({ translationKey }: { translationKey: string }) {
   const t = useTranslations("booking.steps");
   const router = useRouter();
   const dir = useDirection();
@@ -21,7 +21,7 @@ export function BackButton() {
       <span className="text-link text-sm">
         {dir === "rtl" ? ARROW_RIGHT : ARROW_LEFT}
       </span>
-      <span className="text-link text-sm">{t("backToResults")}</span>
+      <span className="text-link text-sm">{t(translationKey)}</span>
     </Button>
   );
 }

@@ -112,7 +112,8 @@
       "results": "בחירת רכב",
       "plans": "בחירת תוכנית ותוספות",
       "ordering": "סיכום והזמנה",
-      "backToResults": "חזרה לתוצאות החיפוש"
+      "backToResults": "חזרה לתוצאות החיפוש",
+      "backToPlans": "חזרה לבחירת תוכנית"
     },
     "shared": {
       "rentalPriceForDays": "מחיר השכרה ל- {daysCount} ימים"

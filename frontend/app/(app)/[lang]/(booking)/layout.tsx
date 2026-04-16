@@ -1,9 +1,18 @@
-import { QueryProvider } from "../_components/providers/QueryProvider";
+import { getLang } from "@/shared/lang/lang";
+import { BookingProviders } from "./_components/BookingProviders";
+import { getMessages } from "next-intl/server";
 
-export default function BookingLayout({
+export default async function BookingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <QueryProvider>{children}</QueryProvider>;
+  const lang = await getLang();
+  const messages = await getMessages({ locale: lang });
+
+  return (
+    <BookingProviders lang={lang} messages={messages}>
+      {children}
+    </BookingProviders>
+  );
 }
