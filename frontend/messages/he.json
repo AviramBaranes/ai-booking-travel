@@ -1,5 +1,6 @@
 {
   "ApiErrors": {
+    "unknown": "אירעה שגיאה לא ידועה",
     "unknown_error": "אירעה שגיאה לא ידועה",
     "internal_error": "אירעה שגיאה בלתי צפויה",
     "invalid_value": "ערך לא תקין",
@@ -14,6 +15,10 @@
     "no_broker_code_for_pickup_location": "מיקום האיסוף אינו נתמך",
     "no_broker_code_for_dropoff_location": "מיקום ההחזרה אינו נתמך",
     "no_common_broker_for_locations": "אין ספק זמין עבור שילוב מיקומי האיסוף וההחזרה",
+    "snapshot_not_found": "תוקף החיפוש פג. אנא בצעו חיפוש מחדש.",
+    "plan_not_found": "ההצעה הזו כבר לא זמינה. חזרו לתוצאות ובחרו אפשרות אחרת.",
+    "booking_failed": "לא הצלחנו להשלים את ההזמנה. ייתכן שהרכב כבר אינו זמין. נסו אפשרות אחרת.",
+    "reservation_creation_failed": "לא הצלחנו לאשר את ההזמנה. ייתכן שהרכב כבר אינו זמין. נסו אפשרות אחרת.",
     "user_not_found": "המשתמש לא נמצא",
     "email_already_exists": "כתובת האימייל כבר קיימת",
     "phone_already_exists": "מספר הטלפון כבר קיים",
@@ -133,6 +138,7 @@
       "termsCheckbox": "אני מאשר את",
       "termsLink": "תנאי ההזמנה",
       "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
+      "reSearch": "חיפוש מחדש",
       "validation": {
         "required": "שדה חובה",
         "englishOnly": "אותיות באנגלית בלבד",

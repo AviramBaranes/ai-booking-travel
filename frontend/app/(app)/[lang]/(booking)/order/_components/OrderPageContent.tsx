@@ -31,6 +31,8 @@ import { isFutureWithinHours } from "@/shared/utils/isFutureWithinHours";
 import { HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION } from "../../results/_components/carCard/CarPriceDetails";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
+import Link from "next/link";
+import { searchRequestToParams } from "../../results/searchQuery";
 
 interface OrderPageContentProps {
   searchRequest: booking.SearchAvailabilityRequest;
@@ -205,7 +207,15 @@ export function OrderPageContent({ searchRequest }: OrderPageContentProps) {
         )}
 
         {error && (
-          <p className="mt-4 text-destructive type-paragraph">{error}</p>
+          <>
+            <p className="mt-4 text-destructive type-paragraph">{error}</p>
+            <Link
+              href={`/${lang}/results?${searchRequestToParams(searchRequest).toString()}`}
+              className="text-link underline"
+            >
+              {t("reSearch")}
+            </Link>
+          </>
         )}
       </div>
 
@@ -247,7 +257,8 @@ export function OrderPageContent({ searchRequest }: OrderPageContentProps) {
                   />
                   <span className="type-paragraph text-navy">
                     {t("termsCheckbox")}{" "}
-                    <a
+                    <Link
+                      target="_blank"
                       href={
                         typeof bookingSettings.orderTermsLink === "object"
                           ? `/${lang}/${(bookingSettings.orderTermsLink as Page).slug}`
@@ -256,7 +267,7 @@ export function OrderPageContent({ searchRequest }: OrderPageContentProps) {
                       className="text-link underline type-label"
                     >
                       {t("termsLink")}
-                    </a>
+                    </Link>
                   </span>
                 </label>
               )}

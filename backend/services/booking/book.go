@@ -13,7 +13,31 @@ import (
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
 	"encore.app/services/reservation"
+	"encore.dev/beta/errs"
 	"encore.dev/rlog"
+)
+
+var (
+	errSnapshotNotFound = api_errors.NewErrorWithDetail(
+		errs.NotFound,
+		"Snapshot not found",
+		api_errors.ErrorDetails{Code: api_errors.CodeSnapshotNotFound},
+	)
+	errPlanNotFound = api_errors.NewErrorWithDetail(
+		errs.NotFound,
+		"Plan not found",
+		api_errors.ErrorDetails{Code: api_errors.CodePlanNotFound},
+	)
+	errBookingFailed = api_errors.NewErrorWithDetail(
+		errs.Unknown,
+		"Booking failed",
+		api_errors.ErrorDetails{Code: api_errors.CodeBookingFailed},
+	)
+	errReservationCreationFailed = api_errors.NewErrorWithDetail(
+		errs.Unknown,
+		"Reservation creation failed",
+		api_errors.ErrorDetails{Code: api_errors.CodeReservationCreationFailed},
+	)
 )
 
 // BookResponse represents the response returned after a successful booking, including the booking reference number and any relevant details.
@@ -52,7 +76,7 @@ func (s *Service) Book(ctx context.Context, params BookRequest) (*BookResponse, 
 
 	confID, err := bookCarAtBroker(ctx, snapshot, plan, params)
 	if err != nil {
-		return nil, api_errors.ErrInternalError
+		return nil, errBookingFailed
 	}
 
 	reservationReq := s.buildCreateReservationRequest(snapshot, plan, params, confID)
@@ -60,7 +84,7 @@ func (s *Service) Book(ctx context.Context, params BookRequest) (*BookResponse, 
 	if err != nil {
 		rlog.Error("failed to create reservation after successful booking",
 			"confirmationNumber", confID, "error", err)
-		return nil, err
+		return nil, errReservationCreationFailed
 	}
 
 	err = s.query.DeleteSnapshotByID(ctx, snapshot.ID)
@@ -131,7 +155,7 @@ func (s *Service) getSnapshot(ctx context.Context, snapshotID int64) (db.Availab
 	snapshot, err := s.query.GetSnapshotByID(ctx, snapshotID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
-			return db.AvailablePlansSnapshot{}, api_errors.ErrNotFound
+			return db.AvailablePlansSnapshot{}, errSnapshotNotFound
 		}
 		rlog.Error("failed to get snapshot", "snapshotID", snapshotID, "error", err)
 		return db.AvailablePlansSnapshot{}, api_errors.ErrInternalError
@@ -153,7 +177,7 @@ func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode st
 			return plan, nil
 		}
 	}
-	return planPriceDetails{}, api_errors.ErrNotFound
+	return planPriceDetails{}, errPlanNotFound
 }
 
 // bookCarAtBroker performs the actual booking with the broker using the provided plan details and booking request parameters.

@@ -1,5 +1,6 @@
 {
   "ApiErrors": {
+    "unknown": "An unknown error occurred",
     "unknown_error": "An unknown error occurred",
     "internal_error": "An unexpected error occurred",
     "invalid_value": "Invalid value",
@@ -14,6 +15,10 @@
     "no_broker_code_for_pickup_location": "Pickup location is not supported",
     "no_broker_code_for_dropoff_location": "Drop-off location is not supported",
     "no_common_broker_for_locations": "No provider available for this pickup and drop-off combination",
+    "snapshot_not_found": "Your search has expired. Please run a new search.",
+    "plan_not_found": "This offer is no longer available. Please return to the results and choose another option.",
+    "booking_failed": "We couldn't complete the booking. The car may no longer be available. Please try another option.",
+    "reservation_creation_failed": "We couldn't confirm this reservation. The car may no longer be available. Please try another option.",
     "user_not_found": "User not found",
     "email_already_exists": "Email already exists",
     "phone_already_exists": "Phone number already exists",
@@ -133,6 +138,7 @@
       "termsCheckbox": "I accept the",
       "termsLink": "booking terms",
       "freeCancellation": "Free cancellation up to 48 hours before pickup",
+      "reSearch": "Search again",
       "validation": {
         "required": "Required field",
         "englishOnly": "English letters only",
