@@ -96,6 +96,7 @@ export interface Config {
     footer: Footer;
     'not-found': NotFound;
     homepage: Homepage;
+    'booking-settings': BookingSetting;
     suppliersGallery: SuppliersGallery;
     addonsGallery: AddonsGallery;
   };
@@ -104,6 +105,7 @@ export interface Config {
     footer: FooterSelect<false> | FooterSelect<true>;
     'not-found': NotFoundSelect<false> | NotFoundSelect<true>;
     homepage: HomepageSelect<false> | HomepageSelect<true>;
+    'booking-settings': BookingSettingsSelect<false> | BookingSettingsSelect<true>;
     suppliersGallery: SuppliersGallerySelect<false> | SuppliersGallerySelect<true>;
     addonsGallery: AddonsGallerySelect<false> | AddonsGallerySelect<true>;
   };
@@ -876,6 +878,24 @@ export interface BenefitsBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "booking-settings".
+ */
+export interface BookingSetting {
+  id: number;
+  erpTitle: string;
+  erpContent: string;
+  erpPopupTitle: string;
+  erpPopupContent: string;
+  youngDriverTitle: string;
+  youngDriverContent: string;
+  dropoffChargeTitle: string;
+  dropoffChargeContent: string;
+  orderTermsLink: number | Page;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "suppliersGallery".
  */
 export interface SuppliersGallery {
@@ -1036,6 +1056,24 @@ export interface BenefitsBlockSelect<T extends boolean = true> {
       };
   id?: T;
   blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "booking-settings_select".
+ */
+export interface BookingSettingsSelect<T extends boolean = true> {
+  erpTitle?: T;
+  erpContent?: T;
+  erpPopupTitle?: T;
+  erpPopupContent?: T;
+  youngDriverTitle?: T;
+  youngDriverContent?: T;
+  dropoffChargeTitle?: T;
+  dropoffChargeContent?: T;
+  orderTermsLink?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

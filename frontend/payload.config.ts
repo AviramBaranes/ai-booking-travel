@@ -12,6 +12,7 @@ import { he } from "@payloadcms/translations/languages/he";
 import { Pages } from "./collections/Pages";
 import { SharedSections } from "./collections/SharedSections";
 import { AddonImagesGlobal } from "./globals/AddonImages";
+import { BookingSettings } from "./globals/BookingSettings";
 import { Homepage } from "./globals/Homepage";
 import { Header } from "./globals/Header";
 import { Footer } from "./globals/Footer";
@@ -77,6 +78,7 @@ export default buildConfig({
     Footer,
     NotFoundConfig,
     Homepage,
+    BookingSettings,
     SuppliersGallery,
     AddonImagesGlobal,
   ],
