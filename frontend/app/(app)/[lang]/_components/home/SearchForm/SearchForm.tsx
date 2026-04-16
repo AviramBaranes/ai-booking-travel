@@ -12,6 +12,7 @@ import { CouponPopover } from "./CouponPopover";
 import { SearchFormValues, searchSchema } from "./searchFormSchema";
 import { useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import clsx from "clsx";
 import { CalendarInputRange } from "./CalendarInputRange";
 import { useSession } from "next-auth/react";
@@ -50,6 +51,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
   const isAgent = session.data?.user?.role === "agent";
   const router = useRouter();
   const { lang } = useParams();
+  const clearSession = useBookingSessionStore((s) => s.clearSession);
   const t = useTranslations("SearchForm");
   const searchFormSchema = searchSchema(t);
 
@@ -95,6 +97,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
   }
 
   function onSubmit(data: SearchFormValues) {
+    clearSession();
     const urlParams = new URLSearchParams();
 
     urlParams.set("pl", data.pickupLocation.toString());
@@ -298,7 +301,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
           <Button
             type="submit"
             variant="brand"
-            className="w-full py-6 type-paragraph font-bold"
+            className="w-full py-6 type-paragraph font-bold cursor-pointer"
           >
             {t("searchButton")}
           </Button>

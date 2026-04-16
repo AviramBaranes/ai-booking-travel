@@ -6,13 +6,11 @@ import { formatPrice } from "@/shared/utils/formatPrice";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { Dispatch, SetStateAction } from "react";
-
 interface AddOnsDisplayProps {
   addons: broker.AddOn[];
   addOnsGallery: Populated<AddonsGallery>;
   selectedAddons: broker.SelectAddOn[];
-  setSelectedAddons: Dispatch<SetStateAction<broker.SelectAddOn[]>>;
+  setSelectedAddons: (addons: broker.SelectAddOn[]) => void;
 }
 
 export function AddOnsDisplay({
@@ -25,32 +23,30 @@ export function AddOnsDisplay({
   const { lang } = useParams();
 
   function addQuantity(addOnId: number) {
-    setSelectedAddons((prev) => {
-      const existing = prev.find((a) => a.id === addOnId);
-      if (existing) {
-        return prev.map((a) =>
+    const existing = selectedAddons.find((a) => a.id === addOnId);
+    if (existing) {
+      setSelectedAddons(
+        selectedAddons.map((a) =>
           a.id === addOnId ? { ...a, quantity: a.quantity + 1 } : a,
-        );
-      } else {
-        return [...prev, { id: addOnId, quantity: 1 }];
-      }
-    });
+        ),
+      );
+    } else {
+      setSelectedAddons([...selectedAddons, { id: addOnId, quantity: 1 }]);
+    }
   }
 
   function subtractQuantity(addOnId: number) {
-    setSelectedAddons((prev) => {
-      const existing = prev.find((a) => a.id === addOnId);
-      if (existing) {
-        if (existing.quantity === 1) {
-          return prev.filter((a) => a.id !== addOnId);
-        } else {
-          return prev.map((a) =>
-            a.id === addOnId ? { ...a, quantity: a.quantity - 1 } : a,
-          );
-        }
-      }
-      return prev;
-    });
+    const existing = selectedAddons.find((a) => a.id === addOnId);
+    if (!existing) return;
+    if (existing.quantity === 1) {
+      setSelectedAddons(selectedAddons.filter((a) => a.id !== addOnId));
+    } else {
+      setSelectedAddons(
+        selectedAddons.map((a) =>
+          a.id === addOnId ? { ...a, quantity: a.quantity - 1 } : a,
+        ),
+      );
+    }
   }
 
   return (

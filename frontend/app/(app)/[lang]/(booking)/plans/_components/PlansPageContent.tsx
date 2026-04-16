@@ -2,7 +2,7 @@
 
 import { booking, broker } from "@/shared/client";
 import { InclusionsDisplay } from "./InclustionsDisplay";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { useSelectedVehicle } from "../_hooks/useSelectedVehicle";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 import { useParams } from "next/navigation";
@@ -19,6 +19,8 @@ import { HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION } from "../../results/_compon
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface PlansPageContentProps {
   addonsGallery: AddonsGallery;
@@ -32,13 +34,19 @@ export function PlansPageContent({
   searchRequest,
 }: PlansPageContentProps) {
   const t = useTranslations("booking.plansPage");
-  const [selectedPlan, setSelectedPlan] = useState(0);
+  const { lang } = useParams();
+  const router = useRouter();
+  const currentSearchParams = useSearchParams();
+
+  const selectedPlan = useBookingSessionStore((s) => s.selectedPlanIndex);
+  const isErpSelected = useBookingSessionStore((s) => s.isErpSelected);
+  const selectedAddons = useBookingSessionStore((s) => s.selectedAddons);
+  const setSelectedPlan = useBookingSessionStore((s) => s.setSelectedPlanIndex);
+  const setIsErpSelected = useBookingSessionStore((s) => s.setIsErpSelected);
+  const setSelectedAddons = useBookingSessionStore((s) => s.setSelectedAddons);
+
   const vehicle = useSelectedVehicle(searchRequest);
   const { data } = useAvailableCars(searchRequest, { fromCache: true });
-  const [isErpSelected, setIsErpSelected] = useState(false);
-  const [selectedAddons, setSelectedAddons] = useState<broker.SelectAddOn[]>(
-    [],
-  );
 
   if (!vehicle) {
     return <Loading />;
@@ -133,6 +141,9 @@ export function PlansPageContent({
             <Button
               variant="brand"
               className="mt-4 mx-auto type-paragraph font-bold py-6 px-8 cursor-pointer"
+              onClick={() => {
+                router.push(`/${lang}/order?${currentSearchParams.toString()}`);
+              }}
             >
               {t("continueCta")}
             </Button>
