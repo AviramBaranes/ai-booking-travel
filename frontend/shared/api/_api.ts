@@ -32,8 +32,8 @@ function setLangHeader(lang: string) {
 export async function withErrorHandler<T>(
   apiCall: (client: Client) => Promise<T>,
 ) {
+  const lang = await getLang();
   try {
-    const lang = await getLang();
     setLangHeader(lang);
     if (typeof window === "undefined") {
       const session = await getServerSession(authOptions);
@@ -48,7 +48,7 @@ export async function withErrorHandler<T>(
     if (error.status === 401) {
       removeAuthorizationHeader();
       if (typeof window !== "undefined") {
-        window.location.href = "/he";
+        window.location.href = `/${lang}?login=open`;
       }
     }
     if (process.env.NODE_ENV === "development") console.error({ error });

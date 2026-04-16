@@ -118,6 +118,27 @@
       "freeCancellation": "Free cancellation up to 48 hours before pickup",
       "continueCta": "Let's continue"
     },
+    "orderPage": {
+      "driverDetails": "Driver Details",
+      "title": "Title*",
+      "titleMr": "Mr",
+      "titleMs": "Ms",
+      "firstName": "First Name (English)*",
+      "lastName": "Last Name (English)*",
+      "flightNumber": "Flight Number",
+      "erpRecommendation": "We recommend the following coverages:",
+      "confirmCta": "Book for me!",
+      "submitting": "Confirming...",
+      "submitError": "Something went wrong. Please try again.",
+      "termsCheckbox": "I accept the",
+      "termsLink": "booking terms",
+      "freeCancellation": "Free cancellation up to 48 hours before pickup",
+      "validation": {
+        "required": "Required field",
+        "englishOnly": "English letters only",
+        "mustAcceptTerms": "You must accept the terms"
+      }
+    },
     "plansDialog": {
       "title": "All Plans",
       "rentalTerms": "Rental Terms",

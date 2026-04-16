@@ -118,6 +118,27 @@
       "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
       "continueCta": "יאללה, בוא נתקדם"
     },
+    "orderPage": {
+      "driverDetails": "פרטי הנהג",
+      "title": "תואר*",
+      "titleMr": "Mr",
+      "titleMs": "Ms",
+      "firstName": "שם פרטי (אנגלית)*",
+      "lastName": "שם משפחה (אנגלית)*",
+      "flightNumber": "מספר טיסה",
+      "erpRecommendation": "אנחנו ממליצים את הכיסויים הבאים:",
+      "confirmCta": "תזמין לי!",
+      "submitting": "מאשר...",
+      "submitError": "משהו השתבש. אנא נסה שוב.",
+      "termsCheckbox": "אני מאשר את",
+      "termsLink": "תנאי ההזמנה",
+      "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
+      "validation": {
+        "required": "שדה חובה",
+        "englishOnly": "אותיות באנגלית בלבד",
+        "mustAcceptTerms": "יש לאשר את התנאים"
+      }
+    },
     "plansDialog": {
       "title": "כל התוכניות",
       "rentalTerms": "תנאי ההשכרה",
