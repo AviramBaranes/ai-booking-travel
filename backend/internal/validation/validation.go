@@ -26,6 +26,17 @@ func init() {
 	validator.RegisterValidation("israeli_phone", func(fl v.FieldLevel) bool {
 		return israeliPhoneRegex.MatchString(fl.Field().String())
 	})
+
+	validator.RegisterValidation("uppercase_only", func(fl v.FieldLevel) bool {
+		s := fl.Field().String()
+		for _, r := range s {
+			if r < 'A' || r > 'Z' {
+				return false
+			}
+		}
+
+		return len(s) > 0
+	})
 }
 
 // getFieldName returns the first part of the `json:"..."` tag for the given struct field.
