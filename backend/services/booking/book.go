@@ -27,7 +27,7 @@ type BookRequest struct {
 	DriverTitle     string               `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Ms'"`
 	DriverFirstName string               `json:"driverFirstName" validate:"required,notblank"`
 	DriverLastName  string               `json:"driverLastName" validate:"required,notblank"`
-	FlightNumber    string               `json:"flightNumber" validate:"required,notblank"`
+	FlightNumber    string               `json:"flightNumber" encore:"optional"`
 }
 
 func (p BookRequest) Validate() error {

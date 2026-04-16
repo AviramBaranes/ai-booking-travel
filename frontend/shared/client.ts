@@ -597,7 +597,7 @@ export namespace booking {
         driverTitle: string
         driverFirstName: string
         driverLastName: string
-        flightNumber: string
+        flightNumber?: string
     }
 
     export interface BookResponse {
@@ -664,6 +664,20 @@ export namespace booking {
         currencyCode: string
         currencyISOName: string
         rate: number
+    }
+
+    /**
+     * GetPendingTranslationsRequest is the request for GetPendingTranslations endpoint
+     */
+    export interface GetPendingTranslationsRequest {
+        Token: string
+    }
+
+    /**
+     * GetPendingTranslationsResponse is the response for GetPendingTranslations endpoint
+     */
+    export interface GetPendingTranslationsResponse {
+        translations: db.BrokerTranslation[]
     }
 
     export interface HertzMarkupRateResponse {
@@ -813,6 +827,16 @@ export namespace booking {
         enabled: boolean
     }
 
+    /**
+     * TranslateTranslationRequest is the request for TranslateTranslation endpoint
+     */
+    export interface TranslateTranslationRequest {
+        Token: string
+        id: number
+        targetText: string
+        confidence: number
+    }
+
     export interface UpdateBrokerTranslationRequest {
         "target_text": string
     }
@@ -857,6 +881,7 @@ export namespace booking {
             this.DeleteCurrency = this.DeleteCurrency.bind(this)
             this.DeleteHertzMarkupRate = this.DeleteHertzMarkupRate.bind(this)
             this.DeleteLocation = this.DeleteLocation.bind(this)
+            this.GetPendingTranslations = this.GetPendingTranslations.bind(this)
             this.InsertFlexLocations = this.InsertFlexLocations.bind(this)
             this.InsertHertzLocations = this.InsertHertzLocations.bind(this)
             this.InsertLocation = this.InsertLocation.bind(this)
@@ -868,6 +893,7 @@ export namespace booking {
             this.SearchAvailability = this.SearchAvailability.bind(this)
             this.SearchLocations = this.SearchLocations.bind(this)
             this.ToggleLocation = this.ToggleLocation.bind(this)
+            this.TranslateTranslation = this.TranslateTranslation.bind(this)
             this.UpdateBrokerTranslation = this.UpdateBrokerTranslation.bind(this)
             this.UpdateCoupon = this.UpdateCoupon.bind(this)
             this.UpdateCurrency = this.UpdateCurrency.bind(this)
@@ -946,6 +972,20 @@ export namespace booking {
          */
         public async DeleteLocation(id: number): Promise<void> {
             await this.baseClient.callTypedAPI("DELETE", `/locations/${encodeURIComponent(id)}`)
+        }
+
+        /**
+         * GetPendingTranslations returns the list of pending translations for brokers. It requires a valid translation token in the header.
+         */
+        public async GetPendingTranslations(params: GetPendingTranslationsRequest): Promise<GetPendingTranslationsResponse> {
+            // Convert our params into the objects we need for the request
+            const headers = makeRecord<string, string>({
+                "x-translation-token": params.Token,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/booking/translations/pending`, undefined, {headers})
+            return await resp.json() as GetPendingTranslationsResponse
         }
 
         /**
@@ -1073,6 +1113,25 @@ export namespace booking {
 
         public async ToggleLocation(id: number, params: ToggleLocationRequest): Promise<void> {
             await this.baseClient.callTypedAPI("PATCH", `/locations/${encodeURIComponent(id)}`, JSON.stringify(params))
+        }
+
+        /**
+         * TranslateTranslation translates a pending translation. It requires a valid translation token in the header.
+         */
+        public async TranslateTranslation(params: TranslateTranslationRequest): Promise<void> {
+            // Convert our params into the objects we need for the request
+            const headers = makeRecord<string, string>({
+                "x-translation-token": params.Token,
+            })
+
+            // Construct the body with only the fields which we want encoded within the body (excluding query string or header fields)
+            const body: Record<string, any> = {
+                confidence: params.confidence,
+                id:         params.id,
+                targetText: params.targetText,
+            }
+
+            await this.baseClient.callTypedAPI("PATCH", `/booking/translations/translate`, JSON.stringify(body), {headers})
         }
 
         /**
@@ -1260,7 +1319,32 @@ export namespace broker {
 }
 
 export namespace db {
+    export interface BrokerTranslation {
+        ID: number
+        SourceText: string
+        TargetText: string
+        Status: BrokerTranslationStatus
+        ConfidenceScore: number
+        CreatedAt: pgtype.Timestamptz
+        UpdatedAt: pgtype.Timestamptz
+    }
+
+    export type BrokerTranslationStatus = string
+
     export type UserRole = string
+}
+
+export namespace pgtype {
+    export type InfinityModifier = number
+
+    /**
+     * Timestamptz represents the PostgreSQL timestamptz type.
+     */
+    export interface Timestamptz {
+        Time: string
+        InfinityModifier: InfinityModifier
+        Valid: boolean
+    }
 }
 
 
