@@ -3,6 +3,7 @@ import { getLang } from "@/shared/lang/lang";
 import { redirect } from "next/dist/client/components/navigation";
 import { Suspense } from "react";
 import { SearchDataBannerWrapper } from "./_components/SearchDataBannerWrapper";
+import { SearchDataBannerDisplaySkeleton } from "@/shared/components/booking/SearchDataBannerDisplaySkeleton";
 
 export default async function ReservationDetailsPage({
   params,
@@ -19,7 +20,13 @@ export default async function ReservationDetailsPage({
 
   return (
     <main className="w-2/3 mx-auto pt-15 pb-6">
-      <Suspense fallback={<Loading />}>
+      <Suspense
+        fallback={
+          <SearchDataBannerDisplaySkeleton
+            dir={lang === "he" ? "rtl" : "ltr"}
+          />
+        }
+      >
         <SearchDataBannerWrapper reservationId={Number(reservationId)} />
       </Suspense>
     </main>
