@@ -1,8 +1,8 @@
-import { auth } from "../client";
+import { accounts } from "../client";
 
 declare module "next-auth" {
   interface Session {
-    user: auth.LoginResponse & {
+    user: accounts.LoginResponse & {
       customExp: number;
       error?: string;
       isAdminAsAgent?: boolean;

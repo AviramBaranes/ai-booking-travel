@@ -9,6 +9,7 @@ import { LangSwitcher } from "../login/LangSwitcher";
 import { LoginModal } from "../login/LoginModal";
 import { AppProviders } from "../../providers/AppProviders";
 import { getMessages } from "next-intl/server";
+import { AuthenticatedDropdown } from "./AuthenticatedDropdown";
 
 async function getHeaderData(lang: string) {
   const payload = await getPayload({ config });
@@ -72,7 +73,7 @@ export async function Navbar({
           <AppProviders lang={lang} messages={messages}>
             <div className="flex items-center gap-4">
               <LangSwitcher lang={lang} />
-              {isAuthenticated ? <LogoutButton /> : <LoginModal />}
+              {isAuthenticated ? <AuthenticatedDropdown /> : <LoginModal />}
             </div>
           </AppProviders>
         )}

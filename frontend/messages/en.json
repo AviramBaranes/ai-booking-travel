@@ -33,8 +33,12 @@
     "translated": "Translated",
     "verified": "Verified"
   },
-  "Logout": {
-    "Logout": "Logout"
+  "AuthDropdown": {
+    "helloAgent": "Hello, Agent",
+    "helloCustomer": "Hello, Customer",
+    "profile": "Personal Details",
+    "reservations": "My Reservations",
+    "logout": "Logout"
   },
   "Login": {
     "openModal": "Connect",

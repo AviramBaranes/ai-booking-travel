@@ -33,8 +33,12 @@
     "translated": "מתורגם",
     "verified": "מאומת"
   },
-  "Logout": {
-    "Logout": "התנתק"
+  "AuthDropdown": {
+    "helloAgent": "שלום סוכן",
+    "helloCustomer": "שלום לקוח",
+    "profile": "פרטים אישיים",
+    "reservations": "ההזמנות שלי",
+    "logout": "התנתק"
   },
   "Login": {
     "openModal": "התחברות",
