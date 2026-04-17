@@ -1,5 +1,3 @@
-"use client";
-
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CheckIcon } from "lucide-react";

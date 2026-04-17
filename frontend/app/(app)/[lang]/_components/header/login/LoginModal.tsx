@@ -1,8 +1,5 @@
-"use client";
-
 import { getSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { User, X } from "lucide-react";
 
@@ -26,7 +23,6 @@ type CustomerStep = "phone" | "otp";
 
 export function LoginModal() {
   const t = useTranslations("Login");
-  const router = useRouter();
 
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<LoginMode>("agent");
@@ -67,9 +63,9 @@ export function LoginModal() {
     const session = await getSession();
     handleOpenChange(false);
     if (session?.user?.role === "admin") {
-      router.push("/admin");
+      window.location.href = "/admin";
     } else {
-      router.refresh();
+      window.location.reload();
     }
   };
 

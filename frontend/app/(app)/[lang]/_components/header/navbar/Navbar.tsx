@@ -10,6 +10,7 @@ import { LoginModal } from "../login/LoginModal";
 import { AppProviders } from "../../providers/AppProviders";
 import { getMessages } from "next-intl/server";
 import { AuthenticatedDropdown } from "./AuthenticatedDropdown";
+import { NavbarActions } from "./NavbarActions";
 
 async function getHeaderData(lang: string) {
   const payload = await getPayload({ config });
@@ -22,16 +23,11 @@ async function getHeaderData(lang: string) {
 
 interface NavbarProps {
   lang: string;
-  isAuthenticated: boolean;
   // When true, hides the login/logout buttons and language switcher. Used 404 page outside of the [lang] path
   isRootLayout?: boolean;
 }
 
-export async function Navbar({
-  lang,
-  isAuthenticated,
-  isRootLayout = false,
-}: NavbarProps) {
+export async function Navbar({ lang, isRootLayout = false }: NavbarProps) {
   const headerData = await getHeaderData(lang);
   const messages = await getMessages({ locale: lang });
   return (
@@ -71,10 +67,7 @@ export async function Navbar({
 
         {!isRootLayout && (
           <AppProviders lang={lang} messages={messages}>
-            <div className="flex items-center gap-4">
-              <LangSwitcher lang={lang} />
-              {isAuthenticated ? <AuthenticatedDropdown /> : <LoginModal />}
-            </div>
+            <NavbarActions />
           </AppProviders>
         )}
       </nav>
