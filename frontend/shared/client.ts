@@ -1178,6 +1178,13 @@ export namespace booking {
 }
 
 export namespace reservation {
+    /**
+     * ApplyVoucherRequest is the request payload type for the apply voucher EP
+     */
+    export interface ApplyVoucherRequest {
+        voucher: string
+    }
+
     export interface GetReservationResponse {
         id: number
         brokerReservationId: string
@@ -1194,11 +1201,15 @@ export namespace reservation {
         dropoffLocationName: string
         pickupDate: string
         returnDate: string
+        pickupTime: string
+        dropoffTime: string
         rentalDays: number
         driverTitle: string
         driverFirstName: string
         driverLastName: string
         driverAge: number
+        voucher?: string
+        voucheredAt?: string
         createdAt: string
     }
 
@@ -1228,8 +1239,16 @@ export namespace reservation {
 
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
+            this.ApplyVoucher = this.ApplyVoucher.bind(this)
             this.GetReservation = this.GetReservation.bind(this)
             this.ListReservations = this.ListReservations.bind(this)
+        }
+
+        /**
+         * ApplyVoucher is the EP for applying a voucher on an agent order
+         */
+        public async ApplyVoucher(id: number, params: ApplyVoucherRequest): Promise<void> {
+            await this.baseClient.callTypedAPI("POST", `/reservations/${encodeURIComponent(id)}/voucher`, JSON.stringify(params))
         }
 
         public async GetReservation(id: number): Promise<GetReservationResponse> {

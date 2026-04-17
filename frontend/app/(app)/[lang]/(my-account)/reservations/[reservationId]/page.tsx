@@ -1,22 +1,27 @@
+import { Loading } from "@/shared/components/Loading";
 import { getLang } from "@/shared/lang/lang";
 import { redirect } from "next/dist/client/components/navigation";
+import { Suspense } from "react";
+import { SearchDataBannerWrapper } from "./_components/SearchDataBannerWrapper";
 
 export default async function ReservationDetailsPage({
   params,
 }: {
-  params: { reservationId: string };
+  params: Promise<{ reservationId: string }>;
 }) {
   const lang = await getLang();
-  const reservationId = params.reservationId;
+  const { reservationId } = await params;
+  console.log("reservationId", reservationId);
 
-  if (!reservationId) {
-    redirect(`/${lang}/my-account/reservations`);
+  if (!reservationId || isNaN(Number(reservationId))) {
+    redirect(`/${lang}/reservations`);
   }
 
   return (
     <main className="w-2/3 mx-auto pt-15 pb-6">
-      <h1 className="text-2xl font-bold mb-4">Reservation Details</h1>
-      <p>Details for reservation ID: {reservationId}</p>
+      <Suspense fallback={<Loading />}>
+        <SearchDataBannerWrapper reservationId={Number(reservationId)} />
+      </Suspense>
     </main>
   );
 }
