@@ -40,12 +40,12 @@ export default async function AppRootLayout({
   return (
     <html
       lang={lang}
-      dir={lang === "he" || lang === "ar" ? "rtl" : "ltr"}
+      dir={lang === "he" ? "rtl" : "ltr"}
       className={`h-full antialiased ${polin.variable}`}
     >
       <body className={`min-h-full flex flex-col`}>
         <BackToAdminBanner />
-        <Navbar lang={lang} isAuthenticated={!!session?.user?.id} />
+        <Navbar lang={lang} />
         {children}
         <Footer lang={lang} />
       </body>

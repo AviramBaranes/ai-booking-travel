@@ -10,14 +10,14 @@ interface LogoutButtonProps {
 export function LogoutButton({ buttonText, onLogout }: LogoutButtonProps) {
   return (
     <button
-      className="flex items-center justify-end gap-2 px-4 min-h-18 cursor-pointer w-full font-medium text-[16px] text-navy transition-colors hover:bg-brand/30!"
+      className="flex items-center gap-2 px-4 min-h-18 cursor-pointer w-full font-medium text-[16px] text-navy transition-colors hover:bg-brand/30!"
       onClick={() => {
         onLogout?.();
         signOut({ callbackUrl: "/he/" });
       }}
     >
-      <span>{buttonText}</span>
       <LogOut className="size-6 text-brand shrink-0" />
+      <span>{buttonText}</span>
     </button>
   );
 }

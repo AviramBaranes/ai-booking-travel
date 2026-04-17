@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useDirection } from "@/shared/hooks/useDirection";
 
 const languages = [
   { code: "he", flag: "🇮🇱" },
@@ -19,6 +20,7 @@ export function LangSwitcher({ lang }: { lang: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations("LangSwitcher");
+  const dir = useDirection();
 
   function handleSelect(newLang: string) {
     const rest = pathname.replace(/^\/[^/]+/, "");
@@ -29,19 +31,19 @@ export function LangSwitcher({ lang }: { lang: string }) {
   const current = languages.find((l) => l.code === lang);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu dir={dir}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="outline">
           {/* <GlobeIcon className="size-4" /> */}
           {current?.flag} {t(lang as "he" | "en")}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent>
         {languages.map((l) => (
           <DropdownMenuItem
             key={l.code}
             onClick={() => handleSelect(l.code)}
-            className="gap-2"
+            className="gap-2 flex"
           >
             <span>{l.flag}</span>
             {t(l.code as "he" | "en")}

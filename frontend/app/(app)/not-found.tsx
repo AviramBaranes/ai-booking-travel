@@ -38,7 +38,7 @@ export default async function NotFound() {
       className={`h-full antialiased ${polin.variable}`}
     >
       <body>
-        <Navbar lang="he" isAuthenticated={true} isRootLayout />
+        <Navbar lang="he" isRootLayout />
         <NotFoundContent
           title={notFoundData.title ?? ""}
           subtitle={notFoundData.subtitle ?? ""}
