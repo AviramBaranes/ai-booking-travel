@@ -15,19 +15,13 @@ interface CarCardProps {
   searchRequest: booking.SearchAvailabilityRequest;
 }
 
-export function CarCard({
-  vehicle,
-  daysCount,
-  searchRequest,
-}: CarCardProps) {
+export function CarCard({ vehicle, daysCount, searchRequest }: CarCardProps) {
   const t = useTranslations("booking.results");
 
   return (
     <div className="shadow-[0_4px_12px_0_rgba(63,63,63,0.10)] rounded-2xl h-80 border-cars-border relative pr-4 flex gap-2 bg-white overflow-hidden">
       <div className="flex flex-col items-center gap-6 mt-10 mb-12">
-        <SupplierLogo
-          supplierName={vehicle.carDetails.supplierName}
-        />
+        <SupplierLogo supplierName={vehicle.carDetails.supplierName} />
         <Image
           src={vehicle.carDetails.imageUrl}
           alt={vehicle.carDetails.model}
@@ -42,7 +36,7 @@ export function CarCard({
           model={vehicle.carDetails.model}
           orSimilarText={t("carDetails.orSimilar")}
         />
-        <CarDetailsPills vehicle={vehicle} />
+        <CarDetailsPills carDetails={vehicle.carDetails} />
         <CarChecks
           checks={[
             {

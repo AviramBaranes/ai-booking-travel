@@ -1,8 +1,7 @@
 "use client";
 
-import { booking, broker } from "@/shared/client";
+import { booking } from "@/shared/client";
 import { InclusionsDisplay } from "./InclustionsDisplay";
-import { Suspense } from "react";
 import { useSelectedVehicle } from "../_hooks/useSelectedVehicle";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 import { useParams } from "next/navigation";
@@ -12,22 +11,18 @@ import { ImportantInfoButton } from "./ImportantInfoButton";
 import { SignalsDisplay } from "../../_components/SignalsDisplay";
 import { ErpCheckbox } from "./ErpCheckbox";
 import { AddOnsDisplay } from "./AddOnsDisplay";
-import { SelectedCarCard } from "@/shared/components/booking/SelectedCarCard";
-import { isFutureWithinHours } from "@/shared/utils/isFutureWithinHours";
-import { HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION } from "../../results/_components/carCard/CarPriceDetails";
-import Image from "next/image";
+import { SelectedCarCard } from "@/shared/components/booking/SelectedCarCard/SelectedCarCard";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import { useSearchParams, useRouter } from "next/navigation";
+import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellationBadge";
 
 interface PlansPageContentProps {
   searchRequest: booking.SearchAvailabilityRequest;
 }
 
-export function PlansPageContent({
-  searchRequest,
-}: PlansPageContentProps) {
+export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
   const t = useTranslations("booking.plansPage");
   const { lang } = useParams();
   const router = useRouter();
@@ -113,24 +108,11 @@ export function PlansPageContent({
           selectedPlanIndex={selectedPlan}
         >
           <>
-            {isFutureWithinHours(
-              new Date(searchRequest.PickupDate),
-              searchRequest.PickupTime,
-              HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION,
-            ) && (
-              <div className="flex gap-1 items-center ">
-                <Image
-                  src="/assets/icons/V.svg"
-                  alt="Checked Icon"
-                  width={28}
-                  height={28}
-                  className="w-7 h-7"
-                />
-                <span className="type-label text-success">
-                  {t("freeCancellation")}
-                </span>
-              </div>
-            )}
+            <FreeCancellationBadge
+              pickupDate={searchRequest.PickupDate}
+              pickupTime={searchRequest.PickupTime}
+              text={t("freeCancellation")}
+            />
             <Button
               variant="brand"
               className="mt-4 mx-auto type-paragraph font-bold py-6 px-8 cursor-pointer"

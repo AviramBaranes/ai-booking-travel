@@ -238,5 +238,13 @@
         "liveViewers": "{count} people are viewing this listing"
       }
     }
+  },
+  "MyAccount": {
+    "reservation": {
+      "freeCancellation": "Free cancellation up to 48 hours before pickup",
+      "enterVoucherCode": "Enter voucher code",
+      "apply": "Apply",
+      "requiredField": "Required field"
+    }
   }
 }

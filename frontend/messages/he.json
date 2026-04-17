@@ -244,5 +244,13 @@
         "liveViewers": "{count} צופים במודעה זאת"
       }
     }
+  },
+  "MyAccount": {
+    "reservation": {
+      "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
+      "enterVoucherCode": "הכנס מספר שובר",
+      "apply": "כרטס הזמנה",
+      "requiredField": "שדה חובה"
+    }
   }
 }

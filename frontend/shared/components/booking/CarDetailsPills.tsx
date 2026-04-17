@@ -2,7 +2,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Cable, User } from "lucide-react";
 
-import { booking } from "@/shared/client";
+import { booking, broker } from "@/shared/client";
 
 const CAR_DETAILS_PILLS = [
   {
@@ -35,16 +35,15 @@ const CAR_DETAILS_PILLS = [
 ];
 
 export function CarDetailsPills({
-  vehicle,
+  carDetails,
 }: {
-  vehicle: booking.AvailableVehicle;
+  carDetails: broker.CarDetails;
 }) {
   const t = useTranslations("booking.results");
   return (
     <div className="flex flex-wrap items-center gap-2 mt-4">
       {CAR_DETAILS_PILLS.map(({ key, icon: Icon, translationKey, image }) => {
-        const value =
-          vehicle.carDetails[key as keyof typeof vehicle.carDetails];
+        const value = carDetails[key as keyof broker.CarDetails];
         if (!value) return null;
 
         return (

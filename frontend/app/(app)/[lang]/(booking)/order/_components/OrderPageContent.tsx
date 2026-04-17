@@ -6,7 +6,7 @@ import { useSelectedVehicle } from "../../plans/_hooks/useSelectedVehicle";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 import { useBookingSettings } from "@/shared/hooks/useBookingSettings";
 import { Loading } from "@/shared/components/Loading";
-import { SelectedCarCard } from "@/shared/components/booking/SelectedCarCard";
+import { SelectedCarCard } from "@/shared/components/booking/SelectedCarCard/SelectedCarCard";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -27,12 +27,11 @@ import { orderFormSchema, type OrderFormValues } from "./orderFormSchema";
 import { isAppError } from "@/shared/api/AppError";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { ErpCheckbox } from "../../plans/_components/ErpCheckbox";
-import { isFutureWithinHours } from "@/shared/utils/isFutureWithinHours";
-import { HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION } from "../../results/_components/carCard/CarPriceDetails";
 import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { searchRequestToParams } from "../../results/searchQuery";
+import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellationBadge";
 
 interface OrderPageContentProps {
   searchRequest: booking.SearchAvailabilityRequest;
@@ -219,24 +218,11 @@ export function OrderPageContent({ searchRequest }: OrderPageContentProps) {
           selectedPlanIndex={selectedPlanIndex}
         >
           <>
-            {isFutureWithinHours(
-              new Date(searchRequest.PickupDate),
-              searchRequest.PickupTime,
-              HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION,
-            ) && (
-              <div className="flex gap-1 items-center">
-                <Image
-                  src="/assets/icons/V.svg"
-                  alt="Checked Icon"
-                  width={28}
-                  height={28}
-                  className="w-7 h-7"
-                />
-                <span className="type-label text-success">
-                  {t("freeCancellation")}
-                </span>
-              </div>
-            )}
+            <FreeCancellationBadge
+              pickupDate={searchRequest.PickupDate}
+              pickupTime={searchRequest.PickupTime}
+              text={t("freeCancellation")}
+            />
             <Controller
               name="termsAccepted"
               control={control}

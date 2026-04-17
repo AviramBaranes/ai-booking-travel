@@ -1,14 +1,12 @@
 import { booking } from "@/shared/client";
 import { useDirection } from "@/shared/hooks/useDirection";
 import { formatPrice } from "@/shared/utils/formatPrice";
-import { isFutureWithinHours } from "@/shared/utils/isFutureWithinHours";
 import clsx from "clsx";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { RentalPriceForDays } from "../../../../../../../shared/components/booking/RentalPriceForDays";
 import { ContinueToPlansLink } from "./ContinueToPlansLink";
-
-export const HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION = 48;
+import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellationBadge";
 
 export function CarPriceDetails({
   vehicle,
@@ -67,25 +65,11 @@ export function CarPriceDetails({
       <div className="mx-4">
         <RentalPriceForDays daysCount={daysCount} />
       </div>
-      {isFutureWithinHours(
-        new Date(searchRequest.PickupDate),
-        searchRequest.PickupTime,
-        HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION,
-      ) && (
-        <div className="flex gap-2 items-center mx-4">
-          <Image
-            src="/assets/icons/V.svg"
-            alt="Checked Icon"
-            width={28}
-            height={28}
-            className="w-7 h-7"
-          />
-          <span className="type-label text-success">
-            {t("freeCancellation")}
-          </span>
-        </div>
-      )}
-
+      <FreeCancellationBadge
+        pickupDate={searchRequest.PickupDate}
+        pickupTime={searchRequest.PickupTime}
+        text={t("freeCancellation")}
+      />
       <ContinueToPlansLink
         carIndex={vehicle.id}
         className={clsx("bg-brand type-label p-6 text-white", {

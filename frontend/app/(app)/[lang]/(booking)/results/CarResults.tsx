@@ -13,14 +13,14 @@ import { DevFilters } from "./_components/filters/DevFilters";
 import { useDevFilters } from "./_hooks/useDevFilters";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
+import { useEffect } from "react";
 
 interface CarResultsProps {
   searchRequest: booking.SearchAvailabilityRequest;
 }
 
-export function CarResults({
-  searchRequest,
-}: CarResultsProps) {
+export function CarResults({ searchRequest }: CarResultsProps) {
   const t = useTranslations("booking.results");
   const { data } = useAvailableCars(searchRequest);
   const {
@@ -54,6 +54,11 @@ export function CarResults({
     ...filterFunctions,
     devFilterFn,
   ]);
+
+  const { clearSession } = useBookingSessionStore();
+  useEffect(() => {
+    clearSession();
+  }, [clearSession]);
 
   return (
     <div>
