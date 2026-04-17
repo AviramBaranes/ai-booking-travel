@@ -37,6 +37,8 @@ type CreateReservationRequest struct {
 	BtErpPrice          int                `json:"btErpPrice" validate:"gte=0"`
 	PickupDate          string             `json:"pickupDate" validate:"required,datetime=2006-01-02"`
 	ReturnDate          string             `json:"returnDate" validate:"required,datetime=2006-01-02"`
+	PickupTime          string             `json:"pickupTime" validate:"required,notblank"`
+	DropoffTime         string             `json:"dropoffTime" validate:"required,notblank"`
 	RentalDays          int                `json:"rentalDays" validate:"required,gte=1"`
 	DriverTitle         string             `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Ms'"`
 	DriverFirstName     string             `json:"driverFirstName" validate:"required,notblank"`
@@ -86,6 +88,8 @@ func (s *Service) CreateReservation(ctx context.Context, p CreateReservationRequ
 		TotalPrice:          int32(totalPrice),
 		PickupDate:          db.DateFromString(p.PickupDate),
 		ReturnDate:          db.DateFromString(p.ReturnDate),
+		PickupTime:          p.PickupTime,
+		DropoffTime:         p.DropoffTime,
 		RentalDays:          int32(p.RentalDays),
 		DriverTitle:         p.DriverTitle,
 		DriverFirstName:     p.DriverFirstName,

@@ -173,6 +173,12 @@ func TestGetReservation(t *testing.T) {
 				if got.DiscountAmount != tt.want.DiscountAmount {
 					t.Errorf("unexpected discount amount: got %d, want %d", got.DiscountAmount, tt.want.DiscountAmount)
 				}
+				if got.PickupTime != params.PickupTime {
+					t.Errorf("unexpected pickup time: got %s, want %s", got.PickupTime, params.PickupTime)
+				}
+				if got.DropoffTime != params.DropoffTime {
+					t.Errorf("unexpected dropoff time: got %s, want %s", got.DropoffTime, params.DropoffTime)
+				}
 			})
 		}
 	})

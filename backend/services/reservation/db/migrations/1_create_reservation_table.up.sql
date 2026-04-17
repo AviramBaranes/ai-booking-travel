@@ -24,6 +24,8 @@ CREATE TABLE
         total_price INT NOT NULL,
         pickup_date DATE NOT NULL,
         return_date DATE NOT NULL,
+        pickup_time TEXT NOT NULL DEFAULT '',
+        dropoff_time TEXT NOT NULL DEFAULT '',
         rental_days INT NOT NULL CHECK (rental_days > 0),
         driver_title TEXT NOT NULL,
         driver_first_name TEXT NOT NULL,

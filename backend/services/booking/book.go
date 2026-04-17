@@ -145,6 +145,8 @@ func (s *Service) buildCreateReservationRequest(
 		DiscountPercentage:  plan.DiscountPercentage,
 		BrokerErpPrice:      brokerErpPrice,
 		BtErpPrice:          btErpPrice,
+		PickupTime:          snapshot.PickupTime,
+		DropoffTime:         snapshot.ReturnTime,
 		PickupLocationName:  pickupLocName,
 		DropoffLocationName: dropoffLocName,
 	}

@@ -118,6 +118,8 @@ type Reservation struct {
 	TotalPrice          int32
 	PickupDate          pgtype.Date
 	ReturnDate          pgtype.Date
+	PickupTime          string
+	DropoffTime         string
 	RentalDays          int32
 	DriverTitle         string
 	DriverFirstName     string

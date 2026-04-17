@@ -29,6 +29,8 @@ type GetReservationResponse struct {
 	DropoffLocationName string            `json:"dropoffLocationName"`
 	PickupDate          string            `json:"pickupDate"`
 	ReturnDate          string            `json:"returnDate"`
+	PickupTime          string            `json:"pickupTime"`
+	DropoffTime         string            `json:"dropoffTime"`
 	RentalDays          int32             `json:"rentalDays"`
 	DriverTitle         string            `json:"driverTitle"`
 	DriverFirstName     string            `json:"driverFirstName"`
@@ -78,6 +80,8 @@ func (s *Service) GetReservation(ctx context.Context, id int64) (*GetReservation
 		TotalPrice:          row.TotalPrice,
 		PickupDate:          db.DateToString(row.PickupDate),
 		ReturnDate:          db.DateToString(row.ReturnDate),
+		PickupTime:          row.PickupTime,
+		DropoffTime:         row.DropoffTime,
 		RentalDays:          row.RentalDays,
 		DriverTitle:         row.DriverTitle,
 		DriverFirstName:     row.DriverFirstName,

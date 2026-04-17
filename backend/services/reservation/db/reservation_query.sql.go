@@ -58,6 +58,8 @@ SELECT
     total_price,
     pickup_date,
     return_date,
+    pickup_time,
+    dropoff_time,
     rental_days,
     driver_title,
     driver_first_name,
@@ -93,6 +95,8 @@ type GetReservationByIDRow struct {
 	TotalPrice          int32
 	PickupDate          pgtype.Date
 	ReturnDate          pgtype.Date
+	PickupTime          string
+	DropoffTime         string
 	RentalDays          int32
 	DriverTitle         string
 	DriverFirstName     string
@@ -129,6 +133,8 @@ func (q *Queries) GetReservationByID(ctx context.Context, id int64) (GetReservat
 		&i.TotalPrice,
 		&i.PickupDate,
 		&i.ReturnDate,
+		&i.PickupTime,
+		&i.DropoffTime,
 		&i.RentalDays,
 		&i.DriverTitle,
 		&i.DriverFirstName,
@@ -164,6 +170,8 @@ INSERT INTO reservations (
     total_price,
     pickup_date,
     return_date,
+    pickup_time,
+    dropoff_time,
     rental_days,
     driver_title,
     driver_first_name,
@@ -197,7 +205,9 @@ INSERT INTO reservations (
     $23,
     $24,
     $25,
-    $26
+    $26,
+    $27,
+    $28
 ) RETURNING id
 `
 
@@ -221,6 +231,8 @@ type InsertReservationParams struct {
 	TotalPrice          int32
 	PickupDate          pgtype.Date
 	ReturnDate          pgtype.Date
+	PickupTime          string
+	DropoffTime         string
 	RentalDays          int32
 	DriverTitle         string
 	DriverFirstName     string
@@ -251,6 +263,8 @@ func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationPa
 		arg.TotalPrice,
 		arg.PickupDate,
 		arg.ReturnDate,
+		arg.PickupTime,
+		arg.DropoffTime,
 		arg.RentalDays,
 		arg.DriverTitle,
 		arg.DriverFirstName,

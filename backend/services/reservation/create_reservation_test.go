@@ -55,6 +55,8 @@ func validCreateReservationParams() *CreateReservationRequest {
 		BtErpPrice:          20,
 		PickupDate:          "2026-04-01",
 		ReturnDate:          "2026-04-05",
+		PickupTime:          "08:00",
+		DropoffTime:         "10:30",
 		RentalDays:          4,
 		DriverTitle:         "Mr",
 		DriverFirstName:     "John",
@@ -160,6 +162,26 @@ func TestCreateReservationValidation(t *testing.T) {
 			name:    "rejects invalid return date format",
 			modify:  func(p *CreateReservationRequest) { p.ReturnDate = "2026/04/05" },
 			wantErr: invalidValueErr("returnDate"),
+		},
+		{
+			name:    "rejects missing pickup time",
+			modify:  func(p *CreateReservationRequest) { p.PickupTime = "" },
+			wantErr: invalidValueErr("pickupTime"),
+		},
+		{
+			name:    "rejects blank pickup time",
+			modify:  func(p *CreateReservationRequest) { p.PickupTime = "   " },
+			wantErr: invalidValueErr("pickupTime"),
+		},
+		{
+			name:    "rejects missing dropoff time",
+			modify:  func(p *CreateReservationRequest) { p.DropoffTime = "" },
+			wantErr: invalidValueErr("dropoffTime"),
+		},
+		{
+			name:    "rejects blank dropoff time",
+			modify:  func(p *CreateReservationRequest) { p.DropoffTime = "   " },
+			wantErr: invalidValueErr("dropoffTime"),
 		},
 		{
 			name:    "rejects zero rental days",
