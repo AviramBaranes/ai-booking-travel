@@ -18,7 +18,7 @@ LEFT JOIN organizations org ON org.id = c.organization_id
 WHERE
     (sqlc.narg(name)::VARCHAR IS NULL OR c.first_name ILIKE '%' || sqlc.narg(name)::VARCHAR || '%' OR c.last_name ILIKE '%' || sqlc.narg(name)::VARCHAR || '%')
     AND (sqlc.narg(office_id)::INTEGER IS NULL       OR c.office_id = sqlc.narg(office_id)::INTEGER)
-    AND (sqlc.narg(organization_id)::INTEGER IS NULL OR c.organization_id = sqlc.narg(organization_id)::INTEGER OR o.organization_id = sqlc.narg(organization_id)::INTEGER)
+    AND (sqlc.narg(organization_id)::INTEGER IS NULL OR c.organization_id = sqlc.narg(organization_id)::INTEGER)
 ORDER BY c.last_name, c.first_name
 LIMIT  sqlc.arg(page_size)::BIGINT
 OFFSET sqlc.arg(page_offset)::BIGINT;
@@ -30,7 +30,7 @@ LEFT JOIN offices o ON o.id = c.office_id
 WHERE
     (sqlc.narg(name)::VARCHAR IS NULL OR c.first_name ILIKE '%' || sqlc.narg(name)::VARCHAR || '%' OR c.last_name ILIKE '%' || sqlc.narg(name)::VARCHAR || '%')
     AND (sqlc.narg(office_id)::INTEGER IS NULL       OR c.office_id = sqlc.narg(office_id)::INTEGER)
-    AND (sqlc.narg(organization_id)::INTEGER IS NULL OR c.organization_id = sqlc.narg(organization_id)::INTEGER OR o.organization_id = sqlc.narg(organization_id)::INTEGER);
+    AND (sqlc.narg(organization_id)::INTEGER IS NULL OR c.organization_id = sqlc.narg(organization_id)::INTEGER);
 
 -- name: CreateContact :one
 INSERT INTO contacts (first_name, last_name, role, cellphone, email, office_id, organization_id, created_at, updated_at)

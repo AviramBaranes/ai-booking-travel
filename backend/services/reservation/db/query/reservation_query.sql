@@ -84,6 +84,8 @@ SELECT
     driver_age,
     pickup_location_name,
     dropoff_location_name,
+    voucher_number,
+    vouchered_at,
     created_at
 FROM reservations
 WHERE id = @id;
@@ -105,3 +107,13 @@ WHERE user_id = @user_id
 ORDER BY created_at DESC
 LIMIT @query_limit::int
 OFFSET @query_offset::int;
+
+-- name: ApplyVoucher :execrows
+UPDATE reservations
+SET 
+    voucher_number = $3,
+    vouchered_at = CURRENT_TIMESTAMP
+WHERE 
+id = $1
+AND
+user_id = $2;

@@ -282,7 +282,7 @@ func TestListContacts(t *testing.T) {
 	t.Run("returns error when count db fails", func(t *testing.T) {
 		t.Parallel()
 		q, s := contactMockService(t)
-		q.EXPECT().ListContacts(gomock.Any(), gomock.Any()).Return([]db.Contact{}, nil)
+		q.EXPECT().ListContacts(gomock.Any(), gomock.Any()).Return([]db.ListContactsRow{}, nil)
 		q.EXPECT().CountContacts(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
 		_, err := s.ListContacts(ctx, &ListContactsRequest{Page: 1})

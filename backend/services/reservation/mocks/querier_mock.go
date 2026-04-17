@@ -41,6 +41,21 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 	return m.recorder
 }
 
+// ApplyVoucher mocks base method.
+func (m *MockQuerier) ApplyVoucher(ctx context.Context, arg db.ApplyVoucherParams) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ApplyVoucher", ctx, arg)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ApplyVoucher indicates an expected call of ApplyVoucher.
+func (mr *MockQuerierMockRecorder) ApplyVoucher(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyVoucher", reflect.TypeOf((*MockQuerier)(nil).ApplyVoucher), ctx, arg)
+}
+
 // GetReservationByID mocks base method.
 func (m *MockQuerier) GetReservationByID(ctx context.Context, id int64) (db.GetReservationByIDRow, error) {
 	m.ctrl.T.Helper()

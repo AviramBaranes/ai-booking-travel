@@ -34,6 +34,8 @@ type GetReservationResponse struct {
 	DriverFirstName     string            `json:"driverFirstName"`
 	DriverLastName      string            `json:"driverLastName"`
 	DriverAge           int32             `json:"driverAge"`
+	Voucher             *string           `json:"voucher,omitempty" encore:"optional"`
+	VoucheredAt         *string           `json:"voucheredAt,omitempty" encore:"optional"`
 	CreatedAt           string            `json:"createdAt"`
 }
 
@@ -61,6 +63,7 @@ func (s *Service) GetReservation(ctx context.Context, id int64) (*GetReservation
 
 	rpd := calculatePriceDetails(row)
 
+	voucheredAt := db.TimestamptzToString(row.VoucheredAt)
 	return &GetReservationResponse{
 		ID:                  row.ID,
 		BrokerReservationID: row.BrokerReservationID,
@@ -83,6 +86,8 @@ func (s *Service) GetReservation(ctx context.Context, id int64) (*GetReservation
 		CreatedAt:           db.TimestamptzToString(row.CreatedAt),
 		PickupLocationName:  row.PickupLocationName,
 		DropoffLocationName: row.DropoffLocationName,
+		Voucher:             row.VoucherNumber,
+		VoucheredAt:         &voucheredAt,
 	}, nil
 }
 

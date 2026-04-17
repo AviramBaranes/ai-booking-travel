@@ -18,7 +18,7 @@ LEFT JOIN offices o ON o.id = c.office_id
 WHERE
     ($1::VARCHAR IS NULL OR c.first_name ILIKE '%' || $1::VARCHAR || '%' OR c.last_name ILIKE '%' || $1::VARCHAR || '%')
     AND ($2::INTEGER IS NULL       OR c.office_id = $2::INTEGER)
-    AND ($3::INTEGER IS NULL OR c.organization_id = $3::INTEGER OR o.organization_id = $3::INTEGER)
+    AND ($3::INTEGER IS NULL OR c.organization_id = $3::INTEGER)
 `
 
 type CountContactsParams struct {
@@ -116,7 +116,7 @@ LEFT JOIN organizations org ON org.id = c.organization_id
 WHERE
     ($1::VARCHAR IS NULL OR c.first_name ILIKE '%' || $1::VARCHAR || '%' OR c.last_name ILIKE '%' || $1::VARCHAR || '%')
     AND ($2::INTEGER IS NULL       OR c.office_id = $2::INTEGER)
-    AND ($3::INTEGER IS NULL OR c.organization_id = $3::INTEGER OR o.organization_id = $3::INTEGER)
+    AND ($3::INTEGER IS NULL OR c.organization_id = $3::INTEGER)
 ORDER BY c.last_name, c.first_name
 LIMIT  $5::BIGINT
 OFFSET $4::BIGINT

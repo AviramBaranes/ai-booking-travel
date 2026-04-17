@@ -11,6 +11,31 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const applyVoucher = `-- name: ApplyVoucher :execrows
+UPDATE reservations
+SET 
+    voucher_number = $3,
+    vouchered_at = CURRENT_TIMESTAMP
+WHERE 
+id = $1
+AND
+user_id = $2
+`
+
+type ApplyVoucherParams struct {
+	ID            int64
+	UserID        int32
+	VoucherNumber *string
+}
+
+func (q *Queries) ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) (int64, error) {
+	result, err := q.db.Exec(ctx, applyVoucher, arg.ID, arg.UserID, arg.VoucherNumber)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const getReservationByID = `-- name: GetReservationByID :one
 SELECT
     id,
@@ -40,6 +65,8 @@ SELECT
     driver_age,
     pickup_location_name,
     dropoff_location_name,
+    voucher_number,
+    vouchered_at,
     created_at
 FROM reservations
 WHERE id = $1
@@ -73,6 +100,8 @@ type GetReservationByIDRow struct {
 	DriverAge           int32
 	PickupLocationName  string
 	DropoffLocationName string
+	VoucherNumber       *string
+	VoucheredAt         pgtype.Timestamptz
 	CreatedAt           pgtype.Timestamptz
 }
 
@@ -107,6 +136,8 @@ func (q *Queries) GetReservationByID(ctx context.Context, id int64) (GetReservat
 		&i.DriverAge,
 		&i.PickupLocationName,
 		&i.DropoffLocationName,
+		&i.VoucherNumber,
+		&i.VoucheredAt,
 		&i.CreatedAt,
 	)
 	return i, err
