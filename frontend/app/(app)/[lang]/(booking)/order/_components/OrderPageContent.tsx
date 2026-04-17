@@ -84,14 +84,6 @@ export function OrderPageContent({ searchRequest }: OrderPageContentProps) {
   const selectedPlan = vehicle.plans[selectedPlanIndex];
 
   async function onSubmit(formData: OrderFormValues) {
-    // if (!data) {
-    //   setError(t("submitError"));
-    //   setTimeout(() => {
-    //     router.push(`/${lang}`);
-    //   }, 2000);
-    //   return;
-    // }
-
     setError(null);
     setIsSubmitting(true);
     try {
@@ -107,7 +99,7 @@ export function OrderPageContent({ searchRequest }: OrderPageContentProps) {
         driverLastName: formData.driverLastName,
         flightNumber: formData.flightNumber,
       });
-      router.push(`/${lang}/reservations?id=${result.reservationId}`);
+      router.push(`/${lang}/reservations/${result.reservationId}`);
     } catch (err) {
       setError(isAppError(err) ? tError(err.code) : t("submitError"));
     } finally {
