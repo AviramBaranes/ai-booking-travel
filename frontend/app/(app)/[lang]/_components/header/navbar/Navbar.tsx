@@ -4,12 +4,8 @@ import config from "@payload-config";
 import Link from "next/link";
 import { MegaDropdown } from "./MegaDropdown";
 import type { Populated } from "@/shared/types/payload";
-import { LogoutButton } from "./LogoutButton";
-import { LangSwitcher } from "../login/LangSwitcher";
-import { LoginModal } from "../login/LoginModal";
 import { AppProviders } from "../../providers/AppProviders";
 import { getMessages } from "next-intl/server";
-import { AuthenticatedDropdown } from "./AuthenticatedDropdown";
 import { NavbarActions } from "./NavbarActions";
 
 async function getHeaderData(lang: string) {
@@ -66,7 +62,7 @@ export async function Navbar({ lang, isRootLayout = false }: NavbarProps) {
         </div>
 
         {!isRootLayout && (
-          <AppProviders lang={lang} messages={messages}>
+          <AppProviders showDevtools={false} lang={lang} messages={messages}>
             <NavbarActions />
           </AppProviders>
         )}
