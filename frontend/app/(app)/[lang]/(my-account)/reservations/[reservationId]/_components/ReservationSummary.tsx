@@ -23,7 +23,8 @@ export function ReservationSummary({
         <h5 className="type-h5 text-navy">{t("title")}</h5>
         <Button
           variant="outline"
-          className="border py-6 px-6 text-border-muted font-semibold flex gap-4"
+          className="border py-6 px-6 text-border-muted font-semibold flex gap-4 print:hidden"
+          onClick={() => window.print()}
         >
           <Image
             src="/assets/icons/printer.svg"

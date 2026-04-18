@@ -33,7 +33,7 @@ export default async function ReservationDetailsPage({
   });
 
   return (
-    <main className="w-2/3 mx-auto pt-15 pb-6">
+    <main className="w-2/3 mx-auto pt-15 pb-6 print:w-full">
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Suspense
           fallback={
@@ -44,17 +44,19 @@ export default async function ReservationDetailsPage({
         >
           <SearchDataBannerWrapper reservationId={Number(reservationId)} />
         </Suspense>
-        <BackButton
-          translationKey="backToReservations"
-          href={`/${lang}/reservations`}
-        />
-        <div className="flex gap-2 mt-6">
-          <div className="w-3/4">
+        <div className="print:hidden">
+          <BackButton
+            translationKey="backToReservations"
+            href={`/${lang}/reservations`}
+          />
+        </div>
+        <div className="flex gap-2 mt-6 print:flex-col print:gap-6">
+          <div className="w-3/4 print:w-full">
             <Suspense fallback={<ReservationSummarySkeleton />}>
               <ReservationSummary reservationId={Number(reservationId)} />
             </Suspense>
           </div>
-          <div className="w-1/4">
+          <div className="w-1/4 print:w-full">
             <Suspense fallback={<SelectedCarCardSkeleton />}>
               <ReservationCarCard reservationId={Number(reservationId)} />
             </Suspense>
