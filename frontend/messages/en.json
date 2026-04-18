@@ -117,7 +117,8 @@
       "plans": "Select Plan and Add-Ons",
       "ordering": "Summary and Order",
       "backToResults": "Back to Search Results",
-      "backToPlans": "Back to Plan Selection"
+      "backToPlans": "Back to Plan Selection",
+      "backToReservations": "Back to Reservations"
     },
     "shared": {
       "rentalPriceForDays": "Rental price for {daysCount} days:"
@@ -244,7 +245,36 @@
       "freeCancellation": "Free cancellation up to 48 hours before pickup",
       "enterVoucherCode": "Enter voucher code",
       "apply": "Apply",
-      "requiredField": "Required field"
+      "requiredField": "Required field",
+      "summary": {
+        "title": "Reservation summary:",
+        "print": "Print reservation",
+        "includedIconAlt": "Included",
+        "labels": {
+          "driverName": "Driver name:",
+          "reservationNumber": "Reservation number:",
+          "status": "Status:",
+          "createdAt": "Created on:",
+          "rentalPrice": "Rental price:",
+          "couponDiscount": "Coupon discount:",
+          "fullCoverage": "Full coverage:",
+          "totalToPay": "Total to pay:",
+          "rentalDays": "Rental days:",
+          "carType": "Car type:",
+          "brand": "Brand:"
+        },
+        "sections": {
+          "costBreakdown": "Cost breakdown",
+          "carDetails": "Car details",
+          "included": "What's included"
+        },
+        "status": {
+          "booked": "Booked",
+          "vouchered": "Vouchered",
+          "canceled": "Canceled",
+          "paid": "Paid"
+        }
+      }
     }
   }
 }

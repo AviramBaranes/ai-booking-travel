@@ -117,7 +117,8 @@
       "plans": "בחירת תוכנית ותוספות",
       "ordering": "סיכום והזמנה",
       "backToResults": "חזרה לתוצאות החיפוש",
-      "backToPlans": "חזרה לבחירת תוכנית"
+      "backToPlans": "חזרה לבחירת תוכנית",
+      "backToReservations": "חזרה לרשימת הזמנות"
     },
     "shared": {
       "rentalPriceForDays": "מחיר השכרה ל- {daysCount} ימים"
@@ -250,7 +251,36 @@
       "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
       "enterVoucherCode": "הכנס מספר שובר",
       "apply": "כרטס הזמנה",
-      "requiredField": "שדה חובה"
+      "requiredField": "שדה חובה",
+      "summary": {
+        "title": "סיכום ההזמנה:",
+        "print": "הדפס הזמנה",
+        "includedIconAlt": "כלול",
+        "labels": {
+          "driverName": "שם הנהג:",
+          "reservationNumber": "מס' הזמנה:",
+          "status": "סטטוס:",
+          "createdAt": "נרשמה בתאריך:",
+          "rentalPrice": "מחיר השכרה:",
+          "couponDiscount": "הנחה קופון:",
+          "fullCoverage": "כיסוי מלא:",
+          "totalToPay": "סה\"כ לתשלום:",
+          "rentalDays": "מספר ימי השכרה:",
+          "carType": "סוג הרכב:",
+          "brand": "מותג:"
+        },
+        "sections": {
+          "costBreakdown": "פירוט עלויות",
+          "carDetails": "פירוט הרכב",
+          "included": "מה כלול"
+        },
+        "status": {
+          "booked": "הוזמן",
+          "vouchered": "הופק שובר",
+          "canceled": "בוטל",
+          "paid": "שולם"
+        }
+      }
     }
   }
 }

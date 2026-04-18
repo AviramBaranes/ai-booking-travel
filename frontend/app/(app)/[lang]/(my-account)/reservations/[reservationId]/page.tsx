@@ -9,6 +9,8 @@ import { getQueryClient } from "@/shared/hooks/getQueryClient";
 import { suppliersGalleryKey } from "@/shared/hooks/useSuppliersGallery";
 import { fetchSuppliersGallery } from "@/shared/server/cms";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { BackButton } from "../../../../../../shared/components/booking/BackButton";
+import { ReservationSummary } from "./_components/ReservationSummary";
 
 export default async function ReservationDetailsPage({
   params,
@@ -17,7 +19,6 @@ export default async function ReservationDetailsPage({
 }) {
   const lang = await getLang();
   const { reservationId } = await params;
-  console.log("reservationId", reservationId);
 
   if (!reservationId || isNaN(Number(reservationId))) {
     redirect(`/${lang}/reservations`);
@@ -41,8 +42,16 @@ export default async function ReservationDetailsPage({
         >
           <SearchDataBannerWrapper reservationId={Number(reservationId)} />
         </Suspense>
+        <BackButton
+          translationKey="backToReservations"
+          href={`/${lang}/reservations`}
+        />
         <div className="flex gap-2 mt-6">
-          <div className="w-3/4"></div>
+          <div className="w-3/4">
+            <Suspense fallback={<Loading />}>
+              <ReservationSummary reservationId={Number(reservationId)} />
+            </Suspense>
+          </div>
           <div className="w-1/4">
             <Suspense fallback={<Loading />}>
               <ReservationCarCard reservationId={Number(reservationId)} />

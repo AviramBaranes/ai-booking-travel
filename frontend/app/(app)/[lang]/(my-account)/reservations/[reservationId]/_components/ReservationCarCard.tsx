@@ -16,14 +16,16 @@ export function ReservationCarCard({
   const t = useTranslations("MyAccount.reservation");
 
   return (
-    <SelectedCarCardWrapper>
-      <SelectedCarHeader carDetails={reservation.carDetails} />
-      <FreeCancellationBadge
-        pickupDate={reservation.pickupDate}
-        pickupTime={reservation.pickupTime}
-        text={t("freeCancellation")}
-      />
-      {!reservation.voucher && <VoucherForm reservationId={reservationId} />}
-    </SelectedCarCardWrapper>
+    <div className="sticky top-24">
+      <SelectedCarCardWrapper>
+        <SelectedCarHeader carDetails={reservation.carDetails} />
+        <FreeCancellationBadge
+          pickupDate={reservation.pickupDate}
+          pickupTime={reservation.pickupTime}
+          text={t("freeCancellation")}
+        />
+        {!reservation.voucher && <VoucherForm reservationId={reservationId} />}
+      </SelectedCarCardWrapper>
+    </div>
   );
 }
