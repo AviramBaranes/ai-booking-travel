@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getLang } from "@/shared/lang/lang";
 import { BookingStepper } from "../_components/BookingStepper";
 import { SearchDataBanner } from "@/shared/components/booking/SearchDataBanner";
-import { BackButton } from "../_components/BackButton";
+import { BackButton } from "../../../../../shared/components/booking/BackButton";
 import { PlansPageContent } from "./_components/PlansPageContent";
 import { ExpiredSearchGate } from "../_components/ExpiredSearchGate";
 

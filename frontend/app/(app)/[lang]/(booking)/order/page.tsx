@@ -3,7 +3,7 @@ import { parseSearchQuery, toSearchRequest } from "../results/searchQuery";
 import { redirect } from "next/navigation";
 import { BookingStepper } from "../_components/BookingStepper";
 import { SearchDataBanner } from "@/shared/components/booking/SearchDataBanner";
-import { BackButton } from "../_components/BackButton";
+import { BackButton } from "../../../../../shared/components/booking/BackButton";
 import { OrderPageContent } from "./_components/OrderPageContent";
 import { ExpiredSearchGate } from "../_components/ExpiredSearchGate";
 
