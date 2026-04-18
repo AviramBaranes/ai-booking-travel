@@ -9,6 +9,7 @@ import (
 // encore:service
 type Service struct {
 	query db.Querier
+	pool  *pgxpool.Pool
 }
 
 var reservationsDB = sqldb.NewDatabase("reservations", sqldb.DatabaseConfig{
@@ -23,5 +24,6 @@ func initService() (*Service, error) {
 
 	return &Service{
 		query: query,
+		pool:  pgxdb,
 	}, nil
 }

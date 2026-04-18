@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"math/big"
 	"time"
 
@@ -46,4 +47,14 @@ func TimestamptzToString(ts pgtype.Timestamptz) string {
 		return ""
 	}
 	return ts.Time.Format(time.RFC3339)
+}
+
+// CombineDateTime merges a pgtype.Date and a time string (e.g. "15:04:05Z07:00") into a single time.Time.
+func CombineDateTime(d pgtype.Date, timeStr string) (time.Time, error) {
+	if !d.Valid {
+		return time.Time{}, errors.New("invalid date")
+	}
+	dateStr := d.Time.Format("2006-01-02")
+	dateTimeStr := dateStr + "T" + timeStr
+	return time.Parse(time.RFC3339, dateTimeStr)
 }

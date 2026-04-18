@@ -36,6 +36,20 @@ func (q *Queries) ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) (int
 	return result.RowsAffected(), nil
 }
 
+const cancelReservation = `-- name: CancelReservation :exec
+UPDATE reservations
+SET
+    status = 'canceled',
+    updated_at = CURRENT_TIMESTAMP
+WHERE
+    id = $1
+`
+
+func (q *Queries) CancelReservation(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, cancelReservation, id)
+	return err
+}
+
 const getReservationByID = `-- name: GetReservationByID :one
 SELECT
     id,

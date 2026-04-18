@@ -56,6 +56,20 @@ func (mr *MockQuerierMockRecorder) ApplyVoucher(ctx, arg any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApplyVoucher", reflect.TypeOf((*MockQuerier)(nil).ApplyVoucher), ctx, arg)
 }
 
+// CancelReservation mocks base method.
+func (m *MockQuerier) CancelReservation(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CancelReservation", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CancelReservation indicates an expected call of CancelReservation.
+func (mr *MockQuerierMockRecorder) CancelReservation(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelReservation", reflect.TypeOf((*MockQuerier)(nil).CancelReservation), ctx, id)
+}
+
 // GetReservationByID mocks base method.
 func (m *MockQuerier) GetReservationByID(ctx context.Context, id int64) (db.GetReservationByIDRow, error) {
 	m.ctrl.T.Helper()

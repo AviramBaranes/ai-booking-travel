@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) (int64, error)
+	CancelReservation(ctx context.Context, id int64) error
 	GetReservationByID(ctx context.Context, id int64) (GetReservationByIDRow, error)
 	InsertReservation(ctx context.Context, arg InsertReservationParams) (int64, error)
 	ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error)
