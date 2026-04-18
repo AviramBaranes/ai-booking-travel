@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	Issuer          = "global-rental-api"
+	Issuer          = "ai-booking-api"
 	accessTokenTTL  = 15 * time.Minute
 	refreshTokenTTL = 30 * 24 * time.Hour
 )

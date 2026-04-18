@@ -3,6 +3,7 @@ package accounts
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"encore.app/internal/api_errors"
@@ -18,7 +19,8 @@ type RefreshTokensParams struct {
 
 // encore:api public method=POST path=/refresh
 func (s *Service) RefreshTokens(ctx context.Context, p RefreshTokensParams) (*LoginResponse, error) {
-	claims, err := jwt.ValidateRefreshToken(p.RefreshToken)
+	tokenString := strings.TrimPrefix(p.RefreshToken, "Bearer ")
+	claims, err := jwt.ValidateRefreshToken(tokenString)
 	if err != nil {
 		rlog.Error("failed to validate refresh token", "error", err)
 		return nil, ErrInvalidRefreshToken
