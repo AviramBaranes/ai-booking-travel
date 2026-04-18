@@ -1,10 +1,5 @@
 import { clsx } from "clsx";
-
-function Bone({ className }: { className?: string }) {
-  return (
-    <div className={clsx("animate-pulse rounded-md bg-white/50", className)} />
-  );
-}
+import { Bone } from "@/shared/components/Bone";
 
 export function SearchDataBannerDisplaySkeleton({
   dir = "rtl",
@@ -20,18 +15,18 @@ export function SearchDataBannerDisplaySkeleton({
         <div className="flex items-center gap-13">
           {/* Pickup */}
           <div className="flex flex-col gap-2 py-2">
-            <Bone className="h-3 w-16" />
-            <Bone className="h-5 w-40" />
-            <Bone className="h-3 w-28" />
+            <Bone variant="dark" className="h-3 w-16" />
+            <Bone variant="dark" className="h-5 w-40" />
+            <Bone variant="dark" className="h-3 w-28" />
           </div>
 
           <div className="h-25 w-px bg-white/30" />
 
           {/* Dropoff */}
           <div className="flex flex-col gap-2 py-2">
-            <Bone className="h-3 w-16" />
-            <Bone className="h-5 w-40" />
-            <Bone className="h-3 w-28" />
+            <Bone variant="dark" className="h-3 w-16" />
+            <Bone variant="dark" className="h-5 w-40" />
+            <Bone variant="dark" className="h-3 w-28" />
           </div>
         </div>
       </div>
@@ -46,8 +41,8 @@ export function SearchDataBannerDisplaySkeleton({
           },
         )}
       >
-        <Bone className="h-4 w-4 rounded-full" />
-        <Bone className="h-4 w-24" />
+        <Bone variant="dark" className="h-4 w-4 rounded-full" />
+        <Bone variant="dark" className="h-4 w-24" />
       </div>
     </section>
   );

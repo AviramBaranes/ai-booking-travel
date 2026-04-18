@@ -5,12 +5,14 @@ import { Suspense } from "react";
 import { SearchDataBannerWrapper } from "./_components/SearchDataBannerWrapper";
 import { SearchDataBannerDisplaySkeleton } from "@/shared/components/booking/SearchDataBannerDisplaySkeleton";
 import { ReservationCarCard } from "./_components/ReservationCarCard";
+import { SelectedCarCardSkeleton } from "@/shared/components/booking/SelectedCarCard/SelectedCarCardSkeleton";
 import { getQueryClient } from "@/shared/hooks/getQueryClient";
 import { suppliersGalleryKey } from "@/shared/hooks/useSuppliersGallery";
 import { fetchSuppliersGallery } from "@/shared/server/cms";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { BackButton } from "../../../../../../shared/components/booking/BackButton";
 import { ReservationSummary } from "./_components/ReservationSummary";
+import { ReservationSummarySkeleton } from "./_components/ReservationSummarySkeleton";
 
 export default async function ReservationDetailsPage({
   params,
@@ -48,12 +50,12 @@ export default async function ReservationDetailsPage({
         />
         <div className="flex gap-2 mt-6">
           <div className="w-3/4">
-            <Suspense fallback={<Loading />}>
+            <Suspense fallback={<ReservationSummarySkeleton />}>
               <ReservationSummary reservationId={Number(reservationId)} />
             </Suspense>
           </div>
           <div className="w-1/4">
-            <Suspense fallback={<Loading />}>
+            <Suspense fallback={<SelectedCarCardSkeleton />}>
               <ReservationCarCard reservationId={Number(reservationId)} />
             </Suspense>
           </div>
