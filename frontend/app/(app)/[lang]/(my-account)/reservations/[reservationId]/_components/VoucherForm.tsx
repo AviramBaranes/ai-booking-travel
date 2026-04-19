@@ -1,3 +1,4 @@
+import { useState } from "react";
 import zod from "zod";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -7,10 +8,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { applyVoucher } from "@/shared/api/reservations";
 import { useReservation } from "../_hooks/useReservation";
-import { useMemo, useState } from "react";
-import { AppError, isAppError } from "@/shared/api/AppError";
-import { Loading } from "@/shared/components/Loading";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
+import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
+import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
 
 const applyVoucherSchema = zod.object({
   voucherCode: zod.string().min(1, "requiredField"),
@@ -19,9 +19,10 @@ const applyVoucherSchema = zod.object({
 type ApplyVoucherFormValues = zod.infer<typeof applyVoucherSchema>;
 
 export function VoucherForm({ reservationId }: { reservationId: number }) {
-  const t = useTranslations("MyAccount.reservation");
+  const t = useTranslations("MyAccount.reservation.voucher");
   const tErrors = useTranslations("ApiErrors");
   const { refetch } = useReservation(reservationId);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const {
     register,
@@ -34,18 +35,16 @@ export function VoucherForm({ reservationId }: { reservationId: number }) {
   const { mutate, isPending, error } = useMutation({
     mutationFn: (data: ApplyVoucherFormValues) =>
       applyVoucher(reservationId, data.voucherCode),
-    onSuccess: () => refetch(),
+    onSuccess: () => {
+      setSuccessMessage(t("successMessage"));
+      setTimeout(() => {
+        refetch();
+        setSuccessMessage(null);
+      }, 2000);
+    },
   });
 
-  const translatedError = useMemo(() => {
-    if (!error) return null;
-
-    if (isAppError(error)) {
-      return tErrors(error.code);
-    }
-
-    return tErrors("internal_error");
-  }, [error]);
+  const translatedError = useTranslatedError(error);
 
   function onSubmit(data: ApplyVoucherFormValues) {
     mutate(data);
@@ -66,11 +65,12 @@ export function VoucherForm({ reservationId }: { reservationId: number }) {
         variant="brand"
         type="submit"
         className="type-label w-full py-6 font-bold"
-        disabled={isPending}
+        loading={isPending}
       >
-        {isPending ? <Loading /> : t("apply")}
+        {t("apply")}
       </Button>
       {!!translatedError && <ErrorDisplay>{translatedError}</ErrorDisplay>}
+      {successMessage && <SuccessBadge text={successMessage} />}
     </form>
   );
 }

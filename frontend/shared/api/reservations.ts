@@ -13,3 +13,9 @@ export function applyVoucher(reservationId: number, voucherCode: string) {
     }),
   );
 }
+
+export function cancelReservation(reservationId: number) {
+  return withErrorHandler((client) =>
+    client.reservation.CancelReservation(reservationId),
+  );
+}

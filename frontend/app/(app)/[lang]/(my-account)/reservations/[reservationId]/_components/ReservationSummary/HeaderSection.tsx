@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { reservation } from "@/shared/client";
 import { OrderSummaryRow } from "./OrderSummaryRow";
+import { DeleteReservationButton } from "./DeleteReservationButton";
 
 function statusToColor(status: string) {
   switch (status) {
@@ -11,7 +12,7 @@ function statusToColor(status: string) {
     case "paid":
       return "text-success font-semibold";
     case "canceled":
-      return "text-error font-semibold";
+      return "text-destructive font-semibold";
     case "booked":
       return "text-brand font-semibold";
     default:
@@ -31,20 +32,28 @@ export function HeaderSection({
     <>
       <div className="flex items-center justify-between">
         <h5 className="type-h5 text-navy">{t("title")}</h5>
-        <Button
-          variant="outline"
-          className="border py-6 px-6 text-border-muted font-semibold flex gap-4 print:hidden"
-          onClick={() => window.print()}
-        >
-          <Image
-            src="/assets/icons/printer.svg"
-            alt={t("print")}
-            width={24}
-            height={24}
-            className="w-6 h-6"
-          />
-          {t("print")}
-        </Button>
+        <div className="flex gap-1 items-center w-1/4 justify-end">
+          {res.status !== "canceled" && (
+            <>
+              <DeleteReservationButton reservationId={res.id} />
+              <div className="border-l border-cars-border h-5"></div>
+            </>
+          )}
+          <Button
+            variant="ghost"
+            className="py-6 px-6 text-border-muted font-semibold flex gap-4 print:hidden"
+            onClick={() => window.print()}
+          >
+            <Image
+              src="/assets/icons/printer.svg"
+              alt={t("print")}
+              width={24}
+              height={24}
+              className="w-6 h-6"
+            />
+            {t("print")}
+          </Button>
+        </div>
       </div>
       <hr />
       <OrderSummaryRow

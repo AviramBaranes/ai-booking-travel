@@ -1,8 +1,8 @@
 import Image from "next/image";
 
-const HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION = 48;
+export const HOURS_BEFORE_PICKUP_TO_ALLOW_CANCELLATION = 48;
 
-function isFutureWithinHours(
+export function isFutureWithinHours(
   date: Date,
   time: string,
   numOfHours: number,

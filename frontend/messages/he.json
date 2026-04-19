@@ -26,7 +26,8 @@
     "invalid_credentials": "אימייל או סיסמה שגויים",
     "invalid_refresh_token": "ההפעלה אינה תקינה, יש להתחבר מחדש",
     "expired_refresh_token": "ההפעלה פגה, יש להתחבר מחדש",
-    "invalid_reset_token": "קישור איפוס הסיסמה אינו תקין או שפג תוקפו"
+    "invalid_reset_token": "קישור איפוס הסיסמה אינו תקין או שפג תוקפו",
+    "cancellation_window_exceeded": "לא ניתן לבטל הזמנה זו, חלון הביטול חרג"
   },
   "TranslationStatus": {
     "pending": "ממתין",
@@ -250,11 +251,21 @@
     "reservation": {
       "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
       "enterVoucherCode": "הכנס מספר שובר",
-      "apply": "כרטס הזמנה",
+      "voucher": {
+        "apply": "כרטס הזמנה",
+        "successMessage": "ההזמנה כורטסה בהצלחה!"
+      },
       "requiredField": "שדה חובה",
       "summary": {
         "title": "סיכום ההזמנה:",
         "print": "הדפס הזמנה",
+        "cancel": {
+          "button": "בטל הזמנה",
+          "title": "ביטול הזמנה",
+          "subTitle": "האם הינך בטוח שאתה רוצה לבטל את ההזמנה?",
+          "message": "*במידה והביטול הינו פחות מ-48 שעות לפני איסוף הרכב יתכנו דמי ביטול",
+          "successMessage": "ההזמנה בוטלה בהצלחה"
+        },
         "includedIconAlt": "כלול",
         "labels": {
           "driverName": "שם הנהג:",

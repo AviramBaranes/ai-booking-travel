@@ -26,7 +26,8 @@
     "invalid_credentials": "Invalid email or password",
     "invalid_refresh_token": "Session is invalid, please log in again",
     "expired_refresh_token": "Session has expired, please log in again",
-    "invalid_reset_token": "Password reset link is invalid or expired"
+    "invalid_reset_token": "Password reset link is invalid or expired",
+    "cancellation_window_exceeded": "You cannot cancel this reservation, cancellation window has been exceeded"
   },
   "TranslationStatus": {
     "pending": "Pending",
@@ -244,11 +245,21 @@
     "reservation": {
       "freeCancellation": "Free cancellation up to 48 hours before pickup",
       "enterVoucherCode": "Enter voucher code",
-      "apply": "Apply",
+      "voucher": {
+        "apply": "Apply voucher",
+        "successMessage": "The voucher has been successfully applied!"
+      },
       "requiredField": "Required field",
       "summary": {
         "title": "Reservation summary:",
         "print": "Print reservation",
+        "cancel": {
+          "button": "Cancel reservation",
+          "title": "Cancel reservation",
+          "subTitle": "Are you sure you want to cancel the reservation?",
+          "message": "*If the cancellation is less than 48 hours before pickup, cancellation fees may apply",
+          "successMessage": "The reservation has been successfully canceled"
+        },
         "includedIconAlt": "Included",
         "labels": {
           "driverName": "Driver name:",

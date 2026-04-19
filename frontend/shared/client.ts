@@ -1240,6 +1240,7 @@ export namespace reservation {
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
             this.ApplyVoucher = this.ApplyVoucher.bind(this)
+            this.CancelReservation = this.CancelReservation.bind(this)
             this.GetReservation = this.GetReservation.bind(this)
             this.ListReservations = this.ListReservations.bind(this)
         }
@@ -1249,6 +1250,10 @@ export namespace reservation {
          */
         public async ApplyVoucher(id: number, params: ApplyVoucherRequest): Promise<void> {
             await this.baseClient.callTypedAPI("POST", `/reservations/${encodeURIComponent(id)}/voucher`, JSON.stringify(params))
+        }
+
+        public async CancelReservation(id: number): Promise<void> {
+            await this.baseClient.callTypedAPI("POST", `/api/reservation/${encodeURIComponent(id)}/cancel`)
         }
 
         public async GetReservation(id: number): Promise<GetReservationResponse> {
