@@ -261,12 +261,19 @@
           "totalToPay": "Total to pay:",
           "rentalDays": "Rental days:",
           "carType": "Car type:",
-          "brand": "Brand:"
+          "brand": "Rental company:",
+          "model": "Model:"
         },
         "sections": {
           "costBreakdown": "Cost breakdown",
           "carDetails": "Car details",
           "included": "What's included"
+        },
+        "rental": {
+          "title": "Rental details:",
+          "pickupDetails": "Pickup details:",
+          "returnDetails": "Return details:",
+          "stationDetails": "Station details"
         },
         "status": {
           "booked": "Booked",

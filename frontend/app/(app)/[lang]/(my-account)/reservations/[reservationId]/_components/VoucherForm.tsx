@@ -52,7 +52,7 @@ export function VoucherForm({ reservationId }: { reservationId: number }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} className="print:hidden">
       <Input
         type="text"
         placeholder={t("enterVoucherCode")}

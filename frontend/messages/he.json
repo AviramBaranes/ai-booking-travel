@@ -266,13 +266,20 @@
           "fullCoverage": "כיסוי מלא:",
           "totalToPay": "סה\"כ לתשלום:",
           "rentalDays": "מספר ימי השכרה:",
-          "carType": "סוג הרכב:",
-          "brand": "מותג:"
+          "carType": "קבוצת הרכב:",
+          "brand": "חברת השכרה:",
+          "model": "דגם מייצג:"
         },
         "sections": {
           "costBreakdown": "פירוט עלויות",
           "carDetails": "פירוט הרכב",
           "included": "מה כלול"
+        },
+        "rental": {
+          "title": "פרטי השכרה:",
+          "pickupDetails": "פרטי איסוף:",
+          "returnDetails": "פרטי החזרה:",
+          "stationDetails": "פרטי תחנה"
         },
         "status": {
           "booked": "הוזמן",

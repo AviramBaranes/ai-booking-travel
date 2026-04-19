@@ -44,7 +44,7 @@ export default async function AppRootLayout({
       className={`h-full antialiased ${polin.variable}`}
     >
       <body className={`min-h-full flex flex-col`}>
-        <div className="print:hidden">
+        <div className="print:hidden sticky top-0 z-40">
           <BackToAdminBanner />
           <Navbar lang={lang} />
         </div>

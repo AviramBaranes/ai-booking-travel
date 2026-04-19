@@ -11,7 +11,7 @@ import { suppliersGalleryKey } from "@/shared/hooks/useSuppliersGallery";
 import { fetchSuppliersGallery } from "@/shared/server/cms";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { BackButton } from "../../../../../../shared/components/booking/BackButton";
-import { ReservationSummary } from "./_components/ReservationSummary";
+import { ReservationSummary } from "./_components/ReservationSummary/ReservationSummary";
 import { ReservationSummarySkeleton } from "./_components/ReservationSummarySkeleton";
 
 export default async function ReservationDetailsPage({
@@ -33,17 +33,8 @@ export default async function ReservationDetailsPage({
   });
 
   return (
-    <main className="w-2/3 mx-auto pt-15 pb-6 print:w-full">
+    <main className="w-2/3 mx-auto pt-4 pb-6 print:w-full">
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <Suspense
-          fallback={
-            <SearchDataBannerDisplaySkeleton
-              dir={lang === "he" ? "rtl" : "ltr"}
-            />
-          }
-        >
-          <SearchDataBannerWrapper reservationId={Number(reservationId)} />
-        </Suspense>
         <div className="print:hidden">
           <BackButton
             translationKey="backToReservations"

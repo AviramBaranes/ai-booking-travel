@@ -1,0 +1,69 @@
+import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
+import Image from "next/image";
+import { useParams } from "next/navigation";
+import { reservation } from "@/shared/client";
+import { OrderSummaryRow } from "./OrderSummaryRow";
+
+function statusToColor(status: string) {
+  switch (status) {
+    case "vouchered":
+    case "paid":
+      return "text-success font-semibold";
+    case "canceled":
+      return "text-error font-semibold";
+    case "booked":
+      return "text-brand font-semibold";
+    default:
+      return "text-navy font-semibold";
+  }
+}
+
+export function HeaderSection({
+  reservation: res,
+}: {
+  reservation: reservation.GetReservationResponse;
+}) {
+  const { lang } = useParams();
+  const t = useTranslations("MyAccount.reservation.summary");
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <h5 className="type-h5 text-navy">{t("title")}</h5>
+        <Button
+          variant="outline"
+          className="border py-6 px-6 text-border-muted font-semibold flex gap-4 print:hidden"
+          onClick={() => window.print()}
+        >
+          <Image
+            src="/assets/icons/printer.svg"
+            alt={t("print")}
+            width={24}
+            height={24}
+            className="w-6 h-6"
+          />
+          {t("print")}
+        </Button>
+      </div>
+      <hr />
+      <OrderSummaryRow
+        label={t("labels.driverName")}
+        value={`${res.driverFirstName} ${res.driverLastName}`}
+      />
+      <OrderSummaryRow
+        label={t("labels.reservationNumber")}
+        value={res.brokerReservationId}
+      />
+      <OrderSummaryRow
+        label={t("labels.status")}
+        value={t(`status.${res.status}`)}
+        valClassName={statusToColor(res.status)}
+      />
+      <OrderSummaryRow
+        label={t("labels.createdAt")}
+        value={new Date(res.createdAt).toLocaleDateString(lang)}
+      />
+    </>
+  );
+}
