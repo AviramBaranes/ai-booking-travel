@@ -3,7 +3,8 @@ package broker
 import (
 	"encoding/xml"
 	"fmt"
-	"strings"
+
+	"encore.dev/rlog"
 )
 
 const (
@@ -28,12 +29,12 @@ func (h Hertz) Book(p BookingParams) (BookingResponse, error) {
 		return BookingResponse{}, fmt.Errorf("hertz Book unmarshal response: %w", err)
 	}
 
-	if len(res.Errors) > 0 {
-		messages := make([]string, 0, len(res.Errors))
-		for _, e := range res.Errors {
-			messages = append(messages, e.ShortText)
-		}
-		return BookingResponse{}, fmt.Errorf("hertz booking failed: %s", strings.Join(messages, "; "))
+	if err := h.parseErrors(res.Errors); err != nil {
+		return BookingResponse{}, fmt.Errorf("hertz booking errors: %w", err)
+	}
+
+	if warnings := h.parseWarnings(res.Warnings); warnings != "" {
+		rlog.Warn("hertz booking warnings", warnings)
 	}
 
 	return BookingResponse{
@@ -44,7 +45,7 @@ func (h Hertz) Book(p BookingParams) (BookingResponse, error) {
 // buildBookingRequest constructs the XML request string for a Hertz vehicle reservation.
 func (h Hertz) buildBookingRequest(p BookingParams) (string, error) {
 	req := hertzBookingReq{
-		XmlnsXsi:     hertzSearchAvailabilityXMLNSXSI,
+		XmlnsXsi:     hertzXMLNSXSI,
 		SchemaLoc:    hertzBookingSchemaLocation,
 		Version:      hertzBookingVersion,
 		SequenceNmbr: "1",

@@ -103,3 +103,9 @@ type flexOpeningHours struct {
 	SunOpen  string `xml:"Sun_Open"`
 	SunClose string `xml:"Sun_Close"`
 }
+
+// flexCancelResponse represents the response from a cancellation request to the Flex API.
+type flexCancelResponse struct {
+	ReturnCode   int    `xml:"ReturnCode"`
+	ErrorMessage string `xml:"ErrorMessage"`
+}

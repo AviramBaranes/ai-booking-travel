@@ -43,11 +43,18 @@ type Booker interface {
 	Book(p BookingParams) (BookingResponse, error)
 }
 
+// Canceler provides booking cancellation capabilities for a broker.
+type Canceler interface {
+	Name() Name
+	Cancel(bookingID, lastName, supplierCode string) error
+}
+
 // Broker composes all broker capabilities into a single interface.
 type Broker interface {
 	LocationSearcher
 	AvailabilitySearcher
 	Booker
+	Canceler
 }
 
 // LocationPage represents a page of locations returned by a broker, including the list of locations and a cursor for the next page.

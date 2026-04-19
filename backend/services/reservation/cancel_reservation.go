@@ -54,6 +54,8 @@ func (s *Service) CancelReservation(ctx context.Context, id int64) error {
 			ReservationID:       reservation.ID,
 			Broker:              reservation.Broker,
 			BrokerReservationID: reservation.BrokerReservationID,
+			LastName:            reservation.DriverLastName,
+			SupplierCode:        reservation.SupplierCode,
 		}
 
 		if _, err := BookingCancellationEvents.Publish(ctx, event); err != nil {
@@ -86,6 +88,8 @@ type BookingCancellationEvent struct {
 	ReservationID       int64
 	Broker              db.Broker
 	BrokerReservationID string
+	LastName            string
+	SupplierCode        string
 }
 
 // BookingCancellationEvents is a pub/sub topic that publishes events whenever a reservation is canceled.

@@ -291,3 +291,38 @@ type hertzConfID struct {
 	Type string `xml:"Type,attr"`
 	ID   string `xml:"ID,attr"`
 }
+
+// hertzCancelReq is the top-level OTA XML request envelope for canceling a vehicle reservation.
+type hertzCancelReq struct {
+	XMLName         xml.Name        `xml:"http://www.opentravel.org/OTA/2003/05 OTA_VehCancelRQ"`
+	XmlnsXsi        string          `xml:"xmlns:xsi,attr"`
+	SchemaLoc       string          `xml:"xsi:schemaLocation,attr"`
+	Version         string          `xml:"Version,attr"`
+	POS             hertzPOS        `xml:"POS"`
+	VehCancelRQCore hertzCancelCore `xml:"VehCancelRQCore"`
+}
+
+// hertzCancelCore holds the rental core, customer, and optional special equipment for a cancellation request.
+type hertzCancelCore struct {
+	Type       string                `xml:"CancelType,attr"`
+	UniqueID   hertzCancelUniqueID   `xml:"UniqueID"`
+	PersonName hertzCancelPersonName `xml:"PersonName"`
+}
+
+// hertzCancelUniqueID holds the unique ID and type used to identify the reservation to cancel.
+type hertzCancelUniqueID struct {
+	Type string `xml:"Type,attr"`
+	ID   string `xml:"ID,attr"`
+}
+
+// hertzCancelPersonName represents the surname of the person associated with the reservation to cancel.
+type hertzCancelPersonName struct {
+	Surname string `xml:"Surname"`
+}
+
+// hertzCancelResXML is the parsed XML response for a cancellation request
+type hertzCancelResXML struct {
+	Errors   []hertzResError     `xml:"Errors>Error"`
+	Warnings []hertzResWarning   `xml:"Warnings>Warning"`
+	UniqueID hertzCancelUniqueID `xml:"VehCancelRSCore>UniqueID"`
+}

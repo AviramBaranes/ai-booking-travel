@@ -7,23 +7,25 @@ import (
 )
 
 const (
-	hertzSearchAvailabilityXMLNS          = "http://www.opentravel.org/OTA/2003/05"
-	hertzSearchAvailabilityXMLNSXSI       = "http://www.w3.org/2001/XMLSchema-instance"
-	hertzSearchAvailabilitySchemaLocation = "http://www.opentravel.org/OTA/2003/05 OTA_VehAvailRateRQ.xsd"
-	hertzSearchAvailabilityVersion        = "1.008"
+	hertzXMLNS      = "http://www.opentravel.org/OTA/2003/05"
+	hertzXMLNSXSI   = "http://www.w3.org/2001/XMLSchema-instance"
+	hertzXMLVersion = "1.008"
 
+	hertzSearchAvailabilitySchemaLocation      = "http://www.opentravel.org/OTA/2003/05 OTA_VehAvailRateRQ.xsd"
 	hertzSearchAvailabilityISOCountry          = "IL"
 	hertzSearchAvailabilityVendorNumberType    = "4"  //Type="4" - Indicates a unique Vendor Number (VN) will be used.
 	hertzSearchAvailabilityBrandType           = "8"  //Type “8” – Identifies car rental Brand.
 	hertzSearchAvailabilityConsumerProductCode = "CP" //This indicates that a consumer product (CP) code will be used.
+
+	hertzCancelSchemaLocation = "http://www.opentravel.org/OTA/2003/05 OTA_VehCancelRQ.xsd"
 )
 
 func (h Hertz) buildSearchAvailabilityRequest(p SearchAvailabilityParams, brandID hertzBrand, planCode string, dayCount int) (string, error) {
 	req := hertzSearchAvailabilityReq{
-		XMLName:        xml.Name{Space: hertzSearchAvailabilityXMLNS, Local: "OTA_VehAvailRateRQ"},
-		XmlnsXsi:       hertzSearchAvailabilityXMLNSXSI,
+		XMLName:        xml.Name{Space: hertzXMLNS, Local: "OTA_VehAvailRateRQ"},
+		XmlnsXsi:       hertzXMLNSXSI,
 		SchemaLocation: hertzSearchAvailabilitySchemaLocation,
-		Version:        hertzSearchAvailabilityVersion,
+		Version:        hertzXMLVersion,
 		POS:            h.buildPOSReqItem(brandID),
 		VehAvailRQCore: hertzSearchAvailabilityCore{
 			Status:        "All",
@@ -50,8 +52,13 @@ func (h Hertz) formatDateTime(date string, time string) string {
 }
 
 // buildPOSReqItem creates a POS request item for the given brand ID and plan code, which is used in the search availability request to identify the brand and plan being requested.
-func (h Hertz) buildPOSReqItem(brandID hertzBrand) hertzPOS {
-	return hertzPOS{
+func (h Hertz) buildPOSReqItem(brandID hertzBrand, addSecondSource ...bool) hertzPOS {
+	addSecond := true
+	if len(addSecondSource) > 0 {
+		addSecond = addSecondSource[0]
+	}
+
+	pos := hertzPOS{
 		Source: []hertzSource{
 			{
 				ISOCountry:    hertzSearchAvailabilityISOCountry,
@@ -65,14 +72,20 @@ func (h Hertz) buildPOSReqItem(brandID hertzBrand) hertzPOS {
 					},
 				},
 			},
-			{
+		},
+	}
+
+	if addSecond {
+		pos.Source = append(pos.Source,
+			hertzSource{
 				RequestorID: hertzRequestorID{
 					Type: hertzSearchAvailabilityBrandType,
 					ID:   string(brandID),
 				},
-			},
-		},
+			})
 	}
+
+	return pos
 }
 
 // buildRentalCoreReqItem creates a VehRentalCore request item

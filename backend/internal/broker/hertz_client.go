@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -69,4 +70,31 @@ func (h Hertz) sendXMLRequest(requestBody string) ([]byte, error) {
 	}
 
 	return body, nil
+}
+
+// parseErrors is a helper function that extracts error messages from the Hertz API response and formats them into a single error.
+func (h Hertz) parseErrors(errors []hertzResError) error {
+	if len(errors) == 0 {
+		return nil
+	}
+
+	messages := make([]string, 0, len(errors))
+	for _, e := range errors {
+		messages = append(messages, e.ShortText)
+	}
+	return fmt.Errorf("hertz booking failed: %s", strings.Join(messages, "; "))
+}
+
+// parseWarnings is a helper function that extracts warning messages from the Hertz API response and formats them into a single string.
+func (h Hertz) parseWarnings(warnings []hertzResWarning) string {
+	if len(warnings) == 0 {
+		return ""
+	}
+
+	messages := make([]string, 0, len(warnings))
+	for _, w := range warnings {
+		messages = append(messages, w.ShortText)
+	}
+
+	return strings.Join(messages, "; ")
 }
