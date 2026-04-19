@@ -14,6 +14,7 @@ import (
 const applyVoucher = `-- name: ApplyVoucher :execrows
 UPDATE reservations
 SET 
+    status = 'vouchered',
     voucher_number = $3,
     vouchered_at = CURRENT_TIMESTAMP
 WHERE 
