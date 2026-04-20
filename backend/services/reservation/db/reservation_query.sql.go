@@ -344,7 +344,7 @@ WHERE user_id = $1
     AND ($4::DATE IS NULL OR pickup_date = $4::DATE)
     AND ($5::VARCHAR IS NULL OR broker_reservation_id ILIKE '%' || $5::VARCHAR || '%')
 ORDER BY
-    CASE WHEN $6::VARCHAR = 'pickup_date' THEN pickup_date::TIMESTAMP END DESC,
+    CASE WHEN $6::VARCHAR = 'pickup_date' THEN pickup_date::TIMESTAMP END ASC,
     CASE WHEN $6::VARCHAR = 'created_at' OR $6::VARCHAR IS NULL THEN created_at END DESC
 LIMIT  $8::BIGINT
 OFFSET $7::BIGINT
