@@ -38,6 +38,12 @@ var (
 		"Reservation creation failed",
 		api_errors.ErrorDetails{Code: api_errors.CodeReservationCreationFailed},
 	)
+
+	errFlightNumberRequired = api_errors.NewErrorWithDetail(
+		errs.InvalidArgument,
+		"Flight number is required for this office",
+		api_errors.ErrorDetails{Code: api_errors.CodeFlightNumberRequired},
+	)
 )
 
 // BookResponse represents the response returned after a successful booking, including the booking reference number and any relevant details.
@@ -74,8 +80,11 @@ func (s *Service) Book(ctx context.Context, params BookRequest) (*BookResponse, 
 		return nil, err
 	}
 
-	confID, err := bookCarAtBroker(ctx, snapshot, plan, params)
+	confID, err := bookCarAtBroker(snapshot, plan, params)
 	if err != nil {
+		if errors.Is(err, broker.ErrFlightNumberRequired) {
+			return nil, errFlightNumberRequired
+		}
 		return nil, errBookingFailed
 	}
 
@@ -183,7 +192,7 @@ func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode st
 }
 
 // bookCarAtBroker performs the actual booking with the broker using the provided plan details and booking request parameters.
-func bookCarAtBroker(ctx context.Context, snapshot db.AvailablePlansSnapshot, plan planPriceDetails, params BookRequest) (string, error) {
+func bookCarAtBroker(snapshot db.AvailablePlansSnapshot, plan planPriceDetails, params BookRequest) (string, error) {
 	b, err := getBrokerByPlan(plan)
 	if err != nil {
 		rlog.Error("failed to get broker for plan", "RateQualifier", plan.RateQualifier, "error", err)

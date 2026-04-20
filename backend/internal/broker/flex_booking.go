@@ -12,6 +12,10 @@ type flexBookingResponse struct {
 	ErrorMessage  string `xml:"ErrorMessage"`
 }
 
+const flightNumberRequiredErrorMessage = "Flight number required for this office"
+
+var ErrFlightNumberRequired = fmt.Errorf("booking failed: flight number is required for this office")
+
 // Book books a rental using the provided booking parameters and returns a BookingResponse or an error if the booking fails.
 func (f Flex) Book(p BookingParams) (BookingResponse, error) {
 	form := url.Values{}
@@ -51,6 +55,9 @@ func (f Flex) Book(p BookingParams) (BookingResponse, error) {
 	}
 
 	if resp.ReturnCode != 0 {
+		if resp.ErrorMessage == flightNumberRequiredErrorMessage {
+			return BookingResponse{}, ErrFlightNumberRequired
+		}
 		return BookingResponse{}, fmt.Errorf("booking failed with error: %s", resp.ErrorMessage)
 	}
 

@@ -8,4 +8,5 @@ const (
 	CodePlanNotFound                   = "plan_not_found"
 	CodeBookingFailed                  = "booking_failed"
 	CodeReservationCreationFailed      = "reservation_creation_failed"
+	CodeFlightNumberRequired           = "flight_number_required"
 )

@@ -51,6 +51,37 @@ func (q *Queries) CancelReservation(ctx context.Context, id int64) error {
 	return err
 }
 
+const countReservationsByUser = `-- name: CountReservationsByUser :one
+SELECT COUNT(*)::BIGINT AS total
+FROM reservations
+WHERE user_id = $1
+    AND ($2::reservation_status IS NULL OR status = $2::reservation_status)
+    AND ($3::VARCHAR IS NULL OR driver_first_name ILIKE '%' || $3::VARCHAR || '%' OR driver_last_name ILIKE '%' || $3::VARCHAR || '%' OR (driver_first_name || ' ' || driver_last_name) ILIKE '%' || $3::VARCHAR || '%' OR (driver_last_name || ' ' || driver_first_name) ILIKE '%' || $3::VARCHAR || '%')
+    AND ($4::DATE IS NULL OR pickup_date = $4::DATE)
+    AND ($5::VARCHAR IS NULL OR broker_reservation_id ILIKE '%' || $5::VARCHAR || '%')
+`
+
+type CountReservationsByUserParams struct {
+	UserID     int32
+	Status     NullReservationStatus
+	Name       *string
+	PickupDate pgtype.Date
+	BookingID  *string
+}
+
+func (q *Queries) CountReservationsByUser(ctx context.Context, arg CountReservationsByUserParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countReservationsByUser,
+		arg.UserID,
+		arg.Status,
+		arg.Name,
+		arg.PickupDate,
+		arg.BookingID,
+	)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const getReservationByID = `-- name: GetReservationByID :one
 SELECT
     id,
@@ -300,6 +331,7 @@ SELECT
     created_at,
     country_code,
     pickup_date,
+    pickup_location_name,
     driver_title,
     driver_first_name,
     driver_last_name,
@@ -307,15 +339,26 @@ SELECT
     total_price
 FROM reservations
 WHERE user_id = $1
-ORDER BY created_at DESC
-LIMIT $3::int
-OFFSET $2::int
+    AND ($2::reservation_status IS NULL OR status = $2::reservation_status)
+    AND ($3::VARCHAR IS NULL OR driver_first_name ILIKE '%' || $3::VARCHAR || '%' OR driver_last_name ILIKE '%' || $3::VARCHAR || '%' OR (driver_first_name || ' ' || driver_last_name) ILIKE '%' || $3::VARCHAR || '%' OR (driver_last_name || ' ' || driver_first_name) ILIKE '%' || $3::VARCHAR || '%')
+    AND ($4::DATE IS NULL OR pickup_date = $4::DATE)
+    AND ($5::VARCHAR IS NULL OR broker_reservation_id ILIKE '%' || $5::VARCHAR || '%')
+ORDER BY
+    CASE WHEN $6::VARCHAR = 'pickup_date' THEN pickup_date::TIMESTAMP END DESC,
+    CASE WHEN $6::VARCHAR = 'created_at' OR $6::VARCHAR IS NULL THEN created_at END DESC
+LIMIT  $8::BIGINT
+OFFSET $7::BIGINT
 `
 
 type ListReservationsByUserParams struct {
-	UserID      int32
-	QueryOffset int32
-	QueryLimit  int32
+	UserID     int32
+	Status     NullReservationStatus
+	Name       *string
+	PickupDate pgtype.Date
+	BookingID  *string
+	SortBy     string
+	PageOffset int64
+	PageSize   int64
 }
 
 type ListReservationsByUserRow struct {
@@ -324,6 +367,7 @@ type ListReservationsByUserRow struct {
 	CreatedAt           pgtype.Timestamptz
 	CountryCode         string
 	PickupDate          pgtype.Date
+	PickupLocationName  string
 	DriverTitle         string
 	DriverFirstName     string
 	DriverLastName      string
@@ -332,7 +376,16 @@ type ListReservationsByUserRow struct {
 }
 
 func (q *Queries) ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error) {
-	rows, err := q.db.Query(ctx, listReservationsByUser, arg.UserID, arg.QueryOffset, arg.QueryLimit)
+	rows, err := q.db.Query(ctx, listReservationsByUser,
+		arg.UserID,
+		arg.Status,
+		arg.Name,
+		arg.PickupDate,
+		arg.BookingID,
+		arg.SortBy,
+		arg.PageOffset,
+		arg.PageSize,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -346,6 +399,7 @@ func (q *Queries) ListReservationsByUser(ctx context.Context, arg ListReservatio
 			&i.CreatedAt,
 			&i.CountryCode,
 			&i.PickupDate,
+			&i.PickupLocationName,
 			&i.DriverTitle,
 			&i.DriverFirstName,
 			&i.DriverLastName,
