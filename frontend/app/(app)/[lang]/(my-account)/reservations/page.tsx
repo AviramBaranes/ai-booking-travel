@@ -7,9 +7,16 @@ import { Suspense } from "react";
 import { ReservationResultsCounter } from "./_components/ReservationResultsCounter";
 import { ReservationsGrid } from "./_components/ReservationsGrid";
 import { PaginationButtons } from "./_components/filters/PaginationButtons";
+import { ReservationGridSkeleton } from "./_components/ReservationGridSkeleton";
 
-export default async function ReservationDetailsPage() {
+export default async function ReservationDetailsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string>>;
+}) {
   const t = await getTranslations("MyAccount.reservations");
+  const resolvedParams = await searchParams;
+  const suspenseKey = new URLSearchParams(resolvedParams).toString();
   return (
     <main className="w-2/3 mx-auto pt-15 pb-6">
       <NewOrderButton />
@@ -20,6 +27,7 @@ export default async function ReservationDetailsPage() {
         <div className="flex items-center gap-4">
           <SortDropdown />
           <Suspense
+            key={`counter-${suspenseKey}`}
             fallback={
               <p className="text-xs text-text-secondary">
                 {t("showingXResults", {
@@ -32,8 +40,13 @@ export default async function ReservationDetailsPage() {
             <ReservationResultsCounter />
           </Suspense>
         </div>
-        <ReservationsGrid />
-        <Suspense>
+        <Suspense
+          key={`grid-${suspenseKey}`}
+          fallback={<ReservationGridSkeleton />}
+        >
+          <ReservationsGrid />
+        </Suspense>
+        <Suspense key={`pagination-${suspenseKey}`}>
           <PaginationButtons />
         </Suspense>
       </div>
