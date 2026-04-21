@@ -4,8 +4,28 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { login } from "../api/accounts-api";
 import Client, { BaseURL, Local } from "../client";
 import { accounts } from "../client";
+import { JWT } from "next-auth/jwt";
 
-async function refreshAccessToken(token: Record<string, unknown>) {
+// Deduplicates concurrent refresh calls for the same refresh token,
+// preventing a race condition where multiple requests all see an expired
+// token simultaneously and each invalidate the same refresh token.
+const inflightRefreshes = new Map<string, Promise<JWT>>();
+
+async function refreshAccessToken(token: JWT): Promise<JWT> {
+  const refreshToken = token.refreshToken as string;
+
+  const inflight = inflightRefreshes.get(refreshToken);
+  if (inflight) return inflight;
+
+  const promise = doRefreshAccessToken(token).finally(() => {
+    inflightRefreshes.delete(refreshToken);
+  });
+
+  inflightRefreshes.set(refreshToken, promise);
+  return promise;
+}
+
+async function doRefreshAccessToken(token: JWT): Promise<JWT> {
   try {
     // Call the backend directly, bypassing withErrorHandler to avoid
     // triggering getServerSession which would re-enter the JWT callback.
@@ -22,7 +42,7 @@ async function refreshAccessToken(token: Record<string, unknown>) {
       ...token,
       accessToken: refreshed.accessToken,
       refreshToken: refreshed.refreshToken,
-      customExp: Math.floor(Date.now() / 1000) + 60 * 15, // 15 minutes
+      customExp: Math.floor(Date.now() / 1000) + 60 * 14, // 14 minutes
     };
   } catch (error) {
     return { ...token, error: "RefreshTokenExpired" };
@@ -94,7 +114,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger }) {
       // Initial sign in
       if (trigger === "signIn" && user) {
-        const customExp = Math.floor(Date.now() / 1000) + 60 * 15; // 15 minutes
+        const customExp = Math.floor(Date.now() / 1000) + 60 * 14; // 14 minutes
         return { ...token, ...user, customExp };
       }
 
