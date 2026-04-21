@@ -102,6 +102,7 @@ export function CalendarInputRange({
               !value?.from ||
               date < value.from
             }
+            startMonth={value?.from}
             previewFrom={value?.from && !value?.to ? value.from : undefined}
             previewTo={value?.from && !value?.to ? hoverDate : undefined}
             onPreviewDayEnter={(date) => setHoverDate(date)}

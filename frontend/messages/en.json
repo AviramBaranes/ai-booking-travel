@@ -94,7 +94,7 @@
   },
   "SearchForm": {
     "returnDifferentLoc": "Return car at a different location?",
-    "ageRange": "Driver age: 30 - 65",
+    "ageRange": "Driver age: {ageRange}",
     "agePopoverLabel": "What is the driver's age?",
     "save": "Save",
     "hasCoupon": "I have a voucher",

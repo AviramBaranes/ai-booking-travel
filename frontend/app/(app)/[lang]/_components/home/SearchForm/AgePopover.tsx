@@ -9,54 +9,54 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
+import { useTranslations } from "next-intl";
 
 interface AgePopoverProps {
-  checkboxLabel: string;
-  inputLabel: string;
   saveButtonText: string;
   driverAge: number;
   setDriverAge: (age: number) => void;
 }
 
 export function AgePopover({
-  checkboxLabel,
-  inputLabel,
   saveButtonText,
   driverAge,
   setDriverAge,
 }: AgePopoverProps) {
-  const [isAgeNormal, setIsAgeNormal] = useState(
-    driverAge >= 30 && driverAge <= 65,
-  );
-  const [isChangedAge, setIsChangedAge] = useState(false);
+  const t = useTranslations("SearchForm");
+
+  const [isAgeApproved, setIsAgeApproved] = useState(true);
+  const [isChangedAge, setIsChangedAge] = useState(driverAge !== 30);
   const [isValid, setIsValid] = useState(true);
 
   return (
-    <Popover open={!isAgeNormal && !isChangedAge}>
+    <Popover open={!isAgeApproved}>
       <PopoverTrigger asChild>
         <Field orientation="horizontal" className="w-auto shrink-0">
           <Checkbox
-            checked={isAgeNormal}
+            checked={isAgeApproved}
             onCheckedChange={(checked) => {
               if (!checked) {
-                setIsChangedAge(false);
-                setDriverAge(30);
+                setIsAgeApproved(false);
               }
-              setIsAgeNormal(!!checked);
             }}
             id="age-above-30"
             name="age-above-30"
             className="border-white w-3 h-3 rounded-xs bg-navy data-checked:bg-white data-checked:text-navy data-checked:border-white"
           />
           <FieldLabel htmlFor="age-above-30" className="text-white">
-            {checkboxLabel}
+            {t("ageRange", {
+              ageRange:
+                isChangedAge && driverAge >= 18 && driverAge <= 99
+                  ? driverAge
+                  : "30 - 65",
+            })}
           </FieldLabel>
         </Field>
       </PopoverTrigger>
       <PopoverContent className="py-2 w-auto min-w-max" align="end">
         <Field orientation="horizontal" className="flex items-start">
           <FieldLabel htmlFor="age" className="w-fit whitespace-nowrap py-2">
-            {inputLabel}
+            {t("agePopoverLabel")}
           </FieldLabel>
           <div className="flex flex-col items-start">
             <Input
@@ -82,6 +82,7 @@ export function AgePopover({
               }
               setIsValid(true);
               setIsChangedAge(true);
+              setIsAgeApproved(true);
             }}
             className="w-1/4 rounded-sm type-paragraph font-semibold py-5"
           >

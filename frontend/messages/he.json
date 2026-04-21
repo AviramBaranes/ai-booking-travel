@@ -94,7 +94,7 @@
   },
   "SearchForm": {
     "returnDifferentLoc": "החזרת הרכב במקום אחר?",
-    "ageRange": "גיל הנהג/ת: 30 - 65",
+    "ageRange": "גיל הנהג/ת: {ageRange}",
     "agePopoverLabel": "מה גיל הנהג/ת",
     "save": "שמירה",
     "hasCoupon": "יש לי שובר",

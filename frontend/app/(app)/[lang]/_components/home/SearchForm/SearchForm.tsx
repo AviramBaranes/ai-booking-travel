@@ -151,8 +151,6 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
           control={control}
           render={({ field }) => (
             <AgePopover
-              checkboxLabel={t("ageRange")}
-              inputLabel={t("agePopoverLabel")}
               saveButtonText={t("save")}
               driverAge={field.value}
               setDriverAge={field.onChange}
