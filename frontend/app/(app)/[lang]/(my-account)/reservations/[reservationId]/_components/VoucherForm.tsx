@@ -7,10 +7,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { applyVoucher } from "@/shared/api/reservations";
-import { useReservation } from "../_hooks/useReservation";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
+import { useReservation } from "../_hooks/useReservation";
 
 const applyVoucherSchema = zod.object({
   voucherCode: zod.string().min(1, "requiredField"),
@@ -18,10 +18,15 @@ const applyVoucherSchema = zod.object({
 
 type ApplyVoucherFormValues = zod.infer<typeof applyVoucherSchema>;
 
-export function VoucherForm({ reservationId }: { reservationId: number }) {
+export function VoucherForm({
+  reservationId,
+  refetch,
+}: {
+  reservationId: number;
+  refetch?: () => void;
+}) {
   const t = useTranslations("MyAccount.reservation.voucher");
   const tErrors = useTranslations("ApiErrors");
-  const { refetch } = useReservation(reservationId);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const {
@@ -38,7 +43,7 @@ export function VoucherForm({ reservationId }: { reservationId: number }) {
     onSuccess: () => {
       setSuccessMessage(t("successMessage"));
       setTimeout(() => {
-        refetch();
+        refetch?.();
         setSuccessMessage(null);
       }, 2000);
     },

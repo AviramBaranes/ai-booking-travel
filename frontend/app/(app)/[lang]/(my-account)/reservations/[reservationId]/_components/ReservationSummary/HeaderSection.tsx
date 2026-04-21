@@ -6,7 +6,7 @@ import { reservation } from "@/shared/client";
 import { OrderSummaryRow } from "./OrderSummaryRow";
 import { DeleteReservationButton } from "./DeleteReservationButton";
 
-function statusToColor(status: string) {
+export function statusToColor(status: string) {
   switch (status) {
     case "vouchered":
     case "paid":
@@ -17,6 +17,20 @@ function statusToColor(status: string) {
       return "text-brand font-semibold";
     default:
       return "text-navy font-semibold";
+  }
+}
+
+export function statusToBg(status: string) {
+  switch (status) {
+    case "vouchered":
+    case "paid":
+      return "bg-success/10";
+    case "canceled":
+      return "bg-destructive/10";
+    case "booked":
+      return "bg-brand/10";
+    default:
+      return "bg-navy/10";
   }
 }
 

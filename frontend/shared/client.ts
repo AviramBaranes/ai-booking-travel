@@ -1214,11 +1214,17 @@ export namespace reservation {
     }
 
     export interface ListReservationsRequest {
+        SortBy?: string
+        Name?: string
+        BookingID?: string
+        Status?: string
+        PickupDate?: string
         Page: number
     }
 
     export interface ListReservationsResponse {
         reservations: ReservationSummary[]
+        total: number
     }
 
     export interface ReservationSummary {
@@ -1227,6 +1233,7 @@ export namespace reservation {
         createdAt: string
         countryCode: string
         pickupDate: string
+        pickupLocationName: string
         driverTitle: string
         driverFirstName: string
         driverLastName: string
@@ -1265,7 +1272,12 @@ export namespace reservation {
         public async ListReservations(params: ListReservationsRequest): Promise<ListReservationsResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
-                page: String(params.Page),
+                bookingId:  params.BookingID,
+                name:       params.Name,
+                page:       String(params.Page),
+                pickupDate: params.PickupDate,
+                sortBy:     params.SortBy,
+                status:     params.Status,
             })
 
             // Now make the actual call to the API

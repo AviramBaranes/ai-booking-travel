@@ -27,7 +27,8 @@
     "invalid_refresh_token": "Session is invalid, please log in again",
     "expired_refresh_token": "Session has expired, please log in again",
     "invalid_reset_token": "Password reset link is invalid or expired",
-    "cancellation_window_exceeded": "You cannot cancel this reservation, cancellation window has been exceeded"
+    "cancellation_window_exceeded": "You cannot cancel this reservation, cancellation window has been exceeded",
+    "flight_number_required": "Flight number is required for this office"
   },
   "TranslationStatus": {
     "pending": "Pending",
@@ -181,6 +182,12 @@
       "quantity": "Quantity",
       "payAtPickup": "Payment at the station"
     },
+    "expiredSearch": {
+      "title": "Search Expired",
+      "message": "This search is no longer available or invalid. You will be redirected to the results page.",
+      "redirecting": "Redirecting in {seconds} seconds...",
+      "redirectNow": "Redirect now to results"
+    },
     "banner": {
       "pickup": "Pick-up",
       "dropoff": "Drop-off",
@@ -292,6 +299,36 @@
           "canceled": "Canceled",
           "paid": "Paid"
         }
+      }
+    },
+    "reservations": {
+      "newOrder": "New Order",
+      "title": "My Reservations",
+      "filtersLabel": "Search booking by",
+      "bookingIdPlaceholder": "Reservation number",
+      "statusPlaceholder": "Status",
+      "pickupDatePlaceholder": "Pickup date",
+      "driverNamePlaceholder": "Driver name",
+      "searchButton": "Search booking",
+      "created_at": "Sort by creation date",
+      "pickup_date": "Sort by pickup date",
+      "showingXResults": "Showing {count} of {total}",
+      "noReservationsFound": "No reservations found matching the search criteria",
+      "labels": {
+        "pickupDate": "Pickup date",
+        "pickupLocation": "Pickup location",
+        "driverName": "Driver name",
+        "bookingNumber": "Reservation number",
+        "status": "Status"
+      },
+      "buttons": {
+        "cancelOrder": "Cancel booking",
+        "voucherOrder": "Apply voucher"
+      },
+      "voucherDialogTitle": "Apply voucher for reservation #{bookingId}",
+      "pagination": {
+        "prev": "Previous",
+        "next": "Next"
       }
     }
   }

@@ -54,7 +54,7 @@ export function AuthenticatedDropdown() {
         </div>
 
         {/* Profile link */}
-        <Link
+        {/* <Link
           href={`/${lang}/profile`}
           className={navItem(`/${lang}/profile`)}
           onClick={() => setOpen(false)}
@@ -63,7 +63,7 @@ export function AuthenticatedDropdown() {
             className={`size-6 shrink-0 ${pathname.startsWith(`/${lang}/profile`) ? "text-white" : "text-brand"}`}
           />
           <span>{t("profile")}</span>
-        </Link>
+        </Link> */}
 
         {/* Reservations link */}
         <Link

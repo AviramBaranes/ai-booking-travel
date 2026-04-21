@@ -1,4 +1,11 @@
+import { reservation } from "../client";
 import { withErrorHandler } from "./_api";
+
+export function listReservations(params: reservation.ListReservationsRequest) {
+  return withErrorHandler((client) =>
+    client.reservation.ListReservations(params),
+  );
+}
 
 export function getReservationById(reservationId: number) {
   return withErrorHandler((client) =>

@@ -27,7 +27,8 @@
     "invalid_refresh_token": "ההפעלה אינה תקינה, יש להתחבר מחדש",
     "expired_refresh_token": "ההפעלה פגה, יש להתחבר מחדש",
     "invalid_reset_token": "קישור איפוס הסיסמה אינו תקין או שפג תוקפו",
-    "cancellation_window_exceeded": "לא ניתן לבטל הזמנה זו, חלון הביטול חרג"
+    "cancellation_window_exceeded": "לא ניתן לבטל הזמנה זו, חלון הביטול חרג",
+    "flight_number_required": "מספר טיסה נדרש עבור תחנה זו"
   },
   "TranslationStatus": {
     "pending": "ממתין",
@@ -250,9 +251,9 @@
   "MyAccount": {
     "reservation": {
       "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
-      "enterVoucherCode": "הכנס מספר שובר",
       "voucher": {
         "apply": "כרטס הזמנה",
+        "enterVoucherCode": "הכנס מספר שובר",
         "successMessage": "ההזמנה כורטסה בהצלחה!"
       },
       "requiredField": "שדה חובה",
@@ -298,6 +299,36 @@
           "canceled": "בוטל",
           "paid": "שולם"
         }
+      }
+    },
+    "reservations": {
+      "newOrder": "הזמנה חדשה",
+      "title": "ההזמנות שלי",
+      "filtersLabel": "חיפוש הזמנה לפי",
+      "bookingIdPlaceholder": "מספר הזמנה",
+      "statusPlaceholder": "סטטוס",
+      "pickupDatePlaceholder": "תאריך איסוף",
+      "driverNamePlaceholder": "שם הנהג",
+      "searchButton": "חיפוש הזמנה",
+      "created_at": "מיין לפי תאריך יצירה",
+      "pickup_date": "מיין לפי תאריך איסוף",
+      "showingXResults": "מציג {count} מתוך {total}",
+      "noReservationsFound": "לא נמצאו הזמנות עם הקריטריונים האלו",
+      "labels": {
+        "pickupDate": "תאריך לקיחה",
+        "pickupLocation": "מיקום הלקיחה",
+        "driverName": "שם הנהג/ת",
+        "bookingNumber": "מספר הזמנה",
+        "status": "סטטוס"
+      },
+      "buttons": {
+        "cancelOrder": "ביטול הזמנה",
+        "voucherOrder": "כרטוס הזמנה"
+      },
+      "voucherDialogTitle": "כרטוס הזמנה מס' {bookingId}",
+      "pagination": {
+        "prev": "הקודם",
+        "next": "הבא"
       }
     }
   }

@@ -10,7 +10,7 @@ export default async function AccountLayout({
   const lang = await getLang();
   const messages = await getMessages({ locale: lang });
   return (
-    <AppProviders lang={lang} messages={messages}>
+    <AppProviders lang={lang} messages={messages} showDevtools>
       {children}
     </AppProviders>
   );

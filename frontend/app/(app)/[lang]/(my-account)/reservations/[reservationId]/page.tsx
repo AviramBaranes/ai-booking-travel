@@ -1,9 +1,6 @@
-import { Loading } from "@/shared/components/Loading";
 import { getLang } from "@/shared/lang/lang";
 import { redirect } from "next/dist/client/components/navigation";
 import { Suspense } from "react";
-import { SearchDataBannerWrapper } from "./_components/SearchDataBannerWrapper";
-import { SearchDataBannerDisplaySkeleton } from "@/shared/components/booking/SearchDataBannerDisplaySkeleton";
 import { ReservationCarCard } from "./_components/ReservationCarCard";
 import { SelectedCarCardSkeleton } from "@/shared/components/booking/SelectedCarCard/SelectedCarCardSkeleton";
 import { getQueryClient } from "@/shared/hooks/getQueryClient";

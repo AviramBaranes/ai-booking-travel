@@ -65,11 +65,13 @@ export function CarPriceDetails({
       <div className="mx-4">
         <RentalPriceForDays daysCount={daysCount} />
       </div>
-      <FreeCancellationBadge
-        pickupDate={searchRequest.PickupDate}
-        pickupTime={searchRequest.PickupTime}
-        text={t("freeCancellation")}
-      />
+      <div className="mx-4">
+        <FreeCancellationBadge
+          pickupDate={searchRequest.PickupDate}
+          pickupTime={searchRequest.PickupTime}
+          text={t("freeCancellation")}
+        />
+      </div>
       <ContinueToPlansLink
         carIndex={vehicle.id}
         className={clsx("bg-brand type-label p-6 text-white", {

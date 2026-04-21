@@ -1,18 +1,18 @@
 "use client";
 
 import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellationBadge";
-import { useReservation } from "../_hooks/useReservation";
 import { SelectedCarCardWrapper } from "@/shared/components/booking/SelectedCarCard/SelectedCarCardWrapper";
 import { SelectedCarHeader } from "@/shared/components/booking/SelectedCarCard/SelectedCarHeader";
 import { useTranslations } from "next-intl";
 import { VoucherForm } from "./VoucherForm";
+import { useReservation } from "../_hooks/useReservation";
 
 export function ReservationCarCard({
   reservationId,
 }: {
   reservationId: number;
 }) {
-  const { data: reservation } = useReservation(reservationId);
+  const { data: reservation, refetch } = useReservation(reservationId);
   const t = useTranslations("MyAccount.reservation");
 
   return (
@@ -24,7 +24,9 @@ export function ReservationCarCard({
           pickupTime={reservation.pickupTime}
           text={t("freeCancellation")}
         />
-        {!reservation.voucher && <VoucherForm reservationId={reservationId} />}
+        {reservation.status === "booked" && (
+          <VoucherForm reservationId={reservationId} refetch={refetch} />
+        )}
       </SelectedCarCardWrapper>
     </div>
   );

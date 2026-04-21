@@ -17,12 +17,17 @@ import { FieldError } from "react-hook-form";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { SearchFieldHandle } from "./SearchForm";
 import { Ref, useImperativeHandle, useRef, useState } from "react";
+import clsx from "clsx";
 
 interface CalendarInputProps {
   placeholder: string;
-  ref: Ref<SearchFieldHandle>;
+  ref?: Ref<SearchFieldHandle>;
   value?: Date;
   error?: FieldError;
+  showIcon?: boolean;
+  numberOfMonths?: number;
+  align?: "start" | "end" | "center";
+  disabledFn?: (date: Date) => boolean;
   onSelect: (date: Date | undefined) => void;
 }
 
@@ -32,6 +37,10 @@ export function CalendarInput({
   onSelect,
   error,
   ref,
+  disabledFn,
+  numberOfMonths = 2,
+  align = "start",
+  showIcon = true,
 }: CalendarInputProps) {
   const { lang } = useParams();
   const locale = lang === "he" ? he : undefined;
@@ -62,21 +71,26 @@ export function CalendarInput({
                 aria-invalid={!!error}
                 value={displayValue}
                 placeholder={placeholder}
-                className="text-start px-2"
+                className={clsx("text-start", {
+                  "px-2": showIcon,
+                  "px-4": !showIcon,
+                })}
                 ref={triggerRef}
                 readOnly
               />
-              <InputGroupAddon align="inline-start" className="pl-1 pr-0">
-                <CalendarIcon className="size-5 mr-2 text-brand" />
-              </InputGroupAddon>
+              {showIcon && (
+                <InputGroupAddon align="inline-start" className="pl-1 pr-0">
+                  <CalendarIcon className="size-5 mr-2 text-brand" />
+                </InputGroupAddon>
+              )}
             </InputGroup>
           </Field>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent className="w-auto p-0" align={align}>
           <Calendar
             mode="single"
             locale={locale}
-            numberOfMonths={2}
+            numberOfMonths={numberOfMonths}
             selected={value}
             onSelect={(d) => {
               onSelect(d);
@@ -87,10 +101,7 @@ export function CalendarInput({
               day_button:
                 "text-navy data-[selected-single=true]:bg-brand data-[selected-single=true]:text-white",
             }}
-            disabled={(date) =>
-              date < new Date() ||
-              date > new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-            }
+            disabled={disabledFn}
           />
         </PopoverContent>
       </Popover>

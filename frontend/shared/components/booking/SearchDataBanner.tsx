@@ -1,16 +1,14 @@
 "use client";
 
-import { X } from "lucide-react";
 import { useState } from "react";
 import {
   SearchForm,
   SearchFormFields,
 } from "@/app/(app)/[lang]/_components/home/SearchForm/SearchForm";
-import { clsx } from "clsx";
-import { useDirection } from "@/shared/hooks/useDirection";
 import { booking } from "@/shared/client";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 import { SearchDataBannerDisplay } from "./SearchDataBannerDisplay";
+import { SearchDataFormWrapper } from "./SearchDataFormWrapper";
 
 interface SearchDataBannerProps extends Omit<
   SearchFormFields,
@@ -36,7 +34,6 @@ export function SearchDataBanner({
   searchRequest,
   fromCache,
 }: SearchDataBannerProps) {
-  const dir = useDirection();
   const { data } = useAvailableCars(searchRequest, { fromCache });
   const pickUpLocationName = data?.pickupLocationName ?? "";
   const dropOffLocationName = data?.dropoffLocationName ?? "";
@@ -44,14 +41,7 @@ export function SearchDataBanner({
 
   if (showForm) {
     return (
-      <div className="relative bg-navy py-4 px-2 rounded-xl">
-        <X
-          className={clsx("absolute top-2 cursor-pointer text-muted", {
-            "left-2": dir === "rtl",
-            "right-2": dir === "ltr",
-          })}
-          onClick={() => setShowForm(false)}
-        />
+      <SearchDataFormWrapper onClose={() => setShowForm(false)}>
         <SearchForm
           className="w-full"
           pickUpLocation={{
@@ -69,7 +59,7 @@ export function SearchDataBanner({
           couponCode={couponCode}
           driverAge={driverAge}
         />
-      </div>
+      </SearchDataFormWrapper>
     );
   }
 
