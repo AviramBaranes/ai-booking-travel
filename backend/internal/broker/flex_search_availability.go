@@ -127,24 +127,32 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 }
 
 // getYoungDriverFee returns the young driver fee and its currency for the given driver age, rental length, and market.
+// Each info item may be a comma-separated list of key:value:unit segments, e.g.:
+//
+//	"YoungDriverFee:29:$"
+//	"MANDATORY CHARGES - OneWay:149.99:EUR,YoungDriverFee:150.00:EUR,moreinfo:10:$"
 func (f Flex) getYoungDriverFee(info []string) (int, string) {
+	const prefix = "YoungDriverFee:"
 	for _, item := range info {
-		// expected text structure to be YoungDriverFee:fee_amount:fee_currency, e.g. YoungDriverFee:29:$
-		if strings.Contains(item, "YoungDriverFee:") {
-			rlog.Info("parsing young driver fee from plan info", "info_item", item)
-			parts := strings.Split(item, ":")
-			if len(parts) != 3 {
-				rlog.Warn("unexpected young driver fee info format, expected 'YoungDriverFee:fee_amount:fee_currency'", "info_item", item, "parts_count", len(parts))
-				return 0, ""
+		if !strings.Contains(item, prefix) {
+			continue
+		}
+		// Split by comma to handle items that bundle multiple key:value:unit segments.
+		for _, segment := range strings.Split(item, ",") {
+			segment = strings.TrimSpace(segment)
+			if !strings.HasPrefix(segment, prefix) {
+				continue
 			}
 
+			// segment is now "YoungDriverFee:fee_amount:fee_currency"
+			parts := strings.SplitN(segment, ":", 3)
+			if len(parts) != 3 {
+				return 0, ""
+			}
 			fee, err := strconv.ParseFloat(parts[1], 64)
 			if err != nil {
-				rlog.Warn("failed to parse young driver fee amount", "info_item", item, "error", err)
-
 				return 0, ""
 			}
-
 			return int(fee), parts[2]
 		}
 	}
