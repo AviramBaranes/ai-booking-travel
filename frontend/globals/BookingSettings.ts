@@ -37,6 +37,20 @@ export const BookingSettings: GlobalConfig = {
           localized: true,
           required: true,
         },
+        {
+          name: "erpPopupApproveButtonText",
+          label: "טקסט כפתור אישור חלון קופץ",
+          type: "text",
+          localized: true,
+          required: true,
+        },
+        {
+          name: "erpPopupDeclineButtonText",
+          label: "טקסט כפתור דחיית חלון קופץ",
+          type: "text",
+          localized: true,
+          required: true,
+        },
       ],
     },
 

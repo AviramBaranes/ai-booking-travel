@@ -886,6 +886,8 @@ export interface BookingSetting {
   erpContent: string;
   erpPopupTitle: string;
   erpPopupContent: string;
+  erpPopupApproveButtonText: string;
+  erpPopupDeclineButtonText: string;
   youngDriverTitle: string;
   youngDriverContent: string;
   dropoffChargeTitle: string;
@@ -1066,6 +1068,8 @@ export interface BookingSettingsSelect<T extends boolean = true> {
   erpContent?: T;
   erpPopupTitle?: T;
   erpPopupContent?: T;
+  erpPopupApproveButtonText?: T;
+  erpPopupDeclineButtonText?: T;
   youngDriverTitle?: T;
   youngDriverContent?: T;
   dropoffChargeTitle?: T;

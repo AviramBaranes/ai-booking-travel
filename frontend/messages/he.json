@@ -129,7 +129,8 @@
       "inclusionsTitle": "מה התוכנית כוללת?",
       "rentalTerms": "תנאי השכרה",
       "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
-      "continueCta": "יאללה, בוא נתקדם"
+      "continueCta": "יאללה, בוא נתקדם",
+      "erpTotal": "סה״כ:"
     },
     "orderPage": {
       "driverDetails": "פרטי הנהג",

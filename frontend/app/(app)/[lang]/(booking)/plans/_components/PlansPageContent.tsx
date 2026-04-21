@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellationBadge";
+import { useState } from "react";
+import { ErpDialog } from "./ErpDialog";
 
 interface PlansPageContentProps {
   searchRequest: booking.SearchAvailabilityRequest;
@@ -37,6 +39,8 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
 
   const vehicle = useSelectedVehicle(searchRequest);
   const { data } = useAvailableCars(searchRequest, { fromCache: true });
+
+  const [isErpDialogOpen, setIsErpDialogOpen] = useState(false);
 
   if (!vehicle) {
     return <Loading />;
@@ -117,7 +121,13 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
               variant="brand"
               className="mt-4 mx-auto type-paragraph font-bold py-6 px-8 cursor-pointer"
               onClick={() => {
-                router.push(`/${lang}/order?${currentSearchParams.toString()}`);
+                if (isErpSelected) {
+                  router.push(
+                    `/${lang}/order?${currentSearchParams.toString()}`,
+                  );
+                } else {
+                  setIsErpDialogOpen(true);
+                }
               }}
             >
               {t("continueCta")}
@@ -125,6 +135,18 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
           </>
         </SelectedCarCard>
       </div>
+      <ErpDialog
+        open={isErpDialogOpen}
+        onApprove={() => {
+          setIsErpSelected(true);
+          router.push(`/${lang}/order?${currentSearchParams.toString()}`);
+        }}
+        onDecline={() => {
+          router.push(`/${lang}/order?${currentSearchParams.toString()}`);
+        }}
+        erpPrice={vehicle.plans[selectedPlan].erpPrice}
+        erpPriceCurrency={vehicle.priceDetails.currency}
+      />
     </div>
   );
 }

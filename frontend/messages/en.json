@@ -129,7 +129,8 @@
       "inclusionsTitle": "What does the plan include?",
       "rentalTerms": "Rental Terms",
       "freeCancellation": "Free cancellation up to 48 hours before pickup",
-      "continueCta": "Let's continue"
+      "continueCta": "Let's continue",
+      "erpTotal": "Total:"
     },
     "orderPage": {
       "driverDetails": "Driver Details",
