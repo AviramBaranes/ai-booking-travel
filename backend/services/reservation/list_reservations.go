@@ -43,7 +43,7 @@ type ListReservationsResponse struct {
 	Total        int64                `json:"total"`
 }
 
-const listReservationsLimit int64 = 10
+const listReservationsLimit int64 = 8
 
 // encore:api auth method=GET path=/reservations
 func (s Service) ListReservations(ctx context.Context, params ListReservationsRequest) (*ListReservationsResponse, error) {

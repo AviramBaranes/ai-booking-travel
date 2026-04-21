@@ -52,7 +52,7 @@ type BookRequest struct {
 	RateQualifier   string               `json:"rateQualifier" validate:"required"`
 	SupplierCode    string               `json:"supplierCode" validate:"required"`
 	PlanID          string               `json:"planId"`
-	IncludeERP      bool                 `json:"includeERP" validate:"required"`
+	IncludeERP      bool                 `json:"includeERP"`
 	SelectedAddOns  []broker.SelectAddOn `json:"selectedAddOns"`
 	DriverTitle     string               `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Ms'"`
 	DriverFirstName string               `json:"driverFirstName" validate:"required,uppercase_only"`
