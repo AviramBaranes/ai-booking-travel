@@ -130,7 +130,8 @@
       "rentalTerms": "Rental Terms",
       "freeCancellation": "Free cancellation up to 48 hours before pickup",
       "continueCta": "Let's continue",
-      "erpTotal": "Total:"
+      "erpTotal": "Total:",
+      "feesNoteTitle": "Fees payable at the station"
     },
     "orderPage": {
       "driverDetails": "Driver Details",

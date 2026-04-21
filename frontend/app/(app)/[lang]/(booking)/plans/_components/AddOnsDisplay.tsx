@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useAddonsGallery } from "@/shared/hooks/useAddonsGallery";
+import { Box } from "lucide-react";
 
 interface AddOnsDisplayProps {
   addons: broker.AddOn[];
@@ -75,13 +76,17 @@ export function AddOnsDisplay({
               className="bg-white border-border-muted rounded-2xl"
             >
               <div className="bg-white rounded-t-2xl shadow-card">
-                <Image
-                  src={media?.url ?? ""}
-                  alt={media?.alt ?? name ?? "add-on image"}
-                  width={200}
-                  height={200}
-                  className="w-50 h-50 mx-auto"
-                />
+                {media?.url ? (
+                  <Image
+                    src={media.url}
+                    alt={media?.alt ?? name ?? "add-on image"}
+                    width={200}
+                    height={200}
+                    className="w-50 h-50 mx-auto"
+                  />
+                ) : (
+                  <Box className="w-50 h-50 mx-auto text-muted" />
+                )}
               </div>
               <div className="m-6 border-b border-border-muted bg-white pb-6">
                 <p className="type-paragraph font-bold text-navy w-2/3">

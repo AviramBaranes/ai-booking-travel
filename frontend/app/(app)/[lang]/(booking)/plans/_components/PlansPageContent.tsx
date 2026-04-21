@@ -19,6 +19,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellationBadge";
 import { useState } from "react";
 import { ErpDialog } from "./ErpDialog";
+import { FeesNote } from "./FeesNote";
 
 interface PlansPageContentProps {
   searchRequest: booking.SearchAvailabilityRequest;
@@ -49,7 +50,7 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
   return (
     <div className="flex gap-4">
       <div className="w-3/4">
-        <div className="flex gap-4">
+        <div className="flex gap-4 mb-6">
           <div className="w-1/2">
             <InclusionsDisplay
               title={t("inclusionsTitle")}
@@ -63,6 +64,7 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
             />
           </div>
         </div>
+        <FeesNote vehicle={vehicle} />
         <div className="flex justify-between items-center my-6">
           <div className="flex gap-4">
             {vehicle.plans.length > 1 && (

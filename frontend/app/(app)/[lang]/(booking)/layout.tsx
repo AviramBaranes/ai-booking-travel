@@ -11,7 +11,7 @@ export default async function BookingLayout({
   const messages = await getMessages({ locale: lang });
 
   return (
-    <AppProviders lang={lang} messages={messages}>
+    <AppProviders lang={lang} messages={messages} showDevtools>
       {children}
     </AppProviders>
   );
