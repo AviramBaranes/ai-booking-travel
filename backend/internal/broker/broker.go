@@ -97,9 +97,11 @@ type AvailableVehicle struct {
 
 // PriceDetails represents the pricing details of a rental, including the currency, drop charge, and drop charge currency.
 type PriceDetails struct {
-	Currency           string `json:"currency"`
-	DropCharge         int    `json:"dropCharge"`
-	DropChargeCurrency string `json:"dropChargeCurrency"`
+	Currency               string `json:"currency"`
+	DropCharge             int    `json:"dropCharge"`
+	DropChargeCurrency     string `json:"dropChargeCurrency"`
+	YoungDriverFee         int    `json:"youngDriverFee"`
+	YoungDriverFeeCurrency string `json:"youngDriverFeeCurrency"`
 }
 
 // LocationDetails represents the details of a rental location, including delivery collection, pickup and return branch addresses and phone numbers, location type, and pickup notes.

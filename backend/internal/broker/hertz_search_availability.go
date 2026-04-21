@@ -147,10 +147,12 @@ func (h Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, r
 			continue
 		}
 
-		info := getInfo(p.DriverAge, dayCount, p.CountryCode, planName)
+		info := h.getInfo(p.DriverAge, dayCount, p.CountryCode, planName)
 		if chargeDetails.payAtPickup > 0 {
 			info = append([]string{fmt.Sprintf("PayAtPickup:%d:%s", pricing.RoundToInt(chargeDetails.payAtPickup), chargeDetails.payAtPickupCurrency)}, info...)
 		}
+
+		ydFee, ydFeeCurrency := h.getYoungDriverFee(p.DriverAge, dayCount, p.CountryCode)
 
 		availableVehicles = append(availableVehicles, AvailableVehicle{
 			Broker: h.Name(),
@@ -184,9 +186,11 @@ func (h Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, r
 				LocationType: locationType,
 			},
 			PriceDetails: PriceDetails{
-				Currency:           chargeDetails.currency,
-				DropCharge:         pricing.RoundToInt(chargeDetails.dropCharge),
-				DropChargeCurrency: chargeDetails.dropChargeCurrency,
+				Currency:               chargeDetails.currency,
+				DropCharge:             pricing.RoundToInt(chargeDetails.dropCharge),
+				DropChargeCurrency:     chargeDetails.dropChargeCurrency,
+				YoungDriverFee:         ydFee,
+				YoungDriverFeeCurrency: ydFeeCurrency,
 			},
 		})
 	}
@@ -221,23 +225,32 @@ func getPlanInclusions(countryCode, planName string) []string {
 }
 
 // getInfo builds plan notes for the driver, market, and rental length.
-func getInfo(driverAge, dayCount int, countryCode, planName string) []string {
+func (h Hertz) getInfo(driverAge, dayCount int, countryCode, planName string) []string {
 	info, _ := hertzTermsMap[planName]
 	infoCopy := make([]string, len(info))
 	copy(infoCopy, info)
 
-	if driverAge < 25 {
-		if countryCode == "US" {
-			extraCharge := 29 * dayCount
-			infoCopy = append(infoCopy, fmt.Sprintf("YoungDriverFee:%d:$", extraCharge))
-		}
-		if countryCode == "CA" {
-			extraCharge := 15 * dayCount
-			infoCopy = append(infoCopy, fmt.Sprintf("YoungDriverFee:%d:CAD", extraCharge))
-		}
+	ydFee, ydFeeCurrency := h.getYoungDriverFee(driverAge, dayCount, countryCode)
+	if ydFee > 0 {
+		infoCopy = append(infoCopy, fmt.Sprintf("YoungDriverFee:%d:%s", ydFee, ydFeeCurrency))
 	}
 
 	return infoCopy
+}
+
+// getYoungDriverFee returns the young driver fee and its currency for the given driver age, rental length, and market.
+func (h Hertz) getYoungDriverFee(driverAge, dayCount int, countryCode string) (int, string) {
+	if driverAge >= 25 {
+		return 0, ""
+	}
+	if countryCode == "US" {
+		return 29 * dayCount, "$"
+	}
+	if countryCode == "CA" {
+		return 15 * dayCount, "CAD"
+	}
+
+	return 0, ""
 }
 
 // hertzChargeDetails holds the price-related values parsed from Hertz charges.

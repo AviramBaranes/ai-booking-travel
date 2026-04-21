@@ -98,6 +98,8 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 			continue
 		}
 
+		ydFee, ydFeeCurrency := f.getYoungDriverFee(c.Information)
+
 		car := AvailableVehicle{
 			Broker:          BrokerFlex,
 			CarDetails:      carDetails,
@@ -105,9 +107,11 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 			AddOns:          addOns,
 			LocationDetails: getLocationDetails(supplierDetails),
 			PriceDetails: PriceDetails{
-				Currency:           c.Currency,
-				DropCharge:         pricing.RoundToInt(c.DropCharge),
-				DropChargeCurrency: c.DropChargeCurrency,
+				Currency:               c.Currency,
+				DropCharge:             pricing.RoundToInt(c.DropCharge),
+				DropChargeCurrency:     c.DropChargeCurrency,
+				YoungDriverFee:         ydFee,
+				YoungDriverFeeCurrency: ydFeeCurrency,
 			},
 		}
 
@@ -120,6 +124,32 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 	}
 
 	return out, nil
+}
+
+// getYoungDriverFee returns the young driver fee and its currency for the given driver age, rental length, and market.
+func (f Flex) getYoungDriverFee(info []string) (int, string) {
+	for _, item := range info {
+		// expected text structure to be YoungDriverFee:fee_amount:fee_currency, e.g. YoungDriverFee:29:$
+		if strings.Contains(item, "YoungDriverFee:") {
+			rlog.Info("parsing young driver fee from plan info", "info_item", item)
+			parts := strings.Split(item, ":")
+			if len(parts) != 3 {
+				rlog.Warn("unexpected young driver fee info format, expected 'YoungDriverFee:fee_amount:fee_currency'", "info_item", item, "parts_count", len(parts))
+				return 0, ""
+			}
+
+			fee, err := strconv.ParseFloat(parts[1], 64)
+			if err != nil {
+				rlog.Warn("failed to parse young driver fee amount", "info_item", item, "error", err)
+
+				return 0, ""
+			}
+
+			return int(fee), parts[2]
+		}
+	}
+
+	return 0, ""
 }
 
 // createAddOnMap returns a map of supplier name to addOn slice

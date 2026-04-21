@@ -1343,6 +1343,8 @@ export namespace broker {
         currency: string
         dropCharge: number
         dropChargeCurrency: string
+        youngDriverFee: number
+        youngDriverFeeCurrency: string
     }
 
     /**
