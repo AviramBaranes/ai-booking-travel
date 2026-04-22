@@ -12,6 +12,7 @@ import (
 	"encore.app/internal/validation"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
+	"encore.app/services/notifications"
 	"encore.app/services/reservation"
 	"encore.dev/beta/errs"
 	"encore.dev/rlog"
@@ -93,6 +94,9 @@ func (s *Service) Book(ctx context.Context, params BookRequest) (*BookResponse, 
 	if err != nil {
 		rlog.Error("failed to create reservation after successful booking",
 			"confirmationNumber", confID, "error", err)
+		notifications.CriticalErrorEventTopic.Publish(ctx, &notifications.CriticalErrorEvent{
+			Message: fmt.Sprintf("failed to create reservation after successful booking, confirmationNumber: %s, error: %v", confID, err),
+		})
 		return nil, errReservationCreationFailed
 	}
 
