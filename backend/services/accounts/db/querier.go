@@ -28,6 +28,7 @@ type Querier interface {
 	GetUserById(ctx context.Context, id int32) (User, error)
 	GetUserByPhone(ctx context.Context, phoneNumber *string) (int32, error)
 	ListAdmins(ctx context.Context) ([]ListAdminsRow, error)
+	ListAdminsEmails(ctx context.Context) ([]string, error)
 	ListAgents(ctx context.Context, arg ListAgentsParams) ([]ListAgentsRow, error)
 	ListContacts(ctx context.Context, arg ListContactsParams) ([]ListContactsRow, error)
 	ListOffices(ctx context.Context, arg ListOfficesParams) ([]ListOfficesRow, error)

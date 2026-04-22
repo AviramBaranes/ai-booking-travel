@@ -242,6 +242,32 @@ func (q *Queries) ListAdmins(ctx context.Context) ([]ListAdminsRow, error) {
 	return items, nil
 }
 
+const listAdminsEmails = `-- name: ListAdminsEmails :many
+SELECT email
+FROM users
+WHERE role = 'admin'
+`
+
+func (q *Queries) ListAdminsEmails(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, listAdminsEmails)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var email string
+		if err := rows.Scan(&email); err != nil {
+			return nil, err
+		}
+		items = append(items, email)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAgents = `-- name: ListAgents :many
 SELECT u.id, u.role, u.email, u.phone_number, u.office_id, u.last_login, u.created_at, u.updated_at,
        o.name AS office_name,

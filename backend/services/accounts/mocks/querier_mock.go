@@ -322,6 +322,21 @@ func (mr *MockQuerierMockRecorder) ListAdmins(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAdmins", reflect.TypeOf((*MockQuerier)(nil).ListAdmins), ctx)
 }
 
+// ListAdminsEmails mocks base method.
+func (m *MockQuerier) ListAdminsEmails(ctx context.Context) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAdminsEmails", ctx)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAdminsEmails indicates an expected call of ListAdminsEmails.
+func (mr *MockQuerierMockRecorder) ListAdminsEmails(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAdminsEmails", reflect.TypeOf((*MockQuerier)(nil).ListAdminsEmails), ctx)
+}
+
 // ListAgents mocks base method.
 func (m *MockQuerier) ListAgents(ctx context.Context, arg db.ListAgentsParams) ([]db.ListAgentsRow, error) {
 	m.ctrl.T.Helper()

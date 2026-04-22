@@ -71,3 +71,7 @@ SET
 WHERE id = sqlc.arg(id)
 RETURNING id, role, email, phone_number, office_id, last_login, created_at, updated_at;
 
+-- name: ListAdminsEmails :many
+SELECT email
+FROM users
+WHERE role = 'admin';

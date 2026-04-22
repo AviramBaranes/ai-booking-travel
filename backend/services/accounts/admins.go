@@ -143,3 +143,18 @@ func (s *Service) CreateAdmin(ctx context.Context, params CreateAdminRequest) (*
 		ID: row.ID,
 	}, nil
 }
+
+type ListAdminsEmailsResponse struct {
+	Emails []string `json:"emails"`
+}
+
+// encore:api private method=GET path=/admins/emails
+func (s *Service) ListAdminsEmails(ctx context.Context) (*ListAdminsEmailsResponse, error) {
+	rows, err := s.query.ListAdminsEmails(ctx)
+	if err != nil {
+		rlog.Error("failed to list admin emails", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	return &ListAdminsEmailsResponse{Emails: rows}, nil
+}
