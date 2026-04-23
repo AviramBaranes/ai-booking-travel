@@ -8,6 +8,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/jwt"
+	"encore.app/internal/lang"
 	"encore.app/internal/password"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
@@ -205,9 +206,12 @@ func (s *Service) SendCustomerLoginOTP(ctx context.Context, params SendCustomerL
 		return api_errors.ErrInternalError
 	}
 
+	lang := lang.FromContext(ctx, "he")
+
 	if _, err := CustomerLoginOTPRequestedTopic.Publish(ctx, &CustomerLoginOTPRequestedEvent{
 		PhoneNumber: params.PhoneNumber,
 		OTP:         otp,
+		LangCode:    lang,
 	}); err != nil {
 		rlog.Error("failed to publish customer login OTP requested event", "phone_number", params.PhoneNumber, "error", err)
 		return api_errors.ErrInternalError
@@ -217,8 +221,9 @@ func (s *Service) SendCustomerLoginOTP(ctx context.Context, params SendCustomerL
 }
 
 type CustomerLoginOTPRequestedEvent struct {
-	PhoneNumber string `json:"phoneNumber"`
-	OTP         string `json:"otp"`
+	PhoneNumber string
+	OTP         string
+	LangCode    string
 }
 
 var CustomerLoginOTPRequestedTopic = pubsub.NewTopic[*CustomerLoginOTPRequestedEvent](

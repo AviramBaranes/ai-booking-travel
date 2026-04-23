@@ -9,6 +9,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/jwt"
+	"encore.app/internal/lang"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
 	"encore.app/services/accounts/mocks"
@@ -510,6 +511,46 @@ func TestSendCustomerLoginOTP(t *testing.T) {
 		publishedAfter := len(et.Topic(CustomerLoginOTPRequestedTopic).PublishedMessages())
 		if publishedAfter != publishedBefore+1 {
 			t.Fatalf("Expected one published OTP event, before=%d after=%d", publishedBefore, publishedAfter)
+		}
+
+		published := et.Topic(CustomerLoginOTPRequestedTopic).PublishedMessages()
+		last := published[len(published)-1]
+		if last == nil {
+			t.Fatal("Expected published OTP event payload")
+		}
+		if last.LangCode != "he" {
+			t.Fatalf("Expected default lang code 'he', got %q", last.LangCode)
+		}
+	})
+
+	t.Run("Success: uses lang from context (en)", func(t *testing.T) {
+		phoneNumber := randomIsraeliPhoneNumber()
+		_, cleanup, err := createCustomer(ctx, phoneNumber, nil)
+		if err != nil {
+			t.Fatalf("Failed to create customer: %v", err)
+		}
+		defer cleanup()
+
+		ctxWithLang := context.WithValue(ctx, lang.ContextKey, "en")
+
+		publishedBefore := len(et.Topic(CustomerLoginOTPRequestedTopic).PublishedMessages())
+
+		err = SendCustomerLoginOTP(ctxWithLang, SendCustomerLoginOTPParams{PhoneNumber: phoneNumber})
+		if err != nil {
+			t.Fatalf("Expected no error, got %v", err)
+		}
+
+		published := et.Topic(CustomerLoginOTPRequestedTopic).PublishedMessages()
+		if len(published) != publishedBefore+1 {
+			t.Fatalf("Expected one published OTP event, before=%d after=%d", publishedBefore, len(published))
+		}
+
+		last := published[len(published)-1]
+		if last == nil {
+			t.Fatal("Expected published OTP event payload")
+		}
+		if last.LangCode != "en" {
+			t.Fatalf("Expected lang code 'en', got %q", last.LangCode)
 		}
 	})
 }

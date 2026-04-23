@@ -8,7 +8,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
-	"encore.app/internal/middleware"
+	"encore.app/internal/lang"
 	"encore.app/internal/pricing"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
@@ -94,7 +94,7 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 
 			inclusions := p.PlanInclusions
 			info := p.Info
-			if lang, ok := ctx.Value(middleware.LangContextKey).(string); ok && lang == "he" {
+			if lang.FromContext(ctx, "en") == "he" {
 				inclusions = s.translatePlanDetails(ctx, inclusions)
 				info = s.translatePlanDetails(ctx, info)
 			}
