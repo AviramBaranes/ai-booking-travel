@@ -128,6 +128,61 @@ func (q *Queries) CreateAgent(ctx context.Context, arg CreateAgentParams) (Creat
 	return i, err
 }
 
+const createCustomer = `-- name: CreateCustomer :one
+INSERT INTO users (role, email, phone_number, otp, password_hash, created_at, updated_at)
+VALUES (
+  'customer',
+  $1,
+  $2,
+  $3::varchar,
+  $4,
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
+)
+RETURNING id, role, email, phone_number, otp, office_id, last_login, created_at, updated_at
+`
+
+type CreateCustomerParams struct {
+	Email        string
+	PhoneNumber  *string
+	Otp          *string
+	PasswordHash string
+}
+
+type CreateCustomerRow struct {
+	ID          int32
+	Role        UserRole
+	Email       string
+	PhoneNumber *string
+	Otp         *string
+	OfficeID    *int32
+	LastLogin   pgtype.Timestamptz
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
+func (q *Queries) CreateCustomer(ctx context.Context, arg CreateCustomerParams) (CreateCustomerRow, error) {
+	row := q.db.QueryRow(ctx, createCustomer,
+		arg.Email,
+		arg.PhoneNumber,
+		arg.Otp,
+		arg.PasswordHash,
+	)
+	var i CreateCustomerRow
+	err := row.Scan(
+		&i.ID,
+		&i.Role,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.Otp,
+		&i.OfficeID,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users
 WHERE id = $1
@@ -187,15 +242,27 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
 }
 
 const getUserByPhone = `-- name: GetUserByPhone :one
-SELECT id FROM users
+SELECT id, role, email, phone_number, otp, office_id, password_hash, last_login, created_at, updated_at
+FROM users
 WHERE phone_number = $1
 `
 
-func (q *Queries) GetUserByPhone(ctx context.Context, phoneNumber *string) (int32, error) {
+func (q *Queries) GetUserByPhone(ctx context.Context, phoneNumber *string) (User, error) {
 	row := q.db.QueryRow(ctx, getUserByPhone, phoneNumber)
-	var id int32
-	err := row.Scan(&id)
-	return id, err
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Role,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.Otp,
+		&i.OfficeID,
+		&i.PasswordHash,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const listAdmins = `-- name: ListAdmins :many
@@ -340,6 +407,24 @@ func (q *Queries) ListAgents(ctx context.Context, arg ListAgentsParams) ([]ListA
 		return nil, err
 	}
 	return items, nil
+}
+
+const saveOTP = `-- name: SaveOTP :exec
+UPDATE users
+SET
+  otp = $2
+WHERE
+  id = $1
+`
+
+type SaveOTPParams struct {
+	ID  int32
+	Otp *string
+}
+
+func (q *Queries) SaveOTP(ctx context.Context, arg SaveOTPParams) error {
+	_, err := q.db.Exec(ctx, saveOTP, arg.ID, arg.Otp)
+	return err
 }
 
 const updateUser = `-- name: UpdateUser :one

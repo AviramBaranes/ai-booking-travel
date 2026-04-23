@@ -56,12 +56,12 @@ func (s *Service) UpdateUser(ctx context.Context, id int32, params UpdateUserReq
 
 	// Check phone uniqueness
 	if params.PhoneNumber != nil {
-		existingID, err := s.query.GetUserByPhone(ctx, params.PhoneNumber)
+		user, err := s.query.GetUserByPhone(ctx, params.PhoneNumber)
 		if err != nil && !errors.Is(err, db.ErrNoRows) {
 			rlog.Error("failed to check phone uniqueness", "error", err)
 			return nil, api_errors.ErrInternalError
 		}
-		if existingID != 0 && existingID != id {
+		if user.ID != 0 && user.ID != id {
 			return nil, ErrPhoneAlreadyExists
 		}
 	}

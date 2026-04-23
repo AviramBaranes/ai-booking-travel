@@ -8,6 +8,19 @@ INSERT INTO users (role, email, password_hash, created_at, updated_at)
 VALUES ('admin', sqlc.arg(email), sqlc.arg(password_hash), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 RETURNING id, role, email, office_id, last_login, created_at, updated_at;
 
+-- name: CreateCustomer :one
+INSERT INTO users (role, email, phone_number, otp, password_hash, created_at, updated_at)
+VALUES (
+  'customer',
+  sqlc.arg(email),
+  sqlc.arg(phone_number),
+  sqlc.narg(otp)::varchar,
+  sqlc.arg(password_hash),
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP
+)
+RETURNING id, role, email, phone_number, otp, office_id, last_login, created_at, updated_at;
+
 -- name: GetUserById :one
 SELECT *
 FROM users
@@ -27,7 +40,8 @@ FROM users
 WHERE email = $1;
 
 -- name: GetUserByPhone :one
-SELECT id FROM users
+SELECT *
+FROM users
 WHERE phone_number = $1;
 
 -- name: ListAgents :many
@@ -75,3 +89,10 @@ RETURNING id, role, email, phone_number, office_id, last_login, created_at, upda
 SELECT email
 FROM users
 WHERE role = 'admin';
+
+-- name: SaveOTP :exec
+UPDATE users
+SET
+  otp = $2
+WHERE
+  id = $1;

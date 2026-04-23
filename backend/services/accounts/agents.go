@@ -45,7 +45,7 @@ type ListAgentsResponse struct {
 type CreateAgentRequest struct {
 	Email       string `json:"email" validate:"required,email"`
 	Password    string `json:"password" validate:"required,min=8" encore:"sensitive"`
-	PhoneNumber string `json:"phoneNumber" validate:"required"`
+	PhoneNumber string `json:"phoneNumber" validate:"required,israeli_phone"`
 	OfficeID    int32  `json:"officeId" validate:"required,gte=1"`
 }
 

@@ -161,6 +161,21 @@ func (mr *MockQuerierMockRecorder) CreateContact(ctx, arg any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateContact", reflect.TypeOf((*MockQuerier)(nil).CreateContact), ctx, arg)
 }
 
+// CreateCustomer mocks base method.
+func (m *MockQuerier) CreateCustomer(ctx context.Context, arg db.CreateCustomerParams) (db.CreateCustomerRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateCustomer", ctx, arg)
+	ret0, _ := ret[0].(db.CreateCustomerRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateCustomer indicates an expected call of CreateCustomer.
+func (mr *MockQuerierMockRecorder) CreateCustomer(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCustomer", reflect.TypeOf((*MockQuerier)(nil).CreateCustomer), ctx, arg)
+}
+
 // CreateOffice mocks base method.
 func (m *MockQuerier) CreateOffice(ctx context.Context, arg db.CreateOfficeParams) (db.Office, error) {
 	m.ctrl.T.Helper()
@@ -293,10 +308,10 @@ func (mr *MockQuerierMockRecorder) GetUserById(ctx, id any) *gomock.Call {
 }
 
 // GetUserByPhone mocks base method.
-func (m *MockQuerier) GetUserByPhone(ctx context.Context, phoneNumber *string) (int32, error) {
+func (m *MockQuerier) GetUserByPhone(ctx context.Context, phoneNumber *string) (db.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByPhone", ctx, phoneNumber)
-	ret0, _ := ret[0].(int32)
+	ret0, _ := ret[0].(db.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -395,6 +410,20 @@ func (m *MockQuerier) ListOrganizations(ctx context.Context, arg db.ListOrganiza
 func (mr *MockQuerierMockRecorder) ListOrganizations(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganizations", reflect.TypeOf((*MockQuerier)(nil).ListOrganizations), ctx, arg)
+}
+
+// SaveOTP mocks base method.
+func (m *MockQuerier) SaveOTP(ctx context.Context, arg db.SaveOTPParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveOTP", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveOTP indicates an expected call of SaveOTP.
+func (mr *MockQuerierMockRecorder) SaveOTP(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveOTP", reflect.TypeOf((*MockQuerier)(nil).SaveOTP), ctx, arg)
 }
 
 // SaveRefreshToken mocks base method.

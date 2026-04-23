@@ -447,3 +447,163 @@ func TestLoginBackToAdmin(t *testing.T) {
 		assertAccessClaims(t, accessClaims, &adminUser)
 	})
 }
+
+func TestSendCustomerLoginOTP(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("Validation: missing phone number", func(t *testing.T) {
+		err := (SendCustomerLoginOTPParams{}).Validate()
+		api_errors.AssertApiError(t, invalidValueErr("phoneNumber"), err)
+	})
+
+	t.Run("User not found", func(t *testing.T) {
+		err := SendCustomerLoginOTP(ctx, SendCustomerLoginOTPParams{PhoneNumber: randomIsraeliPhoneNumber()})
+		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
+	})
+
+	t.Run("User found but role is not customer", func(t *testing.T) {
+		agentPhone := randomIsraeliPhoneNumber()
+		agentEmail := generateTestEmail()
+		_, delAgent, err := createAgent(ctx, CreateAgentRequest{
+			Email:       agentEmail,
+			Password:    testPassword,
+			PhoneNumber: agentPhone,
+		})
+		if err != nil {
+			t.Fatalf("Failed to create agent: %v", err)
+		}
+		defer delAgent()
+
+		err = SendCustomerLoginOTP(ctx, SendCustomerLoginOTPParams{PhoneNumber: agentPhone})
+		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
+	})
+
+	t.Run("Success: OTP saved and event published", func(t *testing.T) {
+		phoneNumber := randomIsraeliPhoneNumber()
+		customer, cleanup, err := createCustomer(ctx, phoneNumber, nil)
+		if err != nil {
+			t.Fatalf("Failed to create customer: %v", err)
+		}
+		defer cleanup()
+
+		publishedBefore := len(et.Topic(CustomerLoginOTPRequestedTopic).PublishedMessages())
+
+		err = SendCustomerLoginOTP(ctx, SendCustomerLoginOTPParams{PhoneNumber: phoneNumber})
+		if err != nil {
+			t.Fatalf("Expected no error, got %v", err)
+		}
+
+		updatedUser, err := query.GetUserByPhone(ctx, &phoneNumber)
+		if err != nil {
+			t.Fatalf("Failed to fetch customer after send OTP: %v", err)
+		}
+		if updatedUser.ID != customer.ID {
+			t.Fatalf("Expected customer ID %d, got %d", customer.ID, updatedUser.ID)
+		}
+		if updatedUser.Otp == nil {
+			t.Fatal("Expected OTP to be saved")
+		}
+		if len(*updatedUser.Otp) != 6 {
+			t.Fatalf("Expected OTP with length 6, got %q", *updatedUser.Otp)
+		}
+
+		publishedAfter := len(et.Topic(CustomerLoginOTPRequestedTopic).PublishedMessages())
+		if publishedAfter != publishedBefore+1 {
+			t.Fatalf("Expected one published OTP event, before=%d after=%d", publishedBefore, publishedAfter)
+		}
+	})
+}
+
+func TestValidateCustomerLoginOTP(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("Validation: missing otp", func(t *testing.T) {
+		err := (ValidateCustomerLoginOTPParams{PhoneNumber: randomIsraeliPhoneNumber()}).Validate()
+		api_errors.AssertApiError(t, invalidValueErr("otp"), err)
+	})
+
+	t.Run("User not found", func(t *testing.T) {
+		_, err := ValidateCustomerLoginOTP(ctx, ValidateCustomerLoginOTPParams{
+			PhoneNumber: randomIsraeliPhoneNumber(),
+			OTP:         "123456",
+		})
+		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
+	})
+
+	t.Run("Incorrect OTP", func(t *testing.T) {
+		phoneNumber := randomIsraeliPhoneNumber()
+		otp := "123456"
+		_, cleanup, err := createCustomer(ctx, phoneNumber, &otp)
+		if err != nil {
+			t.Fatalf("Failed to create customer: %v", err)
+		}
+		defer cleanup()
+
+		_, err = ValidateCustomerLoginOTP(ctx, ValidateCustomerLoginOTPParams{
+			PhoneNumber: phoneNumber,
+			OTP:         "654321",
+		})
+		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
+	})
+
+	t.Run("Success: valid response and OTP cleared", func(t *testing.T) {
+		phoneNumber := randomIsraeliPhoneNumber()
+		otp := "123456"
+		customer, cleanup, err := createCustomer(ctx, phoneNumber, &otp)
+		if err != nil {
+			t.Fatalf("Failed to create customer: %v", err)
+		}
+		defer cleanup()
+
+		resp, err := ValidateCustomerLoginOTP(ctx, ValidateCustomerLoginOTPParams{
+			PhoneNumber: phoneNumber,
+			OTP:         otp,
+		})
+		if err != nil {
+			t.Fatalf("Expected no error, got %v", err)
+		}
+		if resp.ID != customer.ID {
+			t.Fatalf("Expected response ID %d, got %d", customer.ID, resp.ID)
+		}
+		if resp.Role != db.UserRoleCustomer {
+			t.Fatalf("Expected role customer, got %s", resp.Role)
+		}
+		if resp.AccessToken == "" {
+			t.Fatal("Expected access token")
+		}
+		if resp.RefreshToken == "" {
+			t.Fatal("Expected refresh token")
+		}
+
+		updatedUser, err := query.GetUserByPhone(ctx, &phoneNumber)
+		if err != nil {
+			t.Fatalf("Failed to fetch customer after validate OTP: %v", err)
+		}
+		if updatedUser.Otp != nil {
+			t.Fatal("Expected OTP to be cleared after successful validation")
+		}
+	})
+}
+
+func createCustomer(ctx context.Context, phoneNumber string, otp *string) (db.User, func(), error) {
+	_, err := query.CreateCustomer(ctx, db.CreateCustomerParams{
+		Email:        generateTestEmail(),
+		PhoneNumber:  &phoneNumber,
+		Otp:          otp,
+		PasswordHash: "test-password-hash",
+	})
+	if err != nil {
+		return db.User{}, nil, err
+	}
+
+	user, err := query.GetUserByPhone(ctx, &phoneNumber)
+	if err != nil {
+		return db.User{}, nil, err
+	}
+
+	cleanup := func() {
+		_ = query.DeleteUser(ctx, user.ID)
+	}
+
+	return user, cleanup, nil
+}
