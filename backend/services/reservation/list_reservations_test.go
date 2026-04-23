@@ -148,9 +148,9 @@ func TestListReservations(t *testing.T) {
 		if len(resp.Reservations) < 2 {
 			t.Fatalf("expected at least 2 reservations, got %d", len(resp.Reservations))
 		}
-		// Verify sorted by pickup_date DESC.
-		if resp.Reservations[0].PickupDate < resp.Reservations[1].PickupDate {
-			t.Fatalf("expected pickup_date DESC, got %s before %s",
+		// Verify sorted by pickup_date ASC.
+		if resp.Reservations[0].PickupDate > resp.Reservations[1].PickupDate {
+			t.Fatalf("expected pickup_date ASC, got %s before %s",
 				resp.Reservations[0].PickupDate, resp.Reservations[1].PickupDate)
 		}
 	})

@@ -319,7 +319,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 		q, ms := userMockService(t)
 		q.EXPECT().GetUserByPhone(gomock.Any(), gomock.Any()).
-			Return(int32(0), errors.New("db error"))
+			Return(db.User{}, errors.New("db error"))
 
 		_, err := ms.UpdateUser(ctx, 1, UpdateUserRequest{
 			PhoneNumber: ptrStr("0501234567"),
