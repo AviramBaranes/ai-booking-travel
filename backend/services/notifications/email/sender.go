@@ -18,6 +18,7 @@ type Sender struct {
 	adr  string
 }
 
+// NewSender creates a new Sender with the given email credentials and SMTP server information.
 func NewSender(from, password, host string, port int) Sender {
 	auth := smtp.PlainAuth(
 		"",
@@ -33,6 +34,7 @@ func NewSender(from, password, host string, port int) Sender {
 	}
 }
 
+// SendEmail sends an email using the provided Sender, recipient list, subject, template, and data.
 func SendEmail[T any](s Sender, to []string, subject string, t Template[T], data T) error {
 	tmpl, err := template.ParseFiles(templatesDir + t.name + ".html")
 	if err != nil {
