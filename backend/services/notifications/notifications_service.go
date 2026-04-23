@@ -24,20 +24,20 @@ type Config struct {
 var cfg = config.Load[*Config]()
 
 var secrets struct {
-	EmailPassword string
-	SmsToken      string
+	emailPassword string
+	smsToken      string
 }
 
 func initService() (*Service, error) {
 	es := email.NewSender(
 		cfg.EmailFrom(),
-		secrets.EmailPassword,
+		secrets.emailPassword,
 		cfg.EmailHost(),
 		cfg.EmailPort(),
 	)
 
 	ss := sms.NewSender(
-		secrets.SmsToken,
+		secrets.smsToken,
 		cfg.SMSSenderName(),
 		cfg.SMSUsername(),
 	)
