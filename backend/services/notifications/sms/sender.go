@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type sender struct {
+type Sender struct {
 	token      string
 	senderName string
 	username   string
@@ -21,8 +21,8 @@ const (
 )
 
 // NewSender creates a new instance of the sender struct with the provided token, sender name, and username.
-func NewSender(token, senderName, username string) sender {
-	return sender{
+func NewSender(token, senderName, username string) Sender {
+	return Sender{
 		token:      token,
 		senderName: senderName,
 		username:   username,
@@ -31,7 +31,7 @@ func NewSender(token, senderName, username string) sender {
 }
 
 // SendSMS sends an SMS message to the specified phone number with the given message content.
-func (s sender) SendSMS(phoneNumber string, message string) error {
+func (s Sender) SendSMS(phoneNumber string, message string) error {
 	reqBody := smsRequest{
 		SMS: smsRequestSMS{
 			User: smsRequestSMSUser{
