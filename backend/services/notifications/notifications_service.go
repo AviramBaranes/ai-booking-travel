@@ -4,6 +4,7 @@ import (
 	"encore.app/services/notifications/email"
 	"encore.app/services/notifications/sms"
 	"encore.dev/config"
+	"encore.dev/rlog"
 )
 
 // encore:service
@@ -29,12 +30,16 @@ var secrets struct {
 }
 
 func initService() (*Service, error) {
-	es := email.NewSender(
+	es, err := email.NewSender(
 		cfg.EmailFrom(),
 		secrets.emailPassword,
 		cfg.EmailHost(),
 		cfg.EmailPort(),
 	)
+	if err != nil {
+		rlog.Error("failed to create email sender", "error", err)
+		return nil, err
+	}
 
 	ss := sms.NewSender(
 		secrets.smsToken,

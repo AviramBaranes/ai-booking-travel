@@ -37,11 +37,13 @@ func (s *Service) SendCriticalErrorEmail(ctx context.Context, event *CriticalErr
 	}
 
 	err = email.SendEmail(
+		ctx,
 		*s.emailSender,
 		adminEmails.Emails,
 		event.Subject,
 		email.CriticalErrorTemplate,
 		template,
+		nil,
 	)
 
 	if err != nil {
