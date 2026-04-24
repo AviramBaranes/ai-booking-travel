@@ -1,60 +1,74 @@
 package email
 
 import (
-	"bytes"
+	"context"
 	"fmt"
 	"html/template"
-	"net/smtp"
+	"io"
+
+	"github.com/wneessen/go-mail"
 )
 
-const (
-	htmlHeaders  = "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n"
-	templatesDir = "./templates/"
-)
+const templatesDir = "./templates/"
 
 type Sender struct {
-	auth smtp.Auth
-	from string
-	adr  string
+	client *mail.Client
+	from   string
 }
 
 // NewSender creates a new Sender with the given email credentials and SMTP server information.
-func NewSender(from, password, host string, port int) Sender {
-	auth := smtp.PlainAuth(
-		"",
-		from,
-		password,
+func NewSender(from, password, host string, port int) (Sender, error) {
+	client, err := mail.NewClient(
 		host,
+		mail.WithPort(port),
+		mail.WithSMTPAuth(mail.SMTPAuthPlain),
+		mail.WithUsername(from),
+		mail.WithPassword(password),
+		mail.WithTLSPolicy(mail.TLSMandatory),
 	)
 
-	return Sender{
-		auth: auth,
-		from: from,
-		adr:  fmt.Sprintf("%s:%d", host, port),
+	if err != nil {
+		return Sender{}, fmt.Errorf("creating mail client: %w", err)
 	}
+
+	return Sender{
+		client: client,
+		from:   from,
+	}, nil
+}
+
+type Attachment struct {
+	Filename string
+	Reader   io.Reader
 }
 
 // SendEmail sends an email using the provided Sender, recipient list, subject, template, and data.
-func SendEmail[T any](s Sender, to []string, subject string, t Template[T], data T) error {
+func SendEmail[T any](ctx context.Context, s Sender, to []string, subject string, t Template[T], data T, attachments []Attachment) error {
 	tmpl, err := template.ParseFiles(templatesDir + t.name + ".html")
 	if err != nil {
 		return fmt.Errorf("parsing template: %w", err)
 	}
 
-	var renderedBody bytes.Buffer
-	if err := tmpl.Execute(&renderedBody, data); err != nil {
-		return fmt.Errorf("executing template: %w", err)
+	msg := mail.NewMsg()
+	if err := msg.From(s.from); err != nil {
+		return fmt.Errorf("setting sender: %w", err)
+	}
+	if err := msg.To(to...); err != nil {
+		return fmt.Errorf("setting recipients: %w", err)
 	}
 
-	msg := "Subject: " + subject + "\n" + htmlHeaders + "\n" + renderedBody.String()
+	msg.Subject(subject)
+	if err := msg.SetBodyHTMLTemplate(tmpl, data); err != nil {
+		return fmt.Errorf("setting email body: %w", err)
+	}
 
-	if err := smtp.SendMail(
-		s.adr,
-		s.auth,
-		s.from,
-		to,
-		[]byte(msg),
-	); err != nil {
+	for _, attachment := range attachments {
+		if err := msg.AttachReader(attachment.Filename, attachment.Reader); err != nil {
+			return fmt.Errorf("adding attachment: %w", err)
+		}
+	}
+
+	if err := s.client.DialAndSendWithContext(ctx, msg); err != nil {
 		return fmt.Errorf("sending email: %w", err)
 	}
 
