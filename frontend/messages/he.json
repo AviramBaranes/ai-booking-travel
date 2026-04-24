@@ -77,7 +77,9 @@
     },
     "validation": {
       "invalidEmail": "יש להזין כתובת אימייל תקינה",
-      "passwordRequired": "סיסמה היא שדה חובה"
+      "passwordRequired": "סיסמה היא שדה חובה",
+      "phoneRequired": "יש להזין מספר טלפון",
+      "invalidPhone": "יש להזין מספר נייד ישראלי תקין"
     }
   },
   "LangSwitcher": {

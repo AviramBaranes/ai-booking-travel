@@ -166,7 +166,7 @@ export function LoginModal() {
             )}
 
             {mode === "customer" && customerStep === "otp" && (
-              <CustomerOtpForm phone={customerPhone} />
+              <CustomerOtpForm phone={customerPhone} onSuccess={handleContinueToSite} />
             )}
           </>
         )}

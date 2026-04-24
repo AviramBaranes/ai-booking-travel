@@ -31,6 +31,7 @@ function setLangHeader(lang: string) {
 
 export async function withErrorHandler<T>(
   apiCall: (client: Client) => Promise<T>,
+  options?: { skipAuthRedirect?: boolean },
 ) {
   const lang = await getLang();
   try {
@@ -45,7 +46,7 @@ export async function withErrorHandler<T>(
     return await apiCall(client);
   } catch (error) {
     if (!isAPIError(error)) throw error;
-    if (error.status === 401) {
+    if (error.status === 401 && !options?.skipAuthRedirect) {
       removeAuthorizationHeader();
       if (typeof window !== "undefined") {
         window.location.href = `/${lang}?login=open`;

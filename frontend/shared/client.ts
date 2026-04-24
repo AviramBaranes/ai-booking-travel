@@ -300,6 +300,13 @@ export namespace accounts {
         RefreshToken: string
     }
 
+    /**
+     * SendCustomerLoginOTPParams defines the parameters required to send a login OTP to a customer.
+     */
+    export interface SendCustomerLoginOTPParams {
+        phoneNumber: string
+    }
+
     export interface TempAgentTagUsageResponse {
     }
 
@@ -342,6 +349,11 @@ export namespace accounts {
         officeId: number
     }
 
+    export interface ValidateCustomerLoginOTPParams {
+        phoneNumber: string
+        otp: string
+    }
+
     export class ServiceClient {
         private baseClient: BaseClient
 
@@ -362,11 +374,13 @@ export namespace accounts {
             this.LoginAsAgent = this.LoginAsAgent.bind(this)
             this.LoginBackToAdmin = this.LoginBackToAdmin.bind(this)
             this.RefreshTokens = this.RefreshTokens.bind(this)
+            this.SendCustomerLoginOTP = this.SendCustomerLoginOTP.bind(this)
             this.TempCustomerTagUsage = this.TempCustomerTagUsage.bind(this)
             this.UpdateContact = this.UpdateContact.bind(this)
             this.UpdateOffice = this.UpdateOffice.bind(this)
             this.UpdateOrganization = this.UpdateOrganization.bind(this)
             this.UpdateUser = this.UpdateUser.bind(this)
+            this.ValidateCustomerLoginOTP = this.ValidateCustomerLoginOTP.bind(this)
         }
 
         /**
@@ -525,6 +539,10 @@ export namespace accounts {
             return await resp.json() as LoginResponse
         }
 
+        public async SendCustomerLoginOTP(params: SendCustomerLoginOTPParams): Promise<void> {
+            await this.baseClient.callTypedAPI("POST", `/customer-login/send-otp`, JSON.stringify(params))
+        }
+
         public async TempCustomerTagUsage(): Promise<TempAgentTagUsageResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/temp-customer-tag-usage`)
@@ -565,6 +583,12 @@ export namespace accounts {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("PUT", `/users/${encodeURIComponent(id)}`, JSON.stringify(params))
             return await resp.json() as UpdateUserResponse
+        }
+
+        public async ValidateCustomerLoginOTP(params: ValidateCustomerLoginOTPParams): Promise<LoginResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/customer-login/validate-otp`, JSON.stringify(params))
+            return await resp.json() as LoginResponse
         }
     }
 }

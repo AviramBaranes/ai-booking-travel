@@ -80,3 +80,18 @@ export function updateOffice(id: number, data: accounts.UpdateOfficeRequest) {
 export function updateUser(id: number, data: accounts.UpdateUserRequest) {
   return withErrorHandler((client) => client.accounts.UpdateUser(id, data));
 }
+
+export function sendOTP(data: accounts.SendCustomerLoginOTPParams) {
+  // Bypass withErrorHandler to avoid the 401→redirect behaviour on a public endpoint.
+  return withErrorHandler((client) =>
+    client.accounts.SendCustomerLoginOTP(data),
+    { skipAuthRedirect: true },
+  );
+}
+
+export function loginWithOTP(data: accounts.ValidateCustomerLoginOTPParams) {
+  return withErrorHandler((client) =>
+    client.accounts.ValidateCustomerLoginOTP(data),
+  );
+}
+ 

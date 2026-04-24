@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import { login } from "../api/accounts-api";
+import { login, loginWithOTP } from "../api/accounts-api";
 import Client, { BaseURL, Local } from "../client";
 import { accounts } from "../client";
 import { JWT } from "next-auth/jwt";
@@ -104,6 +104,24 @@ export const authOptions: NextAuthOptions = {
           auth: credentials.accessToken,
         });
         const user = await client.accounts.LoginBackToAdmin();
+
+        if (user) return { ...user, id: String(user.id) };
+        return null;
+      },
+    }),
+    CredentialsProvider({
+      id: "customer-login",
+      name: "Customer Login",
+      type: "credentials",
+      credentials: {
+        phoneNumber: { type: "text" },
+        otp: { type: "text" },
+      },
+      async authorize(credentials) {
+        const user = await loginWithOTP({
+          otp: credentials?.otp ?? "",
+          phoneNumber: credentials?.phoneNumber ?? "",
+        });
 
         if (user) return { ...user, id: String(user.id) };
         return null;
