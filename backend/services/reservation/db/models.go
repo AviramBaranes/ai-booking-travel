@@ -53,13 +53,56 @@ func (ns NullBroker) Value() (driver.Value, error) {
 	return string(ns.Broker), nil
 }
 
+type PaymentStatus string
+
+const (
+	PaymentStatusUnpaid        PaymentStatus = "unpaid"
+	PaymentStatusPaid          PaymentStatus = "paid"
+	PaymentStatusRefundPending PaymentStatus = "refund_pending"
+	PaymentStatusRefunded      PaymentStatus = "refunded"
+)
+
+func (e *PaymentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentStatus(s)
+	case string:
+		*e = PaymentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentStatus struct {
+	PaymentStatus PaymentStatus
+	Valid         bool // Valid is true if PaymentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentStatus), nil
+}
+
 type ReservationStatus string
 
 const (
 	ReservationStatusBooked    ReservationStatus = "booked"
 	ReservationStatusVouchered ReservationStatus = "vouchered"
 	ReservationStatusCanceled  ReservationStatus = "canceled"
-	ReservationStatusPaid      ReservationStatus = "paid"
 )
 
 func (e *ReservationStatus) Scan(src interface{}) error {
@@ -101,7 +144,8 @@ type Reservation struct {
 	ID                  int64
 	UserID              int32
 	BrokerReservationID string
-	Status              ReservationStatus
+	ReservationStatus   ReservationStatus
+	PaymentStatus       PaymentStatus
 	Broker              Broker
 	SupplierCode        string
 	CarDetails          []byte

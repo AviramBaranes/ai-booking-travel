@@ -1,4 +1,6 @@
-CREATE TYPE reservation_status AS ENUM ('booked', 'vouchered', 'canceled', 'paid');
+CREATE TYPE reservation_status AS ENUM ('booked', 'vouchered', 'canceled');
+
+CREATE TYPE payment_status AS ENUM ('unpaid', 'paid', 'refund_pending', 'refunded');
 
 CREATE TYPE broker AS ENUM ('flex', 'hertz');
 
@@ -7,7 +9,8 @@ CREATE TABLE
         id BIGSERIAL PRIMARY KEY,
         user_id INT NOT NULL,
         broker_reservation_id TEXT NOT NULL,
-        status reservation_status NOT NULL DEFAULT 'booked',
+        reservation_status reservation_status NOT NULL DEFAULT 'booked',
+        payment_status payment_status NOT NULL DEFAULT 'unpaid',
         broker broker NOT NULL,
         supplier_code TEXT NOT NULL,
         car_details JSONB NOT NULL,
@@ -41,4 +44,6 @@ CREATE TABLE
 
 CREATE INDEX idx_reservations_user_id_created_at ON reservations (user_id, created_at DESC);
 
-CREATE INDEX idx_reservations_status ON reservations (status);
+CREATE INDEX idx_reservations_user_id_reservation_status_created_at ON reservations (user_id, reservation_status, created_at DESC);
+
+CREATE INDEX idx_reservations_user_id_pickup_date ON reservations (user_id, pickup_date);

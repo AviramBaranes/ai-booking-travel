@@ -2,7 +2,6 @@
 INSERT INTO reservations (
     user_id,
     broker_reservation_id,
-    status,
     broker,
     supplier_code,
     car_details,
@@ -31,7 +30,6 @@ INSERT INTO reservations (
 ) VALUES (
     @user_id,
     @broker_reservation_id,
-    @status,
     @broker,
     @supplier_code,
     @car_details,
@@ -64,7 +62,8 @@ SELECT
     id,
     user_id,
     broker_reservation_id,
-    status,
+    reservation_status,
+    payment_status,
     broker,
     supplier_code,
     car_details,
@@ -107,11 +106,11 @@ SELECT
     driver_title,
     driver_first_name,
     driver_last_name,
-    status,
+    reservation_status,
     total_price
 FROM reservations
 WHERE user_id = sqlc.arg(user_id)
-    AND (sqlc.narg(status)::reservation_status IS NULL OR status = sqlc.narg(status)::reservation_status)
+    AND (sqlc.narg(status)::reservation_status IS NULL OR reservation_status = sqlc.narg(status)::reservation_status)
     AND (sqlc.narg(name)::VARCHAR IS NULL OR driver_first_name ILIKE '%' || sqlc.narg(name)::VARCHAR || '%' OR driver_last_name ILIKE '%' || sqlc.narg(name)::VARCHAR || '%' OR (driver_first_name || ' ' || driver_last_name) ILIKE '%' || sqlc.narg(name)::VARCHAR || '%' OR (driver_last_name || ' ' || driver_first_name) ILIKE '%' || sqlc.narg(name)::VARCHAR || '%')
     AND (sqlc.narg(pickup_date)::DATE IS NULL OR pickup_date = sqlc.narg(pickup_date)::DATE)
     AND (sqlc.narg(booking_id)::VARCHAR IS NULL OR broker_reservation_id ILIKE '%' || sqlc.narg(booking_id)::VARCHAR || '%')
@@ -125,7 +124,7 @@ OFFSET sqlc.arg(page_offset)::BIGINT;
 SELECT COUNT(*)::BIGINT AS total
 FROM reservations
 WHERE user_id = sqlc.arg(user_id)
-    AND (sqlc.narg(status)::reservation_status IS NULL OR status = sqlc.narg(status)::reservation_status)
+    AND (sqlc.narg(status)::reservation_status IS NULL OR reservation_status = sqlc.narg(status)::reservation_status)
     AND (sqlc.narg(name)::VARCHAR IS NULL OR driver_first_name ILIKE '%' || sqlc.narg(name)::VARCHAR || '%' OR driver_last_name ILIKE '%' || sqlc.narg(name)::VARCHAR || '%' OR (driver_first_name || ' ' || driver_last_name) ILIKE '%' || sqlc.narg(name)::VARCHAR || '%' OR (driver_last_name || ' ' || driver_first_name) ILIKE '%' || sqlc.narg(name)::VARCHAR || '%')
     AND (sqlc.narg(pickup_date)::DATE IS NULL OR pickup_date = sqlc.narg(pickup_date)::DATE)
     AND (sqlc.narg(booking_id)::VARCHAR IS NULL OR broker_reservation_id ILIKE '%' || sqlc.narg(booking_id)::VARCHAR || '%');
@@ -133,7 +132,7 @@ WHERE user_id = sqlc.arg(user_id)
 -- name: ApplyVoucher :execrows
 UPDATE reservations
 SET 
-    status = 'vouchered',
+    reservation_status = 'vouchered',
     voucher_number = $3,
     vouchered_at = CURRENT_TIMESTAMP
 WHERE 
@@ -144,7 +143,8 @@ user_id = $2;
 -- name: CancelReservation :exec
 UPDATE reservations
 SET
-    status = 'canceled',
+    reservation_status = 'canceled',
+    payment_status = 'refund_pending',
     updated_at = CURRENT_TIMESTAMP
 WHERE
     id = $1;

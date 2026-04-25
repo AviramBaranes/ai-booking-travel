@@ -71,7 +71,6 @@ func (s *Service) CreateReservation(ctx context.Context, p CreateReservationRequ
 	id, err := s.query.InsertReservation(ctx, db.InsertReservationParams{
 		UserID:              int32(p.UserID),
 		BrokerReservationID: p.BrokerReservationID,
-		Status:              db.ReservationStatusBooked,
 		Broker:              db.Broker(p.Broker),
 		SupplierCode:        p.SupplierCode,
 		CarDetails:          carDetailsJSON,

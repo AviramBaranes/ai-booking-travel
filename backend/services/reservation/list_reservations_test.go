@@ -240,8 +240,8 @@ func TestListReservations(t *testing.T) {
 			t.Fatalf("expected no error, got %v", err)
 		}
 		for _, r := range resp.Reservations {
-			if r.Status != "booked" {
-				t.Fatalf("expected status 'booked', got %q", r.Status)
+			if r.ReservationStatus != "booked" {
+				t.Fatalf("expected status 'booked', got %q", r.ReservationStatus)
 			}
 		}
 	})

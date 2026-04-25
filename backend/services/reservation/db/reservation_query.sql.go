@@ -14,7 +14,7 @@ import (
 const applyVoucher = `-- name: ApplyVoucher :execrows
 UPDATE reservations
 SET 
-    status = 'vouchered',
+    reservation_status = 'vouchered',
     voucher_number = $3,
     vouchered_at = CURRENT_TIMESTAMP
 WHERE 
@@ -40,7 +40,8 @@ func (q *Queries) ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) (int
 const cancelReservation = `-- name: CancelReservation :exec
 UPDATE reservations
 SET
-    status = 'canceled',
+    reservation_status = 'canceled',
+    payment_status = 'refund_pending',
     updated_at = CURRENT_TIMESTAMP
 WHERE
     id = $1
@@ -55,7 +56,7 @@ const countReservationsByUser = `-- name: CountReservationsByUser :one
 SELECT COUNT(*)::BIGINT AS total
 FROM reservations
 WHERE user_id = $1
-    AND ($2::reservation_status IS NULL OR status = $2::reservation_status)
+    AND ($2::reservation_status IS NULL OR reservation_status = $2::reservation_status)
     AND ($3::VARCHAR IS NULL OR driver_first_name ILIKE '%' || $3::VARCHAR || '%' OR driver_last_name ILIKE '%' || $3::VARCHAR || '%' OR (driver_first_name || ' ' || driver_last_name) ILIKE '%' || $3::VARCHAR || '%' OR (driver_last_name || ' ' || driver_first_name) ILIKE '%' || $3::VARCHAR || '%')
     AND ($4::DATE IS NULL OR pickup_date = $4::DATE)
     AND ($5::VARCHAR IS NULL OR broker_reservation_id ILIKE '%' || $5::VARCHAR || '%')
@@ -87,7 +88,8 @@ SELECT
     id,
     user_id,
     broker_reservation_id,
-    status,
+    reservation_status,
+    payment_status,
     broker,
     supplier_code,
     car_details,
@@ -124,7 +126,8 @@ type GetReservationByIDRow struct {
 	ID                  int64
 	UserID              int32
 	BrokerReservationID string
-	Status              ReservationStatus
+	ReservationStatus   ReservationStatus
+	PaymentStatus       PaymentStatus
 	Broker              Broker
 	SupplierCode        string
 	CarDetails          []byte
@@ -162,7 +165,8 @@ func (q *Queries) GetReservationByID(ctx context.Context, id int64) (GetReservat
 		&i.ID,
 		&i.UserID,
 		&i.BrokerReservationID,
-		&i.Status,
+		&i.ReservationStatus,
+		&i.PaymentStatus,
 		&i.Broker,
 		&i.SupplierCode,
 		&i.CarDetails,
@@ -199,7 +203,6 @@ const insertReservation = `-- name: InsertReservation :one
 INSERT INTO reservations (
     user_id,
     broker_reservation_id,
-    status,
     broker,
     supplier_code,
     car_details,
@@ -252,15 +255,13 @@ INSERT INTO reservations (
     $24,
     $25,
     $26,
-    $27,
-    $28
+    $27
 ) RETURNING id
 `
 
 type InsertReservationParams struct {
 	UserID              int32
 	BrokerReservationID string
-	Status              ReservationStatus
 	Broker              Broker
 	SupplierCode        string
 	CarDetails          []byte
@@ -292,7 +293,6 @@ func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationPa
 	row := q.db.QueryRow(ctx, insertReservation,
 		arg.UserID,
 		arg.BrokerReservationID,
-		arg.Status,
 		arg.Broker,
 		arg.SupplierCode,
 		arg.CarDetails,
@@ -335,11 +335,11 @@ SELECT
     driver_title,
     driver_first_name,
     driver_last_name,
-    status,
+    reservation_status,
     total_price
 FROM reservations
 WHERE user_id = $1
-    AND ($2::reservation_status IS NULL OR status = $2::reservation_status)
+    AND ($2::reservation_status IS NULL OR reservation_status = $2::reservation_status)
     AND ($3::VARCHAR IS NULL OR driver_first_name ILIKE '%' || $3::VARCHAR || '%' OR driver_last_name ILIKE '%' || $3::VARCHAR || '%' OR (driver_first_name || ' ' || driver_last_name) ILIKE '%' || $3::VARCHAR || '%' OR (driver_last_name || ' ' || driver_first_name) ILIKE '%' || $3::VARCHAR || '%')
     AND ($4::DATE IS NULL OR pickup_date = $4::DATE)
     AND ($5::VARCHAR IS NULL OR broker_reservation_id ILIKE '%' || $5::VARCHAR || '%')
@@ -371,7 +371,7 @@ type ListReservationsByUserRow struct {
 	DriverTitle         string
 	DriverFirstName     string
 	DriverLastName      string
-	Status              ReservationStatus
+	ReservationStatus   ReservationStatus
 	TotalPrice          int32
 }
 
@@ -403,7 +403,7 @@ func (q *Queries) ListReservationsByUser(ctx context.Context, arg ListReservatio
 			&i.DriverTitle,
 			&i.DriverFirstName,
 			&i.DriverLastName,
-			&i.Status,
+			&i.ReservationStatus,
 			&i.TotalPrice,
 		); err != nil {
 			return nil, err

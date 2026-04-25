@@ -16,7 +16,8 @@ import (
 type GetReservationResponse struct {
 	ID                  int64             `json:"id"`
 	BrokerReservationID string            `json:"brokerReservationId"`
-	Status              string            `json:"status"`
+	ReservationStatus   string            `json:"reservationStatus"`
+	PaymentStatus       string            `json:"paymentStatus"`
 	CarDetails          broker.CarDetails `json:"carDetails"`
 	PlanInclusions      []string          `json:"planInclusions"`
 	CurrencyCode        string            `json:"currencyCode"`
@@ -69,7 +70,8 @@ func (s *Service) GetReservation(ctx context.Context, id int64) (*GetReservation
 	return &GetReservationResponse{
 		ID:                  row.ID,
 		BrokerReservationID: row.BrokerReservationID,
-		Status:              string(row.Status),
+		ReservationStatus:   string(row.ReservationStatus),
+		PaymentStatus:       string(row.PaymentStatus),
 		CarDetails:          carDetails,
 		PlanInclusions:      row.PlanInclusions,
 		CurrencyCode:        row.CurrencyCode,

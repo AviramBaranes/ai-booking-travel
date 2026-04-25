@@ -34,7 +34,7 @@ type ReservationSummary struct {
 	DriverTitle         string `json:"driverTitle"`
 	DriverFirstName     string `json:"driverFirstName"`
 	DriverLastName      string `json:"driverLastName"`
-	Status              string `json:"status"`
+	ReservationStatus   string `json:"reservationStatus"`
 	TotalPrice          int32  `json:"totalPrice"`
 }
 
@@ -126,7 +126,7 @@ func mapRowsToSummaries(rows []db.ListReservationsByUserRow) []ReservationSummar
 			DriverTitle:         r.DriverTitle,
 			DriverFirstName:     r.DriverFirstName,
 			DriverLastName:      r.DriverLastName,
-			Status:              string(r.Status),
+			ReservationStatus:   string(r.ReservationStatus),
 			TotalPrice:          r.TotalPrice,
 		}
 	}
