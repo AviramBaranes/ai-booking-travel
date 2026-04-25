@@ -1,15 +1,12 @@
 import { reservation } from "@/shared/client";
 import { useTranslations } from "next-intl";
-import {
-  statusToBg,
-  statusToColor,
-} from "../[reservationId]/_components/ReservationSummary/HeaderSection";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { DeleteReservationDialog } from "./DeleteReservationDialog";
 import { VoucherReservationDialog } from "./VoucherReservationDialog";
+import { statusToBg, statusToColor } from "../_utils/statusesStyles";
 
 export function ReservationCard({
   reservation,
@@ -58,12 +55,12 @@ export function ReservationCard({
         <div className="px-6 py-1 flex flex-col">
           <p className="text-xs text-muted">{tLabels("status")}</p>
           <p
-            className={`rounded-md py-1 mt-2 px-2 w-fit text-sm ${statusToBg(reservation.status)} ${statusToColor(reservation.status)}`}
+            className={`rounded-md py-1 mt-2 px-2 w-fit text-sm ${statusToBg(reservation.reservationStatus)} ${statusToColor(reservation.reservationStatus)}`}
           >
-            {tStatuses(reservation.status)}
+            {tStatuses(reservation.reservationStatus)}
           </p>
         </div>
-        {reservation.status !== "canceled" && (
+        {reservation.reservationStatus !== "canceled" && (
           <div className="flex justify-between px-4">
             <Button
               onClick={(e) => {
@@ -76,7 +73,7 @@ export function ReservationCard({
             >
               {tButtons("cancelOrder")}
             </Button>
-            {reservation.status === "booked" ? (
+            {reservation.reservationStatus === "booked" ? (
               <Button
                 onClick={(e) => {
                   e.preventDefault();
@@ -94,7 +91,7 @@ export function ReservationCard({
           </div>
         )}
       </Link>
-      {reservation.status !== "canceled" && (
+      {reservation.reservationStatus !== "canceled" && (
         <DeleteReservationDialog
           open={deleteModalOpen}
           setOpen={setDeleteModalOpen}
@@ -102,7 +99,7 @@ export function ReservationCard({
           refetch={refetchAndClose}
         />
       )}
-      {reservation.status === "booked" && (
+      {reservation.reservationStatus === "booked" && (
         <VoucherReservationDialog
           open={voucherModalOpen}
           setOpen={setVoucherModalOpen}

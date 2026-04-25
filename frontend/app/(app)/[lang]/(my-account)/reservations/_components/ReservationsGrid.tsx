@@ -26,7 +26,7 @@ export function ReservationsGrid() {
   }
   return (
     <div className="grid grid-cols-4 gap-6">
-      {reservations.map((reservation, index) => (
+      {reservations.map((reservation) => (
         <ReservationCard
           refetchReservations={refetch}
           reservation={reservation}

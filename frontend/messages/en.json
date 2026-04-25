@@ -323,7 +323,8 @@
         "pickupLocation": "Pickup location",
         "driverName": "Driver name",
         "bookingNumber": "Reservation number",
-        "status": "Status"
+        "reservationStatus": "Reservation Status",
+        "paymentStatus": "Payment Status"
       },
       "buttons": {
         "cancelOrder": "Cancel booking",

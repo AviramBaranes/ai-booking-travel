@@ -5,34 +5,8 @@ import { useParams } from "next/navigation";
 import { reservation } from "@/shared/client";
 import { OrderSummaryRow } from "./OrderSummaryRow";
 import { DeleteReservationButton } from "./DeleteReservationButton";
+import { statusToColor } from "../../../_utils/statusesStyles";
 
-export function statusToColor(status: string) {
-  switch (status) {
-    case "vouchered":
-    case "paid":
-      return "text-success font-semibold";
-    case "canceled":
-      return "text-destructive font-semibold";
-    case "booked":
-      return "text-brand font-semibold";
-    default:
-      return "text-navy font-semibold";
-  }
-}
-
-export function statusToBg(status: string) {
-  switch (status) {
-    case "vouchered":
-    case "paid":
-      return "bg-success/10";
-    case "canceled":
-      return "bg-destructive/10";
-    case "booked":
-      return "bg-brand/10";
-    default:
-      return "bg-navy/10";
-  }
-}
 
 export function HeaderSection({
   reservation: res,
@@ -47,7 +21,7 @@ export function HeaderSection({
       <div className="flex items-center justify-between">
         <h5 className="type-h5 text-navy">{t("title")}</h5>
         <div className="flex gap-1 items-center w-1/4 justify-end">
-          {res.status !== "canceled" && (
+          {res.reservationStatus !== "canceled" && (
             <>
               <DeleteReservationButton reservationId={res.id} />
               <div className="border-l border-cars-border h-5"></div>
@@ -79,9 +53,14 @@ export function HeaderSection({
         value={res.brokerReservationId}
       />
       <OrderSummaryRow
-        label={t("labels.status")}
-        value={t(`status.${res.status}`)}
-        valClassName={statusToColor(res.status)}
+        label={t("labels.reservationStatus")}
+        value={t(`status.${res.reservationStatus}`)}
+        valClassName={statusToColor(res.reservationStatus)}
+      />
+      <OrderSummaryRow
+        label={t("labels.paymentStatus")}
+        value={t(`status.${res.paymentStatus}`)}
+        valClassName={statusToColor(res.paymentStatus)}
       />
       <OrderSummaryRow
         label={t("labels.createdAt")}

@@ -1212,7 +1212,8 @@ export namespace reservation {
     export interface GetReservationResponse {
         id: number
         brokerReservationId: string
-        status: string
+        reservationStatus: string
+        paymentStatus: string
         carDetails: broker.CarDetails
         planInclusions: string[]
         currencyCode: string
@@ -1261,7 +1262,7 @@ export namespace reservation {
         driverTitle: string
         driverFirstName: string
         driverLastName: string
-        status: string
+        reservationStatus: string
         totalPrice: number
     }
 

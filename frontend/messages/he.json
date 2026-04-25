@@ -323,7 +323,8 @@
         "pickupLocation": "מיקום הלקיחה",
         "driverName": "שם הנהג/ת",
         "bookingNumber": "מספר הזמנה",
-        "status": "סטטוס"
+        "reservationStatus": "סטטוס הזמנה",
+        "paymentStatus": "סטטוס תשלום"
       },
       "buttons": {
         "cancelOrder": "ביטול הזמנה",

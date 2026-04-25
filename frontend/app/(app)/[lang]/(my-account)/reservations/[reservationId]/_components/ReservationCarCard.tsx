@@ -24,7 +24,7 @@ export function ReservationCarCard({
           pickupTime={reservation.pickupTime}
           text={t("freeCancellation")}
         />
-        {reservation.status === "booked" && (
+        {reservation.reservationStatus === "booked" && (
           <VoucherForm reservationId={reservationId} refetch={refetch} />
         )}
       </SelectedCarCardWrapper>

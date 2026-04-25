@@ -12,7 +12,6 @@ import { useDirection } from "@/shared/hooks/useDirection";
 import { ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { statusToColor } from "../../[reservationId]/_components/ReservationSummary/HeaderSection";
 import { cn } from "@/lib/utils";
 import { CalendarInput } from "@/app/(app)/[lang]/_components/home/SearchForm/CalendarInput";
 import { useRouter } from "next/navigation";
@@ -22,6 +21,7 @@ import {
   ReservationStatus,
   useReservationFilters,
 } from "../../_hooks/useReservationFilters";
+import { statusToColor } from "../../_utils/statusesStyles";
 
 export function FilterForm() {
   const router = useRouter();
