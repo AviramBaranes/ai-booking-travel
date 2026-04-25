@@ -275,7 +275,8 @@
         "labels": {
           "driverName": "שם הנהג:",
           "reservationNumber": "מס' הזמנה:",
-          "status": "סטטוס:",
+          "reservationStatus": "סטטוס הזמנה",
+          "paymentStatus": "סטטוס תשלום",
           "createdAt": "נרשמה בתאריך:",
           "rentalPrice": "מחיר השכרה:",
           "couponDiscount": "הנחה קופון:",
@@ -301,7 +302,10 @@
           "booked": "הוזמן",
           "vouchered": "הופק שובר",
           "canceled": "בוטל",
-          "paid": "שולם"
+          "paid": "שולם",
+          "refund_pending": "זיכוי ממתין",
+          "refunded": "זוכה",
+          "unpaid": "לא שולם"
         }
       }
     },

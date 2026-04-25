@@ -301,7 +301,10 @@
           "booked": "Booked",
           "vouchered": "Vouchered",
           "canceled": "Canceled",
-          "paid": "Paid"
+          "paid": "Paid",
+          "refund_pending": "Refund pending",
+          "refunded": "Refunded",
+          "unpaid": "Unpaid"
         }
       }
     },

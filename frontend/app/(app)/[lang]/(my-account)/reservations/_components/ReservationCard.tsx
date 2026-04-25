@@ -53,7 +53,7 @@ export function ReservationCard({
           value={reservation.brokerReservationId}
         />
         <div className="px-6 py-1 flex flex-col">
-          <p className="text-xs text-muted">{tLabels("status")}</p>
+          <p className="text-xs text-muted">{tLabels("reservationStatus")}</p>
           <p
             className={`rounded-md py-1 mt-2 px-2 w-fit text-sm ${statusToBg(reservation.reservationStatus)} ${statusToColor(reservation.reservationStatus)}`}
           >
