@@ -137,6 +137,7 @@ export namespace accounts {
         email: string
         officeId: number
         organizationId: number
+        isPaymentResponsible: boolean
         officeName: string
         organizationName: string
     }
@@ -169,6 +170,7 @@ export namespace accounts {
         email: string
         officeId?: number
         organizationId?: number
+        isPaymentResponsible?: boolean
     }
 
     export interface CreateOfficeRequest {
@@ -318,6 +320,7 @@ export namespace accounts {
         email?: string
         officeId?: number
         organizationId?: number
+        isPaymentResponsible?: boolean
     }
 
     export interface UpdateOfficeRequest {

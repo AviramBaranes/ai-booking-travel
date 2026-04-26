@@ -26,6 +26,11 @@ const columns: ColumnDef<accounts.ContactResponse>[] = [
   { key: "firstName", label: "שם פרטי", type: "text" },
   { key: "lastName", label: "שם משפחה", type: "text" },
   { key: "role", label: "תפקיד", type: "text" },
+  {
+    key: "isPaymentResponsible",
+    label: "אחראי תשלום",
+    type: "checkbox",
+  },
   { key: "cellphone", label: "טלפון", type: "text" },
   { key: "email", label: "אימייל", type: "text" },
   {
@@ -41,16 +46,21 @@ const columns: ColumnDef<accounts.ContactResponse>[] = [
       const contact = row as accounts.ContactResponse | undefined;
       const initialType =
         contact && contact.organizationId > 0 ? "org" : "office";
-      const encoded =
+      const needsEncoding =
         typeof value === "number" ||
-        (typeof value === "string" && !value.includes(":"))
-          ? encodeAssociation(
-              initialType,
-              initialType === "office"
-                ? (contact?.officeId ?? 0)
-                : (contact?.organizationId ?? 0),
-            )
-          : value;
+        value == null ||
+        (typeof value === "string" && !value.includes(":"));
+      const encoded = needsEncoding
+        ? encodeAssociation(
+            initialType,
+            initialType === "office"
+              ? (contact?.officeId ?? 0)
+              : (contact?.organizationId ?? 0),
+          )
+        : (value as string);
+      if (needsEncoding) {
+        onChange(encoded);
+      }
       return (
         <ContactBelongsToPicker
           value={encoded}
@@ -66,23 +76,45 @@ const associationField = z
   .string()
   .refine((v) => parseAssociation(v).id > 0, "יש לבחור משרד או רשת");
 
-const createSchema = z.object({
-  firstName: z.string().min(1, "שדה חובה"),
-  lastName: z.string().min(1, "שדה חובה"),
-  role: z.string().min(1, "שדה חובה"),
-  cellphone: z.string().min(1, "שדה חובה"),
-  email: z.string().email("אימייל לא תקין"),
-  officeId: associationField,
-});
+const paymentResponsibleRefine = (
+  data: { officeId: string; isPaymentResponsible?: boolean },
+  ctx: z.RefinementCtx,
+) => {
+  if (
+    data.isPaymentResponsible &&
+    parseAssociation(data.officeId).type !== "org"
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["isPaymentResponsible"],
+      message: "רק אנשי קשר של רשת יכולים להיות אחראיים על תשלום",
+    });
+  }
+};
 
-const updateSchema = z.object({
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  role: z.string().optional(),
-  cellphone: z.string().optional(),
-  email: z.string().email("אימייל לא תקין").optional().or(z.literal("")),
-  officeId: associationField,
-});
+const createSchema = z
+  .object({
+    firstName: z.string().min(1, "שדה חובה"),
+    lastName: z.string().min(1, "שדה חובה"),
+    role: z.string().min(1, "שדה חובה"),
+    cellphone: z.string().min(1, "שדה חובה"),
+    email: z.string().email("אימייל לא תקין"),
+    officeId: associationField,
+    isPaymentResponsible: z.boolean().optional(),
+  })
+  .superRefine(paymentResponsibleRefine);
+
+const updateSchema = z
+  .object({
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    role: z.string().optional(),
+    cellphone: z.string().optional(),
+    email: z.string().email("אימייל לא תקין").optional().or(z.literal("")),
+    officeId: associationField,
+    isPaymentResponsible: z.boolean().optional(),
+  })
+  .superRefine(paymentResponsibleRefine);
 
 function formDataToCreatePayload(
   data: Record<string, unknown>,
@@ -96,6 +128,7 @@ function formDataToCreatePayload(
     email: data.email as string,
     officeId: type === "office" ? id : undefined,
     organizationId: type === "org" ? id : undefined,
+    isPaymentResponsible: Boolean(data.isPaymentResponsible),
   };
 }
 
@@ -111,6 +144,7 @@ function formDataToUpdatePayload(
     email: data.email as string,
     officeId: type === "office" ? id : undefined,
     organizationId: type === "org" ? id : undefined,
+    isPaymentResponsible: Boolean(data.isPaymentResponsible),
   };
 }
 
