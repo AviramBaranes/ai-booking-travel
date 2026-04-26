@@ -1,17 +1,19 @@
 -- name: CreateAgent :one
-INSERT INTO users (role, email, phone_number, password_hash, office_id, created_at, updated_at)
-VALUES ('agent', sqlc.arg(email), sqlc.arg(phone_number), sqlc.arg(password_hash), sqlc.arg(office_id), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-RETURNING id, role, email, phone_number, office_id, last_login, created_at, updated_at;
+INSERT INTO users (role, first_name, last_name, email, phone_number, password_hash, office_id, created_at, updated_at)
+VALUES ('agent', sqlc.arg(first_name), sqlc.arg(last_name), sqlc.arg(email), sqlc.arg(phone_number), sqlc.arg(password_hash), sqlc.arg(office_id), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+RETURNING id, role, first_name, last_name, email, phone_number, office_id, last_login, created_at, updated_at;
 
 -- name: CreateAdmin :one
-INSERT INTO users (role, email, password_hash, created_at, updated_at)
-VALUES ('admin', sqlc.arg(email), sqlc.arg(password_hash), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-RETURNING id, role, email, office_id, last_login, created_at, updated_at;
+INSERT INTO users (role, first_name, last_name, email, password_hash, created_at, updated_at)
+VALUES ('admin', sqlc.arg(first_name), sqlc.arg(last_name), sqlc.arg(email), sqlc.arg(password_hash), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+RETURNING id, role, first_name, last_name, email, office_id, last_login, created_at, updated_at;
 
 -- name: CreateCustomer :one
-INSERT INTO users (role, email, phone_number, otp, password_hash, created_at, updated_at)
+INSERT INTO users (role, first_name, last_name, email, phone_number, otp, password_hash, created_at, updated_at)
 VALUES (
   'customer',
+  sqlc.arg(first_name),
+  sqlc.arg(last_name),
   sqlc.arg(email),
   sqlc.arg(phone_number),
   sqlc.narg(otp)::varchar,
@@ -19,7 +21,7 @@ VALUES (
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
 )
-RETURNING id, role, email, phone_number, otp, office_id, last_login, created_at, updated_at;
+RETURNING id, role, first_name, last_name, email, phone_number, otp, office_id, last_login, created_at, updated_at;
 
 -- name: GetUserById :one
 SELECT *
@@ -45,7 +47,7 @@ FROM users
 WHERE phone_number = $1;
 
 -- name: ListAgents :many
-SELECT u.id, u.role, u.email, u.phone_number, u.office_id, u.last_login, u.created_at, u.updated_at,
+SELECT u.id, u.role, u.first_name, u.last_name, u.email, u.phone_number, u.office_id, u.last_login, u.created_at, u.updated_at,
        o.name AS office_name,
        org.name AS organization_name
 FROM users u
@@ -70,20 +72,22 @@ WHERE role = 'agent'
   ));
 
 -- name: ListAdmins :many
-SELECT id, role, email, office_id, last_login, created_at, updated_at
+SELECT id, role, first_name, last_name, email, office_id, last_login, created_at, updated_at
 FROM users
 WHERE role = 'admin';
 
 -- name: UpdateUser :one
 UPDATE users
 SET
+  first_name = COALESCE(sqlc.narg(first_name)::varchar, first_name),
+  last_name = COALESCE(sqlc.narg(last_name)::varchar, last_name),
   email = COALESCE(sqlc.narg(email)::varchar, email),
   phone_number = COALESCE(sqlc.narg(phone_number)::varchar, phone_number),
   office_id = COALESCE(sqlc.narg(office_id)::int, office_id),
   password_hash = COALESCE(sqlc.narg(password_hash)::varchar, password_hash),
   updated_at = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg(id)
-RETURNING id, role, email, phone_number, office_id, last_login, created_at, updated_at;
+RETURNING id, role, first_name, last_name, email, phone_number, office_id, last_login, created_at, updated_at;
 
 -- name: ListAdminsEmails :many
 SELECT email

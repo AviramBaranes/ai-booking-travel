@@ -16,6 +16,8 @@ import (
 
 type AgentResponse struct {
 	ID               int32      `json:"id"`
+	FirstName        string     `json:"firstName"`
+	LastName         string     `json:"lastName"`
 	Email            string     `json:"email"`
 	PhoneNumber      *string    `json:"phoneNumber"`
 	OfficeID         *int32     `json:"officeId"`
@@ -43,6 +45,8 @@ type ListAgentsResponse struct {
 }
 
 type CreateAgentRequest struct {
+	FirstName   string `json:"firstName" validate:"required"`
+	LastName    string `json:"lastName" validate:"required"`
 	Email       string `json:"email" validate:"required,email"`
 	Password    string `json:"password" validate:"required,min=8" encore:"sensitive"`
 	PhoneNumber string `json:"phoneNumber" validate:"required,israeli_phone"`
@@ -67,6 +71,8 @@ const agentsPageSize int32 = 15
 func toAgentResponse(r db.ListAgentsRow) AgentResponse {
 	return AgentResponse{
 		ID:               r.ID,
+		FirstName:        r.FirstName,
+		LastName:         r.LastName,
 		Email:            r.Email,
 		PhoneNumber:      r.PhoneNumber,
 		OfficeID:         r.OfficeID,
@@ -151,6 +157,8 @@ func (s *Service) CreateAgent(ctx context.Context, params CreateAgentRequest) (*
 	}
 
 	row, err := s.query.CreateAgent(ctx, db.CreateAgentParams{
+		FirstName:    params.FirstName,
+		LastName:     params.LastName,
 		Email:        params.Email,
 		PhoneNumber:  &params.PhoneNumber,
 		PasswordHash: hashed,

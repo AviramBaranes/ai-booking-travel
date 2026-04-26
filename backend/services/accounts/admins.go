@@ -9,6 +9,7 @@ import (
 	"encore.app/internal/password"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
+	"encore.dev/config"
 	"encore.dev/rlog"
 )
 
@@ -17,10 +18,19 @@ var secrets struct {
 	FirstAdminPassword string
 }
 
+type adminConfig struct {
+	FirstAdminFirstName config.String
+	FirstAdminLastName  config.String
+}
+
+var cfg = config.Load[*adminConfig]()
+
 // --- Request / Response types ---
 
 type AdminResponse struct {
 	ID        int32      `json:"id"`
+	FirstName string     `json:"firstName"`
+	LastName  string     `json:"lastName"`
 	Email     string     `json:"email"`
 	LastLogin *time.Time `json:"lastLogin"`
 	CreatedAt time.Time  `json:"createdAt"`
@@ -32,8 +42,10 @@ type ListAdminsResponse struct {
 }
 
 type CreateAdminRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=8" encore:"sensitive"`
+	FirstName string `json:"firstName" validate:"required"`
+	LastName  string `json:"lastName" validate:"required"`
+	Email     string `json:"email" validate:"required,email"`
+	Password  string `json:"password" validate:"required,min=8" encore:"sensitive"`
 }
 
 func (p CreateAdminRequest) Validate() error {
@@ -52,6 +64,8 @@ type CreateAdminResponse struct {
 func toAdminResponse(r db.ListAdminsRow) AdminResponse {
 	return AdminResponse{
 		ID:        r.ID,
+		FirstName: r.FirstName,
+		LastName:  r.LastName,
 		Email:     r.Email,
 		LastLogin: db.TimePtrFromDB(r.LastLogin),
 		CreatedAt: db.TimeFromDB(r.CreatedAt),
@@ -81,6 +95,8 @@ func createFirstAdmin(query db.Querier) {
 	}
 
 	_, err = query.CreateAdmin(ctx, db.CreateAdminParams{
+		FirstName:    cfg.FirstAdminFirstName(),
+		LastName:     cfg.FirstAdminLastName(),
 		Email:        secrets.FirstAdminEmail,
 		PasswordHash: hashed + string(hashed),
 	})
@@ -131,6 +147,8 @@ func (s *Service) CreateAdmin(ctx context.Context, params CreateAdminRequest) (*
 	}
 
 	row, err := s.query.CreateAdmin(ctx, db.CreateAdminParams{
+		FirstName:    params.FirstName,
+		LastName:     params.LastName,
 		Email:        params.Email,
 		PasswordHash: hashed,
 	})

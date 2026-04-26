@@ -98,6 +98,8 @@ type RefreshToken struct {
 
 type User struct {
 	ID           int32
+	FirstName    string
+	LastName     string
 	Role         UserRole
 	Email        string
 	PhoneNumber  *string

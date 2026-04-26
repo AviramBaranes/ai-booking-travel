@@ -14,6 +14,8 @@ import (
 // --- Request / Response types ---
 
 type UpdateUserRequest struct {
+	FirstName   *string `json:"firstName" encore:"optional"`
+	LastName    *string `json:"lastName" encore:"optional"`
 	Email       *string `json:"email" validate:"omitempty,email" encore:"optional"`
 	PhoneNumber *string `json:"phoneNumber" encore:"optional"`
 	OfficeID    *int32  `json:"officeId" validate:"omitempty,gte=1" encore:"optional"`
@@ -31,6 +33,8 @@ func (p UpdateUserRequest) Validate() error {
 
 type UpdateUserResponse struct {
 	ID          int32   `json:"id"`
+	FirstName   string  `json:"firstName"`
+	LastName    string  `json:"lastName"`
 	Email       string  `json:"email"`
 	PhoneNumber *string `json:"phoneNumber"`
 	OfficeID    *int32  `json:"officeId"`
@@ -79,6 +83,8 @@ func (s *Service) UpdateUser(ctx context.Context, id int32, params UpdateUserReq
 
 	row, err := s.query.UpdateUser(ctx, db.UpdateUserParams{
 		ID:           id,
+		FirstName:    params.FirstName,
+		LastName:     params.LastName,
 		Email:        params.Email,
 		PhoneNumber:  params.PhoneNumber,
 		OfficeID:     params.OfficeID,
@@ -94,6 +100,8 @@ func (s *Service) UpdateUser(ctx context.Context, id int32, params UpdateUserReq
 
 	return &UpdateUserResponse{
 		ID:          row.ID,
+		FirstName:   row.FirstName,
+		LastName:    row.LastName,
 		Email:       row.Email,
 		PhoneNumber: row.PhoneNumber,
 		OfficeID:    row.OfficeID,
