@@ -86,8 +86,10 @@ func assertAccessClaims(t *testing.T, claims *jwt.AccessTokenClaims, user *db.Us
 
 func registerAdmin(ctx context.Context, email, password string) (*CreateAdminResponse, func(), error) {
 	admin, err := CreateAdmin(ctx, CreateAdminRequest{
-		Email:    email,
-		Password: password,
+		FirstName: "Test",
+		LastName:  "Admin",
+		Email:     email,
+		Password:  password,
 	})
 
 	if err != nil {

@@ -36,6 +36,8 @@ func TestUpdateUser(t *testing.T) {
 	t.Run("updates email successfully", func(t *testing.T) {
 		t.Parallel()
 		agent, cleanup, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "Agent",
 			Email:       generateTestEmail(),
 			Password:    strongPassword,
 			PhoneNumber: randomIsraeliPhoneNumber(),
@@ -62,6 +64,8 @@ func TestUpdateUser(t *testing.T) {
 	t.Run("updates phone successfully", func(t *testing.T) {
 		t.Parallel()
 		agent, cleanup, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "Agent",
 			Email:       generateTestEmail(),
 			Password:    strongPassword,
 			PhoneNumber: randomIsraeliPhoneNumber(),
@@ -91,6 +95,8 @@ func TestUpdateUser(t *testing.T) {
 		_, officeB := seedOrgAndOffice(t)
 
 		agent, cleanup, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "Agent",
 			Email:       generateTestEmail(),
 			Password:    strongPassword,
 			PhoneNumber: randomIsraeliPhoneNumber(),
@@ -157,6 +163,8 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 		emailA := generateTestEmail()
 		agentA, cleanupA, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "AgentA",
 			Email:       emailA,
 			Password:    strongPassword,
 			PhoneNumber: randomIsraeliPhoneNumber(),
@@ -168,6 +176,8 @@ func TestUpdateUser(t *testing.T) {
 		t.Cleanup(cleanupA)
 
 		agentB, cleanupB, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "AgentB",
 			Email:       generateTestEmail(),
 			Password:    strongPassword,
 			PhoneNumber: randomIsraeliPhoneNumber(),
@@ -190,6 +200,8 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 		email := generateTestEmail()
 		agent, cleanup, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "Agent",
 			Email:       email,
 			Password:    strongPassword,
 			PhoneNumber: randomIsraeliPhoneNumber(),
@@ -216,6 +228,8 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 		phone := randomIsraeliPhoneNumber()
 		_, cleanupA, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "AgentA",
 			Email:       generateTestEmail(),
 			Password:    strongPassword,
 			PhoneNumber: phone,
@@ -226,6 +240,8 @@ func TestUpdateUser(t *testing.T) {
 		t.Cleanup(cleanupA)
 
 		agentB, cleanupB, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "AgentB",
 			Email:       generateTestEmail(),
 			Password:    strongPassword,
 			PhoneNumber: randomIsraeliPhoneNumber(),
@@ -247,6 +263,8 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 		phone := randomIsraeliPhoneNumber()
 		agent, cleanup, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "Agent",
 			Email:       generateTestEmail(),
 			Password:    strongPassword,
 			PhoneNumber: phone,

@@ -27,6 +27,8 @@ func agentMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
 func seedAgent(t *testing.T, s *Service, email, phone string, officeID int32) *CreateAgentResponse {
 	t.Helper()
 	resp, err := s.CreateAgent(context.Background(), CreateAgentRequest{
+		FirstName:   "Test",
+		LastName:    "Agent",
 		Email:       email,
 		Password:    "ValidPass123!",
 		PhoneNumber: phone,
@@ -223,6 +225,8 @@ func TestCreateAgent(t *testing.T) {
 		t.Parallel()
 		_, officeID := seedOrgAndOffice(t)
 		resp, err := s.CreateAgent(ctx, CreateAgentRequest{
+			FirstName:   "Create",
+			LastName:    "Ok",
 			Email:       fmt.Sprintf("create_agent_ok_%d@test.com", time.Now().UnixNano()),
 			Password:    "ValidPass123!",
 			PhoneNumber: randomIsraeliPhoneNumber(),
@@ -243,6 +247,8 @@ func TestCreateAgent(t *testing.T) {
 		seedAgent(t, s, email, randomIsraeliPhoneNumber(), officeID)
 
 		_, err := s.CreateAgent(ctx, CreateAgentRequest{
+			FirstName:   "Dup",
+			LastName:    "Agent",
 			Email:       email,
 			Password:    "ValidPass123!",
 			PhoneNumber: randomIsraeliPhoneNumber(),
@@ -251,33 +257,45 @@ func TestCreateAgent(t *testing.T) {
 		api_errors.AssertApiError(t, ErrEmailAlreadyExists, err)
 	})
 
+	t.Run("validation rejects empty firstName", func(t *testing.T) {
+		t.Parallel()
+		p := CreateAgentRequest{FirstName: "", LastName: "Agent", Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
+		api_errors.AssertApiError(t, invalidValueErr("firstName"), p.Validate())
+	})
+
+	t.Run("validation rejects empty lastName", func(t *testing.T) {
+		t.Parallel()
+		p := CreateAgentRequest{FirstName: "Test", LastName: "", Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
+		api_errors.AssertApiError(t, invalidValueErr("lastName"), p.Validate())
+	})
+
 	t.Run("validation rejects invalid email", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAgentRequest{Email: "not-an-email", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
+		p := CreateAgentRequest{FirstName: "Test", LastName: "Agent", Email: "not-an-email", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
 	t.Run("validation rejects empty email", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAgentRequest{Email: "", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
+		p := CreateAgentRequest{FirstName: "Test", LastName: "Agent", Email: "", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
 	t.Run("validation rejects empty phoneNumber", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAgentRequest{Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "", OfficeID: 1}
+		p := CreateAgentRequest{FirstName: "Test", LastName: "Agent", Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "", OfficeID: 1}
 		api_errors.AssertApiError(t, invalidValueErr("phoneNumber"), p.Validate())
 	})
 
 	t.Run("validation rejects officeId 0", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAgentRequest{Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 0}
+		p := CreateAgentRequest{FirstName: "Test", LastName: "Agent", Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 0}
 		api_errors.AssertApiError(t, invalidValueErr("officeId"), p.Validate())
 	})
 
 	t.Run("validation rejects weak password", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAgentRequest{Email: "agent@test.com", Password: "short", PhoneNumber: "0521234567", OfficeID: 1}
+		p := CreateAgentRequest{FirstName: "Test", LastName: "Agent", Email: "agent@test.com", Password: "short", PhoneNumber: "0521234567", OfficeID: 1}
 		api_errors.AssertApiError(t, ErrPasswordTooShort, p.Validate())
 	})
 
@@ -287,6 +305,8 @@ func TestCreateAgent(t *testing.T) {
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int32(0), errors.New("db error"))
 
 		_, err := s.CreateAgent(ctx, CreateAgentRequest{
+			FirstName:   "DB",
+			LastName:    "Fail",
 			Email:       "db_fail@test.com",
 			Password:    "ValidPass123!",
 			PhoneNumber: "0521234567",
@@ -302,6 +322,8 @@ func TestCreateAgent(t *testing.T) {
 		q.EXPECT().CreateAgent(gomock.Any(), gomock.Any()).Return(db.CreateAgentRow{}, errors.New("db error"))
 
 		_, err := s.CreateAgent(ctx, CreateAgentRequest{
+			FirstName:   "DB",
+			LastName:    "CreateFail",
 			Email:       "db_create_fail@test.com",
 			Password:    "ValidPass123!",
 			PhoneNumber: "0521234567",

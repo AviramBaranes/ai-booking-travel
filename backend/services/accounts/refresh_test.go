@@ -323,6 +323,8 @@ func TestRefreshTokens(t *testing.T) {
 
 		agentEmail := generateTestEmail()
 		agent, delAgent, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "Agent",
 			Email:       agentEmail,
 			Password:    testPassword,
 			PhoneNumber: randomIsraeliPhoneNumber(),

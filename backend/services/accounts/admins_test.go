@@ -106,8 +106,10 @@ func adminMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
 func createTestAdmin(t *testing.T, s *Service, email string) *CreateAdminResponse {
 	t.Helper()
 	resp, err := s.CreateAdmin(context.Background(), CreateAdminRequest{
-		Email:    email,
-		Password: "ValidPass123!",
+		FirstName: "Test",
+		LastName:  "Admin",
+		Email:     email,
+		Password:  "ValidPass123!",
 	})
 	if err != nil {
 		t.Fatalf("failed to create admin %s: %v", email, err)
@@ -162,8 +164,10 @@ func TestCreateAdmin(t *testing.T) {
 	t.Run("creates admin successfully", func(t *testing.T) {
 		t.Parallel()
 		resp, err := s.CreateAdmin(ctx, CreateAdminRequest{
-			Email:    "create_admin_ok@test.com",
-			Password: "ValidPass123!",
+			FirstName: "Create",
+			LastName:  "Ok",
+			Email:     "create_admin_ok@test.com",
+			Password:  "ValidPass123!",
 		})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
@@ -181,33 +185,47 @@ func TestCreateAdmin(t *testing.T) {
 		defer query.DeleteUser(ctx, admin.ID)
 
 		_, err := s.CreateAdmin(ctx, CreateAdminRequest{
-			Email:    "dup_admin@test.com",
-			Password: "ValidPass123!",
+			FirstName: "Dup",
+			LastName:  "Admin",
+			Email:     "dup_admin@test.com",
+			Password:  "ValidPass123!",
 		})
 		api_errors.AssertApiError(t, ErrEmailAlreadyExists, err)
 	})
 
+	t.Run("validation rejects empty firstName", func(t *testing.T) {
+		t.Parallel()
+		p := CreateAdminRequest{FirstName: "", LastName: "Admin", Email: "admin@test.com", Password: "ValidPass123!"}
+		api_errors.AssertApiError(t, invalidValueErr("firstName"), p.Validate())
+	})
+
+	t.Run("validation rejects empty lastName", func(t *testing.T) {
+		t.Parallel()
+		p := CreateAdminRequest{FirstName: "Test", LastName: "", Email: "admin@test.com", Password: "ValidPass123!"}
+		api_errors.AssertApiError(t, invalidValueErr("lastName"), p.Validate())
+	})
+
 	t.Run("validation rejects invalid email", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAdminRequest{Email: "not-an-email", Password: "ValidPass123!"}
+		p := CreateAdminRequest{FirstName: "Test", LastName: "Admin", Email: "not-an-email", Password: "ValidPass123!"}
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
 	t.Run("validation rejects empty email", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAdminRequest{Email: "", Password: "ValidPass123!"}
+		p := CreateAdminRequest{FirstName: "Test", LastName: "Admin", Email: "", Password: "ValidPass123!"}
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
 	t.Run("validation rejects weak password", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAdminRequest{Email: "weak_pw@test.com", Password: "short"}
+		p := CreateAdminRequest{FirstName: "Test", LastName: "Admin", Email: "weak_pw@test.com", Password: "short"}
 		api_errors.AssertApiError(t, ErrPasswordTooShort, p.Validate())
 	})
 
 	t.Run("validation rejects password without uppercase", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAdminRequest{Email: "no_upper@test.com", Password: "validpass123!"}
+		p := CreateAdminRequest{FirstName: "Test", LastName: "Admin", Email: "no_upper@test.com", Password: "validpass123!"}
 		api_errors.AssertApiError(t, ErrPasswordNoUpper, p.Validate())
 	})
 
@@ -217,8 +235,10 @@ func TestCreateAdmin(t *testing.T) {
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int32(0), errors.New("db error"))
 
 		_, err := s.CreateAdmin(ctx, CreateAdminRequest{
-			Email:    "db_fail@test.com",
-			Password: "ValidPass123!",
+			FirstName: "DB",
+			LastName:  "Fail",
+			Email:     "db_fail@test.com",
+			Password:  "ValidPass123!",
 		})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
@@ -230,8 +250,10 @@ func TestCreateAdmin(t *testing.T) {
 		q.EXPECT().CreateAdmin(gomock.Any(), gomock.Any()).Return(db.CreateAdminRow{}, errors.New("db error"))
 
 		_, err := s.CreateAdmin(ctx, CreateAdminRequest{
-			Email:    "db_create_fail@test.com",
-			Password: "ValidPass123!",
+			FirstName: "DB",
+			LastName:  "CreateFail",
+			Email:     "db_create_fail@test.com",
+			Password:  "ValidPass123!",
 		})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})

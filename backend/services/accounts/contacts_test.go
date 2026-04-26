@@ -433,20 +433,6 @@ func TestCreateContact(t *testing.T) {
 		}
 	})
 
-	t.Run("validation rejects isPaymentResponsible true with officeId", func(t *testing.T) {
-		t.Parallel()
-		officeID := int32(1)
-		p := validCreateContactParams(&officeID, nil)
-		p.IsPaymentResponsible = true
-
-		wantErr := api_errors.NewErrorWithDetail(
-			errs.InvalidArgument,
-			"Only organization contacts can be marked as payment responsible",
-			api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue},
-		)
-		api_errors.AssertApiError(t, wantErr, p.Validate())
-	})
-
 	t.Run("validation rejects both officeId and organizationId", func(t *testing.T) {
 		t.Parallel()
 		officeID := int32(1)

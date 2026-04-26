@@ -105,8 +105,10 @@ func TestLogin(t *testing.T) {
 
 	t.Run("Incorrect password", func(t *testing.T) {
 		user, err := CreateAdmin(ctx, CreateAdminRequest{
-			Email:    testEmail,
-			Password: testPassword,
+			FirstName: "Test",
+			LastName:  "Admin",
+			Email:     testEmail,
+			Password:  testPassword,
 		})
 		if err != nil {
 			t.Fatalf("Failed to create test user: %v", err)
@@ -119,8 +121,10 @@ func TestLogin(t *testing.T) {
 
 	t.Run("Store refresh token fails", func(t *testing.T) {
 		user, err := CreateAdmin(ctx, CreateAdminRequest{
-			Email:    testEmail,
-			Password: testPassword,
+			FirstName: "Test",
+			LastName:  "Admin",
+			Email:     testEmail,
+			Password:  testPassword,
 		})
 		if err != nil {
 			t.Fatalf("Failed to create test user: %v", err)
@@ -159,6 +163,8 @@ func TestLogin(t *testing.T) {
 
 		agentEmail := "agent_" + testEmail
 		_, delAgent, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "Agent",
 			Email:       agentEmail,
 			Password:    testPassword,
 			PhoneNumber: "0505050505",
@@ -287,6 +293,8 @@ func TestLoginAsAgent(t *testing.T) {
 
 		agentEmail := generateTestEmail()
 		agent, delAgent, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "Agent",
 			Email:       agentEmail,
 			Password:    testPassword,
 			PhoneNumber: randomIsraeliPhoneNumber(),
@@ -405,6 +413,8 @@ func TestLoginBackToAdmin(t *testing.T) {
 
 		agentEmail := generateTestEmail()
 		agent, delAgent, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "Agent",
 			Email:       agentEmail,
 			Password:    testPassword,
 			PhoneNumber: randomIsraeliPhoneNumber(),
@@ -466,6 +476,8 @@ func TestSendCustomerLoginOTP(t *testing.T) {
 		agentPhone := randomIsraeliPhoneNumber()
 		agentEmail := generateTestEmail()
 		_, delAgent, err := createAgent(ctx, CreateAgentRequest{
+			FirstName:   "Test",
+			LastName:    "Agent",
 			Email:       agentEmail,
 			Password:    testPassword,
 			PhoneNumber: agentPhone,
