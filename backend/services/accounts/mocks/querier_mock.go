@@ -262,6 +262,21 @@ func (mr *MockQuerierMockRecorder) DeleteUser(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockQuerier)(nil).DeleteUser), ctx, id)
 }
 
+// GetAgentsBillingContacts mocks base method.
+func (m *MockQuerier) GetAgentsBillingContacts(ctx context.Context, usersIds []int32) ([]db.GetAgentsBillingContactsRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAgentsBillingContacts", ctx, usersIds)
+	ret0, _ := ret[0].([]db.GetAgentsBillingContactsRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAgentsBillingContacts indicates an expected call of GetAgentsBillingContacts.
+func (mr *MockQuerierMockRecorder) GetAgentsBillingContacts(ctx, usersIds any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentsBillingContacts", reflect.TypeOf((*MockQuerier)(nil).GetAgentsBillingContacts), ctx, usersIds)
+}
+
 // GetRefreshToken mocks base method.
 func (m *MockQuerier) GetRefreshToken(ctx context.Context, jti string) (db.RefreshToken, error) {
 	m.ctrl.T.Helper()

@@ -96,3 +96,16 @@ SET
   otp = $2
 WHERE
   id = $1;
+
+-- name: GetAgentsBillingContacts :many
+SELECT
+u.id as agent_id,
+c.email, c.first_name, c.last_name,
+org.id as organization_id, org.name as organization_name, 
+office.id as office_id, office.name as office_name
+FROM users as u
+INNER JOIN offices as office ON office.id = u.office_id
+INNER JOIN organizations as org ON org.id = office.organization_id
+INNER JOIN contacts as c ON c.organization_id = org.id AND c.is_payment_responsible = TRUE
+WHERE u.role = 'agent'
+  AND u.id = ANY(sqlc.arg(users_ids)::int[]);

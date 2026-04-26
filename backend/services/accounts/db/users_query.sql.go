@@ -193,6 +193,60 @@ func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 	return err
 }
 
+const getAgentsBillingContacts = `-- name: GetAgentsBillingContacts :many
+SELECT
+u.id as agent_id,
+c.email, c.first_name, c.last_name,
+org.id as organization_id, org.name as organization_name, 
+office.id as office_id, office.name as office_name
+FROM users as u
+INNER JOIN offices as office ON office.id = u.office_id
+INNER JOIN organizations as org ON org.id = office.organization_id
+INNER JOIN contacts as c ON c.organization_id = org.id AND c.is_payment_responsible = TRUE
+WHERE u.role = 'agent'
+  AND u.id = ANY($1::int[])
+`
+
+type GetAgentsBillingContactsRow struct {
+	AgentID          int32
+	Email            string
+	FirstName        string
+	LastName         string
+	OrganizationID   int32
+	OrganizationName string
+	OfficeID         int32
+	OfficeName       string
+}
+
+func (q *Queries) GetAgentsBillingContacts(ctx context.Context, usersIds []int32) ([]GetAgentsBillingContactsRow, error) {
+	rows, err := q.db.Query(ctx, getAgentsBillingContacts, usersIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAgentsBillingContactsRow
+	for rows.Next() {
+		var i GetAgentsBillingContactsRow
+		if err := rows.Scan(
+			&i.AgentID,
+			&i.Email,
+			&i.FirstName,
+			&i.LastName,
+			&i.OrganizationID,
+			&i.OrganizationName,
+			&i.OfficeID,
+			&i.OfficeName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, role, email, phone_number, otp, office_id, password_hash, last_login, created_at, updated_at
 FROM users
