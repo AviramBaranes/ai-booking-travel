@@ -110,6 +110,8 @@ export interface ClientOptions {
 export namespace accounts {
     export interface AdminResponse {
         id: number
+        firstName: string
+        lastName: string
         email: string
         lastLogin: string
         createdAt: string
@@ -118,6 +120,8 @@ export namespace accounts {
 
     export interface AgentResponse {
         id: number
+        firstName: string
+        lastName: string
         email: string
         phoneNumber: string
         officeId: number
@@ -143,6 +147,8 @@ export namespace accounts {
     }
 
     export interface CreateAdminRequest {
+        firstName: string
+        lastName: string
         email: string
         password: string
     }
@@ -152,6 +158,8 @@ export namespace accounts {
     }
 
     export interface CreateAgentRequest {
+        firstName: string
+        lastName: string
         email: string
         password: string
         phoneNumber: string
@@ -339,6 +347,8 @@ export namespace accounts {
     }
 
     export interface UpdateUserRequest {
+        firstName?: string
+        lastName?: string
         email?: string
         phoneNumber?: string
         officeId?: number
@@ -347,6 +357,8 @@ export namespace accounts {
 
     export interface UpdateUserResponse {
         id: number
+        firstName: string
+        lastName: string
         email: string
         phoneNumber: string
         officeId: number

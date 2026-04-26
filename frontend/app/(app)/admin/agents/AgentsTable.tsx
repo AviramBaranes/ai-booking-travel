@@ -26,6 +26,8 @@ const formatDate = (v: unknown) => {
 
 const columns: ColumnDef<accounts.AgentResponse>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },
+  { key: "firstName", label: "שם פרטי", type: "text" },
+  { key: "lastName", label: "שם משפחה", type: "text" },
   { key: "email", label: "אימייל", type: "text" },
   { key: "phoneNumber", label: "טלפון", type: "text" },
   {
@@ -71,6 +73,8 @@ const columns: ColumnDef<accounts.AgentResponse>[] = [
 ];
 
 const createSchema = z.object({
+  firstName: z.string().min(1, "שדה חובה"),
+  lastName: z.string().min(1, "שדה חובה"),
   email: z.string().email("אימייל לא תקין"),
   password: z.string().min(8, "סיסמה חייבת להכיל לפחות 8 תווים"),
   phoneNumber: z.string().min(1, "שדה חובה"),
@@ -78,6 +82,8 @@ const createSchema = z.object({
 });
 
 const updateSchema = z.object({
+  firstName: z.string().min(1, "שדה חובה").optional(),
+  lastName: z.string().min(1, "שדה חובה").optional(),
   email: z.string().email("אימייל לא תקין"),
   phoneNumber: z.string().optional(),
   officeId: z.coerce.number().optional(),
