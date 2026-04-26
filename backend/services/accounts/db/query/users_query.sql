@@ -104,12 +104,15 @@ WHERE
 -- name: GetAgentsBillingContacts :many
 SELECT
 u.id as agent_id, u.first_name as agent_first_name, u.last_name as agent_last_name,
-c.email, c.first_name as contact_first_name, c.last_name as contact_last_name,
+c.id as contact_id, c.email, c.first_name as contact_first_name, c.last_name as contact_last_name,
 org.id as organization_id, org.name as organization_name, org.is_organic,
 office.id as office_id, office.name as office_name
 FROM users as u
 INNER JOIN offices as office ON office.id = u.office_id
 INNER JOIN organizations as org ON org.id = office.organization_id
-INNER JOIN contacts as c ON c.organization_id = org.id AND c.is_payment_responsible = TRUE
+INNER JOIN contacts as c ON c.is_payment_responsible = TRUE AND (
+    (c.organization_id = org.id AND org.is_organic = TRUE) OR 
+    (c.office_id = office.id AND org.is_organic = FALSE)
+)
 WHERE u.role = 'agent'
   AND u.id = ANY(sqlc.arg(users_ids)::int[]);

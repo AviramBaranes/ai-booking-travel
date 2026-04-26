@@ -47,10 +47,10 @@ func (s *Service) GetBillingContacts(ctx context.Context, p *GetBillingContactsR
 		return nil, err
 	}
 
-	orgsMap := createOrganizationsMap(rows)
+	contactsMap := createContactsMap(rows)
 
-	contacts := make([]BillingContact, 0, len(orgsMap))
-	for _, contact := range orgsMap {
+	contacts := make([]BillingContact, 0, len(contactsMap))
+	for _, contact := range contactsMap {
 		contacts = append(contacts, contact)
 	}
 
@@ -59,11 +59,11 @@ func (s *Service) GetBillingContacts(ctx context.Context, p *GetBillingContactsR
 	}, nil
 }
 
-// toContactResponseFromRow converts a db.ListContactsRow to a ContactResponse.
-func createOrganizationsMap(rows []db.GetAgentsBillingContactsRow) map[int32]BillingContact {
-	orgsContactsMap := make(map[int32]BillingContact)
+// createContactsMap converts a db.ListContactsRow to a ContactResponse.
+func createContactsMap(rows []db.GetAgentsBillingContactsRow) map[int32]BillingContact {
+	contactsMap := make(map[int32]BillingContact)
 	for _, r := range rows {
-		contact, exists := orgsContactsMap[r.OrganizationID]
+		contact, exists := contactsMap[r.ContactID]
 		if !exists {
 			contact = BillingContact{
 				ContactName:      r.ContactFirstName + " " + r.ContactLastName,
@@ -97,8 +97,8 @@ func createOrganizationsMap(rows []db.GetAgentsBillingContactsRow) map[int32]Bil
 			contact.Offices[officeIndex].Agents = append(contact.Offices[officeIndex].Agents, agent)
 		}
 
-		orgsContactsMap[r.OrganizationID] = contact
+		contactsMap[r.ContactID] = contact
 	}
 
-	return orgsContactsMap
+	return contactsMap
 }
