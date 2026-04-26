@@ -83,6 +83,96 @@ func (q *Queries) CountReservationsByUser(ctx context.Context, arg CountReservat
 	return total, err
 }
 
+const getPaymentPendingReservations = `-- name: GetPaymentPendingReservations :many
+SELECT
+    id,
+    user_id,
+    driver_title,
+    driver_first_name,
+    driver_last_name,
+    created_at,
+    broker_reservation_id,
+    vouchered_at,
+    voucher_number,
+    pickup_date,
+    return_date,
+    country_code,
+    rental_days,
+    currency_code,
+    purchase_price,
+    markup_percentage,
+    bt_erp_price,
+    broker_erp_price,
+    total_price
+FROM reservations
+WHERE
+    status = 'vouchered'
+AND
+    (payment_status = 'unpaid' OR payment_status = 'refund_pending')
+`
+
+type GetPaymentPendingReservationsRow struct {
+	ID                  int64
+	UserID              int32
+	DriverTitle         string
+	DriverFirstName     string
+	DriverLastName      string
+	CreatedAt           pgtype.Timestamptz
+	BrokerReservationID string
+	VoucheredAt         pgtype.Timestamptz
+	VoucherNumber       *string
+	PickupDate          pgtype.Date
+	ReturnDate          pgtype.Date
+	CountryCode         string
+	RentalDays          int32
+	CurrencyCode        string
+	PurchasePrice       pgtype.Numeric
+	MarkupPercentage    pgtype.Numeric
+	BtErpPrice          int32
+	BrokerErpPrice      pgtype.Numeric
+	TotalPrice          int32
+}
+
+func (q *Queries) GetPaymentPendingReservations(ctx context.Context) ([]GetPaymentPendingReservationsRow, error) {
+	rows, err := q.db.Query(ctx, getPaymentPendingReservations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPaymentPendingReservationsRow
+	for rows.Next() {
+		var i GetPaymentPendingReservationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.DriverTitle,
+			&i.DriverFirstName,
+			&i.DriverLastName,
+			&i.CreatedAt,
+			&i.BrokerReservationID,
+			&i.VoucheredAt,
+			&i.VoucherNumber,
+			&i.PickupDate,
+			&i.ReturnDate,
+			&i.CountryCode,
+			&i.RentalDays,
+			&i.CurrencyCode,
+			&i.PurchasePrice,
+			&i.MarkupPercentage,
+			&i.BtErpPrice,
+			&i.BrokerErpPrice,
+			&i.TotalPrice,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getReservationByID = `-- name: GetReservationByID :one
 SELECT
     id,

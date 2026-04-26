@@ -148,3 +148,30 @@ SET
     updated_at = CURRENT_TIMESTAMP
 WHERE
     id = $1;
+
+-- name: GetPaymentPendingReservations :many
+SELECT
+    id,
+    user_id,
+    driver_title,
+    driver_first_name,
+    driver_last_name,
+    created_at,
+    broker_reservation_id,
+    vouchered_at,
+    voucher_number,
+    pickup_date,
+    return_date,
+    country_code,
+    rental_days,
+    currency_code,
+    purchase_price,
+    markup_percentage,
+    bt_erp_price,
+    broker_erp_price,
+    total_price
+FROM reservations
+WHERE
+    status = 'vouchered'
+AND
+    (payment_status = 'unpaid' OR payment_status = 'refund_pending');

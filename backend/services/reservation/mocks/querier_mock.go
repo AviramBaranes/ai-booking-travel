@@ -85,6 +85,21 @@ func (mr *MockQuerierMockRecorder) CountReservationsByUser(ctx, arg any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountReservationsByUser", reflect.TypeOf((*MockQuerier)(nil).CountReservationsByUser), ctx, arg)
 }
 
+// GetPaymentPendingReservations mocks base method.
+func (m *MockQuerier) GetPaymentPendingReservations(ctx context.Context) ([]db.GetPaymentPendingReservationsRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPaymentPendingReservations", ctx)
+	ret0, _ := ret[0].([]db.GetPaymentPendingReservationsRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPaymentPendingReservations indicates an expected call of GetPaymentPendingReservations.
+func (mr *MockQuerierMockRecorder) GetPaymentPendingReservations(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaymentPendingReservations", reflect.TypeOf((*MockQuerier)(nil).GetPaymentPendingReservations), ctx)
+}
+
 // GetReservationByID mocks base method.
 func (m *MockQuerier) GetReservationByID(ctx context.Context, id int64) (db.GetReservationByIDRow, error) {
 	m.ctrl.T.Helper()
