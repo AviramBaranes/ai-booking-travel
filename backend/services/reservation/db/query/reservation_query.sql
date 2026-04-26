@@ -153,6 +153,7 @@ WHERE
 SELECT
     id,
     user_id,
+    payment_status,
     driver_title,
     driver_first_name,
     driver_last_name,

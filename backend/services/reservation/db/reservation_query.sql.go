@@ -87,6 +87,7 @@ const getPaymentPendingReservations = `-- name: GetPaymentPendingReservations :m
 SELECT
     id,
     user_id,
+    payment_status,
     driver_title,
     driver_first_name,
     driver_last_name,
@@ -114,6 +115,7 @@ AND
 type GetPaymentPendingReservationsRow struct {
 	ID                  int64
 	UserID              int32
+	PaymentStatus       PaymentStatus
 	DriverTitle         string
 	DriverFirstName     string
 	DriverLastName      string
@@ -145,6 +147,7 @@ func (q *Queries) GetPaymentPendingReservations(ctx context.Context) ([]GetPayme
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
+			&i.PaymentStatus,
 			&i.DriverTitle,
 			&i.DriverFirstName,
 			&i.DriverLastName,

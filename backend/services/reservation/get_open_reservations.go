@@ -11,6 +11,7 @@ import (
 
 type OpenReservation struct {
 	ID                  int64
+	PaymentStatus       string
 	BrokerReservationID string
 	AgentID             int32
 	CreatedAt           string
@@ -52,6 +53,7 @@ func mapRowsToOpenReservations(rows []db.GetPaymentPendingReservationsRow) []Ope
 
 		reservations[i] = OpenReservation{
 			ID:                  row.ID,
+			PaymentStatus:       string(row.PaymentStatus),
 			BrokerReservationID: row.BrokerReservationID,
 			AgentID:             row.UserID,
 			CreatedAt:           db.TimestamptzToString(row.CreatedAt),
