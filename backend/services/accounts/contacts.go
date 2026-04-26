@@ -70,14 +70,6 @@ func (p CreateContactRequest) Validate() error {
 		)
 	}
 
-	if p.IsPaymentResponsible && !hasOrg {
-		return api_errors.NewErrorWithDetail(
-			errs.InvalidArgument,
-			"Only organization contacts can be marked as payment responsible",
-			api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue},
-		)
-	}
-
 	return nil
 }
 

@@ -76,21 +76,7 @@ const associationField = z
   .string()
   .refine((v) => parseAssociation(v).id > 0, "יש לבחור משרד או רשת");
 
-const paymentResponsibleRefine = (
-  data: { officeId: string; isPaymentResponsible?: boolean },
-  ctx: z.RefinementCtx,
-) => {
-  if (
-    data.isPaymentResponsible &&
-    parseAssociation(data.officeId).type !== "org"
-  ) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["isPaymentResponsible"],
-      message: "רק אנשי קשר של רשת יכולים להיות אחראיים על תשלום",
-    });
-  }
-};
+
 
 const createSchema = z
   .object({
@@ -102,7 +88,6 @@ const createSchema = z
     officeId: associationField,
     isPaymentResponsible: z.boolean().optional(),
   })
-  .superRefine(paymentResponsibleRefine);
 
 const updateSchema = z
   .object({
@@ -114,7 +99,6 @@ const updateSchema = z
     officeId: associationField,
     isPaymentResponsible: z.boolean().optional(),
   })
-  .superRefine(paymentResponsibleRefine);
 
 function formDataToCreatePayload(
   data: Record<string, unknown>,

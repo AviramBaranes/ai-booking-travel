@@ -40,7 +40,6 @@ CREATE TABLE
             (
                 office_id IS NOT NULL
                 AND organization_id IS NULL
-                AND is_payment_responsible = FALSE
             )
             OR (
                 office_id IS NULL
