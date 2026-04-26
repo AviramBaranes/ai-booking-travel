@@ -66,7 +66,7 @@ func createOrganizationsMap(rows []db.GetAgentsBillingContactsRow) map[int32]Bil
 		contact, exists := orgsContactsMap[r.OrganizationID]
 		if !exists {
 			contact = BillingContact{
-				ContactName:      r.FirstName + " " + r.LastName,
+				ContactName:      r.ContactFirstName + " " + r.ContactLastName,
 				ContactEmail:     r.Email,
 				OrganizationID:   r.OrganizationID,
 				OrganizationName: r.OrganizationName,
@@ -75,7 +75,7 @@ func createOrganizationsMap(rows []db.GetAgentsBillingContactsRow) map[int32]Bil
 
 		agent := Agent{
 			ID:   r.AgentID,
-			Name: "Agent " + string(r.AgentID),
+			Name: r.AgentFirstName + " " + r.AgentLastName,
 		}
 
 		officeIndex := -1

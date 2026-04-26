@@ -103,9 +103,9 @@ WHERE
 
 -- name: GetAgentsBillingContacts :many
 SELECT
-u.id as agent_id,
-c.email, c.first_name, c.last_name,
-org.id as organization_id, org.name as organization_name, 
+u.id as agent_id, u.first_name as agent_first_name, u.last_name as agent_last_name,
+c.email, c.first_name as contact_first_name, c.last_name as contact_last_name,
+org.id as organization_id, org.name as organization_name, org.is_organic,
 office.id as office_id, office.name as office_name
 FROM users as u
 INNER JOIN offices as office ON office.id = u.office_id

@@ -224,9 +224,9 @@ func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 
 const getAgentsBillingContacts = `-- name: GetAgentsBillingContacts :many
 SELECT
-u.id as agent_id,
-c.email, c.first_name, c.last_name,
-org.id as organization_id, org.name as organization_name, 
+u.id as agent_id, u.first_name as agent_first_name, u.last_name as agent_last_name,
+c.email, c.first_name as contact_first_name, c.last_name as contact_last_name,
+org.id as organization_id, org.name as organization_name, org.is_organic,
 office.id as office_id, office.name as office_name
 FROM users as u
 INNER JOIN offices as office ON office.id = u.office_id
@@ -238,11 +238,14 @@ WHERE u.role = 'agent'
 
 type GetAgentsBillingContactsRow struct {
 	AgentID          int32
+	AgentFirstName   string
+	AgentLastName    string
 	Email            string
-	FirstName        string
-	LastName         string
+	ContactFirstName string
+	ContactLastName  string
 	OrganizationID   int32
 	OrganizationName string
+	IsOrganic        bool
 	OfficeID         int32
 	OfficeName       string
 }
@@ -258,11 +261,14 @@ func (q *Queries) GetAgentsBillingContacts(ctx context.Context, usersIds []int32
 		var i GetAgentsBillingContactsRow
 		if err := rows.Scan(
 			&i.AgentID,
+			&i.AgentFirstName,
+			&i.AgentLastName,
 			&i.Email,
-			&i.FirstName,
-			&i.LastName,
+			&i.ContactFirstName,
+			&i.ContactLastName,
 			&i.OrganizationID,
 			&i.OrganizationName,
+			&i.IsOrganic,
 			&i.OfficeID,
 			&i.OfficeName,
 		); err != nil {
