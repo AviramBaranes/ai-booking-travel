@@ -8,6 +8,7 @@ SELECT
     c.email,
     c.office_id,
     c.organization_id,
+    c.is_payment_responsible,
     c.created_at,
     c.updated_at,
     o.name  AS office_name,
@@ -33,7 +34,7 @@ WHERE
     AND (sqlc.narg(organization_id)::INTEGER IS NULL OR c.organization_id = sqlc.narg(organization_id)::INTEGER);
 
 -- name: CreateContact :one
-INSERT INTO contacts (first_name, last_name, role, cellphone, email, office_id, organization_id, created_at, updated_at)
+INSERT INTO contacts (first_name, last_name, role, cellphone, email, office_id, organization_id, is_payment_responsible, created_at, updated_at)
 VALUES (
     sqlc.arg(first_name),
     sqlc.arg(last_name),
@@ -42,10 +43,11 @@ VALUES (
     sqlc.arg(email),
     sqlc.narg(office_id),
     sqlc.narg(organization_id),
+    sqlc.arg(is_payment_responsible),
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
-RETURNING id, first_name, last_name, role, cellphone, email, office_id, organization_id, created_at, updated_at;
+RETURNING id, first_name, last_name, role, cellphone, email, office_id, organization_id, is_payment_responsible, created_at, updated_at;
 
 -- name: UpdateContact :one
 UPDATE contacts
@@ -55,11 +57,12 @@ SET
     role            = COALESCE(sqlc.narg(role),            role),
     cellphone       = COALESCE(sqlc.narg(cellphone),       cellphone),
     email           = COALESCE(sqlc.narg(email),           email),
-    office_id       = COALESCE(sqlc.narg(office_id),       office_id),
-    organization_id = COALESCE(sqlc.narg(organization_id), organization_id),
-    updated_at      = CURRENT_TIMESTAMP
+    office_id              = COALESCE(sqlc.narg(office_id),              office_id),
+    organization_id        = COALESCE(sqlc.narg(organization_id),        organization_id),
+    is_payment_responsible = COALESCE(sqlc.narg(is_payment_responsible), is_payment_responsible),
+    updated_at             = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg(id)
-RETURNING id, first_name, last_name, role, cellphone, email, office_id, organization_id, created_at, updated_at;
+RETURNING id, first_name, last_name, role, cellphone, email, office_id, organization_id, is_payment_responsible, created_at, updated_at;
 
 -- name: DeleteContact :exec
 DELETE FROM contacts

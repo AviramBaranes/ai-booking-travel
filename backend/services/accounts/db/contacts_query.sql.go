@@ -35,7 +35,7 @@ func (q *Queries) CountContacts(ctx context.Context, arg CountContactsParams) (i
 }
 
 const createContact = `-- name: CreateContact :one
-INSERT INTO contacts (first_name, last_name, role, cellphone, email, office_id, organization_id, created_at, updated_at)
+INSERT INTO contacts (first_name, last_name, role, cellphone, email, office_id, organization_id, is_payment_responsible, created_at, updated_at)
 VALUES (
     $1,
     $2,
@@ -44,20 +44,22 @@ VALUES (
     $5,
     $6,
     $7,
+    $8,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
-RETURNING id, first_name, last_name, role, cellphone, email, office_id, organization_id, created_at, updated_at
+RETURNING id, first_name, last_name, role, cellphone, email, office_id, organization_id, is_payment_responsible, created_at, updated_at
 `
 
 type CreateContactParams struct {
-	FirstName      string
-	LastName       string
-	Role           string
-	Cellphone      string
-	Email          string
-	OfficeID       *int32
-	OrganizationID *int32
+	FirstName            string
+	LastName             string
+	Role                 string
+	Cellphone            string
+	Email                string
+	OfficeID             *int32
+	OrganizationID       *int32
+	IsPaymentResponsible bool
 }
 
 func (q *Queries) CreateContact(ctx context.Context, arg CreateContactParams) (Contact, error) {
@@ -69,6 +71,7 @@ func (q *Queries) CreateContact(ctx context.Context, arg CreateContactParams) (C
 		arg.Email,
 		arg.OfficeID,
 		arg.OrganizationID,
+		arg.IsPaymentResponsible,
 	)
 	var i Contact
 	err := row.Scan(
@@ -80,6 +83,7 @@ func (q *Queries) CreateContact(ctx context.Context, arg CreateContactParams) (C
 		&i.Email,
 		&i.OfficeID,
 		&i.OrganizationID,
+		&i.IsPaymentResponsible,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -106,6 +110,7 @@ SELECT
     c.email,
     c.office_id,
     c.organization_id,
+    c.is_payment_responsible,
     c.created_at,
     c.updated_at,
     o.name  AS office_name,
@@ -131,18 +136,19 @@ type ListContactsParams struct {
 }
 
 type ListContactsRow struct {
-	ID               int32
-	FirstName        string
-	LastName         string
-	Role             string
-	Cellphone        string
-	Email            string
-	OfficeID         *int32
-	OrganizationID   *int32
-	CreatedAt        pgtype.Timestamptz
-	UpdatedAt        pgtype.Timestamptz
-	OfficeName       *string
-	OrganizationName *string
+	ID                   int32
+	FirstName            string
+	LastName             string
+	Role                 string
+	Cellphone            string
+	Email                string
+	OfficeID             *int32
+	OrganizationID       *int32
+	IsPaymentResponsible bool
+	CreatedAt            pgtype.Timestamptz
+	UpdatedAt            pgtype.Timestamptz
+	OfficeName           *string
+	OrganizationName     *string
 }
 
 func (q *Queries) ListContacts(ctx context.Context, arg ListContactsParams) ([]ListContactsRow, error) {
@@ -169,6 +175,7 @@ func (q *Queries) ListContacts(ctx context.Context, arg ListContactsParams) ([]L
 			&i.Email,
 			&i.OfficeID,
 			&i.OrganizationID,
+			&i.IsPaymentResponsible,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.OfficeName,
@@ -192,22 +199,24 @@ SET
     role            = COALESCE($3,            role),
     cellphone       = COALESCE($4,       cellphone),
     email           = COALESCE($5,           email),
-    office_id       = COALESCE($6,       office_id),
-    organization_id = COALESCE($7, organization_id),
-    updated_at      = CURRENT_TIMESTAMP
-WHERE id = $8
-RETURNING id, first_name, last_name, role, cellphone, email, office_id, organization_id, created_at, updated_at
+    office_id              = COALESCE($6,              office_id),
+    organization_id        = COALESCE($7,        organization_id),
+    is_payment_responsible = COALESCE($8, is_payment_responsible),
+    updated_at             = CURRENT_TIMESTAMP
+WHERE id = $9
+RETURNING id, first_name, last_name, role, cellphone, email, office_id, organization_id, is_payment_responsible, created_at, updated_at
 `
 
 type UpdateContactParams struct {
-	FirstName      *string
-	LastName       *string
-	Role           *string
-	Cellphone      *string
-	Email          *string
-	OfficeID       *int32
-	OrganizationID *int32
-	ID             int32
+	FirstName            *string
+	LastName             *string
+	Role                 *string
+	Cellphone            *string
+	Email                *string
+	OfficeID             *int32
+	OrganizationID       *int32
+	IsPaymentResponsible *bool
+	ID                   int32
 }
 
 func (q *Queries) UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error) {
@@ -219,6 +228,7 @@ func (q *Queries) UpdateContact(ctx context.Context, arg UpdateContactParams) (C
 		arg.Email,
 		arg.OfficeID,
 		arg.OrganizationID,
+		arg.IsPaymentResponsible,
 		arg.ID,
 	)
 	var i Contact
@@ -231,6 +241,7 @@ func (q *Queries) UpdateContact(ctx context.Context, arg UpdateContactParams) (C
 		&i.Email,
 		&i.OfficeID,
 		&i.OrganizationID,
+		&i.IsPaymentResponsible,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

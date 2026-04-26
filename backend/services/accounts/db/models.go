@@ -55,16 +55,17 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 }
 
 type Contact struct {
-	ID             int32
-	FirstName      string
-	LastName       string
-	Role           string
-	Cellphone      string
-	Email          string
-	OfficeID       *int32
-	OrganizationID *int32
-	CreatedAt      pgtype.Timestamptz
-	UpdatedAt      pgtype.Timestamptz
+	ID                   int32
+	FirstName            string
+	LastName             string
+	Role                 string
+	Cellphone            string
+	Email                string
+	OfficeID             *int32
+	OrganizationID       *int32
+	IsPaymentResponsible bool
+	CreatedAt            pgtype.Timestamptz
+	UpdatedAt            pgtype.Timestamptz
 }
 
 type Office struct {

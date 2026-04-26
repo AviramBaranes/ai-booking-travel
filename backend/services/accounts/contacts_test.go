@@ -178,6 +178,66 @@ func TestListContacts(t *testing.T) {
 		}
 	})
 
+	t.Run("lists all contact fields correctly", func(t *testing.T) {
+		t.Parallel()
+		orgID, _ := seedOrgAndOffice(t)
+		unique := fmt.Sprintf("AllFieldsList%d", time.Now().UnixNano())
+
+		p := validCreateContactParams(nil, &orgID)
+		p.FirstName = unique
+		p.LastName = "FieldsTest"
+		p.Role = "tester"
+		p.Cellphone = "0521111111"
+		p.Email = fmt.Sprintf("%s@test.com", unique)
+		p.IsPaymentResponsible = true
+		_, err := s.CreateContact(ctx, p)
+		if err != nil {
+			t.Fatalf("failed to create contact: %v", err)
+		}
+
+		resp, err := s.ListContacts(ctx, &ListContactsRequest{Search: unique, Page: 1})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if len(resp.Contacts) != 1 {
+			t.Fatalf("expected 1 result, got %d", len(resp.Contacts))
+		}
+		c := resp.Contacts[0]
+		if c.ID == 0 {
+			t.Fatal("expected non-zero ID")
+		}
+		if c.FirstName != unique {
+			t.Fatalf("expected firstName %q, got %q", unique, c.FirstName)
+		}
+		if c.LastName != "FieldsTest" {
+			t.Fatalf("expected lastName %q, got %q", "FieldsTest", c.LastName)
+		}
+		if c.Role != "tester" {
+			t.Fatalf("expected role %q, got %q", "tester", c.Role)
+		}
+		if c.Cellphone != "0521111111" {
+			t.Fatalf("expected cellphone %q, got %q", "0521111111", c.Cellphone)
+		}
+		if c.Email != p.Email {
+			t.Fatalf("expected email %q, got %q", p.Email, c.Email)
+		}
+		if c.OrganizationID == nil || *c.OrganizationID != orgID {
+			t.Fatalf("expected organizationId %d, got %v", orgID, c.OrganizationID)
+		}
+		if c.OfficeID != nil {
+			t.Fatalf("expected nil officeId, got %v", c.OfficeID)
+		}
+		if !c.IsPaymentResponsible {
+			t.Fatal("expected isPaymentResponsible to be true")
+		}
+		if c.OrganizationName == nil || *c.OrganizationName == "" {
+			t.Fatalf("expected non-empty organizationName, got %v", c.OrganizationName)
+		}
+		if c.OfficeName != nil {
+			t.Fatalf("expected nil officeName, got %v", c.OfficeName)
+		}
+	})
+
 	t.Run("filters by officeId", func(t *testing.T) {
 		t.Parallel()
 		orgID, officeA := seedOrgAndOffice(t)
@@ -328,6 +388,9 @@ func TestCreateContact(t *testing.T) {
 		if resp.OrganizationID != nil {
 			t.Fatalf("expected nil organizationId, got %v", resp.OrganizationID)
 		}
+		if resp.IsPaymentResponsible {
+			t.Fatal("expected isPaymentResponsible to default to false for office contact")
+		}
 	})
 
 	t.Run("creates contact with organizationId", func(t *testing.T) {
@@ -335,10 +398,29 @@ func TestCreateContact(t *testing.T) {
 		orgID, _ := seedOrgAndOffice(t)
 		p := validCreateContactParams(nil, &orgID)
 		p.Email = fmt.Sprintf("create_org_%d@test.com", time.Now().UnixNano())
+		p.IsPaymentResponsible = true
 
 		resp, err := s.CreateContact(ctx, p)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.ID == 0 {
+			t.Fatal("expected non-zero ID")
+		}
+		if resp.FirstName != p.FirstName {
+			t.Fatalf("expected firstName %q, got %q", p.FirstName, resp.FirstName)
+		}
+		if resp.LastName != p.LastName {
+			t.Fatalf("expected lastName %q, got %q", p.LastName, resp.LastName)
+		}
+		if resp.Role != p.Role {
+			t.Fatalf("expected role %q, got %q", p.Role, resp.Role)
+		}
+		if resp.Cellphone != p.Cellphone {
+			t.Fatalf("expected cellphone %q, got %q", p.Cellphone, resp.Cellphone)
+		}
+		if resp.Email != p.Email {
+			t.Fatalf("expected email %q, got %q", p.Email, resp.Email)
 		}
 		if resp.OrganizationID == nil || *resp.OrganizationID != orgID {
 			t.Fatalf("expected organizationId %d, got %v", orgID, resp.OrganizationID)
@@ -346,6 +428,23 @@ func TestCreateContact(t *testing.T) {
 		if resp.OfficeID != nil {
 			t.Fatalf("expected nil officeId, got %v", resp.OfficeID)
 		}
+		if !resp.IsPaymentResponsible {
+			t.Fatal("expected isPaymentResponsible to be true")
+		}
+	})
+
+	t.Run("validation rejects isPaymentResponsible true with officeId", func(t *testing.T) {
+		t.Parallel()
+		officeID := int32(1)
+		p := validCreateContactParams(&officeID, nil)
+		p.IsPaymentResponsible = true
+
+		wantErr := api_errors.NewErrorWithDetail(
+			errs.InvalidArgument,
+			"Only organization contacts can be marked as payment responsible",
+			api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue},
+		)
+		api_errors.AssertApiError(t, wantErr, p.Validate())
 	})
 
 	t.Run("validation rejects both officeId and organizationId", func(t *testing.T) {
@@ -450,16 +549,18 @@ func TestUpdateContact(t *testing.T) {
 
 	t.Run("full update changes all fields", func(t *testing.T) {
 		t.Parallel()
-		_, officeID := seedOrgAndOffice(t)
-		p := validCreateContactParams(&officeID, nil)
+		orgID, _ := seedOrgAndOffice(t)
+		p := validCreateContactParams(nil, &orgID)
 		p.Email = fmt.Sprintf("update_full_%d@test.com", time.Now().UnixNano())
 		created, err := s.CreateContact(ctx, p)
 		if err != nil {
 			t.Fatalf("failed to create contact: %v", err)
 		}
 
+		isTrue := true
 		params := validUpdateContactParams()
 		params.Email = ptrStr(fmt.Sprintf("updated_full_%d@test.com", time.Now().UnixNano()))
+		params.IsPaymentResponsible = &isTrue
 		resp, err := s.UpdateContact(ctx, created.ID, params)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
@@ -478,6 +579,9 @@ func TestUpdateContact(t *testing.T) {
 		}
 		if resp.Email != *params.Email {
 			t.Fatalf("expected email %q, got %q", *params.Email, resp.Email)
+		}
+		if !resp.IsPaymentResponsible {
+			t.Fatal("expected isPaymentResponsible to be true after full update")
 		}
 	})
 

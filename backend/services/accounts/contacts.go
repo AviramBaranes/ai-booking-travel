@@ -15,16 +15,17 @@ import (
 // --- Request / Response types ---
 
 type ContactResponse struct {
-	ID               int32   `json:"id"`
-	FirstName        string  `json:"firstName"`
-	LastName         string  `json:"lastName"`
-	Role             string  `json:"role"`
-	Cellphone        string  `json:"cellphone"`
-	Email            string  `json:"email"`
-	OfficeID         *int32  `json:"officeId"`
-	OrganizationID   *int32  `json:"organizationId"`
-	OfficeName       *string `json:"officeName"`
-	OrganizationName *string `json:"organizationName"`
+	ID                   int32   `json:"id"`
+	FirstName            string  `json:"firstName"`
+	LastName             string  `json:"lastName"`
+	Role                 string  `json:"role"`
+	Cellphone            string  `json:"cellphone"`
+	Email                string  `json:"email"`
+	OfficeID             *int32  `json:"officeId"`
+	OrganizationID       *int32  `json:"organizationId"`
+	IsPaymentResponsible bool    `json:"isPaymentResponsible"`
+	OfficeName           *string `json:"officeName"`
+	OrganizationName     *string `json:"organizationName"`
 }
 
 type ListContactsRequest struct {
@@ -44,13 +45,14 @@ type ListContactsResponse struct {
 }
 
 type CreateContactRequest struct {
-	FirstName      string `json:"firstName" validate:"required,notblank"`
-	LastName       string `json:"lastName" validate:"required,notblank"`
-	Role           string `json:"role" validate:"required,notblank"`
-	Cellphone      string `json:"cellphone" validate:"required,notblank"`
-	Email          string `json:"email" validate:"required,email"`
-	OfficeID       *int32 `json:"officeId" encore:"optional"`
-	OrganizationID *int32 `json:"organizationId" encore:"optional"`
+	FirstName            string `json:"firstName" validate:"required,notblank"`
+	LastName             string `json:"lastName" validate:"required,notblank"`
+	Role                 string `json:"role" validate:"required,notblank"`
+	Cellphone            string `json:"cellphone" validate:"required,notblank"`
+	Email                string `json:"email" validate:"required,email"`
+	OfficeID             *int32 `json:"officeId" encore:"optional"`
+	OrganizationID       *int32 `json:"organizationId" encore:"optional"`
+	IsPaymentResponsible bool   `json:"isPaymentResponsible" encore:"optional"`
 }
 
 func (p CreateContactRequest) Validate() error {
@@ -68,17 +70,26 @@ func (p CreateContactRequest) Validate() error {
 		)
 	}
 
+	if p.IsPaymentResponsible && !hasOrg {
+		return api_errors.NewErrorWithDetail(
+			errs.InvalidArgument,
+			"Only organization contacts can be marked as payment responsible",
+			api_errors.ErrorDetails{Code: api_errors.CodeInvalidValue},
+		)
+	}
+
 	return nil
 }
 
 type UpdateContactRequest struct {
-	FirstName      *string `json:"firstName" validate:"omitempty,notblank" encore:"optional"`
-	LastName       *string `json:"lastName" validate:"omitempty,notblank" encore:"optional"`
-	Role           *string `json:"role" validate:"omitempty,notblank" encore:"optional"`
-	Cellphone      *string `json:"cellphone" validate:"omitempty,notblank" encore:"optional"`
-	Email          *string `json:"email" validate:"omitempty,email" encore:"optional"`
-	OfficeID       *int32  `json:"officeId" encore:"optional"`
-	OrganizationID *int32  `json:"organizationId" encore:"optional"`
+	FirstName            *string `json:"firstName" validate:"omitempty,notblank" encore:"optional"`
+	LastName             *string `json:"lastName" validate:"omitempty,notblank" encore:"optional"`
+	Role                 *string `json:"role" validate:"omitempty,notblank" encore:"optional"`
+	Cellphone            *string `json:"cellphone" validate:"omitempty,notblank" encore:"optional"`
+	Email                *string `json:"email" validate:"omitempty,email" encore:"optional"`
+	OfficeID             *int32  `json:"officeId" encore:"optional"`
+	OrganizationID       *int32  `json:"organizationId" encore:"optional"`
+	IsPaymentResponsible *bool   `json:"isPaymentResponsible" encore:"optional"`
 }
 
 func (p UpdateContactRequest) Validate() error {
@@ -91,29 +102,31 @@ const contactsPageSize int64 = 15
 
 func toContactResponse(c db.Contact) ContactResponse {
 	return ContactResponse{
-		ID:             c.ID,
-		FirstName:      c.FirstName,
-		LastName:       c.LastName,
-		Role:           c.Role,
-		Cellphone:      c.Cellphone,
-		Email:          c.Email,
-		OfficeID:       c.OfficeID,
-		OrganizationID: c.OrganizationID,
+		ID:                   c.ID,
+		FirstName:            c.FirstName,
+		LastName:             c.LastName,
+		Role:                 c.Role,
+		Cellphone:            c.Cellphone,
+		Email:                c.Email,
+		OfficeID:             c.OfficeID,
+		OrganizationID:       c.OrganizationID,
+		IsPaymentResponsible: c.IsPaymentResponsible,
 	}
 }
 
 func toContactResponseFromRow(r db.ListContactsRow) ContactResponse {
 	return ContactResponse{
-		ID:               r.ID,
-		FirstName:        r.FirstName,
-		LastName:         r.LastName,
-		Role:             r.Role,
-		Cellphone:        r.Cellphone,
-		Email:            r.Email,
-		OfficeID:         r.OfficeID,
-		OrganizationID:   r.OrganizationID,
-		OfficeName:       r.OfficeName,
-		OrganizationName: r.OrganizationName,
+		ID:                   r.ID,
+		FirstName:            r.FirstName,
+		LastName:             r.LastName,
+		Role:                 r.Role,
+		Cellphone:            r.Cellphone,
+		Email:                r.Email,
+		OfficeID:             r.OfficeID,
+		OrganizationID:       r.OrganizationID,
+		IsPaymentResponsible: r.IsPaymentResponsible,
+		OfficeName:           r.OfficeName,
+		OrganizationName:     r.OrganizationName,
 	}
 }
 
@@ -175,13 +188,14 @@ func (s *Service) ListContacts(ctx context.Context, params *ListContactsRequest)
 //encore:api auth method=POST path=/contacts tag:admin
 func (s *Service) CreateContact(ctx context.Context, params CreateContactRequest) (*ContactResponse, error) {
 	row, err := s.query.CreateContact(ctx, db.CreateContactParams{
-		FirstName:      params.FirstName,
-		LastName:       params.LastName,
-		Role:           params.Role,
-		Cellphone:      params.Cellphone,
-		Email:          params.Email,
-		OfficeID:       params.OfficeID,
-		OrganizationID: params.OrganizationID,
+		FirstName:            params.FirstName,
+		LastName:             params.LastName,
+		Role:                 params.Role,
+		Cellphone:            params.Cellphone,
+		Email:                params.Email,
+		OfficeID:             params.OfficeID,
+		OrganizationID:       params.OrganizationID,
+		IsPaymentResponsible: params.IsPaymentResponsible,
 	})
 	if err != nil {
 		rlog.Error("failed to create contact", "error", err)
@@ -197,14 +211,15 @@ func (s *Service) CreateContact(ctx context.Context, params CreateContactRequest
 //encore:api auth method=PUT path=/contacts/:id tag:admin
 func (s *Service) UpdateContact(ctx context.Context, id int32, params UpdateContactRequest) (*ContactResponse, error) {
 	row, err := s.query.UpdateContact(ctx, db.UpdateContactParams{
-		ID:             id,
-		FirstName:      params.FirstName,
-		LastName:       params.LastName,
-		Role:           params.Role,
-		Cellphone:      params.Cellphone,
-		Email:          params.Email,
-		OfficeID:       params.OfficeID,
-		OrganizationID: params.OrganizationID,
+		ID:                   id,
+		FirstName:            params.FirstName,
+		LastName:             params.LastName,
+		Role:                 params.Role,
+		Cellphone:            params.Cellphone,
+		Email:                params.Email,
+		OfficeID:             params.OfficeID,
+		OrganizationID:       params.OrganizationID,
+		IsPaymentResponsible: params.IsPaymentResponsible,
 	})
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {

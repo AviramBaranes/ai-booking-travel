@@ -33,12 +33,14 @@ CREATE TABLE
         email VARCHAR(255) NOT NULL,
         office_id INTEGER REFERENCES offices (id),
         organization_id INTEGER REFERENCES organizations (id),
+        is_payment_responsible BOOLEAN NOT NULL DEFAULT FALSE,
         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT contact_belongs_to_one CHECK (
             (
                 office_id IS NOT NULL
                 AND organization_id IS NULL
+                AND is_payment_responsible = FALSE
             )
             OR (
                 office_id IS NULL
