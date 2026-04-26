@@ -31,6 +31,7 @@ type BillingContact struct {
 	ContactEmail     string
 	OrganizationID   int32
 	OrganizationName string
+	IsOrganic        bool
 	Offices          []Office
 }
 
@@ -70,6 +71,7 @@ func createContactsMap(rows []db.GetAgentsBillingContactsRow) map[int32]BillingC
 				ContactEmail:     r.Email,
 				OrganizationID:   r.OrganizationID,
 				OrganizationName: r.OrganizationName,
+				IsOrganic:        r.IsOrganic,
 			}
 		}
 
