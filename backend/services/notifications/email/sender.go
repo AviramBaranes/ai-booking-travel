@@ -13,13 +13,25 @@ import (
 //go:embed templates/*.html
 var templatesFS embed.FS
 
-type Sender struct {
+type Attachment struct {
+	Filename string
+	Reader   io.Reader
+}
+
+// Sender delivers a prepared mail message. Implemented by *SMTPSender in
+// production and by fakes in tests.
+type Sender interface {
+	Send(ctx context.Context, msg *mail.Msg) error
+}
+
+// SMTPSender is the production Sender implementation backed by an SMTP server.
+type SMTPSender struct {
 	client *mail.Client
 	from   string
 }
 
-// NewSender creates a new Sender with the given email credentials and SMTP server information.
-func NewSender(from, password, host string, port int) (Sender, error) {
+// NewSender creates a new SMTPSender with the given email credentials and SMTP server information.
+func NewSender(from, password, host string, port int) (*SMTPSender, error) {
 	client, err := mail.NewClient(
 		host,
 		mail.WithPort(port),
@@ -30,18 +42,20 @@ func NewSender(from, password, host string, port int) (Sender, error) {
 	)
 
 	if err != nil {
-		return Sender{}, fmt.Errorf("creating mail client: %w", err)
+		return nil, fmt.Errorf("creating mail client: %w", err)
 	}
 
-	return Sender{
+	return &SMTPSender{
 		client: client,
 		from:   from,
 	}, nil
 }
 
-type Attachment struct {
-	Filename string
-	Reader   io.Reader
+func (s *SMTPSender) Send(ctx context.Context, msg *mail.Msg) error {
+	if err := msg.From(s.from); err != nil {
+		return fmt.Errorf("setting sender: %w", err)
+	}
+	return s.client.DialAndSendWithContext(ctx, msg)
 }
 
 // SendEmail sends an email using the provided Sender, recipient list, subject, template, and data.
@@ -52,9 +66,6 @@ func SendEmail[T any](ctx context.Context, s Sender, to []string, subject string
 	}
 
 	msg := mail.NewMsg()
-	if err := msg.From(s.from); err != nil {
-		return fmt.Errorf("setting sender: %w", err)
-	}
 	if err := msg.To(to...); err != nil {
 		return fmt.Errorf("setting recipients: %w", err)
 	}
@@ -70,7 +81,7 @@ func SendEmail[T any](ctx context.Context, s Sender, to []string, subject string
 		}
 	}
 
-	if err := s.client.DialAndSendWithContext(ctx, msg); err != nil {
+	if err := s.Send(ctx, msg); err != nil {
 		return fmt.Errorf("sending email: %w", err)
 	}
 

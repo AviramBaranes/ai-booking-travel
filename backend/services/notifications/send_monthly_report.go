@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"time"
 
+	"encore.app/internal/api_errors"
 	"encore.app/services/notifications/email"
+	"encore.dev/beta/errs"
 )
 
 type SendMonthlyReportRequest struct {
@@ -20,7 +22,7 @@ type SendMonthlyReportRequest struct {
 func (s *Service) SendMonthlyReport(ctx context.Context, p SendMonthlyReportRequest) error {
 	excelBytes, err := base64.StdEncoding.DecodeString(p.ExcelBase64)
 	if err != nil {
-		return fmt.Errorf("decoding excel report: %w", err)
+		return api_errors.NewError(errs.InvalidArgument, "invalid excel report encoding")
 	}
 
 	month := time.Now().AddDate(0, -1, 0).Format("01-2006")
@@ -36,7 +38,7 @@ func (s *Service) SendMonthlyReport(ctx context.Context, p SendMonthlyReportRequ
 
 	return email.SendEmail(
 		ctx,
-		*s.emailSender,
+		s.emailSender,
 		[]string{p.ContactEmail},
 		subject,
 		email.MonthlyReportTemplate,

@@ -9,8 +9,8 @@ import (
 
 // encore:service
 type Service struct {
-	emailSender *email.Sender
-	smsSender   *sms.Sender
+	emailSender email.Sender
+	smsSender   sms.Sender
 }
 
 // Config holds the configuration for the notifications service, including email settings.
@@ -48,7 +48,7 @@ func initService() (*Service, error) {
 	)
 
 	return &Service{
-		emailSender: &es,
-		smsSender:   &ss,
+		emailSender: es,
+		smsSender:   ss,
 	}, nil
 }

@@ -8,7 +8,12 @@ import (
 	"time"
 )
 
-type Sender struct {
+type Sender interface {
+	SendSMS(phoneNumber, message string) error
+}
+
+// Sender019 is the production Sender implementation backed by the 019sms.co.il HTTP API.
+type Sender019 struct {
 	token      string
 	senderName string
 	username   string
@@ -20,9 +25,9 @@ const (
 	timeout       = 10 * time.Second
 )
 
-// NewSender creates a new instance of the sender struct with the provided token, sender name, and username.
-func NewSender(token, senderName, username string) Sender {
-	return Sender{
+// NewSender creates a new Sender019 with the provided token, sender name, and username.
+func NewSender(token, senderName, username string) *Sender019 {
+	return &Sender019{
 		token:      token,
 		senderName: senderName,
 		username:   username,
@@ -31,7 +36,7 @@ func NewSender(token, senderName, username string) Sender {
 }
 
 // SendSMS sends an SMS message to the specified phone number with the given message content.
-func (s Sender) SendSMS(phoneNumber string, message string) error {
+func (s *Sender019) SendSMS(phoneNumber string, message string) error {
 	reqBody := smsRequest{
 		SMS: smsRequestSMS{
 			User: smsRequestSMSUser{
