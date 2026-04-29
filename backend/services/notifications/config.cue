@@ -1,6 +1,6 @@
 package notifications
 
-EmailFrom: "aviram@sogomatic.com"
+EmailFrom: "accounting@aibookingtravel.com"
 EmailHost: "smtp.gmail.com"
 EmailPort: 587
 

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ריכוז חודשי</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4fa;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        color: #0f0043;
+        direction: rtl;
+      }
+      .wrapper {
+        width: 100%;
+        padding: 40px 16px;
+        box-sizing: border-box;
+      }
+      .card {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0px 4px 24px 0px rgba(0, 14, 247, 0.08);
+        direction: rtl;
+        text-align: right;
+      }
+      .header {
+        background: linear-gradient(135deg, #0f0043 0%, #1b4f9b 100%);
+        padding: 40px 32px;
+        text-align: center;
+        color: #ffffff;
+      }
+      .brand {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #f5821f;
+        margin-bottom: 12px;
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 900;
+        line-height: 1.3;
+        letter-spacing: -0.01em;
+      }
+      .header p {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 14px;
+      }
+      .body {
+        padding: 36px 32px;
+        direction: rtl;
+        text-align: right;
+      }
+      .greeting {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0f0043;
+        margin: 0 0 16px;
+        direction: rtl;
+        text-align: right;
+        unicode-bidi: embed;
+      }
+      .text {
+        font-size: 16px;
+        line-height: 1.7;
+        color: #374151;
+        margin: 0 0 20px;
+        direction: rtl;
+        text-align: right;
+        unicode-bidi: embed;
+      }
+      .divider {
+        border: none;
+        border-top: 1px solid #e2e4e9;
+        margin: 28px 0 20px;
+      }
+      .signature {
+        font-size: 15px;
+        color: #374151;
+        line-height: 1.6;
+      }
+      .signature strong {
+        color: #0f0043;
+      }
+      .footer {
+        background-color: #f4f4fa;
+        border-top: 1px solid #e2e4e9;
+        padding: 20px 32px;
+        text-align: center;
+        font-size: 12px;
+        color: #676767;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="card">
+        <div class="header">
+          <div class="brand">AI Booking Travel</div>
+          <h1>ריכוז חודשי</h1>
+          <p>סיכום הפעילות לחודש האחרון</p>
+        </div>
+
+        <div class="body">
+          <p class="greeting">שלום {{.ContactName}},</p>
+          <p class="text">
+            מצורף בזאת הריכוז החודשי המסכם את פעילות החודש האחרון. הריכוז כולל
+            פירוט מלא של ההזמנות, ההכנסות והנתונים הרלוונטיים לתקופה.
+          </p>
+          <p class="text">
+            ניתן לעיין בריכוז המלא בקובץ ה-Excel המצורף להודעה זו.
+          </p>
+
+          <hr class="divider" />
+
+          <p class="signature">
+            לכל שאלה או בירור נוסף, אנו עומדים לרשותך.<br />
+            <strong>צוות AI Booking Travel</strong>
+          </p>
+        </div>
+
+        <div class="footer">
+          הודעה זו נשלחה באופן אוטומטי ממערכת AI Booking Travel.<br />
+          אין להשיב להודעה זו.
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

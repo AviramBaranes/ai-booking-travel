@@ -2,6 +2,7 @@ package email
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"html/template"
 	"io"
@@ -9,7 +10,8 @@ import (
 	"github.com/wneessen/go-mail"
 )
 
-const templatesDir = "./templates/"
+//go:embed templates/*.html
+var templatesFS embed.FS
 
 type Sender struct {
 	client *mail.Client
@@ -44,7 +46,7 @@ type Attachment struct {
 
 // SendEmail sends an email using the provided Sender, recipient list, subject, template, and data.
 func SendEmail[T any](ctx context.Context, s Sender, to []string, subject string, t Template[T], data T, attachments []Attachment) error {
-	tmpl, err := template.ParseFiles(templatesDir + t.name + ".html")
+	tmpl, err := template.ParseFS(templatesFS, "templates/"+t.name+".html")
 	if err != nil {
 		return fmt.Errorf("parsing template: %w", err)
 	}

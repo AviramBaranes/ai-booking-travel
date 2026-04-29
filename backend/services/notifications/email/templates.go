@@ -11,3 +11,11 @@ type CriticalErrorData struct {
 var CriticalErrorTemplate = Template[CriticalErrorData]{
 	name: "critical_error",
 }
+
+type MonthlyReportData struct {
+	ContactName string
+}
+
+var MonthlyReportTemplate = Template[MonthlyReportData]{
+	name: "monthly_report",
+}
