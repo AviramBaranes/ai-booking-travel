@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"encore.app/internal/api_errors"
 	"encore.app/internal/pricing"
 	"encore.app/services/reservation/db"
 	"encore.dev/rlog"
@@ -37,7 +38,7 @@ func (s *Service) GetOpenReservations(ctx context.Context) (*GetOpenReservations
 	rows, err := s.query.GetPaymentPendingReservations(ctx)
 	if err != nil {
 		rlog.Error("failed to get open reservations", "error", err)
-		return nil, err
+		return nil, api_errors.ErrInternalError
 	}
 
 	return &GetOpenReservationsResponse{
