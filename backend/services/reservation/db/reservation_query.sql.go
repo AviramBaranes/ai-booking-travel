@@ -107,9 +107,9 @@ SELECT
     total_price
 FROM reservations
 WHERE
-    status = 'vouchered'
-AND
-    (payment_status = 'unpaid' OR payment_status = 'refund_pending')
+    (reservation_status = 'vouchered' AND payment_status = 'unpaid')
+OR
+    (reservation_status = 'canceled' AND payment_status = 'refund_pending')
 `
 
 type GetPaymentPendingReservationsRow struct {
