@@ -85,6 +85,21 @@ func (mr *MockQuerierMockRecorder) CountReservationsByUser(ctx, arg any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountReservationsByUser", reflect.TypeOf((*MockQuerier)(nil).CountReservationsByUser), ctx, arg)
 }
 
+// GetOutboxByTopic mocks base method.
+func (m *MockQuerier) GetOutboxByTopic(ctx context.Context, topic string) ([]db.Outbox, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOutboxByTopic", ctx, topic)
+	ret0, _ := ret[0].([]db.Outbox)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOutboxByTopic indicates an expected call of GetOutboxByTopic.
+func (mr *MockQuerierMockRecorder) GetOutboxByTopic(ctx, topic any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOutboxByTopic", reflect.TypeOf((*MockQuerier)(nil).GetOutboxByTopic), ctx, topic)
+}
+
 // GetPaymentPendingReservations mocks base method.
 func (m *MockQuerier) GetPaymentPendingReservations(ctx context.Context) ([]db.GetPaymentPendingReservationsRow, error) {
 	m.ctrl.T.Helper()

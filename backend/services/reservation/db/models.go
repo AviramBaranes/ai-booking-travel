@@ -140,6 +140,13 @@ func (ns NullReservationStatus) Value() (driver.Value, error) {
 	return string(ns.ReservationStatus), nil
 }
 
+type Outbox struct {
+	ID         int64
+	Topic      string
+	Data       []byte
+	InsertedAt pgtype.Timestamptz
+}
+
 type Reservation struct {
 	ID                  int64
 	UserID              int32

@@ -3,6 +3,7 @@ sql:
   - engine: "postgresql"
     queries:
       - "query/reservation_query.sql"
+      - "query/outbox_query.sql"
     schema: "./migrations"
     gen:
       go:
