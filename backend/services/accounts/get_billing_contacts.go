@@ -3,6 +3,7 @@ package accounts
 import (
 	"context"
 
+	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
 	"encore.dev/rlog"
 )
@@ -45,7 +46,7 @@ func (s *Service) GetBillingContacts(ctx context.Context, p *GetBillingContactsR
 	rows, err := s.query.GetAgentsBillingContacts(ctx, p.AgentsIDs)
 	if err != nil {
 		rlog.Error("failed to get billing contacts for agents", "error", err)
-		return nil, err
+		return nil, api_errors.ErrInternalError
 	}
 
 	contactsMap := createContactsMap(rows)
