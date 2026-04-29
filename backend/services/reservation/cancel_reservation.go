@@ -11,6 +11,8 @@ import (
 	"encore.dev/beta/errs"
 	"encore.dev/pubsub"
 	"encore.dev/rlog"
+	"github.com/jackc/pgx/v5"
+	"x.encore.dev/infra/pubsub/outbox"
 )
 
 const (
@@ -44,7 +46,7 @@ func (s *Service) CancelReservation(ctx context.Context, id int64) error {
 		return ErrCancellationWindowExceeded
 	}
 
-	if err := db.WithTx(ctx, s.pool, func(q db.Querier) error {
+	if err := db.WithTx(ctx, s.pool, func(q db.Querier, tx pgx.Tx) error {
 		if err := q.CancelReservation(ctx, id); err != nil {
 			rlog.Error("failed to cancel reservation", "error", err, "reservationId", id)
 			return err
@@ -58,8 +60,9 @@ func (s *Service) CancelReservation(ctx context.Context, id int64) error {
 			SupplierCode:        reservation.SupplierCode,
 		}
 
-		if _, err := BookingCancellationEvents.Publish(ctx, event); err != nil {
-			rlog.Error("failed to publish booking cancellation event", "error", err, "reservationId", reservation.ID)
+		topic := outbox.Bind(s.cancellationTopic, outbox.PgxTxPersister(tx))
+		if _, err := topic.Publish(ctx, event); err != nil {
+			rlog.Error("failed to enqueue booking cancellation event", "error", err, "reservationId", reservation.ID)
 			return err
 		}
 
