@@ -23,5 +23,6 @@ MonthlyReport: {
 		HeaderBackgroundColor:    "D9D9D9"
 		RefundRowBackgroundColor: "FFD8B1"
 		TotalRowBackgroundColor:  "FFFF00"
+		BorderColor:              "000000"
 	}
 }

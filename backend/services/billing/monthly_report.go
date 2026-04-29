@@ -2,8 +2,12 @@ package billing
 
 import (
 	"context"
+	"encoding/base64"
+	"math"
+	"time"
 
 	"encore.app/services/accounts"
+	"encore.app/services/notifications"
 	"encore.app/services/reservation"
 	"encore.dev/cron"
 	"encore.dev/rlog"
@@ -75,7 +79,7 @@ func GenerateMonthlyReport(ctx context.Context) error {
 	}
 
 	reports := generateReports(openReservations, billingContacts)
-	sendReports(reports)
+	sendReports(ctx, reports)
 
 	return nil
 }
@@ -139,7 +143,7 @@ func generateTransactionGroups(openReservations *reservation.GetOpenReservations
 		}
 	}
 
-	return nil
+	return tgs
 }
 
 func toReportReservation(r reservation.OpenReservation, agentInfo AgentInfo) Reservations {
@@ -153,29 +157,38 @@ func toReportReservation(r reservation.OpenReservation, agentInfo AgentInfo) Res
 		OfficeName:              agentInfo.OfficeName,
 		AgentName:               agentInfo.AgentName,
 		DriverName:              r.DriverName,
-		ReservationCreationDate: r.CreatedAt,
+		ReservationCreationDate: formatDate(r.CreatedAt),
 		ReservationBrokerID:     r.BrokerReservationID,
-		VoucherDate:             r.VoucheredAt,
+		VoucherDate:             formatDate(r.VoucheredAt),
 		VoucherNumber:           r.VoucherNumber,
-		PickupDate:              r.PickupDate,
-		ReturnDate:              r.DropoffDate,
+		PickupDate:              formatDate(r.PickupDate),
+		ReturnDate:              formatDate(r.DropoffDate),
 		RentalDays:              r.RentalDays,
 		CountryCode:             r.CountryCode,
-		Currency:                r.CountryCode,
-		CarPrice:                r.CarPrice * m,
-		ERPPrice:                r.ERPPrice * m,
-		TotalPrice:              r.TotalPrice * m,
+		Currency:                r.CurrencyCode,
+		CarPrice:                roundPrice(r.CarPrice * m),
+		ERPPrice:                roundPrice(r.ERPPrice * m),
+		TotalPrice:              roundPrice(r.TotalPrice * m),
 	}
 }
 
-func sendReports(reports []Report) {
+func sendReports(ctx context.Context, reports []Report) {
 	for _, r := range reports {
 		excelReport, err := generateExcelReport(r)
 		if err != nil {
 			rlog.Error("failed to generate excel report", "error", err, "contact_email", r.ContactEmail)
 			continue
 		}
-		_ = excelReport
+
+		base64ExcelReport := base64.StdEncoding.EncodeToString(excelReport)
+
+		if err = notifications.SendMonthlyReport(ctx, notifications.SendMonthlyReportRequest{
+			ContactName:  r.ContactName,
+			ContactEmail: r.ContactEmail,
+			ExcelBase64:  base64ExcelReport,
+		}); err != nil {
+			rlog.Error("failed to send monthly report", "error", err, "contact_email", r.ContactEmail)
+		}
 	}
 }
 
@@ -184,3 +197,23 @@ var _ = cron.NewJob("monthly-billing", cron.JobConfig{
 	Schedule: "0 8 1 * *", // At 08:00 on day-of-month 1.
 	Endpoint: GenerateMonthlyReport,
 })
+
+func formatDate(date string) string {
+	if date == "" {
+		return ""
+	}
+
+	layouts := []string{time.RFC3339, "2006-01-02"}
+	for _, layout := range layouts {
+		t, err := time.Parse(layout, date)
+		if err == nil {
+			return t.Format("02/01/2006")
+		}
+	}
+
+	return date
+}
+
+func roundPrice(price float64) float64 {
+	return math.Round(price*100) / 100
+}

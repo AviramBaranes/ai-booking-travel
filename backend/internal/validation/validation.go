@@ -2,6 +2,7 @@ package validation
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
@@ -71,6 +72,9 @@ func ValidateStruct(p any) error {
 		var ves v.ValidationErrors
 		if errors.As(err, &ves) {
 			jsonField := getFieldName(p, ves[0].StructField())
+
+			msg := fmt.Sprintf("Validation failed on field '%s' with value '%s'", jsonField, ves[0].Value())
+			rlog.Debug("validation error", "msg", msg)
 
 			return api_errors.NewErrorWithDetail(errs.InvalidArgument, InvalidValueMsg, api_errors.ErrorDetails{
 				Code:  api_errors.CodeInvalidValue,

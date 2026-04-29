@@ -40,9 +40,26 @@ type monthlyReportStylesConfig struct {
 	HeaderBackgroundColor    config.String
 	RefundRowBackgroundColor config.String
 	TotalRowBackgroundColor  config.String
+	BorderColor              config.String
 }
 
 var cfg = config.Load[*billingConfig]()
+
+// excelize doesn't support an "outline" border type; borders must be declared
+// per side. Style 1 is a thin solid line.
+func cellBorders() []excelize.Border {
+	color := cfg.MonthlyReport.Styles.BorderColor()
+	sides := []string{"left", "right", "top", "bottom"}
+	borders := make([]excelize.Border, len(sides))
+	for i, s := range sides {
+		borders[i] = excelize.Border{Type: s, Color: color, Style: 1}
+	}
+	return borders
+}
+
+var centerAlignment = &excelize.Alignment{Horizontal: "center", Vertical: "center"}
+
+func ptr[T any](v T) *T { return &v }
 
 // Column indexes for the monthly report sheet. Keep in sync with monthlyReportHeaders.
 const (
@@ -137,26 +154,43 @@ func writeMonthlyReportSheet(f *excelize.File, sheetName string, report Report) 
 	}
 
 	styles := cfg.MonthlyReport.Styles
+	borders := cellBorders()
+
+	defaultStyle, err := f.NewStyle(&excelize.Style{
+		Border:       borders,
+		Alignment:    centerAlignment,
+		CustomNumFmt: ptr("0.##"),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create default style %w", err)
+	}
 
 	headerStyle, err := f.NewStyle(&excelize.Style{
+		Border:    borders,
 		Font:      &excelize.Font{Bold: true},
 		Fill:      excelize.Fill{Type: "pattern", Color: []string{styles.HeaderBackgroundColor()}, Pattern: 1},
-		Alignment: &excelize.Alignment{Horizontal: "center", Vertical: "center"},
+		Alignment: centerAlignment,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create header style %w", err)
 	}
 
 	refundStyle, err := f.NewStyle(&excelize.Style{
-		Fill: excelize.Fill{Type: "pattern", Color: []string{styles.RefundRowBackgroundColor()}, Pattern: 1},
+		Border:       borders,
+		Fill:         excelize.Fill{Type: "pattern", Color: []string{styles.RefundRowBackgroundColor()}, Pattern: 1},
+		Alignment:    centerAlignment,
+		CustomNumFmt: ptr("0.##"),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create refund style %w", err)
 	}
 
 	totalStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Bold: true},
-		Fill: excelize.Fill{Type: "pattern", Color: []string{styles.TotalRowBackgroundColor()}, Pattern: 1},
+		Border:       borders,
+		Font:         &excelize.Font{Bold: true},
+		Fill:         excelize.Fill{Type: "pattern", Color: []string{styles.TotalRowBackgroundColor()}, Pattern: 1},
+		Alignment:    centerAlignment,
+		CustomNumFmt: ptr("0.##"),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create total style %w", err)
@@ -206,19 +240,22 @@ func writeMonthlyReportSheet(f *excelize.File, sheetName string, report Report) 
 			if err := f.SetSheetRow(sheetName, startCell, &row); err != nil {
 				return fmt.Errorf("failed to write reservation row %w", err)
 			}
+			endCell := lastCol + fmt.Sprintf("%d", rowNum)
+			rowStyle := defaultStyle
 			if r.TotalPrice < 0 {
-				endCell := lastCol + fmt.Sprintf("%d", rowNum)
-				if err := f.SetCellStyle(sheetName, startCell, endCell, refundStyle); err != nil {
-					return fmt.Errorf("failed to apply refund style %w", err)
-				}
+				rowStyle = refundStyle
+			}
+			if err := f.SetCellStyle(sheetName, startCell, endCell, rowStyle); err != nil {
+				return fmt.Errorf("failed to apply reservation row style %w", err)
 			}
 			rowNum++
 		}
 
-		totalRow := make([]any, monthlyReportColCount)
-		totalRow[colCurrency] = tg.Currency
-		totalRow[colTotalNetPrice] = tg.TotalAmount
-		startCell, err := excelize.CoordinatesToCellName(1, rowNum)
+		totalRowLength := 2
+		totalRow := make([]any, totalRowLength)
+		totalRow[0] = tg.Currency
+		totalRow[1] = tg.TotalAmount
+		startCell, err := excelize.CoordinatesToCellName(monthlyReportColCount-totalRowLength+1, rowNum)
 		if err != nil {
 			return fmt.Errorf("failed to resolve total row start cell %w", err)
 		}
