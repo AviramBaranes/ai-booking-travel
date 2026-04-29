@@ -258,3 +258,63 @@ func TestCreateAdmin(t *testing.T) {
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }
+
+func TestListAdminsEmails(t *testing.T) {
+	ctx := context.Background()
+	s := &Service{query: query}
+
+	t.Run("returns only admin emails, not agents or customers", func(t *testing.T) {
+		admin := createTestAdmin(t, s, "emails_admin@test.com")
+		defer query.DeleteUser(ctx, admin.ID)
+
+		agent, err := query.CreateAgent(ctx, db.CreateAgentParams{
+			FirstName:    "Agent",
+			LastName:     "User",
+			Email:        "emails_agent@test.com",
+			PasswordHash: "hash",
+		})
+		if err != nil {
+			t.Fatalf("failed to create agent: %v", err)
+		}
+		defer query.DeleteUser(ctx, agent.ID)
+
+		customer, err := query.CreateCustomer(ctx, db.CreateCustomerParams{
+			FirstName:    "Customer",
+			LastName:     "User",
+			Email:        "emails_customer@test.com",
+			PasswordHash: "hash",
+		})
+		if err != nil {
+			t.Fatalf("failed to create customer: %v", err)
+		}
+		defer query.DeleteUser(ctx, customer.ID)
+
+		resp, err := s.ListAdminsEmails(ctx)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		emailSet := make(map[string]bool, len(resp.Emails))
+		for _, e := range resp.Emails {
+			emailSet[e] = true
+		}
+
+		if !emailSet["emails_admin@test.com"] {
+			t.Error("expected admin email to be present")
+		}
+		if emailSet["emails_agent@test.com"] {
+			t.Error("agent email must not appear in admin emails list")
+		}
+		if emailSet["emails_customer@test.com"] {
+			t.Error("customer email must not appear in admin emails list")
+		}
+	})
+
+	t.Run("returns internal error when db fails", func(t *testing.T) {
+		q, s := adminMockService(t)
+		q.EXPECT().ListAdminsEmails(gomock.Any()).Return(nil, errors.New("db error"))
+
+		_, err := s.ListAdminsEmails(ctx)
+		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
+	})
+}
