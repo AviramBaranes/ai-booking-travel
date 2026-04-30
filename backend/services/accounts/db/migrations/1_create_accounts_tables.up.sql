@@ -1,4 +1,4 @@
-CREATE TYPE user_role AS ENUM ('customer', 'agent', 'admin');
+CREATE TYPE user_role AS ENUM ('customer', 'agent', 'admin', 'accountant');
 
 CREATE TABLE
     organizations (
