@@ -150,7 +150,7 @@ func TestListAdmins(t *testing.T) {
 	t.Run("returns error when db fails", func(t *testing.T) {
 		t.Parallel()
 		q, s := adminMockService(t)
-		q.EXPECT().ListAdmins(gomock.Any()).Return(nil, errors.New("db error"))
+		q.EXPECT().ListStaffByRole(gomock.Any(), db.UserRoleAdmin).Return(nil, errors.New("db error"))
 
 		_, err := s.ListAdmins(ctx)
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
@@ -247,7 +247,7 @@ func TestCreateAdmin(t *testing.T) {
 		t.Parallel()
 		q, s := adminMockService(t)
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int32(0), db.ErrNoRows)
-		q.EXPECT().CreateAdmin(gomock.Any(), gomock.Any()).Return(db.CreateAdminRow{}, errors.New("db error"))
+		q.EXPECT().CreateStaffUser(gomock.Any(), gomock.Any()).Return(db.CreateStaffUserRow{}, errors.New("db error"))
 
 		_, err := s.CreateAdmin(ctx, CreateAdminRequest{
 			FirstName: "DB",

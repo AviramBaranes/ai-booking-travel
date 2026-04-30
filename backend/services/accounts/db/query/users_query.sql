@@ -3,9 +3,9 @@ INSERT INTO users (role, first_name, last_name, email, phone_number, password_ha
 VALUES ('agent', sqlc.arg(first_name), sqlc.arg(last_name), sqlc.arg(email), sqlc.arg(phone_number), sqlc.arg(password_hash), sqlc.arg(office_id), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 RETURNING id, role, first_name, last_name, email, phone_number, office_id, last_login, created_at, updated_at;
 
--- name: CreateAdmin :one
+-- name: CreateStaffUser :one
 INSERT INTO users (role, first_name, last_name, email, password_hash, created_at, updated_at)
-VALUES ('admin', sqlc.arg(first_name), sqlc.arg(last_name), sqlc.arg(email), sqlc.arg(password_hash), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+VALUES (sqlc.arg(role)::user_role, sqlc.arg(first_name), sqlc.arg(last_name), sqlc.arg(email), sqlc.arg(password_hash), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 RETURNING id, role, first_name, last_name, email, office_id, last_login, created_at, updated_at;
 
 -- name: CreateCustomer :one
@@ -71,8 +71,13 @@ WHERE role = 'agent'
     SELECT id FROM offices WHERE organization_id = sqlc.narg(organization_id)::int
   ));
 
--- name: ListAdmins :many
+-- name: ListStaffByRole :many
 SELECT id, role, first_name, last_name, email, office_id, last_login, created_at, updated_at
+FROM users
+WHERE role = sqlc.arg(role)::user_role;
+
+-- name: ListAdminsEmails :many
+SELECT email
 FROM users
 WHERE role = 'admin';
 
@@ -88,11 +93,6 @@ SET
   updated_at = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg(id)
 RETURNING id, role, first_name, last_name, email, phone_number, office_id, last_login, created_at, updated_at;
-
--- name: ListAdminsEmails :many
-SELECT email
-FROM users
-WHERE role = 'admin';
 
 -- name: SaveOTP :exec
 UPDATE users

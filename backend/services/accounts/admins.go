@@ -61,18 +61,6 @@ type CreateAdminResponse struct {
 
 // --- Helpers ---
 
-func toAdminResponse(r db.ListAdminsRow) AdminResponse {
-	return AdminResponse{
-		ID:        r.ID,
-		FirstName: r.FirstName,
-		LastName:  r.LastName,
-		Email:     r.Email,
-		LastLogin: db.TimePtrFromDB(r.LastLogin),
-		CreatedAt: db.TimeFromDB(r.CreatedAt),
-		UpdatedAt: db.TimeFromDB(r.UpdatedAt),
-	}
-}
-
 func createFirstAdmin(query db.Querier) {
 	if secrets.FirstAdminEmail == "" || secrets.FirstAdminPassword == "" {
 		panic("secrets for first admin not set")
@@ -94,7 +82,8 @@ func createFirstAdmin(query db.Querier) {
 		panic(err)
 	}
 
-	_, err = query.CreateAdmin(ctx, db.CreateAdminParams{
+	_, err = query.CreateStaffUser(ctx, db.CreateStaffUserParams{
+		Role:         db.UserRoleAdmin,
 		FirstName:    cfg.FirstAdminFirstName(),
 		LastName:     cfg.FirstAdminLastName(),
 		Email:        secrets.FirstAdminEmail,
@@ -113,17 +102,15 @@ func createFirstAdmin(query db.Querier) {
 //
 //encore:api auth method=GET path=/admins tag:admin
 func (s *Service) ListAdmins(ctx context.Context) (*ListAdminsResponse, error) {
-	rows, err := s.query.ListAdmins(ctx)
+	staff, err := s.listStaffByRole(ctx, db.UserRoleAdmin)
 	if err != nil {
-		rlog.Error("failed to list admins", "error", err)
-		return nil, api_errors.ErrInternalError
+		return nil, err
 	}
 
-	admins := make([]AdminResponse, 0, len(rows))
-	for _, r := range rows {
-		admins = append(admins, toAdminResponse(r))
+	admins := make([]AdminResponse, len(staff))
+	for i, r := range staff {
+		admins[i] = AdminResponse(r)
 	}
-
 	return &ListAdminsResponse{Admins: admins}, nil
 }
 
@@ -131,35 +118,11 @@ func (s *Service) ListAdmins(ctx context.Context) (*ListAdminsResponse, error) {
 //
 //encore:api auth method=POST path=/admins tag:admin
 func (s *Service) CreateAdmin(ctx context.Context, params CreateAdminRequest) (*CreateAdminResponse, error) {
-	userID, err := s.query.CheckUserExists(ctx, params.Email)
-	if err != nil && !errors.Is(err, db.ErrNoRows) {
-		rlog.Error("failed to check if user exists", "email", params.Email, "error", err)
-		return nil, api_errors.ErrInternalError
-	}
-	if userID != 0 {
-		return nil, ErrEmailAlreadyExists
-	}
-
-	hashed, err := password.HashPassword(params.Password)
+	resp, err := s.createStaffUser(ctx, db.UserRoleAdmin, CreateStaffRequest(params))
 	if err != nil {
-		rlog.Error("failed to hash password", "email", params.Email, "error", err)
-		return nil, api_errors.ErrInternalError
+		return nil, err
 	}
-
-	row, err := s.query.CreateAdmin(ctx, db.CreateAdminParams{
-		FirstName:    params.FirstName,
-		LastName:     params.LastName,
-		Email:        params.Email,
-		PasswordHash: hashed,
-	})
-	if err != nil {
-		rlog.Error("failed to create admin user", "email", params.Email, "error", err)
-		return nil, api_errors.ErrInternalError
-	}
-
-	return &CreateAdminResponse{
-		ID: row.ID,
-	}, nil
+	return &CreateAdminResponse{ID: resp.ID}, nil
 }
 
 type ListAdminsEmailsResponse struct {
@@ -173,6 +136,5 @@ func (s *Service) ListAdminsEmails(ctx context.Context) (*ListAdminsEmailsRespon
 		rlog.Error("failed to list admin emails", "error", err)
 		return nil, api_errors.ErrInternalError
 	}
-
 	return &ListAdminsEmailsResponse{Emails: rows}, nil
 }

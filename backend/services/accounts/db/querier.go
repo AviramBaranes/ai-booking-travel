@@ -14,12 +14,12 @@ type Querier interface {
 	CountContacts(ctx context.Context, arg CountContactsParams) (int64, error)
 	CountOffices(ctx context.Context, arg CountOfficesParams) (int64, error)
 	CountOrganizations(ctx context.Context, arg CountOrganizationsParams) (int64, error)
-	CreateAdmin(ctx context.Context, arg CreateAdminParams) (CreateAdminRow, error)
 	CreateAgent(ctx context.Context, arg CreateAgentParams) (CreateAgentRow, error)
 	CreateContact(ctx context.Context, arg CreateContactParams) (Contact, error)
 	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (CreateCustomerRow, error)
 	CreateOffice(ctx context.Context, arg CreateOfficeParams) (Office, error)
 	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error)
+	CreateStaffUser(ctx context.Context, arg CreateStaffUserParams) (CreateStaffUserRow, error)
 	DeleteContact(ctx context.Context, id int32) error
 	DeleteRefreshToken(ctx context.Context, jti string) error
 	DeleteRefreshTokensByUserId(ctx context.Context, userID int32) error
@@ -29,12 +29,12 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserById(ctx context.Context, id int32) (User, error)
 	GetUserByPhone(ctx context.Context, phoneNumber *string) (User, error)
-	ListAdmins(ctx context.Context) ([]ListAdminsRow, error)
 	ListAdminsEmails(ctx context.Context) ([]string, error)
 	ListAgents(ctx context.Context, arg ListAgentsParams) ([]ListAgentsRow, error)
 	ListContacts(ctx context.Context, arg ListContactsParams) ([]ListContactsRow, error)
 	ListOffices(ctx context.Context, arg ListOfficesParams) ([]ListOfficesRow, error)
 	ListOrganizations(ctx context.Context, arg ListOrganizationsParams) ([]ListOrganizationsRow, error)
+	ListStaffByRole(ctx context.Context, role UserRole) ([]ListStaffByRoleRow, error)
 	SaveOTP(ctx context.Context, arg SaveOTPParams) error
 	SaveRefreshToken(ctx context.Context, arg SaveRefreshTokenParams) error
 	UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error)

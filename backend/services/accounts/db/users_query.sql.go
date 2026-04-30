@@ -47,53 +47,6 @@ func (q *Queries) CountAgents(ctx context.Context, arg CountAgentsParams) (int64
 	return count, err
 }
 
-const createAdmin = `-- name: CreateAdmin :one
-INSERT INTO users (role, first_name, last_name, email, password_hash, created_at, updated_at)
-VALUES ('admin', $1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-RETURNING id, role, first_name, last_name, email, office_id, last_login, created_at, updated_at
-`
-
-type CreateAdminParams struct {
-	FirstName    string
-	LastName     string
-	Email        string
-	PasswordHash string
-}
-
-type CreateAdminRow struct {
-	ID        int32
-	Role      UserRole
-	FirstName string
-	LastName  string
-	Email     string
-	OfficeID  *int32
-	LastLogin pgtype.Timestamptz
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
-}
-
-func (q *Queries) CreateAdmin(ctx context.Context, arg CreateAdminParams) (CreateAdminRow, error) {
-	row := q.db.QueryRow(ctx, createAdmin,
-		arg.FirstName,
-		arg.LastName,
-		arg.Email,
-		arg.PasswordHash,
-	)
-	var i CreateAdminRow
-	err := row.Scan(
-		&i.ID,
-		&i.Role,
-		&i.FirstName,
-		&i.LastName,
-		&i.Email,
-		&i.OfficeID,
-		&i.LastLogin,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
 const createAgent = `-- name: CreateAgent :one
 INSERT INTO users (role, first_name, last_name, email, phone_number, password_hash, office_id, created_at, updated_at)
 VALUES ('agent', $1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -204,6 +157,55 @@ func (q *Queries) CreateCustomer(ctx context.Context, arg CreateCustomerParams) 
 		&i.Email,
 		&i.PhoneNumber,
 		&i.Otp,
+		&i.OfficeID,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createStaffUser = `-- name: CreateStaffUser :one
+INSERT INTO users (role, first_name, last_name, email, password_hash, created_at, updated_at)
+VALUES ($1::user_role, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+RETURNING id, role, first_name, last_name, email, office_id, last_login, created_at, updated_at
+`
+
+type CreateStaffUserParams struct {
+	Role         UserRole
+	FirstName    string
+	LastName     string
+	Email        string
+	PasswordHash string
+}
+
+type CreateStaffUserRow struct {
+	ID        int32
+	Role      UserRole
+	FirstName string
+	LastName  string
+	Email     string
+	OfficeID  *int32
+	LastLogin pgtype.Timestamptz
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) CreateStaffUser(ctx context.Context, arg CreateStaffUserParams) (CreateStaffUserRow, error) {
+	row := q.db.QueryRow(ctx, createStaffUser,
+		arg.Role,
+		arg.FirstName,
+		arg.LastName,
+		arg.Email,
+		arg.PasswordHash,
+	)
+	var i CreateStaffUserRow
+	err := row.Scan(
+		&i.ID,
+		&i.Role,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
 		&i.OfficeID,
 		&i.LastLogin,
 		&i.CreatedAt,
@@ -365,54 +367,6 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phoneNumber *string) (User
 	return i, err
 }
 
-const listAdmins = `-- name: ListAdmins :many
-SELECT id, role, first_name, last_name, email, office_id, last_login, created_at, updated_at
-FROM users
-WHERE role = 'admin'
-`
-
-type ListAdminsRow struct {
-	ID        int32
-	Role      UserRole
-	FirstName string
-	LastName  string
-	Email     string
-	OfficeID  *int32
-	LastLogin pgtype.Timestamptz
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
-}
-
-func (q *Queries) ListAdmins(ctx context.Context) ([]ListAdminsRow, error) {
-	rows, err := q.db.Query(ctx, listAdmins)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ListAdminsRow
-	for rows.Next() {
-		var i ListAdminsRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Role,
-			&i.FirstName,
-			&i.LastName,
-			&i.Email,
-			&i.OfficeID,
-			&i.LastLogin,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listAdminsEmails = `-- name: ListAdminsEmails :many
 SELECT email
 FROM users
@@ -506,6 +460,54 @@ func (q *Queries) ListAgents(ctx context.Context, arg ListAgentsParams) ([]ListA
 			&i.UpdatedAt,
 			&i.OfficeName,
 			&i.OrganizationName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listStaffByRole = `-- name: ListStaffByRole :many
+SELECT id, role, first_name, last_name, email, office_id, last_login, created_at, updated_at
+FROM users
+WHERE role = $1::user_role
+`
+
+type ListStaffByRoleRow struct {
+	ID        int32
+	Role      UserRole
+	FirstName string
+	LastName  string
+	Email     string
+	OfficeID  *int32
+	LastLogin pgtype.Timestamptz
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) ListStaffByRole(ctx context.Context, role UserRole) ([]ListStaffByRoleRow, error) {
+	rows, err := q.db.Query(ctx, listStaffByRole, role)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListStaffByRoleRow
+	for rows.Next() {
+		var i ListStaffByRoleRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Role,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.OfficeID,
+			&i.LastLogin,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

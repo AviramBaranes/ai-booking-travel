@@ -116,21 +116,6 @@ func (mr *MockQuerierMockRecorder) CountOrganizations(ctx, arg any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountOrganizations", reflect.TypeOf((*MockQuerier)(nil).CountOrganizations), ctx, arg)
 }
 
-// CreateAdmin mocks base method.
-func (m *MockQuerier) CreateAdmin(ctx context.Context, arg db.CreateAdminParams) (db.CreateAdminRow, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateAdmin", ctx, arg)
-	ret0, _ := ret[0].(db.CreateAdminRow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateAdmin indicates an expected call of CreateAdmin.
-func (mr *MockQuerierMockRecorder) CreateAdmin(ctx, arg any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAdmin", reflect.TypeOf((*MockQuerier)(nil).CreateAdmin), ctx, arg)
-}
-
 // CreateAgent mocks base method.
 func (m *MockQuerier) CreateAgent(ctx context.Context, arg db.CreateAgentParams) (db.CreateAgentRow, error) {
 	m.ctrl.T.Helper()
@@ -204,6 +189,21 @@ func (m *MockQuerier) CreateOrganization(ctx context.Context, arg db.CreateOrgan
 func (mr *MockQuerierMockRecorder) CreateOrganization(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrganization", reflect.TypeOf((*MockQuerier)(nil).CreateOrganization), ctx, arg)
+}
+
+// CreateStaffUser mocks base method.
+func (m *MockQuerier) CreateStaffUser(ctx context.Context, arg db.CreateStaffUserParams) (db.CreateStaffUserRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateStaffUser", ctx, arg)
+	ret0, _ := ret[0].(db.CreateStaffUserRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateStaffUser indicates an expected call of CreateStaffUser.
+func (mr *MockQuerierMockRecorder) CreateStaffUser(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStaffUser", reflect.TypeOf((*MockQuerier)(nil).CreateStaffUser), ctx, arg)
 }
 
 // DeleteContact mocks base method.
@@ -337,21 +337,6 @@ func (mr *MockQuerierMockRecorder) GetUserByPhone(ctx, phoneNumber any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByPhone", reflect.TypeOf((*MockQuerier)(nil).GetUserByPhone), ctx, phoneNumber)
 }
 
-// ListAdmins mocks base method.
-func (m *MockQuerier) ListAdmins(ctx context.Context) ([]db.ListAdminsRow, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAdmins", ctx)
-	ret0, _ := ret[0].([]db.ListAdminsRow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ListAdmins indicates an expected call of ListAdmins.
-func (mr *MockQuerierMockRecorder) ListAdmins(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAdmins", reflect.TypeOf((*MockQuerier)(nil).ListAdmins), ctx)
-}
-
 // ListAdminsEmails mocks base method.
 func (m *MockQuerier) ListAdminsEmails(ctx context.Context) ([]string, error) {
 	m.ctrl.T.Helper()
@@ -425,6 +410,21 @@ func (m *MockQuerier) ListOrganizations(ctx context.Context, arg db.ListOrganiza
 func (mr *MockQuerierMockRecorder) ListOrganizations(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganizations", reflect.TypeOf((*MockQuerier)(nil).ListOrganizations), ctx, arg)
+}
+
+// ListStaffByRole mocks base method.
+func (m *MockQuerier) ListStaffByRole(ctx context.Context, role db.UserRole) ([]db.ListStaffByRoleRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListStaffByRole", ctx, role)
+	ret0, _ := ret[0].([]db.ListStaffByRoleRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListStaffByRole indicates an expected call of ListStaffByRole.
+func (mr *MockQuerierMockRecorder) ListStaffByRole(ctx, role any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListStaffByRole", reflect.TypeOf((*MockQuerier)(nil).ListStaffByRole), ctx, role)
 }
 
 // SaveOTP mocks base method.

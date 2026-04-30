@@ -155,7 +155,8 @@ func TestGetBillingContacts(t *testing.T) {
 		contactC2 := seedContact(t, &officeC.ID, nil, true)
 
 		// Non-agent users whose IDs are passed in the request must be excluded by the role filter.
-		admin, err := query.CreateAdmin(ctx, db.CreateAdminParams{
+		admin, err := query.CreateStaffUser(ctx, db.CreateStaffUserParams{
+			Role:      db.UserRoleAdmin,
 			FirstName: "A", LastName: "A", Email: randomName() + "@test.com", PasswordHash: "h",
 		})
 		if err != nil {
