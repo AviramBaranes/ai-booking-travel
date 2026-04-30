@@ -108,6 +108,16 @@ export interface ClientOptions {
 }
 
 export namespace accounts {
+    export interface AccountantResponse {
+        id: number
+        firstName: string
+        lastName: string
+        email: string
+        lastLogin: string
+        createdAt: string
+        updatedAt: string
+    }
+
     export interface AdminResponse {
         id: number
         firstName: string
@@ -144,6 +154,17 @@ export namespace accounts {
         isPaymentResponsible: boolean
         officeName: string
         organizationName: string
+    }
+
+    export interface CreateAccountantRequest {
+        firstName: string
+        lastName: string
+        email: string
+        password: string
+    }
+
+    export interface CreateAccountantResponse {
+        id: number
     }
 
     export interface CreateAdminRequest {
@@ -194,6 +215,10 @@ export namespace accounts {
         phone?: string
         address?: string
         obligo?: number
+    }
+
+    export interface ListAccountantsResponse {
+        accountants: AccountantResponse[]
     }
 
     export interface ListAdminsResponse {
@@ -374,12 +399,14 @@ export namespace accounts {
 
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
+            this.CreateAccountant = this.CreateAccountant.bind(this)
             this.CreateAdmin = this.CreateAdmin.bind(this)
             this.CreateAgent = this.CreateAgent.bind(this)
             this.CreateContact = this.CreateContact.bind(this)
             this.CreateOffice = this.CreateOffice.bind(this)
             this.CreateOrganization = this.CreateOrganization.bind(this)
             this.DeleteContact = this.DeleteContact.bind(this)
+            this.ListAccountants = this.ListAccountants.bind(this)
             this.ListAdmins = this.ListAdmins.bind(this)
             this.ListAgents = this.ListAgents.bind(this)
             this.ListContacts = this.ListContacts.bind(this)
@@ -396,6 +423,15 @@ export namespace accounts {
             this.UpdateOrganization = this.UpdateOrganization.bind(this)
             this.UpdateUser = this.UpdateUser.bind(this)
             this.ValidateCustomerLoginOTP = this.ValidateCustomerLoginOTP.bind(this)
+        }
+
+        /**
+         * CreateAccountant creates a new accountant user.
+         */
+        public async CreateAccountant(params: CreateAccountantRequest): Promise<CreateAccountantResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/accountants`, JSON.stringify(params))
+            return await resp.json() as CreateAccountantResponse
         }
 
         /**
@@ -448,6 +484,15 @@ export namespace accounts {
          */
         public async DeleteContact(id: number): Promise<void> {
             await this.baseClient.callTypedAPI("DELETE", `/contacts/${encodeURIComponent(id)}`)
+        }
+
+        /**
+         * ListAccountants returns all accountant users.
+         */
+        public async ListAccountants(): Promise<ListAccountantsResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/accountants`)
+            return await resp.json() as ListAccountantsResponse
         }
 
         /**

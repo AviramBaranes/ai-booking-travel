@@ -19,6 +19,15 @@ export function createAdmin(data: accounts.CreateAdminRequest) {
   return withErrorHandler((client) => client.accounts.CreateAdmin(data));
 }
 
+// Accountants
+export function listAccountants() {
+  return withErrorHandler((client) => client.accounts.ListAccountants());
+}
+
+export function createAccountant(data: accounts.CreateAccountantRequest) {
+  return withErrorHandler((client) => client.accounts.CreateAccountant(data));
+}
+
 // Agents
 export function listAgents(data: accounts.ListAgentsRequest) {
   return withErrorHandler((client) => client.accounts.ListAgents(data));

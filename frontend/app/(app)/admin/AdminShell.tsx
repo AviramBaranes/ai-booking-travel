@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import {
   Home,
-  Network,
+  Calculator,
   Building2,
   UserCog,
   Users,
@@ -24,6 +24,7 @@ import AdminNavbar from "@/shared/components/admin/AdminNavbar";
 const navItems = [
   { label: "ראשי", href: "/admin", icon: Home },
   { label: "מנהלים", href: "/admin/admins", icon: UserCog },
+  { label: "רואי חשבון", href: "/admin/accountants", icon: Calculator },
   { label: "רשתות", href: "/admin/organizations", icon: Landmark },
   { label: "משרדים", href: "/admin/offices", icon: Building2 },
   { label: "אנשי קשר", href: "/admin/contacts", icon: Contact },
