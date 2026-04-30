@@ -27,9 +27,12 @@ export default async function AppRootLayout({
   params: Promise<{ lang: string }>;
 }>) {
   const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.role === "admin";
-  if (isAdmin) {
+  const role = session?.user?.role;
+  if (role === "admin") {
     redirect("/admin/");
+  }
+  if (role === "accountant") {
+    redirect("/accounting/billing");
   }
   const { lang } = await params;
 

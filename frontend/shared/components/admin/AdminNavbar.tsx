@@ -12,7 +12,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
 
-export default function AdminNavbar() {
+export default function AdminNavbar({ hideLinks = false }: { hideLinks?: boolean }) {
   const pathname = usePathname();
 
   const isHeaderActive = (href: string) =>
@@ -35,7 +35,7 @@ export default function AdminNavbar() {
             height={40}
           />
         </div>
-        {[
+        {!hideLinks && [
           {
             href: "/admin",
             label: "ניהול מערכת",

@@ -3,28 +3,21 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
-
 import { authOptions } from "@/shared/auth/authOptions";
-import AdminShell from "./AdminShell";
-import { Metadata } from "next";
-import { Providers } from "./Providers";
+import { Providers } from "../admin/Providers";
+import AccountingShell from "./AccountingShell";
 
-export const metadata: Metadata = {
-  title: "BT Admin Panel",
-  description: "AI Booking Travel Admin Panel",
-};
-
-export default async function AdminRootLayout({
+export default async function AccountingRootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   const session = await getServerSession(authOptions);
   if (!session) {
     redirect("/he/");
   }
 
-  if (session?.user?.role !== "admin") {
+  if (session.user?.role !== "accountant") {
     redirect("/he/");
   }
 
@@ -35,7 +28,7 @@ export default async function AdminRootLayout({
       <body className="h-full">
         <Providers>
           <NextIntlClientProvider locale="he" messages={messages}>
-            <AdminShell>{children}</AdminShell>
+            <AccountingShell>{children}</AccountingShell>
           </NextIntlClientProvider>
         </Providers>
       </body>
