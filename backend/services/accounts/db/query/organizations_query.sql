@@ -54,3 +54,10 @@ SET
     updated_at = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg(id)
 RETURNING id, name, is_organic, phone, address, obligo, created_at, updated_at;
+
+-- name: ListOrganicOrganizations :many
+SELECT
+    id,name
+FROM organizations
+WHERE is_organic = TRUE
+ORDER BY name;

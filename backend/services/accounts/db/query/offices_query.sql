@@ -51,3 +51,11 @@ SET
     updated_at      = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg(id)
 RETURNING id, name, organization_id, phone, address, created_at, updated_at;
+
+-- name: ListInorganicOffices :many
+SELECT
+    o.id, o.name
+FROM offices as o
+JOIN organizations org ON org.id = o.organization_id
+WHERE org.inorganic = TRUE
+ORDER BY o.name;

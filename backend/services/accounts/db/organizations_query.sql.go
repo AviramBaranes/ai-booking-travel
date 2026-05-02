@@ -75,6 +75,39 @@ func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganization
 	return i, err
 }
 
+const listOrganicOrganizations = `-- name: ListOrganicOrganizations :many
+SELECT
+    id,name
+FROM organizations
+WHERE is_organic = TRUE
+ORDER BY name
+`
+
+type ListOrganicOrganizationsRow struct {
+	ID   int32
+	Name string
+}
+
+func (q *Queries) ListOrganicOrganizations(ctx context.Context) ([]ListOrganicOrganizationsRow, error) {
+	rows, err := q.db.Query(ctx, listOrganicOrganizations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListOrganicOrganizationsRow
+	for rows.Next() {
+		var i ListOrganicOrganizationsRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listOrganizations = `-- name: ListOrganizations :many
 SELECT
     o.id,

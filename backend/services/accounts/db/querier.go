@@ -34,7 +34,9 @@ type Querier interface {
 	ListAdminsEmails(ctx context.Context) ([]string, error)
 	ListAgents(ctx context.Context, arg ListAgentsParams) ([]ListAgentsRow, error)
 	ListContacts(ctx context.Context, arg ListContactsParams) ([]ListContactsRow, error)
+	ListInorganicOffices(ctx context.Context) ([]ListInorganicOfficesRow, error)
 	ListOffices(ctx context.Context, arg ListOfficesParams) ([]ListOfficesRow, error)
+	ListOrganicOrganizations(ctx context.Context) ([]ListOrganicOrganizationsRow, error)
 	ListOrganizations(ctx context.Context, arg ListOrganizationsParams) ([]ListOrganizationsRow, error)
 	ListStaffByRole(ctx context.Context, role UserRole) ([]ListStaffByRoleRow, error)
 	SaveOTP(ctx context.Context, arg SaveOTPParams) error

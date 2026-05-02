@@ -412,6 +412,21 @@ func (mr *MockQuerierMockRecorder) ListContacts(ctx, arg any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListContacts", reflect.TypeOf((*MockQuerier)(nil).ListContacts), ctx, arg)
 }
 
+// ListInorganicOffices mocks base method.
+func (m *MockQuerier) ListInorganicOffices(ctx context.Context) ([]db.ListInorganicOfficesRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListInorganicOffices", ctx)
+	ret0, _ := ret[0].([]db.ListInorganicOfficesRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListInorganicOffices indicates an expected call of ListInorganicOffices.
+func (mr *MockQuerierMockRecorder) ListInorganicOffices(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInorganicOffices", reflect.TypeOf((*MockQuerier)(nil).ListInorganicOffices), ctx)
+}
+
 // ListOffices mocks base method.
 func (m *MockQuerier) ListOffices(ctx context.Context, arg db.ListOfficesParams) ([]db.ListOfficesRow, error) {
 	m.ctrl.T.Helper()
@@ -425,6 +440,21 @@ func (m *MockQuerier) ListOffices(ctx context.Context, arg db.ListOfficesParams)
 func (mr *MockQuerierMockRecorder) ListOffices(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOffices", reflect.TypeOf((*MockQuerier)(nil).ListOffices), ctx, arg)
+}
+
+// ListOrganicOrganizations mocks base method.
+func (m *MockQuerier) ListOrganicOrganizations(ctx context.Context) ([]db.ListOrganicOrganizationsRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListOrganicOrganizations", ctx)
+	ret0, _ := ret[0].([]db.ListOrganicOrganizationsRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListOrganicOrganizations indicates an expected call of ListOrganicOrganizations.
+func (mr *MockQuerierMockRecorder) ListOrganicOrganizations(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrganicOrganizations", reflect.TypeOf((*MockQuerier)(nil).ListOrganicOrganizations), ctx)
 }
 
 // ListOrganizations mocks base method.

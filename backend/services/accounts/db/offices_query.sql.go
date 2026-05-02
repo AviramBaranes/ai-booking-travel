@@ -71,6 +71,40 @@ func (q *Queries) CreateOffice(ctx context.Context, arg CreateOfficeParams) (Off
 	return i, err
 }
 
+const listInorganicOffices = `-- name: ListInorganicOffices :many
+SELECT
+    o.id, o.name
+FROM offices as o
+JOIN organizations org ON org.id = o.organization_id
+WHERE org.inorganic = TRUE
+ORDER BY o.name
+`
+
+type ListInorganicOfficesRow struct {
+	ID   int32
+	Name string
+}
+
+func (q *Queries) ListInorganicOffices(ctx context.Context) ([]ListInorganicOfficesRow, error) {
+	rows, err := q.db.Query(ctx, listInorganicOffices)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListInorganicOfficesRow
+	for rows.Next() {
+		var i ListInorganicOfficesRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listOffices = `-- name: ListOffices :many
 SELECT
     o.id,

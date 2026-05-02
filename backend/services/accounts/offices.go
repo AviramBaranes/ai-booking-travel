@@ -182,3 +182,36 @@ func (s *Service) UpdateOffice(ctx context.Context, id int32, params UpdateOffic
 	}
 	return &resp, nil
 }
+
+type InorganicOffice struct {
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
+}
+
+type ListInorganicOfficeResponse struct {
+	Offices []InorganicOffice `json:"offices"`
+}
+
+// ListInorganicOffices lists all inorganic offices for accountant use.
+//
+//encore:api auth method=GET path=/inorganic-offices tag:accountant
+func (s *Service) ListInorganicOffices(ctx context.Context) (*ListInorganicOfficeResponse, error) {
+	rows, err := s.query.ListInorganicOffices(ctx)
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return &ListInorganicOfficeResponse{Offices: []InorganicOffice{}}, nil
+		}
+		rlog.Error("failed to list inorganic offices", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	offices := make([]InorganicOffice, 0, len(rows))
+	for _, r := range rows {
+		offices = append(offices, InorganicOffice{
+			ID:   r.ID,
+			Name: r.Name,
+		})
+	}
+
+	return &ListInorganicOfficeResponse{Offices: offices}, nil
+}
