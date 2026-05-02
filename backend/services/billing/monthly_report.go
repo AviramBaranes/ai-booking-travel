@@ -147,7 +147,7 @@ func generateTransactionGroups(openReservations *reservation.GetOpenReservations
 }
 
 func toReportReservation(r reservation.OpenReservation, agentInfo AgentInfo) Reservations {
-	var m float64 = 1
+	m := 1.0
 	if r.PaymentStatus == "refund_pending" {
 		m = -1
 	}

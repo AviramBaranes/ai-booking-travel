@@ -332,3 +332,122 @@ func TestCreateAgent(t *testing.T) {
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }
+
+func TestGetAgentsByOfficeID(t *testing.T) {
+	ctx := context.Background()
+	s := &Service{query: query}
+
+	t.Run("returns all agent ids for multiple agents in the same office", func(t *testing.T) {
+		t.Parallel()
+		orgID, officeID := seedOrgAndOffice(t)
+		a1 := seedAgent(t, s, "office-filter-agent-a@test.com", randomIsraeliPhoneNumber(), officeID)
+		a2 := seedAgent(t, s, "office-filter-agent-b@test.com", randomIsraeliPhoneNumber(), officeID)
+		a3 := seedAgent(t, s, "office-filter-agent-c@test.com", randomIsraeliPhoneNumber(), officeID)
+
+		officeOther, err := query.CreateOffice(ctx, db.CreateOfficeParams{
+			Name:           "OfficeFilterOtherOffice",
+			OrganizationID: orgID,
+		})
+		if err != nil {
+			t.Fatalf("failed to create other office: %v", err)
+		}
+		a4 := seedAgent(t, s, "office-filter-agent-other@test.com", randomIsraeliPhoneNumber(), officeOther.ID)
+
+		resp, err := s.GetAgentsByOfficeID(ctx, GetAgentsByOfficeIDRequest{OfficeID: officeID})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if len(resp.IDs) != 3 {
+			t.Fatalf("expected 3 IDs, got %d", len(resp.IDs))
+		}
+		got := make(map[int32]bool, len(resp.IDs))
+		for _, id := range resp.IDs {
+			got[id] = true
+		}
+		for _, agent := range []*CreateAgentResponse{a1, a2, a3} {
+			if !got[agent.ID] {
+				t.Fatalf("expected agent ID %d in response", agent.ID)
+			}
+		}
+		if got[a4.ID] {
+			t.Fatalf("did not expect non-matching agent ID %d in response", a4.ID)
+		}
+	})
+
+	t.Run("returns not found when office has no agents", func(t *testing.T) {
+		t.Parallel()
+		_, officeID := seedOrgAndOffice(t)
+
+		_, err := s.GetAgentsByOfficeID(ctx, GetAgentsByOfficeIDRequest{OfficeID: officeID})
+		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
+	})
+
+	t.Run("returns internal error on db failure", func(t *testing.T) {
+		t.Parallel()
+		q, s := agentMockService(t)
+		q.EXPECT().GetAgentsByOfficeID(gomock.Any(), int32(10)).Return(nil, errors.New("db error"))
+
+		_, err := s.GetAgentsByOfficeID(ctx, GetAgentsByOfficeIDRequest{OfficeID: 10})
+		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
+	})
+}
+
+func TestGetAgentsByOrganizationID(t *testing.T) {
+	ctx := context.Background()
+	s := &Service{query: query}
+
+	t.Run("returns all agent ids across offices of the same org", func(t *testing.T) {
+		t.Parallel()
+		orgID, officeA := seedOrgAndOffice(t)
+		officeB, err := query.CreateOffice(ctx, db.CreateOfficeParams{
+			Name:           "OrgFilterOfficeB",
+			OrganizationID: orgID,
+		})
+		if err != nil {
+			t.Fatalf("failed to create second office: %v", err)
+		}
+		a1 := seedAgent(t, s, "org-filter-agent-a@test.com", randomIsraeliPhoneNumber(), officeA)
+		a2 := seedAgent(t, s, "org-filter-agent-b@test.com", randomIsraeliPhoneNumber(), officeA)
+		a3 := seedAgent(t, s, "org-filter-agent-c@test.com", randomIsraeliPhoneNumber(), officeB.ID)
+
+		_, officeOtherOrg := seedOrgAndOffice(t)
+		a4 := seedAgent(t, s, "org-filter-agent-other@test.com", randomIsraeliPhoneNumber(), officeOtherOrg)
+
+		resp, err := s.GetAgentsByOrganizationID(ctx, GetAgentsByOrganizationIDRequest{OrgID: orgID})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if len(resp.IDs) != 3 {
+			t.Fatalf("expected 3 IDs, got %d", len(resp.IDs))
+		}
+		got := make(map[int32]bool, len(resp.IDs))
+		for _, id := range resp.IDs {
+			got[id] = true
+		}
+		for _, agent := range []*CreateAgentResponse{a1, a2, a3} {
+			if !got[agent.ID] {
+				t.Fatalf("expected agent ID %d in response", agent.ID)
+			}
+		}
+		if got[a4.ID] {
+			t.Fatalf("did not expect non-matching agent ID %d in response", a4.ID)
+		}
+	})
+
+	t.Run("returns not found when org has no agents", func(t *testing.T) {
+		t.Parallel()
+		orgID, _ := seedOrgAndOffice(t)
+
+		_, err := s.GetAgentsByOrganizationID(ctx, GetAgentsByOrganizationIDRequest{OrgID: orgID})
+		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
+	})
+
+	t.Run("returns internal error on db failure", func(t *testing.T) {
+		t.Parallel()
+		q, s := agentMockService(t)
+		q.EXPECT().GetAgentsByOrganizationID(gomock.Any(), int32(5)).Return(nil, errors.New("db error"))
+
+		_, err := s.GetAgentsByOrganizationID(ctx, GetAgentsByOrganizationIDRequest{OrgID: 5})
+		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
+	})
+}

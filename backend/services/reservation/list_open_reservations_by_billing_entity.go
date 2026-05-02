@@ -3,6 +3,7 @@ package reservation
 import (
 	"context"
 	"errors"
+	"math"
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/pricing"
@@ -151,6 +152,11 @@ type priceDetails struct {
 	erpSellingPrice  float64
 }
 
+// roundPrice rounds a price to 2 decimal places.
+func roundPrice(price float64) float64 {
+	return math.Round(price*100) / 100
+}
+
 // getReservationPriceDetails computes purchase price, selling price, profit, and ERP price from a db row.
 func getReservationPriceDetails(row db.GetPaymentPendingReservationsByAgentsIDsRow) priceDetails {
 	carPurchasePrice := db.NumericToFloat64(row.PurchasePrice) + db.NumericToFloat64(row.BrokerErpPrice)
@@ -158,9 +164,9 @@ func getReservationPriceDetails(row db.GetPaymentPendingReservationsByAgentsIDsR
 	carSellingPrice := pricing.ApplyMarkup(carPurchasePrice, mp)
 
 	return priceDetails{
-		carPurchasePrice: carPurchasePrice,
-		carSellingPrice:  carSellingPrice,
-		carProfit:        carSellingPrice - carPurchasePrice,
+		carPurchasePrice: roundPrice(carPurchasePrice),
+		carSellingPrice:  roundPrice(carSellingPrice),
+		carProfit:        roundPrice(carSellingPrice - carPurchasePrice),
 		erpSellingPrice:  float64(row.BtErpPrice),
 	}
 }
