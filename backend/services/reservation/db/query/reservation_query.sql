@@ -176,3 +176,25 @@ WHERE
     (reservation_status = 'vouchered' AND payment_status = 'unpaid')
 OR
     (reservation_status = 'canceled' AND payment_status = 'refund_pending');
+
+-- name: GetPaymentPendingReservationsByAgentsIDs :many
+SELECT
+    id,
+    broker_reservation_id,
+    payment_status,
+    reservation_status,
+    purchase_price,
+    markup_percentage,
+    bt_erp_price,
+    broker_erp_price,
+    total_price,
+    currency_code,
+    created_at,
+    pickup_date
+FROM reservations
+WHERE
+    user_id = ANY(sqlc.arg(agent_ids)::INT[])
+AND(
+    (reservation_status = 'vouchered' AND payment_status = 'unpaid')
+OR
+    (reservation_status = 'canceled' AND payment_status = 'refund_pending'));

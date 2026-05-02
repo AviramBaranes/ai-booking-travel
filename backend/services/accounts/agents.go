@@ -173,3 +173,73 @@ func (s *Service) CreateAgent(ctx context.Context, params CreateAgentRequest) (*
 		ID: row.ID,
 	}, nil
 }
+
+// GetAgentsByOfficeID retrieves agent IDs for a given office ID.
+type GetAgentsResponse struct {
+	IDs       []int32
+	IsOrganic bool
+}
+
+// GetAgentsByOfficeIDRequest is the request type for GetAgentsByOfficeID.
+type GetAgentsByOfficeIDRequest struct {
+	OfficeID int32
+}
+
+// GetAgentsByOrganizationIDRequest is the request type for GetAgentsByOrganizationID.
+type GetAgentsByOrganizationIDRequest struct {
+	OrgID int32
+}
+
+// GetAgentsByOfficeID retrieves agent IDs for a given office ID.
+// encore:api private
+func (s *Service) GetAgentsByOfficeID(ctx context.Context, p GetAgentsByOfficeIDRequest) (*GetAgentsResponse, error) {
+	rows, err := s.query.GetAgentsByOfficeID(ctx, p.OfficeID)
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return nil, api_errors.ErrNotFound
+		}
+		rlog.Error("failed to get agents by office ID", "officeID", p.OfficeID, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	if len(rows) == 0 {
+		return nil, api_errors.ErrNotFound
+	}
+
+	ids := make([]int32, 0, len(rows))
+	for _, r := range rows {
+		ids = append(ids, r.ID)
+	}
+
+	return &GetAgentsResponse{
+		IDs:       ids,
+		IsOrganic: rows[0].IsOrganic,
+	}, nil
+}
+
+// GetAgentsByOrganizationID retrieves agent IDs for a given organization ID.
+// encore:api private
+func (s *Service) GetAgentsByOrganizationID(ctx context.Context, p GetAgentsByOrganizationIDRequest) (*GetAgentsResponse, error) {
+	rows, err := s.query.GetAgentsByOrganizationID(ctx, p.OrgID)
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return nil, api_errors.ErrNotFound
+		}
+		rlog.Error("failed to get agents by organization ID", "orgID", p.OrgID, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	if len(rows) == 0 {
+		return nil, api_errors.ErrNotFound
+	}
+
+	ids := make([]int32, 0, len(rows))
+	for _, r := range rows {
+		ids = append(ids, r.ID)
+	}
+
+	return &GetAgentsResponse{
+		IDs:       ids,
+		IsOrganic: rows[0].IsOrganic,
+	}, nil
+}

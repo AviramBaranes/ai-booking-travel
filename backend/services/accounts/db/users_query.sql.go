@@ -289,6 +289,72 @@ func (q *Queries) GetAgentsBillingContacts(ctx context.Context, usersIds []int32
 	return items, nil
 }
 
+const getAgentsByOfficeID = `-- name: GetAgentsByOfficeID :many
+SELECT u.id, org.is_organic
+FROM users as u
+INNER JOIN offices as office ON office.id = u.office_id
+INNER JOIN organizations as org ON org.id = office.organization_id
+WHERE u.role = 'agent' AND u.office_id = $1::int
+`
+
+type GetAgentsByOfficeIDRow struct {
+	ID        int32
+	IsOrganic bool
+}
+
+func (q *Queries) GetAgentsByOfficeID(ctx context.Context, officeID int32) ([]GetAgentsByOfficeIDRow, error) {
+	rows, err := q.db.Query(ctx, getAgentsByOfficeID, officeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAgentsByOfficeIDRow
+	for rows.Next() {
+		var i GetAgentsByOfficeIDRow
+		if err := rows.Scan(&i.ID, &i.IsOrganic); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAgentsByOrganizationID = `-- name: GetAgentsByOrganizationID :many
+SELECT u.id, org.is_organic
+FROM users as u
+INNER JOIN offices as office ON office.id = u.office_id
+INNER JOIN organizations as org ON org.id = office.organization_id
+WHERE u.role = 'agent' AND office.organization_id = $1::int
+`
+
+type GetAgentsByOrganizationIDRow struct {
+	ID        int32
+	IsOrganic bool
+}
+
+func (q *Queries) GetAgentsByOrganizationID(ctx context.Context, organizationID int32) ([]GetAgentsByOrganizationIDRow, error) {
+	rows, err := q.db.Query(ctx, getAgentsByOrganizationID, organizationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAgentsByOrganizationIDRow
+	for rows.Next() {
+		var i GetAgentsByOrganizationIDRow
+		if err := rows.Scan(&i.ID, &i.IsOrganic); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, first_name, last_name, role, email, phone_number, otp, office_id, password_hash, last_login, created_at, updated_at
 FROM users

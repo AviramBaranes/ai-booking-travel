@@ -116,3 +116,17 @@ INNER JOIN contacts as c ON c.is_payment_responsible = TRUE AND (
 )
 WHERE u.role = 'agent'
   AND u.id = ANY(sqlc.arg(users_ids)::int[]);
+
+-- name: GetAgentsByOfficeID :many
+SELECT u.id, org.is_organic
+FROM users as u
+INNER JOIN offices as office ON office.id = u.office_id
+INNER JOIN organizations as org ON org.id = office.organization_id
+WHERE u.role = 'agent' AND u.office_id = sqlc.arg(office_id)::int;
+
+-- name: GetAgentsByOrganizationID :many
+SELECT u.id, org.is_organic
+FROM users as u
+INNER JOIN offices as office ON office.id = u.office_id
+INNER JOIN organizations as org ON org.id = office.organization_id
+WHERE u.role = 'agent' AND office.organization_id = sqlc.arg(organization_id)::int;

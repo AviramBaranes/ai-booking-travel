@@ -176,6 +176,77 @@ func (q *Queries) GetPaymentPendingReservations(ctx context.Context) ([]GetPayme
 	return items, nil
 }
 
+const getPaymentPendingReservationsByAgentsIDs = `-- name: GetPaymentPendingReservationsByAgentsIDs :many
+SELECT
+    id,
+    broker_reservation_id,
+    payment_status,
+    reservation_status,
+    purchase_price,
+    markup_percentage,
+    bt_erp_price,
+    broker_erp_price,
+    total_price,
+    currency_code,
+    created_at,
+    pickup_date
+FROM reservations
+WHERE
+    user_id = ANY($1::INT[])
+AND(
+    (reservation_status = 'vouchered' AND payment_status = 'unpaid')
+OR
+    (reservation_status = 'canceled' AND payment_status = 'refund_pending'))
+`
+
+type GetPaymentPendingReservationsByAgentsIDsRow struct {
+	ID                  int64
+	BrokerReservationID string
+	PaymentStatus       PaymentStatus
+	ReservationStatus   ReservationStatus
+	PurchasePrice       pgtype.Numeric
+	MarkupPercentage    pgtype.Numeric
+	BtErpPrice          int32
+	BrokerErpPrice      pgtype.Numeric
+	TotalPrice          int32
+	CurrencyCode        string
+	CreatedAt           pgtype.Timestamptz
+	PickupDate          pgtype.Date
+}
+
+func (q *Queries) GetPaymentPendingReservationsByAgentsIDs(ctx context.Context, agentIds []int32) ([]GetPaymentPendingReservationsByAgentsIDsRow, error) {
+	rows, err := q.db.Query(ctx, getPaymentPendingReservationsByAgentsIDs, agentIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPaymentPendingReservationsByAgentsIDsRow
+	for rows.Next() {
+		var i GetPaymentPendingReservationsByAgentsIDsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.BrokerReservationID,
+			&i.PaymentStatus,
+			&i.ReservationStatus,
+			&i.PurchasePrice,
+			&i.MarkupPercentage,
+			&i.BtErpPrice,
+			&i.BrokerErpPrice,
+			&i.TotalPrice,
+			&i.CurrencyCode,
+			&i.CreatedAt,
+			&i.PickupDate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getReservationByID = `-- name: GetReservationByID :one
 SELECT
     id,

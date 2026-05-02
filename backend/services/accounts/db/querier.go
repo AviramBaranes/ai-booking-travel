@@ -25,6 +25,8 @@ type Querier interface {
 	DeleteRefreshTokensByUserId(ctx context.Context, userID int32) error
 	DeleteUser(ctx context.Context, id int32) error
 	GetAgentsBillingContacts(ctx context.Context, usersIds []int32) ([]GetAgentsBillingContactsRow, error)
+	GetAgentsByOfficeID(ctx context.Context, officeID int32) ([]GetAgentsByOfficeIDRow, error)
+	GetAgentsByOrganizationID(ctx context.Context, organizationID int32) ([]GetAgentsByOrganizationIDRow, error)
 	GetRefreshToken(ctx context.Context, jti string) (RefreshToken, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserById(ctx context.Context, id int32) (User, error)

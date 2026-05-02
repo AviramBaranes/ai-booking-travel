@@ -277,6 +277,36 @@ func (mr *MockQuerierMockRecorder) GetAgentsBillingContacts(ctx, usersIds any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentsBillingContacts", reflect.TypeOf((*MockQuerier)(nil).GetAgentsBillingContacts), ctx, usersIds)
 }
 
+// GetAgentsByOfficeID mocks base method.
+func (m *MockQuerier) GetAgentsByOfficeID(ctx context.Context, officeID int32) ([]db.GetAgentsByOfficeIDRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAgentsByOfficeID", ctx, officeID)
+	ret0, _ := ret[0].([]db.GetAgentsByOfficeIDRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAgentsByOfficeID indicates an expected call of GetAgentsByOfficeID.
+func (mr *MockQuerierMockRecorder) GetAgentsByOfficeID(ctx, officeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentsByOfficeID", reflect.TypeOf((*MockQuerier)(nil).GetAgentsByOfficeID), ctx, officeID)
+}
+
+// GetAgentsByOrganizationID mocks base method.
+func (m *MockQuerier) GetAgentsByOrganizationID(ctx context.Context, organizationID int32) ([]db.GetAgentsByOrganizationIDRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAgentsByOrganizationID", ctx, organizationID)
+	ret0, _ := ret[0].([]db.GetAgentsByOrganizationIDRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAgentsByOrganizationID indicates an expected call of GetAgentsByOrganizationID.
+func (mr *MockQuerierMockRecorder) GetAgentsByOrganizationID(ctx, organizationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentsByOrganizationID", reflect.TypeOf((*MockQuerier)(nil).GetAgentsByOrganizationID), ctx, organizationID)
+}
+
 // GetRefreshToken mocks base method.
 func (m *MockQuerier) GetRefreshToken(ctx context.Context, jti string) (db.RefreshToken, error) {
 	m.ctrl.T.Helper()
