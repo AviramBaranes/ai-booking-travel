@@ -57,5 +57,5 @@ SELECT
     o.id, o.name
 FROM offices as o
 JOIN organizations org ON org.id = o.organization_id
-WHERE org.inorganic = TRUE
+WHERE org.is_organic = FALSE
 ORDER BY o.name;

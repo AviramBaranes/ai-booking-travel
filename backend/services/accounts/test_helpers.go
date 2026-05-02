@@ -33,6 +33,12 @@ var (
 	query = db.New(pgxdb)
 )
 
+func newService(newDb *sqldb.Database) *Service {
+	return &Service{
+		query: db.New(sqldb.Driver[*pgxpool.Pool](newDb)),
+	}
+}
+
 // assertTimeAlmostEqual checks if two time.Time values are within an acceptable delta.
 func assertTimeAlmostEqual(t *testing.T, got, want time.Time) {
 	t.Helper()

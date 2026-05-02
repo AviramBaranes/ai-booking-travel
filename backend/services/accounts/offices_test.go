@@ -9,6 +9,7 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
 	"encore.app/services/accounts/mocks"
+	"encore.dev/et"
 	"go.uber.org/mock/gomock"
 )
 
@@ -441,5 +442,48 @@ func TestUpdateOffice(t *testing.T) {
 
 		_, err := s.UpdateOffice(ctx, 1, validUpdateOfficeParams())
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
+	})
+}
+
+func TestListInorganicOffices(t *testing.T) {
+	ctx := context.Background()
+	t.Run("it returns all inorganic offices", func(t *testing.T) {
+		newDb, err := et.NewTestDatabase(ctx, "accounts")
+		if err != nil {
+			t.Fatalf("failed to create test database: %v", err)
+		}
+		s := newService(newDb)
+
+		org1 := createTestOrg(t, s, randomName())
+		org2, err := s.CreateOrganization(ctx, CreateOrganizationRequest{Name: randomName(), IsOrganic: false})
+		if err != nil {
+			t.Fatalf("create inorganic org: %v", err)
+		}
+
+		createTestOffice(t, s, org1.ID, randomName())
+		createTestOffice(t, s, org1.ID, randomName())
+		inorganicOffice1 := createTestOffice(t, s, org2.ID, randomName())
+		inorganicOffice2 := createTestOffice(t, s, org2.ID, randomName())
+
+		resp, err := s.ListInorganicOffices(ctx)
+
+		if err != nil {
+			t.Fatalf("failed to list inorganic offices: %v", err)
+		}
+
+		if len(resp.Offices) != 2 {
+			t.Fatalf("expected 2 inorganic offices, got %d", len(resp.Offices))
+		}
+
+		expectedResults := []InorganicOffice{
+			{ID: inorganicOffice1.ID, Name: inorganicOffice1.Name},
+			{ID: inorganicOffice2.ID, Name: inorganicOffice2.Name},
+		}
+
+		for i, office := range resp.Offices {
+			if office.ID != expectedResults[i].ID || office.Name != expectedResults[i].Name {
+				t.Fatalf("expected office %v, got %v", expectedResults[i], office)
+			}
+		}
 	})
 }

@@ -9,6 +9,7 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
 	"encore.app/services/accounts/mocks"
+	"encore.dev/et"
 	"go.uber.org/mock/gomock"
 )
 
@@ -556,5 +557,64 @@ func TestUpdateOrganization(t *testing.T) {
 
 		_, err := s.UpdateOrganization(ctx, 1, validUpdateOrgParams())
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
+	})
+}
+
+func TestListOrganicOrganizations(t *testing.T) {
+	ctx := context.Background()
+	t.Run("it returns all organic organizations", func(t *testing.T) {
+		newDb, err := et.NewTestDatabase(ctx, "accounts")
+		if err != nil {
+			t.Fatalf("failed to create test database: %v", err)
+		}
+		s := newService(newDb)
+
+		org1, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+			Name:      "organic_org_1",
+			IsOrganic: true,
+		})
+
+		if err != nil {
+			t.Fatalf("failed to create org1: %v", err)
+		}
+
+		org2, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+			Name:      "organic_org_2",
+			IsOrganic: true,
+		})
+
+		if err != nil {
+			t.Fatalf("failed to create org2: %v", err)
+		}
+
+		_, err = s.CreateOrganization(ctx, CreateOrganizationRequest{
+			Name:      "inorganic_org",
+			IsOrganic: false,
+		})
+
+		if err != nil {
+			t.Fatalf("failed to create inorganic org: %v", err)
+		}
+
+		resp, err := s.ListOrganicOrganizations(ctx)
+
+		if err != nil {
+			t.Fatalf("failed to list organic organizations: %v", err)
+		}
+
+		if len(resp.Organizations) != 2 {
+			t.Fatalf("expected 2 organic organizations, got %d", len(resp.Organizations))
+		}
+
+		expectedResults := []OrganicOrganization{
+			{ID: org1.ID, Name: org1.Name},
+			{ID: org2.ID, Name: org2.Name},
+		}
+
+		for i, org := range resp.Organizations {
+			if org.ID != expectedResults[i].ID || org.Name != expectedResults[i].Name {
+				t.Fatalf("expected organization %v, got %v", expectedResults[i], org)
+			}
+		}
 	})
 }
