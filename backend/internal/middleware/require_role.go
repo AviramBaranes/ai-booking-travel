@@ -42,3 +42,9 @@ func RequireAgentMiddleware(req middleware.Request, next middleware.Next) middle
 func RequireCustomerMiddleware(req middleware.Request, next middleware.Next) middleware.Response {
 	return RequireRoleMiddleware(a.UserRoleCustomer, req, next)
 }
+
+// RequireAccountantMiddleware is a middleware that checks if the user has the accountant role.
+// encore:middleware global target=tag:accountant
+func RequireAccountantMiddleware(req middleware.Request, next middleware.Next) middleware.Response {
+	return RequireRoleMiddleware(a.UserRoleAccountant, req, next)
+}

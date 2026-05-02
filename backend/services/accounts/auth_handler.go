@@ -12,9 +12,10 @@ import (
 type UserRole string
 
 const (
-	UserRoleAdmin    UserRole = "admin"
-	UserRoleAgent    UserRole = "agent"
-	UserRoleCustomer UserRole = "customer"
+	UserRoleAdmin      UserRole = "admin"
+	UserRoleAgent      UserRole = "agent"
+	UserRoleCustomer   UserRole = "customer"
+	UserRoleAccountant UserRole = "accountant"
 )
 
 type AuthData struct {
