@@ -27,6 +27,7 @@ type Querier interface {
 	GetAgentsBillingContacts(ctx context.Context, usersIds []int32) ([]GetAgentsBillingContactsRow, error)
 	GetAgentsByOfficeID(ctx context.Context, officeID int32) ([]GetAgentsByOfficeIDRow, error)
 	GetAgentsByOrganizationID(ctx context.Context, organizationID int32) ([]GetAgentsByOrganizationIDRow, error)
+	GetOfficeBillingState(ctx context.Context, id int32) (GetOfficeBillingStateRow, error)
 	GetOfficeIcountClientID(ctx context.Context, id int32) (*int32, error)
 	GetOrganizationBillingState(ctx context.Context, id int32) (GetOrganizationBillingStateRow, error)
 	GetOrganizationIcountClientID(ctx context.Context, id int32) (*int32, error)

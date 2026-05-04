@@ -10,6 +10,62 @@ import (
 	"encore.dev/rlog"
 )
 
+// validateOfficeIcountClientIDConstraint enforces billing rules for offices.
+// Offices under organic orgs must NOT have an icount_client_id;
+// offices under non-organic orgs MUST have one.
+func validateOfficeIcountClientIDConstraint(isOrganic bool, icountClientID *int32) error {
+	if isOrganic && icountClientID != nil {
+		return ErrOfficeOrganicForbidsIcountClientID
+	}
+	if !isOrganic && icountClientID == nil {
+		return ErrOfficeNonOrganicRequiresIcountClientID
+	}
+	return nil
+}
+
+// validateCreateOfficeIcountClientIDConstraint always runs on create.
+// It fetches the parent organization's billing state to determine the constraint.
+func (s *Service) validateCreateOfficeIcountClientIDConstraint(ctx context.Context, orgID int32, icountClientID *int32) error {
+	org, err := s.query.GetOrganizationBillingState(ctx, orgID)
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return api_errors.ErrNotFound
+		}
+		rlog.Error("failed to fetch organization billing state", "error", err)
+		return api_errors.ErrInternalError
+	}
+	return validateOfficeIcountClientIDConstraint(org.IsOrganic, icountClientID)
+}
+
+// validateUpdateOfficeIcountClientIDConstraint runs only when IcountClientID is
+// present in the update payload. Fetches the office's current billing state and
+// resolves the final organization if it is being changed.
+func (s *Service) validateUpdateOfficeIcountClientIDConstraint(ctx context.Context, id int32, params UpdateOfficeRequest) error {
+	billing, err := s.query.GetOfficeBillingState(ctx, id)
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return api_errors.ErrNotFound
+		}
+		rlog.Error("failed to fetch office billing state", "error", err)
+		return api_errors.ErrInternalError
+	}
+
+	finalIsOrganic := billing.IsOrganic
+	if params.OrganizationID != nil && *params.OrganizationID != billing.OrganizationID {
+		newOrg, err := s.query.GetOrganizationBillingState(ctx, *params.OrganizationID)
+		if err != nil {
+			if errors.Is(err, db.ErrNoRows) {
+				return api_errors.ErrNotFound
+			}
+			rlog.Error("failed to fetch organization billing state", "error", err)
+			return api_errors.ErrInternalError
+		}
+		finalIsOrganic = newOrg.IsOrganic
+	}
+
+	return validateOfficeIcountClientIDConstraint(finalIsOrganic, params.IcountClientID)
+}
+
 // --- Request / Response types ---
 
 type OfficeResponse struct {
@@ -17,6 +73,7 @@ type OfficeResponse struct {
 	Name             string  `json:"name"`
 	OrganizationID   int32   `json:"organizationId"`
 	OrganizationName string  `json:"organizationName"`
+	IcountClientID   *int32  `json:"icountClientId"`
 	Phone            *string `json:"phone"`
 	Address          *string `json:"address"`
 	ContactCount     int64   `json:"contactCount"`
@@ -41,6 +98,7 @@ type ListOfficesResponse struct {
 type CreateOfficeRequest struct {
 	Name           string  `json:"name" validate:"required,notblank"`
 	OrganizationID int32   `json:"organizationId" validate:"required,gte=1"`
+	IcountClientID *int32  `json:"icountClientId" encore:"optional"`
 	Phone          *string `json:"phone" encore:"optional"`
 	Address        *string `json:"address" encore:"optional"`
 }
@@ -52,6 +110,7 @@ func (p CreateOfficeRequest) Validate() error {
 type UpdateOfficeRequest struct {
 	Name           *string `json:"name" validate:"omitempty,notblank" encore:"optional"`
 	OrganizationID *int32  `json:"organizationId" validate:"omitempty,gte=1" encore:"optional"`
+	IcountClientID *int32  `json:"icountClientId" encore:"optional"`
 	Phone          *string `json:"phone" encore:"optional"`
 	Address        *string `json:"address" encore:"optional"`
 }
@@ -70,6 +129,7 @@ func toOfficeResponse(o db.ListOfficesRow) OfficeResponse {
 		Name:             o.Name,
 		OrganizationID:   o.OrganizationID,
 		OrganizationName: o.OrganizationName,
+		IcountClientID:   o.IcountClientID,
 		Phone:            o.Phone,
 		Address:          o.Address,
 		ContactCount:     o.ContactCount,
@@ -127,9 +187,14 @@ func (s *Service) ListOffices(ctx context.Context, params *ListOfficesRequest) (
 //
 //encore:api auth method=POST path=/offices tag:admin
 func (s *Service) CreateOffice(ctx context.Context, params CreateOfficeRequest) (*OfficeResponse, error) {
+	if err := s.validateCreateOfficeIcountClientIDConstraint(ctx, params.OrganizationID, params.IcountClientID); err != nil {
+		return nil, err
+	}
+
 	row, err := s.query.CreateOffice(ctx, db.CreateOfficeParams{
 		Name:           params.Name,
 		OrganizationID: params.OrganizationID,
+		IcountClientID: params.IcountClientID,
 		Phone:          params.Phone,
 		Address:        params.Address,
 	})
@@ -145,6 +210,7 @@ func (s *Service) CreateOffice(ctx context.Context, params CreateOfficeRequest) 
 		ID:             row.ID,
 		Name:           row.Name,
 		OrganizationID: row.OrganizationID,
+		IcountClientID: row.IcountClientID,
 		Phone:          row.Phone,
 		Address:        row.Address,
 	}
@@ -155,10 +221,17 @@ func (s *Service) CreateOffice(ctx context.Context, params CreateOfficeRequest) 
 //
 //encore:api auth method=PUT path=/offices/:id tag:admin
 func (s *Service) UpdateOffice(ctx context.Context, id int32, params UpdateOfficeRequest) (*OfficeResponse, error) {
+	if params.IcountClientID != nil {
+		if err := s.validateUpdateOfficeIcountClientIDConstraint(ctx, id, params); err != nil {
+			return nil, err
+		}
+	}
+
 	row, err := s.query.UpdateOffice(ctx, db.UpdateOfficeParams{
 		ID:             id,
 		Name:           params.Name,
 		OrganizationID: params.OrganizationID,
+		IcountClientID: params.IcountClientID,
 		Phone:          params.Phone,
 		Address:        params.Address,
 	})
@@ -177,6 +250,7 @@ func (s *Service) UpdateOffice(ctx context.Context, id int32, params UpdateOffic
 		ID:             row.ID,
 		Name:           row.Name,
 		OrganizationID: row.OrganizationID,
+		IcountClientID: row.IcountClientID,
 		Phone:          row.Phone,
 		Address:        row.Address,
 	}

@@ -67,3 +67,9 @@ ORDER BY o.name;
 SELECT icount_client_id
 FROM offices
 WHERE id = sqlc.arg(id)::INTEGER;
+
+-- name: GetOfficeBillingState :one
+SELECT o.icount_client_id, o.organization_id, org.is_organic
+FROM offices o
+JOIN organizations org ON org.id = o.organization_id
+WHERE o.id = sqlc.arg(id)::INTEGER;

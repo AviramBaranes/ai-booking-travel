@@ -55,4 +55,14 @@ var (
 		errs.InvalidArgument, "Non-organic organization must not have an icount_client_id",
 		api_errors.ErrorDetails{Code: api_errors.CodeNonOrganicOrgForbidsIcountClientID, Field: "icountClientId"},
 	)
+
+	ErrOfficeOrganicForbidsIcountClientID = api_errors.NewErrorWithDetail(
+		errs.InvalidArgument, "Office under an organic organization must not have an icount_client_id",
+		api_errors.ErrorDetails{Code: api_errors.CodeOfficeOrganicForbidsIcountClientID, Field: "icountClientId"},
+	)
+
+	ErrOfficeNonOrganicRequiresIcountClientID = api_errors.NewErrorWithDetail(
+		errs.InvalidArgument, "Office under a non-organic organization must have an icount_client_id",
+		api_errors.ErrorDetails{Code: api_errors.CodeOfficeNonOrganicRequiresIcountClientID, Field: "icountClientId"},
+	)
 )

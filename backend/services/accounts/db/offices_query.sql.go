@@ -75,6 +75,26 @@ func (q *Queries) CreateOffice(ctx context.Context, arg CreateOfficeParams) (Off
 	return i, err
 }
 
+const getOfficeBillingState = `-- name: GetOfficeBillingState :one
+SELECT o.icount_client_id, o.organization_id, org.is_organic
+FROM offices o
+JOIN organizations org ON org.id = o.organization_id
+WHERE o.id = $1::INTEGER
+`
+
+type GetOfficeBillingStateRow struct {
+	IcountClientID *int32
+	OrganizationID int32
+	IsOrganic      bool
+}
+
+func (q *Queries) GetOfficeBillingState(ctx context.Context, id int32) (GetOfficeBillingStateRow, error) {
+	row := q.db.QueryRow(ctx, getOfficeBillingState, id)
+	var i GetOfficeBillingStateRow
+	err := row.Scan(&i.IcountClientID, &i.OrganizationID, &i.IsOrganic)
+	return i, err
+}
+
 const getOfficeIcountClientID = `-- name: GetOfficeIcountClientID :one
 SELECT icount_client_id
 FROM offices

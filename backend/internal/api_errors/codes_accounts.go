@@ -17,4 +17,7 @@ const (
 
 	CodeOrganicOrgRequiresIcountClientID   = "organization_organic_requires_icount_client_id"
 	CodeNonOrganicOrgForbidsIcountClientID = "organization_non_organic_forbids_icount_client_id"
+
+	CodeOfficeOrganicForbidsIcountClientID    = "office_organic_forbids_icount_client_id"
+	CodeOfficeNonOrganicRequiresIcountClientID = "office_non_organic_requires_icount_client_id"
 )
