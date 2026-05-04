@@ -46,7 +46,6 @@ type monthlyReportStylesConfig struct {
 type icountConfig struct {
 	CID       config.String
 	User      config.String
-	Pass      config.String
 	AccountID config.Int
 }
 
