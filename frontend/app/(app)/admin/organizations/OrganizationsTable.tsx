@@ -29,6 +29,11 @@ const columns: ColumnDef<accounts.ListOrganizationsRow>[] = [
     options: ORGANIC_OPTIONS,
     format: (v) => (v ? "אורגני" : "לא אורגני"),
   },
+  {
+    key: "icountClientId",
+    label: "מזהה לקוח iCount",
+    type: "number",
+  },
   { key: "phone", label: "טלפון", type: "text" },
   { key: "address", label: "כתובת", type: "text" },
   { key: "obligo", label: "אובליגו", type: "number" },
@@ -68,9 +73,18 @@ const obligoField = z.preprocess(
   z.number().min(0, "ערך מינימלי 0").optional(),
 );
 
+const icountField = z.preprocess(
+  (v) =>
+    v === "" || v === undefined || (typeof v === "number" && isNaN(v))
+      ? undefined
+      : Number(v),
+  z.number().optional(),
+);
+
 const createSchema = z.object({
   name: z.string().min(1, "שדה חובה"),
   isOrganic: booleanFromSelect,
+  icountClientId: icountField,
   phone: z.string().optional().default(""),
   address: z.string().optional().default(""),
   obligo: obligoField,
@@ -79,6 +93,7 @@ const createSchema = z.object({
 const updateSchema = z.object({
   name: z.string().min(1, "שדה חובה"),
   isOrganic: booleanFromSelect,
+  icountClientId: icountField,
   phone: z.string().optional().default(""),
   address: z.string().optional().default(""),
   obligo: obligoField,
@@ -145,6 +160,7 @@ type OrgUpdateData = {
   phone?: string;
   address?: string;
   obligo?: number;
+  icountClientId?: number;
 };
 
 type OrgCreateData = OrgUpdateData;
@@ -175,6 +191,7 @@ export default function OrganizationsTable() {
         createOrganization({
           name: data.name,
           isOrganic: data.isOrganic,
+          icountClientId: data.icountClientId,
           phone: data.phone || undefined,
           address: data.address || undefined,
           obligo: data.obligo || undefined,
@@ -187,6 +204,7 @@ export default function OrganizationsTable() {
           phone: data.phone,
           address: data.address,
           obligo: data.obligo,
+          icountClientId: data.icountClientId,
         })
       }
       createSchema={createSchema}

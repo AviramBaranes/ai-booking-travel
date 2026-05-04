@@ -28,6 +28,11 @@ const columns: ColumnDef<accounts.OfficeResponse>[] = [
     ),
     renderCell: (_value, row) => row.organizationName ?? "",
   },
+  {
+    key: "icountClientId",
+    label: "מזהה לקוח iCount",
+    type: "number",
+  },
   { key: "phone", label: "טלפון", type: "text" },
   { key: "address", label: "כתובת", type: "text" },
   {
@@ -46,12 +51,21 @@ const columns: ColumnDef<accounts.OfficeResponse>[] = [
   },
 ];
 
+const icountField = z.preprocess(
+  (v) =>
+    v === "" || v === undefined || (typeof v === "number" && isNaN(v))
+      ? undefined
+      : Number(v),
+  z.number().optional(),
+);
+
 const createSchema = z.object({
   name: z.string().min(1, "שדה חובה"),
   organizationId: z.preprocess(
     (v) => (typeof v === "string" ? Number(v) : v),
     z.number().min(1, "שדה חובה"),
   ),
+  icountClientId: icountField,
   phone: z.string().optional().default(""),
   address: z.string().optional().default(""),
 });
@@ -62,6 +76,7 @@ const updateSchema = z.object({
     (v) => (typeof v === "string" ? Number(v) : v),
     z.number().min(1, "שדה חובה"),
   ),
+  icountClientId: icountField,
   phone: z.string().optional().default(""),
   address: z.string().optional().default(""),
 });

@@ -28,7 +28,11 @@
     "expired_refresh_token": "Session has expired, please log in again",
     "invalid_reset_token": "Password reset link is invalid or expired",
     "cancellation_window_exceeded": "You cannot cancel this reservation, cancellation window has been exceeded",
-    "flight_number_required": "Flight number is required for this office"
+    "flight_number_required": "Flight number is required for this office",
+    "organization_organic_requires_icount_client_id": "An organic organization must have an iCount client ID",
+    "organization_non_organic_forbids_icount_client_id": "A non-organic organization cannot have an iCount client ID",
+    "office_organic_forbids_icount_client_id": "An organic office cannot have an iCount client ID",
+    "office_non_organic_requires_icount_client_id": "A non-organic office must have an iCount client ID"
   },
   "TranslationStatus": {
     "pending": "Pending",

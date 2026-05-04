@@ -28,7 +28,11 @@
     "expired_refresh_token": "ההפעלה פגה, יש להתחבר מחדש",
     "invalid_reset_token": "קישור איפוס הסיסמה אינו תקין או שפג תוקפו",
     "cancellation_window_exceeded": "לא ניתן לבטל הזמנה זו, חלון הביטול חרג",
-    "flight_number_required": "מספר טיסה נדרש עבור תחנה זו"
+    "flight_number_required": "מספר טיסה נדרש עבור תחנה זו",
+    "organization_organic_requires_icount_client_id": "ארגון אורגני חייב להכיל מזהה לקוח iCount",
+    "organization_non_organic_forbids_icount_client_id": "ארגון לא-אורגני אינו יכול להכיל מזהה לקוח iCount",
+    "office_organic_forbids_icount_client_id": "תחנה אורגנית אינה יכולה להכיל מזהה לקוח iCount",
+    "office_non_organic_requires_icount_client_id": "תחנה לא-אורגנית חייבת להכיל מזהה לקוח iCount"
   },
   "TranslationStatus": {
     "pending": "ממתין",

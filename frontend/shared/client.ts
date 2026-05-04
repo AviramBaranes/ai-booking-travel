@@ -33,6 +33,7 @@ const BROWSER = typeof globalThis === "object" && ("window" in globalThis);
  */
 export default class Client {
     public readonly accounts: accounts.ServiceClient
+    public readonly billing: billing.ServiceClient
     public readonly booking: booking.ServiceClient
     public readonly reservation: reservation.ServiceClient
     private readonly options: ClientOptions
@@ -66,6 +67,7 @@ export default class Client {
         this.options = options ?? {}
         const base = new BaseClient(this.target, this.options)
         this.accounts = new accounts.ServiceClient(base)
+        this.billing = new billing.ServiceClient(base)
         this.booking = new booking.ServiceClient(base)
         this.reservation = new reservation.ServiceClient(base)
     }
@@ -205,6 +207,7 @@ export namespace accounts {
     export interface CreateOfficeRequest {
         name: string
         organizationId: number
+        icountClientId?: number
         phone?: string
         address?: string
     }
@@ -212,9 +215,15 @@ export namespace accounts {
     export interface CreateOrganizationRequest {
         name: string
         isOrganic: boolean
+        icountClientId?: number
         phone?: string
         address?: string
         obligo?: number
+    }
+
+    export interface InorganicOffice {
+        id: number
+        name: string
     }
 
     export interface ListAccountantsResponse {
@@ -249,6 +258,10 @@ export namespace accounts {
         total: number
     }
 
+    export interface ListInorganicOfficeResponse {
+        offices: InorganicOffice[]
+    }
+
     export interface ListOfficesRequest {
         Search: string
         OrgID: number
@@ -258,6 +271,10 @@ export namespace accounts {
     export interface ListOfficesResponse {
         offices: OfficeResponse[]
         total: number
+    }
+
+    export interface ListOrganicOrganizationResponse {
+        organizations: OrganicOrganization[]
     }
 
     export interface ListOrganizationsRequest {
@@ -275,6 +292,7 @@ export namespace accounts {
         id: number
         name: string
         isOrganic: boolean
+        icountClientId: number
         phone: string
         address: string
         obligo: number
@@ -313,16 +331,23 @@ export namespace accounts {
         name: string
         organizationId: number
         organizationName: string
+        icountClientId: number
         phone: string
         address: string
         contactCount: number
         agentCount: number
     }
 
+    export interface OrganicOrganization {
+        id: number
+        name: string
+    }
+
     export interface OrganizationResponse {
         id: number
         name: string
         isOrganic: boolean
+        icountClientId: number
         phone: string
         address: string
         obligo: number
@@ -359,6 +384,7 @@ export namespace accounts {
     export interface UpdateOfficeRequest {
         name?: string
         organizationId?: number
+        icountClientId?: number
         phone?: string
         address?: string
     }
@@ -366,6 +392,7 @@ export namespace accounts {
     export interface UpdateOrganizationRequest {
         name?: string
         isOrganic?: boolean
+        icountClientId?: number
         phone?: string
         address?: string
         obligo?: number
@@ -410,7 +437,9 @@ export namespace accounts {
             this.ListAdmins = this.ListAdmins.bind(this)
             this.ListAgents = this.ListAgents.bind(this)
             this.ListContacts = this.ListContacts.bind(this)
+            this.ListInorganicOffices = this.ListInorganicOffices.bind(this)
             this.ListOffices = this.ListOffices.bind(this)
+            this.ListOrganicOrganizations = this.ListOrganicOrganizations.bind(this)
             this.ListOrganizations = this.ListOrganizations.bind(this)
             this.Login = this.Login.bind(this)
             this.LoginAsAgent = this.LoginAsAgent.bind(this)
@@ -539,6 +568,15 @@ export namespace accounts {
         }
 
         /**
+         * ListInorganicOffices lists all inorganic offices for accountant use.
+         */
+        public async ListInorganicOffices(): Promise<ListInorganicOfficeResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/inorganic-offices`)
+            return await resp.json() as ListInorganicOfficeResponse
+        }
+
+        /**
          * ListOffices lists offices with optional filtering and pagination.
          */
         public async ListOffices(params: ListOfficesRequest): Promise<ListOfficesResponse> {
@@ -552,6 +590,15 @@ export namespace accounts {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/offices`, undefined, {query})
             return await resp.json() as ListOfficesResponse
+        }
+
+        /**
+         * ListOrganicOrganizations lists all organic organizations for accountant use.
+         */
+        public async ListOrganicOrganizations(): Promise<ListOrganicOrganizationResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/organic-organizations`)
+            return await resp.json() as ListOrganicOrganizationResponse
         }
 
         /**
@@ -649,6 +696,35 @@ export namespace accounts {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/customer-login/validate-otp`, JSON.stringify(params))
             return await resp.json() as LoginResponse
+        }
+    }
+}
+
+export namespace billing {
+    export interface BillRequestParams {
+        ids: number[]
+        "total_paid": number
+        "transfer_date": string
+        "office_id"?: number
+        "organization_id"?: number
+    }
+
+    export interface BillResponse {
+        docNum: string
+    }
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.Bill = this.Bill.bind(this)
+        }
+
+        public async Bill(params: BillRequestParams): Promise<BillResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/bill`, JSON.stringify(params))
+            return await resp.json() as BillResponse
         }
     }
 }
@@ -1269,6 +1345,23 @@ export namespace reservation {
         voucher: string
     }
 
+    /**
+     * BillingReservation is a reservation summary tailored for accountant billing workflows.
+     */
+    export interface BillingReservation {
+        id: number
+        "broker_reservation_id": string
+        "payment_status": string
+        "reservation_status": string
+        "car_purchase_price": number
+        "car_selling_price": number
+        "erp_selling_price": number
+        "profit_on_car": number
+        "currency_code": string
+        "created_at": string
+        "pickup_date": string
+    }
+
     export interface GetReservationResponse {
         id: number
         brokerReservationId: string
@@ -1296,6 +1389,22 @@ export namespace reservation {
         voucher?: string
         voucheredAt?: string
         createdAt: string
+    }
+
+    /**
+     * ListOpenReservationsByBillingEntityRequest filters open reservations by a billing unit.
+     * Exactly one of OfficeID or OrgID must be provided.
+     */
+    export interface ListOpenReservationsByBillingEntityRequest {
+        OfficeID?: number
+        OrgID?: number
+    }
+
+    /**
+     * ListOpenReservationsByBillingEntityResponse holds the open reservations for a billing unit.
+     */
+    export interface ListOpenReservationsByBillingEntityResponse {
+        reservations: BillingReservation[]
     }
 
     export interface ListReservationsRequest {
@@ -1334,6 +1443,7 @@ export namespace reservation {
             this.ApplyVoucher = this.ApplyVoucher.bind(this)
             this.CancelReservation = this.CancelReservation.bind(this)
             this.GetReservation = this.GetReservation.bind(this)
+            this.ListOpenReservationsByBillingEntity = this.ListOpenReservationsByBillingEntity.bind(this)
             this.ListReservations = this.ListReservations.bind(this)
         }
 
@@ -1352,6 +1462,22 @@ export namespace reservation {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/reservations/${encodeURIComponent(id)}`)
             return await resp.json() as GetReservationResponse
+        }
+
+        /**
+         * ListOpenReservationsByBillingEntity returns all unpaid/refund-pending reservations
+         * for a given billing unit (an organic organization or an office of an inorganic organization).
+         */
+        public async ListOpenReservationsByBillingEntity(params: ListOpenReservationsByBillingEntityRequest): Promise<ListOpenReservationsByBillingEntityResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                "office_id": params.OfficeID === undefined ? undefined : String(params.OfficeID),
+                "org_id":    params.OrgID === undefined ? undefined : String(params.OrgID),
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/reservations-for-billing`, undefined, {query})
+            return await resp.json() as ListOpenReservationsByBillingEntityResponse
         }
 
         public async ListReservations(params: ListReservationsRequest): Promise<ListReservationsResponse> {

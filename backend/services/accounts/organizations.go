@@ -16,26 +16,26 @@ import (
 const orgPageSize = 15
 
 type OrganizationResponse struct {
-	ID              int32    `json:"id"`
-	Name            string   `json:"name"`
-	IsOrganic       bool     `json:"isOrganic"`
-	IcountClientID  *int32   `json:"icountClientId"`
-	Phone           *string  `json:"phone"`
-	Address         *string  `json:"address"`
-	Obligo          *float64 `json:"obligo"`
+	ID             int32    `json:"id"`
+	Name           string   `json:"name"`
+	IsOrganic      bool     `json:"isOrganic"`
+	IcountClientID *int32   `json:"icountClientId"`
+	Phone          *string  `json:"phone"`
+	Address        *string  `json:"address"`
+	Obligo         *float64 `json:"obligo"`
 }
 
 type ListOrganizationsRow struct {
-	ID              int32    `json:"id"`
-	Name            string   `json:"name"`
-	IsOrganic       bool     `json:"isOrganic"`
-	IcountClientID  *int32   `json:"icountClientId"`
-	Phone           *string  `json:"phone"`
-	Address         *string  `json:"address"`
-	Obligo          *float64 `json:"obligo"`
-	OfficeCount     int64    `json:"officeCount"`
-	ContactCount    int64    `json:"contactCount"`
-	AgentCount      int64    `json:"agentCount"`
+	ID             int32    `json:"id"`
+	Name           string   `json:"name"`
+	IsOrganic      bool     `json:"isOrganic"`
+	IcountClientID *int32   `json:"icountClientId"`
+	Phone          *string  `json:"phone"`
+	Address        *string  `json:"address"`
+	Obligo         *float64 `json:"obligo"`
+	OfficeCount    int64    `json:"officeCount"`
+	ContactCount   int64    `json:"contactCount"`
+	AgentCount     int64    `json:"agentCount"`
 }
 
 type ListOrganizationsResponse struct {
@@ -60,7 +60,7 @@ func (p ListOrganizationsRequest) Validate() error {
 type CreateOrganizationRequest struct {
 	Name           string   `json:"name" validate:"required,notblank"`
 	IsOrganic      bool     `json:"isOrganic"`
-	IcountClientID *int32   `json:"icountClientId" encore:"optional"`
+	IcountClientID *int32   `json:"icountClientId" validate:"omitempty,gte=0" encore:"optional"`
 	Phone          *string  `json:"phone" validate:"omitempty,notblank" encore:"optional"`
 	Address        *string  `json:"address" validate:"omitempty,notblank" encore:"optional"`
 	Obligo         *float64 `json:"obligo" validate:"omitempty,gte=0" encore:"optional"`
@@ -76,7 +76,7 @@ func (p CreateOrganizationRequest) Validate() error {
 type UpdateOrganizationRequest struct {
 	Name           *string  `json:"name" validate:"omitempty,notblank" encore:"optional"`
 	IsOrganic      *bool    `json:"isOrganic" encore:"optional"`
-	IcountClientID *int32   `json:"icountClientId" encore:"optional"`
+	IcountClientID *int32   `json:"icountClientId" validate:"omitempty,gte=0" encore:"optional"`
 	Phone          *string  `json:"phone" encore:"optional"`
 	Address        *string  `json:"address" encore:"optional"`
 	Obligo         *float64 `json:"obligo" validate:"omitempty,gte=0" encore:"optional"`
