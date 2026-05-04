@@ -28,7 +28,6 @@ MonthlyReport: {
 }
 
 Icount:{
-	URL: "https://api.icount.co.il/api/v3.php/doc/create",
 	CID: "aibookingtravel",
 	User: "accounting",
 	AccountID: 4,
