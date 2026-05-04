@@ -3,28 +3,7 @@ package icount
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"time"
 )
-
-type icount struct {
-	httpClient *http.Client
-	cid        string
-	user       string
-	pass       string
-	accountID  int
-}
-
-// NewIcount initializes and returns an icount struct with the provided credentials and account information.
-func NewIcount(cid, user, pass string, accountID int) icount {
-	return icount{
-		httpClient: &http.Client{Timeout: 10 * time.Second},
-		cid:        cid,
-		user:       user,
-		pass:       pass,
-		accountID:  accountID,
-	}
-}
 
 // CreateInvoiceParams contains the parameters required to create an invoice in iCount.
 type CreateInvoiceParams struct {
@@ -32,6 +11,7 @@ type CreateInvoiceParams struct {
 	CurrencyID int
 	Sum        float64
 	Date       string
+	AccountID  int
 	Items      []ICountInvoiceItem
 }
 
@@ -57,14 +37,14 @@ func (i icount) createInvoiceDocRequest(params CreateInvoiceParams) ICountCreate
 	return ICountCreateDocRequest{
 		CID:        i.cid,
 		User:       i.user,
-		Pass:       i.pass,
+		Pass:       secrets.IcountPassword,
 		ClientID:   params.ClientID,
 		DocType:    "invrec",
 		CurrencyID: params.CurrencyID,
 		BankTransfer: &ICountBankTransferPayment{
 			Sum:     params.Sum,
 			Date:    params.Date,
-			Account: i.accountID,
+			Account: params.AccountID,
 		},
 		Items: params.Items,
 	}

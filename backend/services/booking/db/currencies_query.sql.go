@@ -135,3 +135,28 @@ func (q *Queries) UpdateCurrency(ctx context.Context, arg UpdateCurrencyParams) 
 	)
 	return i, err
 }
+
+const upsertCurrencies = `-- name: UpsertCurrencies :exec
+INSERT INTO currencies (currency_code, currency_iso_name, rate, created_at, updated_at)
+SELECT
+    unnest($1::text[]),
+    unnest($2::text[]),
+    unnest($3::numeric[]),
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+ON CONFLICT (currency_iso_name) DO UPDATE
+SET currency_code = EXCLUDED.currency_code,
+    rate          = EXCLUDED.rate,
+    updated_at    = CURRENT_TIMESTAMP
+`
+
+type UpsertCurrenciesParams struct {
+	CurrencyCodes    []string
+	CurrencyIsoNames []string
+	Rates            []pgtype.Numeric
+}
+
+func (q *Queries) UpsertCurrencies(ctx context.Context, arg UpsertCurrenciesParams) error {
+	_, err := q.db.Exec(ctx, upsertCurrencies, arg.CurrencyCodes, arg.CurrencyIsoNames, arg.Rates)
+	return err
+}

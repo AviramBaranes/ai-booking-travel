@@ -722,6 +722,20 @@ func (mr *MockQuerierMockRecorder) UpdateHertzMarkupRate(ctx, arg any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateHertzMarkupRate", reflect.TypeOf((*MockQuerier)(nil).UpdateHertzMarkupRate), ctx, arg)
 }
 
+// UpsertCurrencies mocks base method.
+func (m *MockQuerier) UpsertCurrencies(ctx context.Context, arg db.UpsertCurrenciesParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpsertCurrencies", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpsertCurrencies indicates an expected call of UpsertCurrencies.
+func (mr *MockQuerierMockRecorder) UpsertCurrencies(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertCurrencies", reflect.TypeOf((*MockQuerier)(nil).UpsertCurrencies), ctx, arg)
+}
+
 // UpsertLocationByCountryCodeName mocks base method.
 func (m *MockQuerier) UpsertLocationByCountryCodeName(ctx context.Context, arg db.UpsertLocationByCountryCodeNameParams) (int64, error) {
 	m.ctrl.T.Helper()

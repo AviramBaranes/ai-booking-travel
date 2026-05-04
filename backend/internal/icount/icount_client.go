@@ -6,13 +6,34 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
+
+var secrets struct {
+	IcountPassword string
+}
+
+type icount struct {
+	httpClient *http.Client
+	cid        string
+	user       string
+}
+
+// NewIcount initializes and returns an icount client with the provided credentials.
+// The password is read from the shared IcountPassword secret.
+func NewIcount(cid, user string) icount {
+	return icount{
+		httpClient: &http.Client{Timeout: 10 * time.Second},
+		cid:        cid,
+		user:       user,
+	}
+}
 
 type icountAPIEndPoint string
 
 const (
 	createDocEndpoint       icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/document/create"
-	fetchCurrenciesEndpoint icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/currency/rates"
+	fetchCurrenciesEndpoint icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/currency/get_rates"
 )
 
 func (i icount) DoRequest(endpoint icountAPIEndPoint, requestBody any) ([]byte, error) {

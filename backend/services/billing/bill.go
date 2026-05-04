@@ -78,12 +78,13 @@ func Bill(ctx context.Context, p BillRequestParams) (*BillResponse, error) {
 	}
 
 	invoiceItems := buildInvoiceItems(p.IDs, reservationSet)
-	ic := icount.NewIcount(cfg.Icount.CID(), cfg.Icount.User(), secrets.icountPassword, cfg.Icount.AccountID())
+	ic := icount.NewIcount(cfg.Icount.CID(), cfg.Icount.User())
 	res, err := ic.CreateInvoice(icount.CreateInvoiceParams{
 		ClientID:   int(icountClientRes.ClientID),
 		CurrencyID: icount.CurrencyIDsMap[currency],
 		Sum:        p.TotalPaid,
 		Date:       p.TransferDate,
+		AccountID:  cfg.Icount.AccountID(),
 		Items:      invoiceItems,
 	})
 

@@ -2,10 +2,6 @@ package billing
 
 import "encore.dev/config"
 
-var secrets struct {
-	icountPassword string
-}
-
 type billingConfig struct {
 	MonthlyReport monthlyReportConfig
 	Icount        icountConfig

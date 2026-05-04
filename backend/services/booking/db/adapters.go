@@ -6,6 +6,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Numeric = pgtype.Numeric
+
 // NumericFromFloat64 converts a float64 to a pgtype.Numeric.
 func NumericFromFloat64(f float64) pgtype.Numeric {
 	var n pgtype.Numeric

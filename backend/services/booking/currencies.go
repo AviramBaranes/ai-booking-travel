@@ -5,10 +5,21 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/icount"
 	"encore.app/internal/validation"
 	"encore.app/services/booking/db"
+	"encore.dev/config"
+	"encore.dev/cron"
 	"encore.dev/rlog"
 )
+
+type icountConfig struct {
+	CID       config.String
+	User      config.String
+	AccountID config.Int
+}
+
+var icountCfg = config.Load[*icountConfig]()
 
 // --- Request / Response types ---
 
@@ -129,3 +140,63 @@ func (s *Service) DeleteCurrency(ctx context.Context, id int32) error {
 	}
 	return nil
 }
+
+// UpdateCurrenciesRates updates the exchange rates for all currencies from iCount, it runs via a cron job.
+//
+//encore:api private
+func (s *Service) UpdateCurrenciesRates(ctx context.Context) error {
+	i := icount.NewIcount(icountCfg.CID(), icountCfg.User())
+	res, err := i.FetchCurrencies()
+	if err != nil {
+		rlog.Error("failed to fetch currencies from iCount", "error", err)
+		return api_errors.ErrInternalError
+	}
+	err = s.query.UpsertCurrencies(ctx, createUpsertParams(res))
+	if err != nil {
+		rlog.Error("failed to upsert currencies", "error", err)
+		return api_errors.ErrInternalError
+	}
+
+	return nil
+}
+
+// createUpsertParams converts the iCount response to the parameters needed for the UpsertCurrencies query.
+func createUpsertParams(res *icount.GetCurrenciesRatesResponse) db.UpsertCurrenciesParams {
+	currencyCodes := make([]string, 0, len(res.Rates))
+	currencyIsoNames := make([]string, 0, len(res.Rates))
+	rates := make([]db.Numeric, 0, len(res.Rates))
+
+	for isoName, rate := range res.Rates {
+		currencyCodes = append(currencyCodes, currencyIsoNameToCode(isoName))
+		currencyIsoNames = append(currencyIsoNames, isoName)
+		rates = append(rates, db.NumericFromFloat64(rate))
+	}
+
+	return db.UpsertCurrenciesParams{
+		CurrencyCodes:    currencyCodes,
+		CurrencyIsoNames: currencyIsoNames,
+		Rates:            rates,
+	}
+}
+
+// currencyIsoNameToCode maps currency ISO names to their corresponding symbols. If the ISO name is not recognized, it returns the ISO name itself.
+func currencyIsoNameToCode(isoName string) string {
+	switch isoName {
+	case "EUR":
+		return "€"
+	case "USD":
+		return "$"
+	case "GBP":
+		return "£"
+	case "ILS":
+		return "₪"
+	default:
+		return isoName
+	}
+}
+
+var _ = cron.NewJob("currencies-sync", cron.JobConfig{
+	Title:    "Sync Currencies Rates",
+	Schedule: "0 0 * * *", // At 00:00 every day.
+	Endpoint: UpdateCurrenciesRates,
+})

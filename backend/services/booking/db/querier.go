@@ -60,6 +60,7 @@ type Querier interface {
 	UpdateCoupon(ctx context.Context, arg UpdateCouponParams) (Coupon, error)
 	UpdateCurrency(ctx context.Context, arg UpdateCurrencyParams) (Currency, error)
 	UpdateHertzMarkupRate(ctx context.Context, arg UpdateHertzMarkupRateParams) (HertzMarkupRate, error)
+	UpsertCurrencies(ctx context.Context, arg UpsertCurrenciesParams) error
 	UpsertLocationByCountryCodeName(ctx context.Context, arg UpsertLocationByCountryCodeNameParams) (int64, error)
 	UpsertLocationByIATA(ctx context.Context, arg UpsertLocationByIATAParams) (int64, error)
 	VerifyBrokerTranslation(ctx context.Context, id int32) error

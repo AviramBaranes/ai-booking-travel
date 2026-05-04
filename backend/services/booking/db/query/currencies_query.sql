@@ -25,3 +25,16 @@ RETURNING id, currency_code, currency_iso_name, rate, created_at, updated_at;
 -- name: DeleteCurrency :exec
 DELETE FROM currencies
 WHERE id = $1;
+
+-- name: UpsertCurrencies :exec
+INSERT INTO currencies (currency_code, currency_iso_name, rate, created_at, updated_at)
+SELECT
+    unnest(sqlc.arg(currency_codes)::text[]),
+    unnest(sqlc.arg(currency_iso_names)::text[]),
+    unnest(sqlc.arg(rates)::numeric[]),
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+ON CONFLICT (currency_iso_name) DO UPDATE
+SET currency_code = EXCLUDED.currency_code,
+    rate          = EXCLUDED.rate,
+    updated_at    = CURRENT_TIMESTAMP;
