@@ -73,6 +73,7 @@ type Office struct {
 	ID             int32
 	Name           string
 	OrganizationID int32
+	IcountClientID *int32
 	Phone          *string
 	Address        *string
 	CreatedAt      pgtype.Timestamptz
@@ -80,14 +81,15 @@ type Office struct {
 }
 
 type Organization struct {
-	ID        int32
-	Name      string
-	IsOrganic bool
-	Phone     *string
-	Address   *string
-	Obligo    pgtype.Numeric
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
+	ID             int32
+	Name           string
+	IsOrganic      bool
+	IcountClientID *int32
+	Phone          *string
+	Address        *string
+	Obligo         pgtype.Numeric
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
 }
 
 type RefreshToken struct {

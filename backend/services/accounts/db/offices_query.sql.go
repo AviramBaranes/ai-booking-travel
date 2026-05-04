@@ -51,14 +51,24 @@ type CreateOfficeParams struct {
 	Address        *string
 }
 
-func (q *Queries) CreateOffice(ctx context.Context, arg CreateOfficeParams) (Office, error) {
+type CreateOfficeRow struct {
+	ID             int32
+	Name           string
+	OrganizationID int32
+	Phone          *string
+	Address        *string
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
+func (q *Queries) CreateOffice(ctx context.Context, arg CreateOfficeParams) (CreateOfficeRow, error) {
 	row := q.db.QueryRow(ctx, createOffice,
 		arg.Name,
 		arg.OrganizationID,
 		arg.Phone,
 		arg.Address,
 	)
-	var i Office
+	var i CreateOfficeRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -206,7 +216,17 @@ type UpdateOfficeParams struct {
 	ID             int32
 }
 
-func (q *Queries) UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (Office, error) {
+type UpdateOfficeRow struct {
+	ID             int32
+	Name           string
+	OrganizationID int32
+	Phone          *string
+	Address        *string
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (UpdateOfficeRow, error) {
 	row := q.db.QueryRow(ctx, updateOffice,
 		arg.Name,
 		arg.OrganizationID,
@@ -214,7 +234,7 @@ func (q *Queries) UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (Off
 		arg.Address,
 		arg.ID,
 	)
-	var i Office
+	var i UpdateOfficeRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,

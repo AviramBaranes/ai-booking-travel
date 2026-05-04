@@ -120,7 +120,7 @@ type GetIcountClientIDResponse struct {
 // GetIcountClientID returns the iCount client ID for a given office or organization.
 //
 // encore:api private
-func (s *Service) GetIcountClientID(ctx context.Context, agentID int32) (*GetIcountClientIDResponse, error) {
+func (s *Service) GetIcountClientID(ctx context.Context, p *GetIcountClientIDParams) (*GetIcountClientIDResponse, error) {
 	rlog.Warn("not implemented, returning hardcoded client ID 4")
 	return &GetIcountClientIDResponse{
 		ClientID: 4,

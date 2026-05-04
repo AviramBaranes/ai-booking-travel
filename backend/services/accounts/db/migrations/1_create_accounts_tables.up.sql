@@ -5,11 +5,16 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL UNIQUE,
         is_organic BOOLEAN NOT NULL,
+        icount_client_id INTEGER,
         phone VARCHAR(20),
         address TEXT,
         obligo DECIMAL,
         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT organizations_icount_client_id_organic CHECK (
+            (is_organic = TRUE AND icount_client_id IS NOT NULL)
+            OR (is_organic = FALSE AND icount_client_id IS NULL)
+        )
     );
 
 CREATE TABLE
@@ -17,6 +22,7 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL UNIQUE,
         organization_id INTEGER NOT NULL REFERENCES organizations (id),
+        icount_client_id INTEGER,
         phone VARCHAR(20),
         address TEXT,
         created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,

@@ -162,10 +162,10 @@ func (mr *MockQuerierMockRecorder) CreateCustomer(ctx, arg any) *gomock.Call {
 }
 
 // CreateOffice mocks base method.
-func (m *MockQuerier) CreateOffice(ctx context.Context, arg db.CreateOfficeParams) (db.Office, error) {
+func (m *MockQuerier) CreateOffice(ctx context.Context, arg db.CreateOfficeParams) (db.CreateOfficeRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateOffice", ctx, arg)
-	ret0, _ := ret[0].(db.Office)
+	ret0, _ := ret[0].(db.CreateOfficeRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -177,10 +177,10 @@ func (mr *MockQuerierMockRecorder) CreateOffice(ctx, arg any) *gomock.Call {
 }
 
 // CreateOrganization mocks base method.
-func (m *MockQuerier) CreateOrganization(ctx context.Context, arg db.CreateOrganizationParams) (db.Organization, error) {
+func (m *MockQuerier) CreateOrganization(ctx context.Context, arg db.CreateOrganizationParams) (db.CreateOrganizationRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateOrganization", ctx, arg)
-	ret0, _ := ret[0].(db.Organization)
+	ret0, _ := ret[0].(db.CreateOrganizationRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -531,10 +531,10 @@ func (mr *MockQuerierMockRecorder) UpdateContact(ctx, arg any) *gomock.Call {
 }
 
 // UpdateOffice mocks base method.
-func (m *MockQuerier) UpdateOffice(ctx context.Context, arg db.UpdateOfficeParams) (db.Office, error) {
+func (m *MockQuerier) UpdateOffice(ctx context.Context, arg db.UpdateOfficeParams) (db.UpdateOfficeRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateOffice", ctx, arg)
-	ret0, _ := ret[0].(db.Office)
+	ret0, _ := ret[0].(db.UpdateOfficeRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -546,10 +546,10 @@ func (mr *MockQuerierMockRecorder) UpdateOffice(ctx, arg any) *gomock.Call {
 }
 
 // UpdateOrganization mocks base method.
-func (m *MockQuerier) UpdateOrganization(ctx context.Context, arg db.UpdateOrganizationParams) (db.Organization, error) {
+func (m *MockQuerier) UpdateOrganization(ctx context.Context, arg db.UpdateOrganizationParams) (db.UpdateOrganizationRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateOrganization", ctx, arg)
-	ret0, _ := ret[0].(db.Organization)
+	ret0, _ := ret[0].(db.UpdateOrganizationRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

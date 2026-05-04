@@ -53,7 +53,18 @@ type CreateOrganizationParams struct {
 	Obligo    pgtype.Numeric
 }
 
-func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error) {
+type CreateOrganizationRow struct {
+	ID        int32
+	Name      string
+	IsOrganic bool
+	Phone     *string
+	Address   *string
+	Obligo    pgtype.Numeric
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (CreateOrganizationRow, error) {
 	row := q.db.QueryRow(ctx, createOrganization,
 		arg.Name,
 		arg.IsOrganic,
@@ -61,7 +72,7 @@ func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganization
 		arg.Address,
 		arg.Obligo,
 	)
-	var i Organization
+	var i CreateOrganizationRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -214,7 +225,18 @@ type UpdateOrganizationParams struct {
 	ID        int32
 }
 
-func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error) {
+type UpdateOrganizationRow struct {
+	ID        int32
+	Name      string
+	IsOrganic bool
+	Phone     *string
+	Address   *string
+	Obligo    pgtype.Numeric
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (UpdateOrganizationRow, error) {
 	row := q.db.QueryRow(ctx, updateOrganization,
 		arg.Name,
 		arg.IsOrganic,
@@ -223,7 +245,7 @@ func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganization
 		arg.Obligo,
 		arg.ID,
 	)
-	var i Organization
+	var i UpdateOrganizationRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
