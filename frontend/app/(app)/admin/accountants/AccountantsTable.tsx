@@ -83,8 +83,6 @@ export default function AccountantsTable() {
           lastName: data.lastName,
           email: data.email,
           password: data.password,
-          phoneNumber: "",
-          officeId: 0,
         })
       }
       createSchema={createSchema}
