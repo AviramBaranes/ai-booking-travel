@@ -7,6 +7,7 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/icount"
 	"encore.app/internal/validation"
+	"encore.app/services/accounts"
 	"encore.app/services/reservation"
 	"encore.dev/beta/errs"
 	"encore.dev/rlog"
@@ -44,6 +45,15 @@ type BillResponse struct {
 
 // encore:api auth method=POST path=/bill tag:accountant
 func Bill(ctx context.Context, p BillRequestParams) (*BillResponse, error) {
+	icountClientRes, err := accounts.GetIcountClientID(ctx, &accounts.GetIcountClientIDParams{
+		OfficeID:       p.OfficeID,
+		OrganizationID: p.OrganizationID,
+	})
+	if err != nil {
+		rlog.Error("failed to get iCount client ID for billing entity", "error", err, "office_id", p.OfficeID, "org_id", p.OrganizationID)
+		return nil, api_errors.ErrInternalError
+	}
+
 	openReservations, err := reservation.ListOpenReservationsByBillingEntity(ctx, &reservation.ListOpenReservationsByBillingEntityRequest{
 		OfficeID: derefInt32(p.OfficeID),
 		OrgID:    derefInt32(p.OrganizationID),
@@ -70,7 +80,7 @@ func Bill(ctx context.Context, p BillRequestParams) (*BillResponse, error) {
 	invoiceItems := buildInvoiceItems(p.IDs, reservationSet)
 	ic := icount.NewIcount(cfg.Icount.CID(), cfg.Icount.User(), secrets.icountPassword, cfg.Icount.AccountID())
 	res, err := ic.CreateInvoice(icount.CreateInvoiceParams{
-		ClientID:   4,
+		ClientID:   int(icountClientRes.ClientID),
 		CurrencyID: icount.CurrencyIDsMap[currency],
 		Sum:        p.TotalPaid,
 		Date:       p.TransferDate,
