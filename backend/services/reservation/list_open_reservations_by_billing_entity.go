@@ -2,7 +2,6 @@ package reservation
 
 import (
 	"context"
-	"errors"
 	"math"
 
 	"encore.app/internal/api_errors"
@@ -49,20 +48,27 @@ func (r *ListOpenReservationsByBillingEntityRequest) Validate() error {
 // BillingReservation is a reservation summary tailored for accountant billing workflows.
 type BillingReservation struct {
 	ID                  int64   `json:"id"`
-	BrokerReservationID string  `json:"broker_reservation_id"`
-	PaymentStatus       string  `json:"payment_status"`
-	ReservationStatus   string  `json:"reservation_status"`
-	CarPurchasePrice    float64 `json:"car_purchase_price"`
-	CarSellingPrice     float64 `json:"car_selling_price"`
-	ERPSellingPrice     float64 `json:"erp_selling_price"`
-	ProfitOnCar         float64 `json:"profit_on_car"`
-	CurrencyCode        string  `json:"currency_code"`
-	CreatedAt           string  `json:"created_at"`
-	PickupDate          string  `json:"pickup_date"`
+	BrokerReservationID string  `json:"brokerReservationId"`
+	PaymentStatus       string  `json:"paymentStatus"`
+	ReservationStatus   string  `json:"reservationStatus"`
+	CarPurchasePrice    float64 `json:"carPurchasePrice"`
+	CarSellingPrice     float64 `json:"carSellingPrice"`
+	ERPSellingPrice     float64 `json:"erpSellingPrice"`
+	ProfitOnCar         float64 `json:"profitOnCar"`
+	CurrencyCode        string  `json:"currencyCode"`
+	CreatedAt           string  `json:"createdAt"`
+	PickupDate          string  `json:"pickupDate"`
 }
 
-// ListOpenReservationsByBillingEntityResponse holds the open reservations for a billing unit.
+// ListOpenReservationsByBillingEntityResponse holds the open reservations for a billing unit,
+// grouped by currency.
 type ListOpenReservationsByBillingEntityResponse struct {
+	CurrencyGroups []CurrencyGroup `json:"currencyGroups"`
+}
+
+// CurrencyGroup is a set of billing reservations sharing the same currency.
+type CurrencyGroup struct {
+	CurrencyCode string               `json:"currencyCode"`
 	Reservations []BillingReservation `json:"reservations"`
 }
 
@@ -78,15 +84,12 @@ func (s *Service) ListOpenReservationsByBillingEntity(ctx context.Context, req *
 
 	rows, err := s.query.GetPaymentPendingReservationsByAgentsIDs(ctx, agentIDs)
 	if err != nil {
-		if errors.Is(err, db.ErrNoRows) {
-			return nil, api_errors.ErrNotFound
-		}
 		rlog.Error("failed to fetch reservations by billing entity", "error", err, "agent_ids", agentIDs)
 		return nil, err
 	}
 
 	return &ListOpenReservationsByBillingEntityResponse{
-		Reservations: toBillingReservations(rows),
+		CurrencyGroups: toCurrencyGroups(rows),
 	}, nil
 }
 
@@ -122,12 +125,29 @@ func (s *Service) getAgentsByBillingEntity(ctx context.Context, officeID, orgID 
 	return r.IDs, nil
 }
 
-// toBillingReservations maps db rows to BillingReservation response objects.
-func toBillingReservations(rows []db.GetPaymentPendingReservationsByAgentsIDsRow) []BillingReservation {
-	reservations := make([]BillingReservation, len(rows))
-	for i, r := range rows {
+// toCurrencyGroups maps db rows to CurrencyGroup response objects, grouping reservations
+// by their currency code while preserving the order of first appearance.
+func toCurrencyGroups(rows []db.GetPaymentPendingReservationsByAgentsIDsRow) []CurrencyGroup {
+	var groups []CurrencyGroup
+	for _, r := range rows {
+		groupIndex := -1
+		for j, group := range groups {
+			if group.CurrencyCode == r.CurrencyCode {
+				groupIndex = j
+				break
+			}
+		}
+
+		if groupIndex == -1 {
+			groups = append(groups, CurrencyGroup{
+				CurrencyCode: r.CurrencyCode,
+				Reservations: []BillingReservation{},
+			})
+			groupIndex = len(groups) - 1
+		}
+
 		pd := getReservationPriceDetails(r)
-		reservations[i] = BillingReservation{
+		groups[groupIndex].Reservations = append(groups[groupIndex].Reservations, BillingReservation{
 			ID:                  r.ID,
 			BrokerReservationID: r.BrokerReservationID,
 			PaymentStatus:       string(r.PaymentStatus),
@@ -139,9 +159,9 @@ func toBillingReservations(rows []db.GetPaymentPendingReservationsByAgentsIDsRow
 			CurrencyCode:        r.CurrencyCode,
 			CreatedAt:           db.TimestamptzToString(r.CreatedAt),
 			PickupDate:          db.DateToString(r.PickupDate),
-		}
+		})
 	}
-	return reservations
+	return groups
 }
 
 // priceDetails holds the computed price breakdown for a single reservation.
@@ -167,6 +187,6 @@ func getReservationPriceDetails(row db.GetPaymentPendingReservationsByAgentsIDsR
 		carPurchasePrice: roundPrice(carPurchasePrice),
 		carSellingPrice:  roundPrice(carSellingPrice),
 		carProfit:        roundPrice(carSellingPrice - carPurchasePrice),
-		erpSellingPrice:  float64(row.BtErpPrice),
+		erpSellingPrice:  roundPrice(float64(row.BtErpPrice)),
 	}
 }

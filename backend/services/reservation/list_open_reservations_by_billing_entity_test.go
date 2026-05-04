@@ -78,6 +78,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		vn1 := "VCH-OFFICE-1"
 		id1 := seedReservation(t, ctx, s, agent1, func(p *CreateReservationRequest) {
 			p.BrokerReservationID = "BILLING-OFFICE-1"
+			p.CurrencyCode = "USD"
 		})
 		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id1, UserID: agent1, VoucherNumber: &vn1}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
@@ -86,6 +87,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		vn2 := "VCH-OFFICE-2"
 		id2 := seedReservation(t, ctx, s, agent2, func(p *CreateReservationRequest) {
 			p.BrokerReservationID = "BILLING-OFFICE-2"
+			p.CurrencyCode = "EUR"
 		})
 		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id2, UserID: agent2, VoucherNumber: &vn2}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
@@ -99,9 +101,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if len(resp.Reservations) != 2 {
-			t.Fatalf("expected 2 reservations, got %d", len(resp.Reservations))
-		}
+		assertCurrencyGroups(t, resp.CurrencyGroups, map[string]int{"USD": 1, "EUR": 1})
 	})
 
 	t.Run("returns reservations for multiple agents in an organic org", func(t *testing.T) {
@@ -110,9 +110,11 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
 
+		// Two reservations in USD, one in EUR — exercises multi-currency grouping.
 		vn1 := "VCH-ORG-1"
 		id1 := seedReservation(t, ctx, s, agent1, func(p *CreateReservationRequest) {
 			p.BrokerReservationID = "BILLING-ORG-1"
+			p.CurrencyCode = "USD"
 		})
 		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id1, UserID: agent1, VoucherNumber: &vn1}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
@@ -121,8 +123,18 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		vn2 := "VCH-ORG-2"
 		id2 := seedReservation(t, ctx, s, agent2, func(p *CreateReservationRequest) {
 			p.BrokerReservationID = "BILLING-ORG-2"
+			p.CurrencyCode = "USD"
 		})
 		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id2, UserID: agent2, VoucherNumber: &vn2}); err != nil {
+			t.Fatalf("failed to apply voucher: %v", err)
+		}
+
+		vn3 := "VCH-ORG-3"
+		id3 := seedReservation(t, ctx, s, agent2, func(p *CreateReservationRequest) {
+			p.BrokerReservationID = "BILLING-ORG-3"
+			p.CurrencyCode = "EUR"
+		})
+		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id3, UserID: agent2, VoucherNumber: &vn3}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
 
@@ -134,9 +146,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if len(resp.Reservations) != 2 {
-			t.Fatalf("expected 2 reservations, got %d", len(resp.Reservations))
-		}
+		assertCurrencyGroups(t, resp.CurrencyGroups, map[string]int{"USD": 2, "EUR": 1})
 	})
 
 	t.Run("returns internal error when db query fails", func(t *testing.T) {
@@ -175,8 +185,8 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if len(resp.Reservations) != 0 {
-			t.Fatalf("expected 0 reservations, got %d", len(resp.Reservations))
+		if len(resp.CurrencyGroups) != 0 {
+			t.Fatalf("expected 0 currency groups, got %d", len(resp.CurrencyGroups))
 		}
 	})
 
@@ -212,11 +222,17 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if len(resp.Reservations) != 1 {
-			t.Fatalf("expected 1 reservation, got %d", len(resp.Reservations))
+		if len(resp.CurrencyGroups) != 1 {
+			t.Fatalf("expected 1 currency group, got %d", len(resp.CurrencyGroups))
+		}
+		if resp.CurrencyGroups[0].CurrencyCode != "USD" {
+			t.Fatalf("expected currency group USD, got %s", resp.CurrencyGroups[0].CurrencyCode)
+		}
+		if len(resp.CurrencyGroups[0].Reservations) != 1 {
+			t.Fatalf("expected 1 reservation in group, got %d", len(resp.CurrencyGroups[0].Reservations))
 		}
 
-		r := resp.Reservations[0]
+		r := resp.CurrencyGroups[0].Reservations[0]
 		if r.BrokerReservationID != "BRK-PRICE" {
 			t.Errorf("expected BrokerReservationID=BRK-PRICE, got %s", r.BrokerReservationID)
 		}
@@ -246,4 +262,25 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			t.Errorf("ERPSellingPrice: want 20.00, got %.2f", r.ERPSellingPrice)
 		}
 	})
+}
+
+// assertCurrencyGroups verifies that the response contains exactly the expected
+// currency groups, each with the expected number of reservations.
+func assertCurrencyGroups(t *testing.T, groups []CurrencyGroup, want map[string]int) {
+	t.Helper()
+	if len(groups) != len(want) {
+		t.Fatalf("expected %d currency groups, got %d (%v)", len(want), len(groups), groups)
+	}
+	got := make(map[string]int, len(groups))
+	for _, g := range groups {
+		if _, dup := got[g.CurrencyCode]; dup {
+			t.Fatalf("duplicate currency group for %s", g.CurrencyCode)
+		}
+		got[g.CurrencyCode] = len(g.Reservations)
+	}
+	for code, n := range want {
+		if got[code] != n {
+			t.Errorf("currency %s: expected %d reservations, got %d", code, n, got[code])
+		}
+	}
 }

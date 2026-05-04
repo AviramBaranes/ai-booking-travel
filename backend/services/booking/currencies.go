@@ -14,9 +14,8 @@ import (
 )
 
 type icountConfig struct {
-	CID       config.String
-	User      config.String
-	AccountID config.Int
+	CID  config.String
+	User config.String
 }
 
 var icountCfg = config.Load[*icountConfig]()

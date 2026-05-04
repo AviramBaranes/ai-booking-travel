@@ -64,7 +64,7 @@ func Bill(ctx context.Context, p BillRequestParams) (*BillResponse, error) {
 		return nil, err
 	}
 
-	reservationSet := createReservationSet(openReservations.Reservations)
+	reservationSet := createReservationSet(openReservations.CurrencyGroups)
 
 	if err := validateIDsBelongToBillingEntity(p.IDs, reservationSet); err != nil {
 		rlog.Error("validation failed for billing request", "error", err, "invalid_ids", p.IDs)
@@ -137,10 +137,12 @@ func buildInvoiceItems(ids []int64, reservationsSet reservationSet) []icount.ICo
 type reservationSet map[int64]reservation.BillingReservation
 
 // createReservationSet creates a set of reservations indexed by their ID for efficient lookup.
-func createReservationSet(reservations []reservation.BillingReservation) map[int64]reservation.BillingReservation {
-	reservationSet := make(map[int64]reservation.BillingReservation, len(reservations))
-	for _, r := range reservations {
-		reservationSet[r.ID] = r
+func createReservationSet(currencyGroups []reservation.CurrencyGroup) map[int64]reservation.BillingReservation {
+	reservationSet := make(map[int64]reservation.BillingReservation)
+	for _, group := range currencyGroups {
+		for _, r := range group.Reservations {
+			reservationSet[r.ID] = r
+		}
 	}
 
 	return reservationSet
