@@ -1,16 +1,10 @@
 package icount
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
-)
-
-const (
-	createInvoiceURL = "https://api.icount.co.il/api/v3.php/doc/create"
 )
 
 type icount struct {
@@ -44,31 +38,10 @@ type CreateInvoiceParams struct {
 // CreateInvoice creates an invoice in iCount using the provided parameters and returns the response from iCount, the response might contain error details if the creation was not successful.
 func (i icount) CreateInvoice(params CreateInvoiceParams) (*ICountCreateDocResponse, error) {
 	icountReq := i.createInvoiceDocRequest(params)
-	jsonString, err := json.Marshal(icountReq)
+
+	body, err := i.DoRequest(createDocEndpoint, icountReq)
 	if err != nil {
-		return nil, fmt.Errorf("creating json: %w", err)
-	}
-
-	req, err := http.NewRequest("POST", createInvoiceURL, bytes.NewBuffer(jsonString))
-	if err != nil {
-		return nil, fmt.Errorf("creating request: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := i.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("making request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("reading response body: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("creating invoice: %w", err)
 	}
 
 	var result ICountCreateDocResponse

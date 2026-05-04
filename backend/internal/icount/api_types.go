@@ -1,5 +1,7 @@
 package icount
 
+// ------- Create Document -------
+
 type ICountCreateDocRequest struct {
 	CID          string                     `json:"cid"`
 	User         string                     `json:"user"`
@@ -32,4 +34,18 @@ type ICountCreateDocResponse struct {
 	ErrorDetails     []string `json:"error_details"`
 	DocNum           string   `json:"docnum"`
 	DocURL           string   `json:"doc_url"`
+}
+
+// ------- Fetch Currencies -------
+
+type GetCurrenciesRatesResponse struct {
+	Status bool               `json:"status"`
+	Reason string             `json:"reason"`
+	Rates  map[string]float64 `json:"currency_rates,omitempty"`
+}
+
+type GetCurrenciesRatesRequest struct {
+	CID  string `json:"cid"`
+	User string `json:"user"`
+	Pass string `json:"pass"`
 }
