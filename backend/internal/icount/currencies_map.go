@@ -1,0 +1,31 @@
+package icount
+
+// CurrencyIDsMap maps ISO 4217 currency codes to iCount currency_id values.
+var CurrencyIDsMap = map[string]int{
+	"ILS": 5,
+	"USD": 2,
+	"EUR": 1,
+	"GBP": 4,
+	"CHF": 15,
+	"JPY": 3,
+	"CAD": 7,
+	"AUD": 10,
+	"RUB": 8,
+	"DKK": 13,
+	"NOK": 14,
+	"SEK": 16,
+	"SGD": 6,
+	"NZD": 9,
+	"KES": 11,
+	"BRL": 12,
+	"CNY": 17,
+	"BTC": 18,
+	"INR": 19,
+	"PLN": 20,
+	"JOD": 21,
+	"EGP": 22,
+	"LBP": 23,
+	"ETH": 24,
+	"KRW": 25,
+	"MXN": 26,
+}

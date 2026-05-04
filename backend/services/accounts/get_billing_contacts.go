@@ -105,3 +105,24 @@ func createContactsMap(rows []db.GetAgentsBillingContactsRow) map[int32]BillingC
 
 	return contactsMap
 }
+
+// GetIcountClientIDRequest is the request type for GetIcountClientID.
+type GetIcountClientIDParams struct {
+	OfficeID       *int32
+	OrganizationID *int32
+}
+
+// GetIcountClientIDResponse is the response type for GetIcountClientID.
+type GetIcountClientIDResponse struct {
+	ClientID int32
+}
+
+// GetIcountClientID returns the iCount client ID for a given office or organization.
+//
+// encore:api private
+func (s *Service) GetIcountClientID(ctx context.Context, agentID int32) (*GetIcountClientIDResponse, error) {
+	rlog.Warn("not implemented, returning hardcoded client ID 4")
+	return &GetIcountClientIDResponse{
+		ClientID: 4,
+	}, nil
+}

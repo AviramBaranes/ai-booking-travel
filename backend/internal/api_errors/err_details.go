@@ -13,4 +13,5 @@ var (
 	UnauthorizedDetails    = ErrorDetails{Code: CodeUnauthorized}
 	UnauthenticatedDetails = ErrorDetails{Code: CodeUnauthenticated}
 	NotFoundDetails        = ErrorDetails{Code: CodeNotFound}
+	EmptyDetails           = ErrorDetails{}
 )
