@@ -4,6 +4,7 @@ SELECT
     o.name,
     o.organization_id,
     org.name AS organization_name,
+    o.icount_client_id,
     o.phone,
     o.address,
     o.created_at,
@@ -30,27 +31,29 @@ WHERE
     AND (sqlc.narg(organization_id)::INTEGER IS NULL OR o.organization_id = sqlc.narg(organization_id)::INTEGER);
 
 -- name: CreateOffice :one
-INSERT INTO offices (name, organization_id, phone, address, created_at, updated_at)
+INSERT INTO offices (name, organization_id, icount_client_id, phone, address, created_at, updated_at)
 VALUES (
     sqlc.arg(name),
     sqlc.arg(organization_id),
+    sqlc.narg(icount_client_id),
     sqlc.narg(phone),
     sqlc.narg(address),
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
-RETURNING id, name, organization_id, phone, address, created_at, updated_at;
+RETURNING id, name, organization_id, icount_client_id, phone, address, created_at, updated_at;
 
 -- name: UpdateOffice :one
 UPDATE offices
 SET
-    name            = COALESCE(sqlc.narg(name),            name),
-    organization_id = COALESCE(sqlc.narg(organization_id), organization_id),
-    phone           = COALESCE(sqlc.narg(phone),           phone),
-    address         = COALESCE(sqlc.narg(address),         address),
-    updated_at      = CURRENT_TIMESTAMP
+    name             = COALESCE(sqlc.narg(name),             name),
+    organization_id  = COALESCE(sqlc.narg(organization_id),  organization_id),
+    icount_client_id = COALESCE(sqlc.narg(icount_client_id), icount_client_id),
+    phone            = COALESCE(sqlc.narg(phone),            phone),
+    address          = COALESCE(sqlc.narg(address),          address),
+    updated_at       = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg(id)
-RETURNING id, name, organization_id, phone, address, created_at, updated_at;
+RETURNING id, name, organization_id, icount_client_id, phone, address, created_at, updated_at;
 
 -- name: ListInorganicOffices :many
 SELECT
@@ -59,3 +62,8 @@ FROM offices as o
 JOIN organizations org ON org.id = o.organization_id
 WHERE org.is_organic = FALSE
 ORDER BY o.name;
+
+-- name: GetOfficeIcountClientID :one
+SELECT icount_client_id
+FROM offices
+WHERE id = sqlc.arg(id)::INTEGER;

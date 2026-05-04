@@ -3,6 +3,7 @@ SELECT
     o.id,
     o.name,
     o.is_organic,
+    o.icount_client_id,
     o.phone,
     o.address,
     o.obligo,
@@ -31,29 +32,31 @@ WHERE
     AND (sqlc.narg(is_organic)::BOOLEAN IS NULL OR o.is_organic = sqlc.narg(is_organic)::BOOLEAN);
 
 -- name: CreateOrganization :one
-INSERT INTO organizations (name, is_organic, phone, address, obligo, created_at, updated_at)
+INSERT INTO organizations (name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at)
 VALUES (
     sqlc.arg(name),
     sqlc.arg(is_organic),
+    sqlc.narg(icount_client_id),
     sqlc.narg(phone),
     sqlc.narg(address),
     sqlc.narg(obligo),
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
-RETURNING id, name, is_organic, phone, address, obligo, created_at, updated_at;
+RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at;
 
 -- name: UpdateOrganization :one
 UPDATE organizations
 SET
-    name       = COALESCE(sqlc.narg(name),       name),
-    is_organic = COALESCE(sqlc.narg(is_organic), is_organic),
-    phone      = COALESCE(sqlc.narg(phone),      phone),
-    address    = COALESCE(sqlc.narg(address),    address),
-    obligo     = COALESCE(sqlc.narg(obligo),     obligo),
-    updated_at = CURRENT_TIMESTAMP
+    name             = COALESCE(sqlc.narg(name),             name),
+    is_organic       = COALESCE(sqlc.narg(is_organic),       is_organic),
+    icount_client_id = COALESCE(sqlc.narg(icount_client_id), icount_client_id),
+    phone            = COALESCE(sqlc.narg(phone),            phone),
+    address          = COALESCE(sqlc.narg(address),          address),
+    obligo           = COALESCE(sqlc.narg(obligo),           obligo),
+    updated_at       = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg(id)
-RETURNING id, name, is_organic, phone, address, obligo, created_at, updated_at;
+RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at;
 
 -- name: ListOrganicOrganizations :many
 SELECT
@@ -61,3 +64,8 @@ SELECT
 FROM organizations
 WHERE is_organic = TRUE
 ORDER BY name;
+
+-- name: GetOrganizationIcountClientID :one
+SELECT icount_client_id
+FROM organizations
+WHERE id = sqlc.arg(id)::INTEGER;

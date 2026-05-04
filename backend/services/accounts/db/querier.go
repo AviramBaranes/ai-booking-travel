@@ -17,8 +17,8 @@ type Querier interface {
 	CreateAgent(ctx context.Context, arg CreateAgentParams) (CreateAgentRow, error)
 	CreateContact(ctx context.Context, arg CreateContactParams) (Contact, error)
 	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (CreateCustomerRow, error)
-	CreateOffice(ctx context.Context, arg CreateOfficeParams) (CreateOfficeRow, error)
-	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (CreateOrganizationRow, error)
+	CreateOffice(ctx context.Context, arg CreateOfficeParams) (Office, error)
+	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error)
 	CreateStaffUser(ctx context.Context, arg CreateStaffUserParams) (CreateStaffUserRow, error)
 	DeleteContact(ctx context.Context, id int32) error
 	DeleteRefreshToken(ctx context.Context, jti string) error
@@ -27,6 +27,8 @@ type Querier interface {
 	GetAgentsBillingContacts(ctx context.Context, usersIds []int32) ([]GetAgentsBillingContactsRow, error)
 	GetAgentsByOfficeID(ctx context.Context, officeID int32) ([]GetAgentsByOfficeIDRow, error)
 	GetAgentsByOrganizationID(ctx context.Context, organizationID int32) ([]GetAgentsByOrganizationIDRow, error)
+	GetOfficeIcountClientID(ctx context.Context, id int32) (*int32, error)
+	GetOrganizationIcountClientID(ctx context.Context, id int32) (*int32, error)
 	GetRefreshToken(ctx context.Context, jti string) (RefreshToken, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserById(ctx context.Context, id int32) (User, error)
@@ -42,8 +44,8 @@ type Querier interface {
 	SaveOTP(ctx context.Context, arg SaveOTPParams) error
 	SaveRefreshToken(ctx context.Context, arg SaveRefreshTokenParams) error
 	UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error)
-	UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (UpdateOfficeRow, error)
-	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (UpdateOrganizationRow, error)
+	UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (Office, error)
+	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error)
 }
 

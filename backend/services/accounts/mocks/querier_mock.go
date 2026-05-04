@@ -162,10 +162,10 @@ func (mr *MockQuerierMockRecorder) CreateCustomer(ctx, arg any) *gomock.Call {
 }
 
 // CreateOffice mocks base method.
-func (m *MockQuerier) CreateOffice(ctx context.Context, arg db.CreateOfficeParams) (db.CreateOfficeRow, error) {
+func (m *MockQuerier) CreateOffice(ctx context.Context, arg db.CreateOfficeParams) (db.Office, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateOffice", ctx, arg)
-	ret0, _ := ret[0].(db.CreateOfficeRow)
+	ret0, _ := ret[0].(db.Office)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -177,10 +177,10 @@ func (mr *MockQuerierMockRecorder) CreateOffice(ctx, arg any) *gomock.Call {
 }
 
 // CreateOrganization mocks base method.
-func (m *MockQuerier) CreateOrganization(ctx context.Context, arg db.CreateOrganizationParams) (db.CreateOrganizationRow, error) {
+func (m *MockQuerier) CreateOrganization(ctx context.Context, arg db.CreateOrganizationParams) (db.Organization, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateOrganization", ctx, arg)
-	ret0, _ := ret[0].(db.CreateOrganizationRow)
+	ret0, _ := ret[0].(db.Organization)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -305,6 +305,36 @@ func (m *MockQuerier) GetAgentsByOrganizationID(ctx context.Context, organizatio
 func (mr *MockQuerierMockRecorder) GetAgentsByOrganizationID(ctx, organizationID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentsByOrganizationID", reflect.TypeOf((*MockQuerier)(nil).GetAgentsByOrganizationID), ctx, organizationID)
+}
+
+// GetOfficeIcountClientID mocks base method.
+func (m *MockQuerier) GetOfficeIcountClientID(ctx context.Context, id int32) (*int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOfficeIcountClientID", ctx, id)
+	ret0, _ := ret[0].(*int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOfficeIcountClientID indicates an expected call of GetOfficeIcountClientID.
+func (mr *MockQuerierMockRecorder) GetOfficeIcountClientID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOfficeIcountClientID", reflect.TypeOf((*MockQuerier)(nil).GetOfficeIcountClientID), ctx, id)
+}
+
+// GetOrganizationIcountClientID mocks base method.
+func (m *MockQuerier) GetOrganizationIcountClientID(ctx context.Context, id int32) (*int32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrganizationIcountClientID", ctx, id)
+	ret0, _ := ret[0].(*int32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrganizationIcountClientID indicates an expected call of GetOrganizationIcountClientID.
+func (mr *MockQuerierMockRecorder) GetOrganizationIcountClientID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganizationIcountClientID", reflect.TypeOf((*MockQuerier)(nil).GetOrganizationIcountClientID), ctx, id)
 }
 
 // GetRefreshToken mocks base method.
@@ -531,10 +561,10 @@ func (mr *MockQuerierMockRecorder) UpdateContact(ctx, arg any) *gomock.Call {
 }
 
 // UpdateOffice mocks base method.
-func (m *MockQuerier) UpdateOffice(ctx context.Context, arg db.UpdateOfficeParams) (db.UpdateOfficeRow, error) {
+func (m *MockQuerier) UpdateOffice(ctx context.Context, arg db.UpdateOfficeParams) (db.Office, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateOffice", ctx, arg)
-	ret0, _ := ret[0].(db.UpdateOfficeRow)
+	ret0, _ := ret[0].(db.Office)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -546,10 +576,10 @@ func (mr *MockQuerierMockRecorder) UpdateOffice(ctx, arg any) *gomock.Call {
 }
 
 // UpdateOrganization mocks base method.
-func (m *MockQuerier) UpdateOrganization(ctx context.Context, arg db.UpdateOrganizationParams) (db.UpdateOrganizationRow, error) {
+func (m *MockQuerier) UpdateOrganization(ctx context.Context, arg db.UpdateOrganizationParams) (db.Organization, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateOrganization", ctx, arg)
-	ret0, _ := ret[0].(db.UpdateOrganizationRow)
+	ret0, _ := ret[0].(db.Organization)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

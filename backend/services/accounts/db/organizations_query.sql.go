@@ -32,51 +32,44 @@ func (q *Queries) CountOrganizations(ctx context.Context, arg CountOrganizations
 }
 
 const createOrganization = `-- name: CreateOrganization :one
-INSERT INTO organizations (name, is_organic, phone, address, obligo, created_at, updated_at)
+INSERT INTO organizations (name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at)
 VALUES (
     $1,
     $2,
     $3,
     $4,
     $5,
+    $6,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
-RETURNING id, name, is_organic, phone, address, obligo, created_at, updated_at
+RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at
 `
 
 type CreateOrganizationParams struct {
-	Name      string
-	IsOrganic bool
-	Phone     *string
-	Address   *string
-	Obligo    pgtype.Numeric
+	Name           string
+	IsOrganic      bool
+	IcountClientID *int32
+	Phone          *string
+	Address        *string
+	Obligo         pgtype.Numeric
 }
 
-type CreateOrganizationRow struct {
-	ID        int32
-	Name      string
-	IsOrganic bool
-	Phone     *string
-	Address   *string
-	Obligo    pgtype.Numeric
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
-}
-
-func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (CreateOrganizationRow, error) {
+func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error) {
 	row := q.db.QueryRow(ctx, createOrganization,
 		arg.Name,
 		arg.IsOrganic,
+		arg.IcountClientID,
 		arg.Phone,
 		arg.Address,
 		arg.Obligo,
 	)
-	var i CreateOrganizationRow
+	var i Organization
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.IsOrganic,
+		&i.IcountClientID,
 		&i.Phone,
 		&i.Address,
 		&i.Obligo,
@@ -84,6 +77,19 @@ func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganization
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getOrganizationIcountClientID = `-- name: GetOrganizationIcountClientID :one
+SELECT icount_client_id
+FROM organizations
+WHERE id = $1::INTEGER
+`
+
+func (q *Queries) GetOrganizationIcountClientID(ctx context.Context, id int32) (*int32, error) {
+	row := q.db.QueryRow(ctx, getOrganizationIcountClientID, id)
+	var icount_client_id *int32
+	err := row.Scan(&icount_client_id)
+	return icount_client_id, err
 }
 
 const listOrganicOrganizations = `-- name: ListOrganicOrganizations :many
@@ -124,6 +130,7 @@ SELECT
     o.id,
     o.name,
     o.is_organic,
+    o.icount_client_id,
     o.phone,
     o.address,
     o.obligo,
@@ -153,17 +160,18 @@ type ListOrganizationsParams struct {
 }
 
 type ListOrganizationsRow struct {
-	ID           int32
-	Name         string
-	IsOrganic    bool
-	Phone        *string
-	Address      *string
-	Obligo       pgtype.Numeric
-	CreatedAt    pgtype.Timestamptz
-	UpdatedAt    pgtype.Timestamptz
-	OfficeCount  int64
-	ContactCount int64
-	AgentCount   int64
+	ID             int32
+	Name           string
+	IsOrganic      bool
+	IcountClientID *int32
+	Phone          *string
+	Address        *string
+	Obligo         pgtype.Numeric
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+	OfficeCount    int64
+	ContactCount   int64
+	AgentCount     int64
 }
 
 func (q *Queries) ListOrganizations(ctx context.Context, arg ListOrganizationsParams) ([]ListOrganizationsRow, error) {
@@ -184,6 +192,7 @@ func (q *Queries) ListOrganizations(ctx context.Context, arg ListOrganizationsPa
 			&i.ID,
 			&i.Name,
 			&i.IsOrganic,
+			&i.IcountClientID,
 			&i.Phone,
 			&i.Address,
 			&i.Obligo,
@@ -206,50 +215,43 @@ func (q *Queries) ListOrganizations(ctx context.Context, arg ListOrganizationsPa
 const updateOrganization = `-- name: UpdateOrganization :one
 UPDATE organizations
 SET
-    name       = COALESCE($1,       name),
-    is_organic = COALESCE($2, is_organic),
-    phone      = COALESCE($3,      phone),
-    address    = COALESCE($4,    address),
-    obligo     = COALESCE($5,     obligo),
-    updated_at = CURRENT_TIMESTAMP
-WHERE id = $6
-RETURNING id, name, is_organic, phone, address, obligo, created_at, updated_at
+    name             = COALESCE($1,             name),
+    is_organic       = COALESCE($2,       is_organic),
+    icount_client_id = COALESCE($3, icount_client_id),
+    phone            = COALESCE($4,            phone),
+    address          = COALESCE($5,          address),
+    obligo           = COALESCE($6,           obligo),
+    updated_at       = CURRENT_TIMESTAMP
+WHERE id = $7
+RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at
 `
 
 type UpdateOrganizationParams struct {
-	Name      *string
-	IsOrganic *bool
-	Phone     *string
-	Address   *string
-	Obligo    pgtype.Numeric
-	ID        int32
+	Name           *string
+	IsOrganic      *bool
+	IcountClientID *int32
+	Phone          *string
+	Address        *string
+	Obligo         pgtype.Numeric
+	ID             int32
 }
 
-type UpdateOrganizationRow struct {
-	ID        int32
-	Name      string
-	IsOrganic bool
-	Phone     *string
-	Address   *string
-	Obligo    pgtype.Numeric
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
-}
-
-func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (UpdateOrganizationRow, error) {
+func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error) {
 	row := q.db.QueryRow(ctx, updateOrganization,
 		arg.Name,
 		arg.IsOrganic,
+		arg.IcountClientID,
 		arg.Phone,
 		arg.Address,
 		arg.Obligo,
 		arg.ID,
 	)
-	var i UpdateOrganizationRow
+	var i Organization
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.IsOrganic,
+		&i.IcountClientID,
 		&i.Phone,
 		&i.Address,
 		&i.Obligo,

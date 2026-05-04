@@ -32,53 +32,60 @@ func (q *Queries) CountOffices(ctx context.Context, arg CountOfficesParams) (int
 }
 
 const createOffice = `-- name: CreateOffice :one
-INSERT INTO offices (name, organization_id, phone, address, created_at, updated_at)
+INSERT INTO offices (name, organization_id, icount_client_id, phone, address, created_at, updated_at)
 VALUES (
     $1,
     $2,
     $3,
     $4,
+    $5,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
-RETURNING id, name, organization_id, phone, address, created_at, updated_at
+RETURNING id, name, organization_id, icount_client_id, phone, address, created_at, updated_at
 `
 
 type CreateOfficeParams struct {
 	Name           string
 	OrganizationID int32
+	IcountClientID *int32
 	Phone          *string
 	Address        *string
 }
 
-type CreateOfficeRow struct {
-	ID             int32
-	Name           string
-	OrganizationID int32
-	Phone          *string
-	Address        *string
-	CreatedAt      pgtype.Timestamptz
-	UpdatedAt      pgtype.Timestamptz
-}
-
-func (q *Queries) CreateOffice(ctx context.Context, arg CreateOfficeParams) (CreateOfficeRow, error) {
+func (q *Queries) CreateOffice(ctx context.Context, arg CreateOfficeParams) (Office, error) {
 	row := q.db.QueryRow(ctx, createOffice,
 		arg.Name,
 		arg.OrganizationID,
+		arg.IcountClientID,
 		arg.Phone,
 		arg.Address,
 	)
-	var i CreateOfficeRow
+	var i Office
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.OrganizationID,
+		&i.IcountClientID,
 		&i.Phone,
 		&i.Address,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getOfficeIcountClientID = `-- name: GetOfficeIcountClientID :one
+SELECT icount_client_id
+FROM offices
+WHERE id = $1::INTEGER
+`
+
+func (q *Queries) GetOfficeIcountClientID(ctx context.Context, id int32) (*int32, error) {
+	row := q.db.QueryRow(ctx, getOfficeIcountClientID, id)
+	var icount_client_id *int32
+	err := row.Scan(&icount_client_id)
+	return icount_client_id, err
 }
 
 const listInorganicOffices = `-- name: ListInorganicOffices :many
@@ -121,6 +128,7 @@ SELECT
     o.name,
     o.organization_id,
     org.name AS organization_name,
+    o.icount_client_id,
     o.phone,
     o.address,
     o.created_at,
@@ -152,6 +160,7 @@ type ListOfficesRow struct {
 	Name             string
 	OrganizationID   int32
 	OrganizationName string
+	IcountClientID   *int32
 	Phone            *string
 	Address          *string
 	CreatedAt        pgtype.Timestamptz
@@ -179,6 +188,7 @@ func (q *Queries) ListOffices(ctx context.Context, arg ListOfficesParams) ([]Lis
 			&i.Name,
 			&i.OrganizationID,
 			&i.OrganizationName,
+			&i.IcountClientID,
 			&i.Phone,
 			&i.Address,
 			&i.CreatedAt,
@@ -199,46 +209,40 @@ func (q *Queries) ListOffices(ctx context.Context, arg ListOfficesParams) ([]Lis
 const updateOffice = `-- name: UpdateOffice :one
 UPDATE offices
 SET
-    name            = COALESCE($1,            name),
-    organization_id = COALESCE($2, organization_id),
-    phone           = COALESCE($3,           phone),
-    address         = COALESCE($4,         address),
-    updated_at      = CURRENT_TIMESTAMP
-WHERE id = $5
-RETURNING id, name, organization_id, phone, address, created_at, updated_at
+    name             = COALESCE($1,             name),
+    organization_id  = COALESCE($2,  organization_id),
+    icount_client_id = COALESCE($3, icount_client_id),
+    phone            = COALESCE($4,            phone),
+    address          = COALESCE($5,          address),
+    updated_at       = CURRENT_TIMESTAMP
+WHERE id = $6
+RETURNING id, name, organization_id, icount_client_id, phone, address, created_at, updated_at
 `
 
 type UpdateOfficeParams struct {
 	Name           *string
 	OrganizationID *int32
+	IcountClientID *int32
 	Phone          *string
 	Address        *string
 	ID             int32
 }
 
-type UpdateOfficeRow struct {
-	ID             int32
-	Name           string
-	OrganizationID int32
-	Phone          *string
-	Address        *string
-	CreatedAt      pgtype.Timestamptz
-	UpdatedAt      pgtype.Timestamptz
-}
-
-func (q *Queries) UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (UpdateOfficeRow, error) {
+func (q *Queries) UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (Office, error) {
 	row := q.db.QueryRow(ctx, updateOffice,
 		arg.Name,
 		arg.OrganizationID,
+		arg.IcountClientID,
 		arg.Phone,
 		arg.Address,
 		arg.ID,
 	)
-	var i UpdateOfficeRow
+	var i Office
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
 		&i.OrganizationID,
+		&i.IcountClientID,
 		&i.Phone,
 		&i.Address,
 		&i.CreatedAt,
