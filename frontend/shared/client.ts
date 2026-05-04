@@ -1350,16 +1350,24 @@ export namespace reservation {
      */
     export interface BillingReservation {
         id: number
-        "broker_reservation_id": string
-        "payment_status": string
-        "reservation_status": string
-        "car_purchase_price": number
-        "car_selling_price": number
-        "erp_selling_price": number
-        "profit_on_car": number
-        "currency_code": string
-        "created_at": string
-        "pickup_date": string
+        brokerReservationId: string
+        paymentStatus: string
+        reservationStatus: string
+        carPurchasePrice: number
+        carSellingPrice: number
+        erpSellingPrice: number
+        profitOnCar: number
+        currencyCode: string
+        createdAt: string
+        pickupDate: string
+    }
+
+    /**
+     * CurrencyGroup is a set of billing reservations sharing the same currency.
+     */
+    export interface CurrencyGroup {
+        currencyCode: string
+        reservations: BillingReservation[]
     }
 
     export interface GetReservationResponse {
@@ -1401,10 +1409,11 @@ export namespace reservation {
     }
 
     /**
-     * ListOpenReservationsByBillingEntityResponse holds the open reservations for a billing unit.
+     * ListOpenReservationsByBillingEntityResponse holds the open reservations for a billing unit,
+     * grouped by currency.
      */
     export interface ListOpenReservationsByBillingEntityResponse {
-        reservations: BillingReservation[]
+        currencyGroups: CurrencyGroup[]
     }
 
     export interface ListReservationsRequest {

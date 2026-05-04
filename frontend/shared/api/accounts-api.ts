@@ -72,6 +72,10 @@ export function updateOrganization(
   );
 }
 
+export function listOrganicOrganizations() {
+  return withErrorHandler((client) => client.accounts.ListOrganicOrganizations());
+}
+
 // Offices
 export function listOffices(data: accounts.ListOfficesRequest) {
   return withErrorHandler((client) => client.accounts.ListOffices(data));
@@ -83,6 +87,10 @@ export function createOffice(data: accounts.CreateOfficeRequest) {
 
 export function updateOffice(id: number, data: accounts.UpdateOfficeRequest) {
   return withErrorHandler((client) => client.accounts.UpdateOffice(id, data));
+}
+
+export function listInorganicOffices() {
+  return withErrorHandler((client) => client.accounts.ListInorganicOffices());
 }
 
 // Users

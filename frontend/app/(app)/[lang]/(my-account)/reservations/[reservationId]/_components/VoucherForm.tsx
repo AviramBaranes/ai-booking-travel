@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { applyVoucher } from "@/shared/api/reservations";
+import { applyVoucher } from "@/shared/api/reservations-api";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";

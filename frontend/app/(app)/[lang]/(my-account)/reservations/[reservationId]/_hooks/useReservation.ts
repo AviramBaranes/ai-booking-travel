@@ -1,4 +1,4 @@
-import { getReservationById } from "@/shared/api/reservations";
+import { getReservationById } from "@/shared/api/reservations-api";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 export function useReservation(reservationId: number) {

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { cancelReservation } from "@/shared/api/reservations";
+import { cancelReservation } from "@/shared/api/reservations-api";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";

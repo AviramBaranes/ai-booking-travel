@@ -1,4 +1,4 @@
-import { listReservations } from "@/shared/api/reservations";
+import { listReservations } from "@/shared/api/reservations-api";
 import { reservation } from "@/shared/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ReservationFilters } from "./useReservationFilters";

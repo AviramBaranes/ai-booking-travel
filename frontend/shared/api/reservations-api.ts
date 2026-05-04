@@ -26,3 +26,11 @@ export function cancelReservation(reservationId: number) {
     client.reservation.CancelReservation(reservationId),
   );
 }
+
+export function listOpenReservations(
+  params: reservation.ListOpenReservationsByBillingEntityRequest,
+) {
+  return withErrorHandler((client) =>
+    client.reservation.ListOpenReservationsByBillingEntity(params),
+  );
+}
