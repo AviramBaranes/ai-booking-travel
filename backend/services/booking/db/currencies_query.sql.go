@@ -70,7 +70,7 @@ func (q *Queries) FindCurrencyByISOName(ctx context.Context, currencyIsoName str
 const listCurrencies = `-- name: ListCurrencies :many
 SELECT id, currency_code, currency_iso_name, rate, created_at, updated_at
 FROM currencies
-ORDER BY created_at DESC
+ORDER BY created_at ASC
 `
 
 func (q *Queries) ListCurrencies(ctx context.Context) ([]Currency, error) {
