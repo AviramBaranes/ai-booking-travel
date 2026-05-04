@@ -26,3 +26,16 @@ MonthlyReport: {
 		BorderColor:              "000000"
 	}
 }
+
+Icount:{
+	URL: "https://api.icount.co.il/api/v3.php/doc/create",
+	CID: "aibookingtravel",
+	User: "accounting",
+	AccountID: 4,
+}
+
+Invoice:{
+	PurchaseItemDescription: "עלות השכרה",
+	ProfitItemDescription: "רווח השכרה",
+	ProfitAndErpItemDescription: "רווח השכרה כולל ביטוח",
+}
