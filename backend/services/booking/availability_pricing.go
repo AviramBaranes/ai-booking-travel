@@ -43,7 +43,7 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 		return artifacts, api_errors.ErrInternalError
 	}
 
-	markupProviders, err := getMarkupProviderMap(ctx, locs, s.query, daysCount, p.PickupDate, extractCarGroups(rawVehicles))
+	markupProviders, err := s.getMarkupProviderMap(ctx, locs, daysCount, p.PickupDate, extractCarGroups(rawVehicles))
 	if err != nil {
 		rlog.Error("failed to get markup provider map", "error", err)
 		return artifacts, api_errors.ErrInternalError
@@ -51,7 +51,7 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 
 	authData := auth.GetAuthData()
 	isAgent := authData != nil && (authData.Role == auth.UserRoleAgent)
-	currenciesMap, err := buildCurrencyMap(ctx, s.query)
+	currenciesMap, err := s.buildCurrencyMap(ctx)
 	if err != nil {
 		rlog.Error("failed to build currency map", "error", err)
 		return artifacts, api_errors.ErrInternalError
@@ -201,7 +201,7 @@ func sortPlansByPrice(plans []Plan) {
 }
 
 // getMarkupProviderMap returns a MarkupProvider for each broker present in the availability locations.
-func getMarkupProviderMap(ctx context.Context, locs availabilityLocations, q db.Querier, rentalDays int, pickupDate string, carGroups []string) (map[broker.Name]MarkupProvider, error) {
+func (s *Service) getMarkupProviderMap(ctx context.Context, locs availabilityLocations, rentalDays int, pickupDate string, carGroups []string) (map[broker.Name]MarkupProvider, error) {
 	markupProviderMap := make(map[broker.Name]MarkupProvider)
 	for brokerName := range locs {
 		var provider MarkupProvider
@@ -209,7 +209,7 @@ func getMarkupProviderMap(ctx context.Context, locs availabilityLocations, q db.
 		case broker.BrokerFlex:
 			provider = NewFlexMarkupProvider(avCfg.MarkUpGross(), avCfg.MarkUpNet())
 		case broker.BrokerHertz:
-			hp, err := NewHertzMarkupProvider(ctx, q, locs[brokerName].pickupCountryCode, pickupDate, rentalDays, carGroups)
+			hp, err := NewHertzMarkupProvider(ctx, s.query, locs[brokerName].pickupCountryCode, pickupDate, rentalDays, carGroups)
 			if err != nil {
 				return nil, fmt.Errorf("initializing hertz markup provider: %w", err)
 			}
@@ -246,9 +246,9 @@ func sortAvailableVehiclesByCheapestPlan(vs []AvailableVehicle) {
 }
 
 // buildCurrencyMap query all currencies and returns a map of currency code to currency rates
-func buildCurrencyMap(ctx context.Context, q db.Querier) (map[string]float64, error) {
+func (s *Service) buildCurrencyMap(ctx context.Context) (map[string]float64, error) {
 	currencyMap := make(map[string]float64)
-	rows, err := q.ListCurrencies(ctx)
+	rows, err := s.query.ListCurrencies(ctx)
 	if err != nil {
 		return nil, err
 	}
