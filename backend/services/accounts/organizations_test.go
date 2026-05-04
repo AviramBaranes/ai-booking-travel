@@ -19,27 +19,31 @@ func validCreateOrgParams() CreateOrganizationRequest {
 	phone := "0521234567"
 	address := "123 Test St"
 	obligo := 1000.0
+	icountClientID := int32(100)
 	return CreateOrganizationRequest{
-		Name:      "Test Organization",
-		IsOrganic: true,
-		Phone:     &phone,
-		Address:   &address,
-		Obligo:    &obligo,
+		Name:           "Test Organization",
+		IsOrganic:      true,
+		IcountClientID: &icountClientID,
+		Phone:          &phone,
+		Address:        &address,
+		Obligo:         &obligo,
 	}
 }
 
 func validUpdateOrgParams() UpdateOrganizationRequest {
 	name := "Updated Organization"
-	isOrganic := false
+	isOrganic := true
+	icountClientID := int32(200)
 	phone := "0529876543"
 	address := "456 Updated St"
 	obligo := 2000.0
 	return UpdateOrganizationRequest{
-		Name:      &name,
-		IsOrganic: &isOrganic,
-		Phone:     &phone,
-		Address:   &address,
-		Obligo:    &obligo,
+		Name:           &name,
+		IsOrganic:      &isOrganic,
+		IcountClientID: &icountClientID,
+		Phone:          &phone,
+		Address:        &address,
+		Obligo:         &obligo,
 	}
 }
 
@@ -150,6 +154,27 @@ func TestListOrganizations(t *testing.T) {
 		}
 	})
 
+	t.Run("lists icount_client_id when set", func(t *testing.T) {
+		icountID := int32(777)
+		_, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+			Name: "IcountListOrg UniqueXXX", IsOrganic: true, IcountClientID: &icountID,
+		})
+		if err != nil {
+			t.Fatalf("failed to create org: %v", err)
+		}
+		resp, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{Search: "IcountListOrg UniqueXXX", Page: 1})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if len(resp.Organizations) != 1 {
+			t.Fatalf("expected 1 org, got %d", len(resp.Organizations))
+		}
+		o := resp.Organizations[0]
+		if o.IcountClientID == nil || *o.IcountClientID != 777 {
+			t.Fatalf("expected icountClientId 777, got %v", o.IcountClientID)
+		}
+	})
+
 	t.Run("search returns no results for non-matching query", func(t *testing.T) {
 		resp, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{
 			Search: "ZZZNoMatchHere999",
@@ -179,6 +204,7 @@ func TestListOrganizations(t *testing.T) {
 		nonOrgP := validCreateOrgParams()
 		nonOrgP.Name = "OrganicFilterTest Org2"
 		nonOrgP.IsOrganic = false
+		nonOrgP.IcountClientID = nil
 		_, err = s.CreateOrganization(ctx, nonOrgP)
 		if err != nil {
 			t.Fatalf("failed to create non-organic org: %v", err)
@@ -365,6 +391,18 @@ func TestCreateOrganization(t *testing.T) {
 	ctx := context.Background()
 	s := &Service{query: query}
 
+	t.Run("validation rejects organic without icount_client_id", func(t *testing.T) {
+		p := validCreateOrgParams()
+		p.IcountClientID = nil
+		api_errors.AssertApiError(t, ErrOrganizationOrganicRequiresIcountClientID, p.Validate())
+	})
+
+	t.Run("validation rejects non-organic with icount_client_id", func(t *testing.T) {
+		icountID := int32(99)
+		p := CreateOrganizationRequest{Name: "Foo", IsOrganic: false, IcountClientID: &icountID}
+		api_errors.AssertApiError(t, ErrOrganizationNonOrganicForbidsIcountClientID, p.Validate())
+	})
+
 	t.Run("validation rejects missing name", func(t *testing.T) {
 		p := validCreateOrgParams()
 		p.Name = ""
@@ -422,6 +460,9 @@ func TestCreateOrganization(t *testing.T) {
 		if resp.Obligo == nil || *resp.Obligo != *p.Obligo {
 			t.Fatalf("expected obligo %v, got %v", *p.Obligo, resp.Obligo)
 		}
+		if resp.IcountClientID == nil || *resp.IcountClientID != *p.IcountClientID {
+			t.Fatalf("expected icountClientId %v, got %v", p.IcountClientID, resp.IcountClientID)
+		}
 	})
 
 	t.Run("creates organization with nil optional fields", func(t *testing.T) {
@@ -464,6 +505,13 @@ func TestCreateOrganization(t *testing.T) {
 func TestUpdateOrganization(t *testing.T) {
 	ctx := context.Background()
 	s := &Service{query: query}
+
+	t.Run("validation rejects non-organic with icount_client_id", func(t *testing.T) {
+		isOrganic := false
+		icountID := int32(50)
+		p := UpdateOrganizationRequest{IsOrganic: &isOrganic, IcountClientID: &icountID}
+		api_errors.AssertApiError(t, ErrOrganizationNonOrganicForbidsIcountClientID, p.Validate())
+	})
 
 	t.Run("validation rejects blank name", func(t *testing.T) {
 		p := validUpdateOrgParams()
@@ -516,6 +564,33 @@ func TestUpdateOrganization(t *testing.T) {
 		if resp.Obligo == nil || *resp.Obligo != *params.Obligo {
 			t.Fatalf("expected obligo %v, got %v", *params.Obligo, resp.Obligo)
 		}
+		if resp.IcountClientID == nil || *resp.IcountClientID != *params.IcountClientID {
+			t.Fatalf("expected icountClientId %v, got %v", params.IcountClientID, resp.IcountClientID)
+		}
+	})
+
+	t.Run("returns error when adding icount to non-organic org", func(t *testing.T) {
+		org, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+			Name: "NonOrganic IcountAdd UniqueNOIA", IsOrganic: false,
+		})
+		if err != nil {
+			t.Fatalf("failed to create non-organic org: %v", err)
+		}
+		icountID := int32(50)
+		_, err = s.UpdateOrganization(ctx, org.ID, UpdateOrganizationRequest{IcountClientID: &icountID})
+		api_errors.AssertApiError(t, ErrOrganizationNonOrganicForbidsIcountClientID, err)
+	})
+
+	t.Run("returns error when switching to organic without icount_client_id", func(t *testing.T) {
+		org, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+			Name: "NonOrganic ToOrganic UniqueNOTO", IsOrganic: false,
+		})
+		if err != nil {
+			t.Fatalf("failed to create non-organic org: %v", err)
+		}
+		isOrganic := true
+		_, err = s.UpdateOrganization(ctx, org.ID, UpdateOrganizationRequest{IsOrganic: &isOrganic})
+		api_errors.AssertApiError(t, ErrOrganizationOrganicRequiresIcountClientID, err)
 	})
 
 	t.Run("partial update only changes provided fields", func(t *testing.T) {
@@ -569,9 +644,11 @@ func TestListOrganicOrganizations(t *testing.T) {
 		}
 		s := newService(newDb)
 
+		icountID1, icountID2 := int32(10), int32(11)
 		org1, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
-			Name:      "organic_org_1",
-			IsOrganic: true,
+			Name:           "organic_org_1",
+			IsOrganic:      true,
+			IcountClientID: &icountID1,
 		})
 
 		if err != nil {
@@ -579,8 +656,9 @@ func TestListOrganicOrganizations(t *testing.T) {
 		}
 
 		org2, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
-			Name:      "organic_org_2",
-			IsOrganic: true,
+			Name:           "organic_org_2",
+			IsOrganic:      true,
+			IcountClientID: &icountID2,
 		})
 
 		if err != nil {

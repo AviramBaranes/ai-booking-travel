@@ -327,6 +327,50 @@ func TestCreateOffice(t *testing.T) {
 		}
 	})
 
+	t.Run("validation rejects icount_client_id under organic org", func(t *testing.T) {
+		t.Parallel()
+		org := createTestOrg(t, s, "CreateOfficeOrganicIcountOrg")
+		icountID := int32(55)
+		_, err := s.CreateOffice(ctx, CreateOfficeRequest{
+			Name: "Should Fail Office", OrganizationID: org.ID, IcountClientID: &icountID,
+		})
+		api_errors.AssertApiError(t, ErrOfficeOrganicForbidsIcountClientID, err)
+	})
+
+	t.Run("validation rejects missing icount_client_id under non-organic org", func(t *testing.T) {
+		t.Parallel()
+		org, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+			Name: "CreateOfficeNonOrganicNoIcount", IsOrganic: false,
+		})
+		if err != nil {
+			t.Fatalf("failed to create org: %v", err)
+		}
+		_, err = s.CreateOffice(ctx, CreateOfficeRequest{
+			Name: "Should Fail Office", OrganizationID: org.ID,
+		})
+		api_errors.AssertApiError(t, ErrOfficeNonOrganicRequiresIcountClientID, err)
+	})
+
+	t.Run("creates office with icount_client_id under non-organic org", func(t *testing.T) {
+		t.Parallel()
+		org, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+			Name: "CreateOfficeNonOrganicWithIcount", IsOrganic: false,
+		})
+		if err != nil {
+			t.Fatalf("failed to create org: %v", err)
+		}
+		icountID := int32(77)
+		resp, err := s.CreateOffice(ctx, CreateOfficeRequest{
+			Name: "NonOrganic Office With Icount", OrganizationID: org.ID, IcountClientID: &icountID,
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.IcountClientID == nil || *resp.IcountClientID != 77 {
+			t.Fatalf("expected icountClientId 77, got %v", resp.IcountClientID)
+		}
+	})
+
 	t.Run("validation rejects blank name", func(t *testing.T) {
 		t.Parallel()
 		p := validCreateOfficeParams()
@@ -356,6 +400,9 @@ func TestCreateOffice(t *testing.T) {
 	t.Run("returns error when db fails", func(t *testing.T) {
 		t.Parallel()
 		q, s := officeMockService(t)
+		q.EXPECT().GetOrganizationBillingState(gomock.Any(), gomock.Any()).Return(
+			db.GetOrganizationBillingStateRow{IsOrganic: true}, nil,
+		)
 		q.EXPECT().CreateOffice(gomock.Any(), gomock.Any()).Return(db.Office{}, errors.New("db error"))
 
 		_, err := s.CreateOffice(ctx, validCreateOfficeParams())
@@ -366,6 +413,63 @@ func TestCreateOffice(t *testing.T) {
 func TestUpdateOffice(t *testing.T) {
 	ctx := context.Background()
 	s := &Service{query: query}
+
+	t.Run("validation rejects setting icount_client_id under organic org", func(t *testing.T) {
+		t.Parallel()
+		org := createTestOrg(t, s, "UpdateOfficeOrganicIcountOrg")
+		office := createTestOffice(t, s, org.ID, "UpdateOfficeOrganicIcountTarget")
+		icountID := int32(55)
+		_, err := s.UpdateOffice(ctx, office.ID, UpdateOfficeRequest{IcountClientID: &icountID})
+		api_errors.AssertApiError(t, ErrOfficeOrganicForbidsIcountClientID, err)
+	})
+
+	t.Run("updates icount_client_id under non-organic org", func(t *testing.T) {
+		t.Parallel()
+		org, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+			Name: "UpdateOfficeNonOrganicIcountOrg", IsOrganic: false,
+		})
+		if err != nil {
+			t.Fatalf("failed to create org: %v", err)
+		}
+		icountID := int32(42)
+		office, err := s.CreateOffice(ctx, CreateOfficeRequest{
+			Name: "UpdateOfficeNonOrganicTarget", OrganizationID: org.ID, IcountClientID: &icountID,
+		})
+		if err != nil {
+			t.Fatalf("failed to create office: %v", err)
+		}
+		newIcount := int32(99)
+		resp, err := s.UpdateOffice(ctx, office.ID, UpdateOfficeRequest{IcountClientID: &newIcount})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.IcountClientID == nil || *resp.IcountClientID != 99 {
+			t.Fatalf("expected icountClientId 99, got %v", resp.IcountClientID)
+		}
+	})
+
+	t.Run("validation rejects icount when moving office to organic org", func(t *testing.T) {
+		t.Parallel()
+		nonOrg, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+			Name: "UpdateOfficeMoveToOrganicSrc", IsOrganic: false,
+		})
+		if err != nil {
+			t.Fatalf("failed to create non-organic org: %v", err)
+		}
+		icountID := int32(42)
+		office, err := s.CreateOffice(ctx, CreateOfficeRequest{
+			Name: "UpdateOfficeMoveToOrganicTarget", OrganizationID: nonOrg.ID, IcountClientID: &icountID,
+		})
+		if err != nil {
+			t.Fatalf("failed to create office: %v", err)
+		}
+		orgOrg := createTestOrg(t, s, "UpdateOfficeMoveToOrganicDst")
+		newIcount := int32(55)
+		_, err = s.UpdateOffice(ctx, office.ID, UpdateOfficeRequest{
+			OrganizationID: &orgOrg.ID, IcountClientID: &newIcount,
+		})
+		api_errors.AssertApiError(t, ErrOfficeOrganicForbidsIcountClientID, err)
+	})
 
 	t.Run("updates all fields", func(t *testing.T) {
 		t.Parallel()
@@ -462,8 +566,20 @@ func TestListInorganicOffices(t *testing.T) {
 
 		createTestOffice(t, s, org1.ID, randomName())
 		createTestOffice(t, s, org1.ID, randomName())
-		inorganicOffice1 := createTestOffice(t, s, org2.ID, randomName())
-		inorganicOffice2 := createTestOffice(t, s, org2.ID, randomName())
+
+		icountID1, icountID2 := int32(42), int32(43)
+		inorganicOffice1, err := s.CreateOffice(ctx, CreateOfficeRequest{
+			Name: randomName(), OrganizationID: org2.ID, IcountClientID: &icountID1,
+		})
+		if err != nil {
+			t.Fatalf("create inorganic office 1: %v", err)
+		}
+		inorganicOffice2, err := s.CreateOffice(ctx, CreateOfficeRequest{
+			Name: randomName(), OrganizationID: org2.ID, IcountClientID: &icountID2,
+		})
+		if err != nil {
+			t.Fatalf("create inorganic office 2: %v", err)
+		}
 
 		resp, err := s.ListInorganicOffices(ctx)
 

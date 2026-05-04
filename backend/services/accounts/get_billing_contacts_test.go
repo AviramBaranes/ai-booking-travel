@@ -23,8 +23,13 @@ func billingMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
 
 func seedOrg(t *testing.T, isOrganic bool) db.Organization {
 	t.Helper()
+	var icountClientID *int32
+	if isOrganic {
+		id := int32(999)
+		icountClientID = &id
+	}
 	org, err := query.CreateOrganization(context.Background(), db.CreateOrganizationParams{
-		Name: randomName(), IsOrganic: isOrganic,
+		Name: randomName(), IsOrganic: isOrganic, IcountClientID: icountClientID,
 	})
 	if err != nil {
 		t.Fatalf("create org: %v", err)
