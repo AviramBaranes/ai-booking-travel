@@ -79,6 +79,24 @@ func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganization
 	return i, err
 }
 
+const getOrganizationBillingState = `-- name: GetOrganizationBillingState :one
+SELECT is_organic, icount_client_id
+FROM organizations
+WHERE id = $1::INTEGER
+`
+
+type GetOrganizationBillingStateRow struct {
+	IsOrganic      bool
+	IcountClientID *int32
+}
+
+func (q *Queries) GetOrganizationBillingState(ctx context.Context, id int32) (GetOrganizationBillingStateRow, error) {
+	row := q.db.QueryRow(ctx, getOrganizationBillingState, id)
+	var i GetOrganizationBillingStateRow
+	err := row.Scan(&i.IsOrganic, &i.IcountClientID)
+	return i, err
+}
+
 const getOrganizationIcountClientID = `-- name: GetOrganizationIcountClientID :one
 SELECT icount_client_id
 FROM organizations

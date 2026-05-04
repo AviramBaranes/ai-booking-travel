@@ -28,6 +28,7 @@ type Querier interface {
 	GetAgentsByOfficeID(ctx context.Context, officeID int32) ([]GetAgentsByOfficeIDRow, error)
 	GetAgentsByOrganizationID(ctx context.Context, organizationID int32) ([]GetAgentsByOrganizationIDRow, error)
 	GetOfficeIcountClientID(ctx context.Context, id int32) (*int32, error)
+	GetOrganizationBillingState(ctx context.Context, id int32) (GetOrganizationBillingStateRow, error)
 	GetOrganizationIcountClientID(ctx context.Context, id int32) (*int32, error)
 	GetRefreshToken(ctx context.Context, jti string) (RefreshToken, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)

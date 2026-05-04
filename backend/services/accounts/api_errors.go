@@ -45,4 +45,14 @@ var (
 		errs.AlreadyExists, "Phone number already exists",
 		api_errors.ErrorDetails{Code: api_errors.CodePhoneAlreadyExists},
 	)
+
+	ErrOrganizationOrganicRequiresIcountClientID = api_errors.NewErrorWithDetail(
+		errs.InvalidArgument, "Organic organization must have an icount_client_id",
+		api_errors.ErrorDetails{Code: api_errors.CodeOrganicOrgRequiresIcountClientID, Field: "icountClientId"},
+	)
+
+	ErrOrganizationNonOrganicForbidsIcountClientID = api_errors.NewErrorWithDetail(
+		errs.InvalidArgument, "Non-organic organization must not have an icount_client_id",
+		api_errors.ErrorDetails{Code: api_errors.CodeNonOrganicOrgForbidsIcountClientID, Field: "icountClientId"},
+	)
 )

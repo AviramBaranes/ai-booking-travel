@@ -14,4 +14,7 @@ const (
 	CodeInvalidRefreshToken = "invalid_refresh_token"
 	CodeExpiredRefreshToken = "expired_refresh_token"
 	CodeInvalidResetToken   = "invalid_reset_token"
+
+	CodeOrganicOrgRequiresIcountClientID   = "organization_organic_requires_icount_client_id"
+	CodeNonOrganicOrgForbidsIcountClientID = "organization_non_organic_forbids_icount_client_id"
 )

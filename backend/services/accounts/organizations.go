@@ -16,24 +16,26 @@ import (
 const orgPageSize = 15
 
 type OrganizationResponse struct {
-	ID        int32    `json:"id"`
-	Name      string   `json:"name"`
-	IsOrganic bool     `json:"isOrganic"`
-	Phone     *string  `json:"phone"`
-	Address   *string  `json:"address"`
-	Obligo    *float64 `json:"obligo"`
+	ID              int32    `json:"id"`
+	Name            string   `json:"name"`
+	IsOrganic       bool     `json:"isOrganic"`
+	IcountClientID  *int32   `json:"icountClientId"`
+	Phone           *string  `json:"phone"`
+	Address         *string  `json:"address"`
+	Obligo          *float64 `json:"obligo"`
 }
 
 type ListOrganizationsRow struct {
-	ID           int32    `json:"id"`
-	Name         string   `json:"name"`
-	IsOrganic    bool     `json:"isOrganic"`
-	Phone        *string  `json:"phone"`
-	Address      *string  `json:"address"`
-	Obligo       *float64 `json:"obligo"`
-	OfficeCount  int64    `json:"officeCount"`
-	ContactCount int64    `json:"contactCount"`
-	AgentCount   int64    `json:"agentCount"`
+	ID              int32    `json:"id"`
+	Name            string   `json:"name"`
+	IsOrganic       bool     `json:"isOrganic"`
+	IcountClientID  *int32   `json:"icountClientId"`
+	Phone           *string  `json:"phone"`
+	Address         *string  `json:"address"`
+	Obligo          *float64 `json:"obligo"`
+	OfficeCount     int64    `json:"officeCount"`
+	ContactCount    int64    `json:"contactCount"`
+	AgentCount      int64    `json:"agentCount"`
 }
 
 type ListOrganizationsResponse struct {
@@ -56,53 +58,104 @@ func (p ListOrganizationsRequest) Validate() error {
 }
 
 type CreateOrganizationRequest struct {
-	Name      string   `json:"name" validate:"required,notblank"`
-	IsOrganic bool     `json:"isOrganic"`
-	Phone     *string  `json:"phone" validate:"omitempty,notblank" encore:"optional"`
-	Address   *string  `json:"address" validate:"omitempty,notblank" encore:"optional"`
-	Obligo    *float64 `json:"obligo" validate:"omitempty,gte=0" encore:"optional"`
+	Name           string   `json:"name" validate:"required,notblank"`
+	IsOrganic      bool     `json:"isOrganic"`
+	IcountClientID *int32   `json:"icountClientId" encore:"optional"`
+	Phone          *string  `json:"phone" validate:"omitempty,notblank" encore:"optional"`
+	Address        *string  `json:"address" validate:"omitempty,notblank" encore:"optional"`
+	Obligo         *float64 `json:"obligo" validate:"omitempty,gte=0" encore:"optional"`
 }
 
 func (p CreateOrganizationRequest) Validate() error {
+	if err := validateIcountClientIDConstraint(p.IsOrganic, p.IcountClientID); err != nil {
+		return err
+	}
 	return validation.ValidateStruct(p)
 }
 
 type UpdateOrganizationRequest struct {
-	Name      *string  `json:"name" validate:"omitempty,notblank" encore:"optional"`
-	IsOrganic *bool    `json:"isOrganic" encore:"optional"`
-	Phone     *string  `json:"phone" encore:"optional"`
-	Address   *string  `json:"address" encore:"optional"`
-	Obligo    *float64 `json:"obligo" validate:"omitempty,gte=0" encore:"optional"`
+	Name           *string  `json:"name" validate:"omitempty,notblank" encore:"optional"`
+	IsOrganic      *bool    `json:"isOrganic" encore:"optional"`
+	IcountClientID *int32   `json:"icountClientId" encore:"optional"`
+	Phone          *string  `json:"phone" encore:"optional"`
+	Address        *string  `json:"address" encore:"optional"`
+	Obligo         *float64 `json:"obligo" validate:"omitempty,gte=0" encore:"optional"`
 }
 
 func (p UpdateOrganizationRequest) Validate() error {
+	// If both fields are provided we can validate the constraint immediately.
+	if p.IsOrganic != nil && p.IcountClientID != nil {
+		if err := validateIcountClientIDConstraint(*p.IsOrganic, p.IcountClientID); err != nil {
+			return err
+		}
+	}
 	return validation.ValidateStruct(p)
 }
 
 // --- Helpers ---
 
+// validateIcountClientIDConstraint enforces billing rules:
+// organic orgs must have an icount_client_id; non-organic orgs must not.
+func validateIcountClientIDConstraint(isOrganic bool, icountClientID *int32) error {
+	if isOrganic && icountClientID == nil {
+		return ErrOrganizationOrganicRequiresIcountClientID
+	}
+	if !isOrganic && icountClientID != nil {
+		return ErrOrganizationNonOrganicForbidsIcountClientID
+	}
+	return nil
+}
+
+// validateUpdateIcountClientIDConstraint handles the case where only one of
+// isOrganic / icountClientId is being changed. It fetches the current values
+// from the DB, merges the incoming partial update, and re-validates.
+func (s *Service) validateUpdateIcountClientIDConstraint(ctx context.Context, id int32, params UpdateOrganizationRequest) error {
+	current, err := s.query.GetOrganizationBillingState(ctx, id)
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return api_errors.ErrNotFound
+		}
+		rlog.Error("failed to fetch organization billing state", "error", err)
+		return api_errors.ErrInternalError
+	}
+
+	finalIsOrganic := current.IsOrganic
+	if params.IsOrganic != nil {
+		finalIsOrganic = *params.IsOrganic
+	}
+
+	finalIcount := current.IcountClientID
+	if params.IcountClientID != nil {
+		finalIcount = params.IcountClientID
+	}
+
+	return validateIcountClientIDConstraint(finalIsOrganic, finalIcount)
+}
+
 func toOrganizationResponse(o db.Organization) OrganizationResponse {
 	return OrganizationResponse{
-		ID:        o.ID,
-		Name:      o.Name,
-		IsOrganic: o.IsOrganic,
-		Phone:     o.Phone,
-		Address:   o.Address,
-		Obligo:    db.FloatFromNumeric(o.Obligo),
+		ID:             o.ID,
+		Name:           o.Name,
+		IsOrganic:      o.IsOrganic,
+		IcountClientID: o.IcountClientID,
+		Phone:          o.Phone,
+		Address:        o.Address,
+		Obligo:         db.FloatFromNumeric(o.Obligo),
 	}
 }
 
 func toListOrganizationsRow(o db.ListOrganizationsRow) ListOrganizationsRow {
 	return ListOrganizationsRow{
-		ID:           o.ID,
-		Name:         o.Name,
-		IsOrganic:    o.IsOrganic,
-		Phone:        o.Phone,
-		Address:      o.Address,
-		Obligo:       db.FloatFromNumeric(o.Obligo),
-		OfficeCount:  o.OfficeCount,
-		ContactCount: o.ContactCount,
-		AgentCount:   o.AgentCount,
+		ID:             o.ID,
+		Name:           o.Name,
+		IsOrganic:      o.IsOrganic,
+		IcountClientID: o.IcountClientID,
+		Phone:          o.Phone,
+		Address:        o.Address,
+		Obligo:         db.FloatFromNumeric(o.Obligo),
+		OfficeCount:    o.OfficeCount,
+		ContactCount:   o.ContactCount,
+		AgentCount:     o.AgentCount,
 	}
 }
 
@@ -158,11 +211,12 @@ func (s *Service) ListOrganizations(ctx context.Context, params *ListOrganizatio
 //encore:api auth method=POST path=/organizations tag:admin
 func (s *Service) CreateOrganization(ctx context.Context, params CreateOrganizationRequest) (*OrganizationResponse, error) {
 	row, err := s.query.CreateOrganization(ctx, db.CreateOrganizationParams{
-		Name:      params.Name,
-		IsOrganic: params.IsOrganic,
-		Phone:     params.Phone,
-		Address:   params.Address,
-		Obligo:    db.NumericParam(params.Obligo),
+		Name:           params.Name,
+		IsOrganic:      params.IsOrganic,
+		IcountClientID: params.IcountClientID,
+		Phone:          params.Phone,
+		Address:        params.Address,
+		Obligo:         db.NumericParam(params.Obligo),
 	})
 	if err != nil {
 		if db.IsUniqueViolation(err) {
@@ -180,13 +234,22 @@ func (s *Service) CreateOrganization(ctx context.Context, params CreateOrganizat
 //
 //encore:api auth method=PUT path=/organizations/:id tag:admin
 func (s *Service) UpdateOrganization(ctx context.Context, id int32, params UpdateOrganizationRequest) (*OrganizationResponse, error) {
+	// When only one of IsOrganic / IcountClientID is provided we need to
+	// resolve the effective pair from the DB before validating.
+	if (params.IsOrganic != nil) != (params.IcountClientID != nil) {
+		if err := s.validateUpdateIcountClientIDConstraint(ctx, id, params); err != nil {
+			return nil, err
+		}
+	}
+
 	row, err := s.query.UpdateOrganization(ctx, db.UpdateOrganizationParams{
-		ID:        id,
-		Name:      params.Name,
-		IsOrganic: params.IsOrganic,
-		Phone:     params.Phone,
-		Address:   params.Address,
-		Obligo:    db.NumericParam(params.Obligo),
+		ID:             id,
+		Name:           params.Name,
+		IsOrganic:      params.IsOrganic,
+		IcountClientID: params.IcountClientID,
+		Phone:          params.Phone,
+		Address:        params.Address,
+		Obligo:         db.NumericParam(params.Obligo),
 	})
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {

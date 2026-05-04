@@ -69,3 +69,8 @@ ORDER BY name;
 SELECT icount_client_id
 FROM organizations
 WHERE id = sqlc.arg(id)::INTEGER;
+
+-- name: GetOrganizationBillingState :one
+SELECT is_organic, icount_client_id
+FROM organizations
+WHERE id = sqlc.arg(id)::INTEGER;
