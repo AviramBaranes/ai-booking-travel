@@ -8,6 +8,7 @@ import (
 	"encore.app/internal/icount"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
+	"encore.app/services/notifications"
 	"encore.app/services/reservation"
 	"encore.dev/beta/errs"
 	"encore.dev/rlog"
@@ -78,6 +79,7 @@ func Bill(ctx context.Context, p BillRequestParams) (*BillResponse, error) {
 	}
 
 	invoiceItems := buildInvoiceItems(p.IDs, reservationSet)
+	rlog.Info("build items", "items", invoiceItems)
 	ic := icount.NewIcount(cfg.Icount.CID(), cfg.Icount.User())
 	res, err := ic.CreateInvoice(icount.CreateInvoiceParams{
 		ClientID:   int(icountClientRes.ClientID),
@@ -88,7 +90,24 @@ func Bill(ctx context.Context, p BillRequestParams) (*BillResponse, error) {
 		Items:      invoiceItems,
 	})
 
-	return parseBillingResponse(res)
+	resp, err := parseBillingResponse(res)
+	if err != nil {
+		rlog.Error("failed to create invoice in iCount", "error", err, "client_id", icountClientRes.ClientID, "currency", currency, "total_paid", p.TotalPaid)
+		return nil, err
+	}
+
+	err = reservation.ResolveReservations(ctx, reservation.ResolveReservationsParams{
+		IDs: p.IDs,
+	})
+	if err != nil {
+		rlog.Error("failed to resolve reservations after successful billing", "error", err, "reservation_ids", p.IDs)
+		notifications.CriticalErrorEventTopic.Publish(ctx, &notifications.CriticalErrorEvent{
+			Subject: "Failed to resolve reservations after billing",
+			Message: fmt.Sprintf("failed to resolve reservations after successful billing, reservation_ids: %v, error: %v", p.IDs, err),
+		})
+	}
+
+	return resp, nil
 }
 
 // validateIDsBelongToBillingEntity checks if all provided reservation IDs belong to the specified billing entity (office or organization) by verifying their presence in the reservationSet. If any ID does not belong to the billing entity, it returns a validation error.
@@ -108,10 +127,14 @@ func buildInvoiceItems(ids []int64, reservationsSet reservationSet) []icount.ICo
 	invoiceItems := make([]icount.ICountInvoiceItem, 0, len(ids)*2)
 	for _, id := range ids {
 		reservation := reservationsSet[id]
+		m := 1.0
+		if reservation.PaymentStatus == "refund_pending" {
+			m = -1.0
+		}
 
 		invoiceItems = append(invoiceItems, icount.ICountInvoiceItem{
 			Description: cfg.Invoice.PurchaseItemDescription(),
-			UnitPrice:   reservation.CarPurchasePrice,
+			UnitPrice:   floatPtr(reservation.CarPurchasePrice * m),
 			Quantity:    1,
 			IsTaxExempt: true,
 			SKU:         fmt.Sprintf("%d", id),
@@ -122,15 +145,19 @@ func buildInvoiceItems(ids []int64, reservationsSet reservationSet) []icount.ICo
 			profitDesc = cfg.Invoice.ProfitAndErpItemDescription()
 		}
 		invoiceItems = append(invoiceItems, icount.ICountInvoiceItem{
-			Description: profitDesc,
-			UnitPrice:   reservation.ProfitOnCar + reservation.ERPSellingPrice,
-			Quantity:    1,
-			IsTaxExempt: false,
-			SKU:         fmt.Sprintf("%d", id),
+			Description:     profitDesc,
+			UnitPriceIncvat: floatPtr((reservation.ProfitOnCar + reservation.ERPSellingPrice) * m),
+			Quantity:        1,
+			IsTaxExempt:     false,
+			SKU:             fmt.Sprintf("%d", id),
 		})
 	}
 
 	return invoiceItems
+}
+
+func floatPtr(f float64) *float64 {
+	return &f
 }
 
 // reservationSet is a helper type for efficient lookup of reservations by ID when building invoice items.

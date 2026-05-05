@@ -579,3 +579,20 @@ func (q *Queries) ListReservationsByUser(ctx context.Context, arg ListReservatio
 	}
 	return items, nil
 }
+
+const resolveReservationsPayment = `-- name: ResolveReservationsPayment :exec
+UPDATE reservations
+SET payment_status = CASE payment_status
+    WHEN 'unpaid' THEN 'paid'
+    WHEN 'refund_pending' THEN 'refunded'
+    ELSE payment_status
+END,
+updated_at = CURRENT_TIMESTAMP
+WHERE id = ANY($1::BIGINT[])
+AND payment_status IN ('unpaid', 'refund_pending')
+`
+
+func (q *Queries) ResolveReservationsPayment(ctx context.Context, ids []int64) error {
+	_, err := q.db.Exec(ctx, resolveReservationsPayment, ids)
+	return err
+}

@@ -198,3 +198,14 @@ AND(
     (reservation_status = 'vouchered' AND payment_status = 'unpaid')
 OR
     (reservation_status = 'canceled' AND payment_status = 'refund_pending'));
+
+-- name: ResolveReservationsPayment :exec
+UPDATE reservations
+SET payment_status = CASE payment_status
+    WHEN 'unpaid' THEN 'paid'
+    WHEN 'refund_pending' THEN 'refunded'
+    ELSE payment_status
+END,
+updated_at = CURRENT_TIMESTAMP
+WHERE id = ANY(@ids::BIGINT[])
+AND payment_status IN ('unpaid', 'refund_pending');

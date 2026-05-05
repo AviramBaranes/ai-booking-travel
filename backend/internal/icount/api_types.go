@@ -20,11 +20,12 @@ type ICountBankTransferPayment struct {
 }
 
 type ICountInvoiceItem struct {
-	Description string  `json:"description"`
-	IsTaxExempt bool    `json:"tax_exempt"`
-	SKU         string  `json:"sku,omitempty"`
-	UnitPrice   float64 `json:"unitprice"`
-	Quantity    int     `json:"quantity"`
+	Description     string   `json:"description"`
+	IsTaxExempt     bool     `json:"tax_exempt"`
+	SKU             string   `json:"sku,omitempty"`
+	UnitPrice       *float64 `json:"unitprice,omitempty"`
+	UnitPriceIncvat *float64 `json:"unitprice_incvat,omitempty"`
+	Quantity        int      `json:"quantity"`
 }
 
 type ICountCreateDocResponse struct {

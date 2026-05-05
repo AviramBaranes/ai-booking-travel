@@ -174,3 +174,17 @@ func (mr *MockQuerierMockRecorder) ListReservationsByUser(ctx, arg any) *gomock.
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListReservationsByUser", reflect.TypeOf((*MockQuerier)(nil).ListReservationsByUser), ctx, arg)
 }
+
+// ResolveReservationsPayment mocks base method.
+func (m *MockQuerier) ResolveReservationsPayment(ctx context.Context, ids []int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolveReservationsPayment", ctx, ids)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResolveReservationsPayment indicates an expected call of ResolveReservationsPayment.
+func (mr *MockQuerierMockRecorder) ResolveReservationsPayment(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveReservationsPayment", reflect.TypeOf((*MockQuerier)(nil).ResolveReservationsPayment), ctx, ids)
+}

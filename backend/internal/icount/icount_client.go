@@ -32,7 +32,7 @@ func NewIcount(cid, user string) icount {
 type icountAPIEndPoint string
 
 const (
-	createDocEndpoint       icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/document/create"
+	createDocEndpoint       icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/doc/create"
 	fetchCurrenciesEndpoint icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/currency/get_rates"
 )
 
