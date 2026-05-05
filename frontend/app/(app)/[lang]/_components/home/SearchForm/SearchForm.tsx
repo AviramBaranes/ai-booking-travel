@@ -10,7 +10,7 @@ import { DifferentLocCheckbox } from "./DifferentLocCheckbox";
 import { AgePopover } from "./AgePopover";
 import { CouponPopover } from "./CouponPopover";
 import { SearchFormValues, searchSchema } from "./searchFormSchema";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import clsx from "clsx";
@@ -46,14 +46,16 @@ interface SearchFormProps extends Partial<SearchFormFields> {
 }
 
 export function SearchForm({ className, ...fields }: SearchFormProps) {
-  const session = useSession();
-  const isAuthenticated = session.status === "authenticated";
-  const isAgent = session.data?.user?.role === "agent";
   const router = useRouter();
   const { lang } = useParams();
   const clearSession = useBookingSessionStore((s) => s.clearSession);
   const t = useTranslations("SearchForm");
   const searchFormSchema = searchSchema(t);
+  const [loading, setLoading] = useState(false);
+
+  const session = useSession();
+  const isAuthenticated = session.status === "authenticated";
+  const isAgent = session.data?.user?.role === "agent";
 
   const dropoffLocationRef = useRef<HTMLInputElement | null>(null);
   const pickupDateRef = useRef<SearchFieldHandle>(null);
@@ -98,6 +100,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
 
   function onSubmit(data: SearchFormValues) {
     clearSession();
+    setLoading(true);
     const urlParams = new URLSearchParams();
 
     urlParams.set("pl", data.pickupLocation.toString());
@@ -117,7 +120,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
       urlParams.set("cc", data.couponCode);
     }
 
-    router.push(`/${lang}/results?${urlParams.toString()}`);
+    location.href = `/${lang}/results?${urlParams.toString()}`;
   }
 
   return (
@@ -304,6 +307,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
             type="submit"
             variant="brand"
             className="w-full py-6 type-paragraph font-bold cursor-pointer"
+            loading={loading}
           >
             {t("searchButton")}
           </Button>

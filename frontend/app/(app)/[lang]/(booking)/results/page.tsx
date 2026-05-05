@@ -1,8 +1,6 @@
 import { SearchDataBanner } from "@/shared/components/booking/SearchDataBanner";
 import { BookingStepper } from "../_components/BookingStepper";
-import { getMessages } from "next-intl/server";
 import { getLang } from "@/shared/lang/lang";
-import { NextIntlClientProvider } from "next-intl";
 import { redirect } from "next/navigation";
 import { parseSearchQuery, toSearchRequest } from "./searchQuery";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
@@ -10,7 +8,6 @@ import { getQueryClient } from "@/shared/hooks/getQueryClient";
 import { bookingKeys } from "@/shared/hooks/useAvailableCars";
 import { searchAvailableCars } from "@/shared/api/booking-api";
 import { CarResults } from "./CarResults";
-import { ErrorPageWrapper } from "./_components/ErrorPageWrapper";
 import {
   fetchSuppliersGallery,
   fetchAddonsGallery,
