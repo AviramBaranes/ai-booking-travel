@@ -142,8 +142,6 @@
     "orderPage": {
       "driverDetails": "Driver Details",
       "title": "Title*",
-      "titleMr": "Mr",
-      "titleMs": "Ms",
       "firstName": "First Name (English)*",
       "lastName": "Last Name (English)*",
       "flightNumber": "Flight Number",
@@ -235,7 +233,7 @@
       },
       "carDetails": {
         "top choice": "Top Choice",
-        "erpRecommendation": "Recommended to take an insurance package",
+        "erpRecommendation": "Recommended to take a coverage package",
         "orSimilar": "or similar",
         "auto": "Automatic",
         "electric": "Electric",

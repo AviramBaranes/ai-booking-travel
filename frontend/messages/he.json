@@ -142,8 +142,6 @@
     "orderPage": {
       "driverDetails": "פרטי הנהג",
       "title": "תואר*",
-      "titleMr": "Mr",
-      "titleMs": "Ms",
       "firstName": "שם פרטי (אנגלית)*",
       "lastName": "שם משפחה (אנגלית)*",
       "flightNumber": "מספר טיסה",
@@ -235,7 +233,7 @@
       },
       "carDetails": {
         "top choice": "בחירה מובילה",
-        "erpRecommendation": "מומלץ לקחת חבילת ביטוח",
+        "erpRecommendation": "מומלץ לקחת חבילת כיסוי",
         "orSimilar": "או דומה",
         "auto": "אוטומטי",
         "electric": "חשמלי",

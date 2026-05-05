@@ -40,7 +40,7 @@ type CreateReservationRequest struct {
 	PickupTime          string             `json:"pickupTime" validate:"required,notblank"`
 	DropoffTime         string             `json:"dropoffTime" validate:"required,notblank"`
 	RentalDays          int                `json:"rentalDays" validate:"required,gte=1"`
-	DriverTitle         string             `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Ms'"`
+	DriverTitle         string             `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Ms' 'Mrs' 'Miss' 'Dr'"`
 	DriverFirstName     string             `json:"driverFirstName" validate:"required,notblank"`
 	DriverLastName      string             `json:"driverLastName" validate:"required,notblank"`
 	DriverAge           int                `json:"driverAge" validate:"required,gte=18"`

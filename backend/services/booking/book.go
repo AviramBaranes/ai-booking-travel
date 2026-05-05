@@ -55,7 +55,7 @@ type BookRequest struct {
 	PlanID          string               `json:"planId"`
 	IncludeERP      bool                 `json:"includeERP"`
 	SelectedAddOns  []broker.SelectAddOn `json:"selectedAddOns"`
-	DriverTitle     string               `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Ms'"`
+	DriverTitle     string               `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Mrs' 'Ms' 'Miss' 'Dr'"`
 	DriverFirstName string               `json:"driverFirstName" validate:"required,uppercase_only"`
 	DriverLastName  string               `json:"driverLastName" validate:"required,uppercase_only"`
 	FlightNumber    string               `json:"flightNumber" encore:"optional"`

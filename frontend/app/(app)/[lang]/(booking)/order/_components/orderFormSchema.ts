@@ -4,7 +4,7 @@ const ENGLISH_ONLY_REGEX = /^[A-Z\s]+$/;
 
 export function orderFormSchema(t: (key: string) => string) {
   return z.object({
-    driverTitle: z.enum(["Mr", "Ms"], { error: t("validation.required") }),
+    driverTitle: z.enum(["Mr", "Mrs", "Ms", "Miss", "Dr"], { error: t("validation.required") }),
     driverFirstName: z
       .string({ error: t("validation.required") })
       .min(1, t("validation.required"))

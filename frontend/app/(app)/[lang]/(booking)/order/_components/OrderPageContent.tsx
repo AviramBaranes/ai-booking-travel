@@ -122,11 +122,7 @@ export function OrderPageContent({ searchRequest }: OrderPageContentProps) {
                       type="button"
                       className={`w-full flex items-center justify-between bg-white border rounded-lg px-4 h-12 type-paragraph text-text-secondary cursor-pointer ${errors.driverTitle ? "border-destructive" : "border-cars-border"}`}
                     >
-                      <span>
-                        {field.value
-                          ? t(`title${field.value as "Mr" | "Ms"}`)
-                          : t("title")}
-                      </span>
+                      <span>{field.value ? field.value : t("title")}</span>
                       <ChevronDown className="w-4 h-4 text-muted shrink-0" />
                     </button>
                   </DropdownMenuTrigger>
@@ -134,12 +130,14 @@ export function OrderPageContent({ searchRequest }: OrderPageContentProps) {
                     align="start"
                     className="w-(--radix-dropdown-menu-trigger-width)"
                   >
-                    <DropdownMenuItem onClick={() => field.onChange("Mr")}>
-                      {t("titleMr")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => field.onChange("Ms")}>
-                      {t("titleMs")}
-                    </DropdownMenuItem>
+                    {["Mr", "Mrs", "Ms", "Miss", "Dr"].map((title) => (
+                      <DropdownMenuItem
+                        key={title}
+                        onClick={() => field.onChange(title)}
+                      >
+                        {title}
+                      </DropdownMenuItem>
+                    ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}

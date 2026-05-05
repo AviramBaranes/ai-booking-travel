@@ -36,5 +36,5 @@ Icount:{
 Invoice:{
 	PurchaseItemDescription: "עלות השכרה",
 	ProfitItemDescription: "רווח השכרה",
-	ProfitAndErpItemDescription: "רווח השכרה כולל ביטוח",
+	ProfitAndErpItemDescription: "רווח השכרה כולל כיסוי",
 }
