@@ -11,11 +11,7 @@ import { CalendarIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -26,7 +22,7 @@ import {
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
-import { bill } from "@/shared/api/bill-api";
+import { bill, isBillingFailedError } from "@/shared/api/bill-api";
 import { cn } from "@/lib/utils";
 import type { BillingEntity } from "./BillingEntityCombobox";
 
@@ -48,6 +44,9 @@ interface BillDialogProps {
   onSuccess: () => void;
 }
 
+const INVOICE_URL_PREFIX =
+  "https://app.icount.co.il/hash/show_doc.php?doctype=invrec&docnum=";
+
 export function BillDialog({
   open,
   onOpenChange,
@@ -59,8 +58,14 @@ export function BillDialog({
   const queryClient = useQueryClient();
   const [submitError, setSubmitError] = useState<Error | null>(null);
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const translatedError = useTranslatedError(submitError);
+  const [docNumber, setDocNumber] = useState<string | null>();
+  const translatedError = useTranslatedError(
+    submitError && isBillingFailedError(submitError) ? null : submitError,
+  );
+  const errorMessage =
+    submitError && isBillingFailedError(submitError)
+      ? submitError.message
+      : translatedError;
 
   const {
     control,
@@ -84,15 +89,15 @@ export function BillDialog({
         organization_id: entity.kind === "org" ? entity.id : undefined,
         office_id: entity.kind === "office" ? entity.id : undefined,
       }),
-    onSuccess: () => {
+    onSuccess: (res) => {
       queryClient.invalidateQueries({
         queryKey: ["open-reservations", entity.kind, entity.id],
       });
-      setSuccess(true);
+      setDocNumber(res.docNum);
       setTimeout(() => {
         onSuccess();
         onOpenChange(false);
-      }, 1500);
+      }, 2500);
     },
     onError: (err: Error) => setSubmitError(err),
   });
@@ -106,108 +111,117 @@ export function BillDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="min-w-96 max-w-md p-6 flex flex-col gap-6 bg-white border-border-light/50 rounded-2xl shadow-modal">
         <div className="flex flex-col gap-1">
-          <DialogTitle className="type-h5 text-navy">
-            הפקת חיוב
-          </DialogTitle>
+          <DialogTitle className="type-h5 text-navy">הפקת חיוב</DialogTitle>
           <p className="type-paragraph text-text-secondary">
             {`${entity.name} • ${currencyCode} • ${selectedIds.length} הזמנות`}
           </p>
         </div>
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-4"
-        >
-          {success ? (
-            <SuccessBadge>החיוב הופק בהצלחה</SuccessBadge>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          {docNumber ? (
+            <SuccessBadge>
+              החיוב הופק בהצלחה -{" "}
+              <a
+                href={`${INVOICE_URL_PREFIX}${docNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand-blue underline"
+              >
+                צפייה במסמך
+              </a>
+            </SuccessBadge>
           ) : (
             <>
               <div className="flex flex-col gap-1.5">
-            <Label htmlFor="total_paid" className="type-label text-navy">
-              סכום ששולם ({currencyCode})
-            </Label>
-            <Input
-              id="total_paid"
-              type="number"
-              step="0.01"
-              min="0"
-              dir="ltr"
-              className="text-base"
-              placeholder="0.00"
-              {...register("total_paid", { valueAsNumber: true })}
-            />
-            {errors.total_paid && (
-              <ErrorDisplay>{errors.total_paid.message}</ErrorDisplay>
-            )}
-          </div>
+                <Label htmlFor="total_paid" className="type-label text-navy">
+                  סכום ששולם ({currencyCode})
+                </Label>
+                <Input
+                  id="total_paid"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  dir="ltr"
+                  className="text-base"
+                  placeholder="0.00"
+                  {...register("total_paid", { valueAsNumber: true })}
+                />
+                {errors.total_paid && (
+                  <ErrorDisplay>{errors.total_paid.message}</ErrorDisplay>
+                )}
+              </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label className="type-label text-navy">תאריך העברה</Label>
-            <Controller
-              control={control}
-              name="transfer_date"
-              render={({ field }) => (
-                <Popover
-                  open={datePopoverOpen}
-                  onOpenChange={setDatePopoverOpen}
-                >
-                  <PopoverTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-between font-normal",
-                        !field.value && "text-muted-foreground",
-                      )}
+              <div className="flex flex-col gap-1.5">
+                <Label className="type-label text-navy">תאריך העברה</Label>
+                <Controller
+                  control={control}
+                  name="transfer_date"
+                  render={({ field }) => (
+                    <Popover
+                      open={datePopoverOpen}
+                      onOpenChange={setDatePopoverOpen}
                     >
-                      {field.value
-                        ? format(field.value, "d בMMMM yyyy", { locale: he })
-                        : "בחר תאריך..."}
-                      <CalendarIcon className="size-4 opacity-60" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      locale={he}
-                      selected={field.value}
-                      onSelect={(date) => {
-                        if (!date) return;
-                        field.onChange(date);
-                        setDatePopoverOpen(false);
-                      }}
-                      autoFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-between font-normal",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {field.value
+                            ? format(field.value, "d בMMMM yyyy", {
+                                locale: he,
+                              })
+                            : "בחר תאריך..."}
+                          <CalendarIcon className="size-4 opacity-60" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          locale={he}
+                          selected={field.value}
+                          onSelect={(date) => {
+                            if (!date) return;
+                            field.onChange(date);
+                            setDatePopoverOpen(false);
+                          }}
+                          autoFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                />
+                {errors.transfer_date && (
+                  <ErrorDisplay>{errors.transfer_date.message}</ErrorDisplay>
+                )}
+              </div>
+
+              {errorMessage && (
+                <ErrorDisplay>{errorMessage}</ErrorDisplay>
               )}
-            />
-            {errors.transfer_date && (
-              <ErrorDisplay>{errors.transfer_date.message}</ErrorDisplay>
-            )}
-          </div>
 
-          {translatedError && <ErrorDisplay>{translatedError}</ErrorDisplay>}
-
-          <div className="flex gap-3 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="flex-1"
-              disabled={mutation.isPending}
-            >
-              ביטול
-            </Button>
-            <Button
-              type="submit"
-              variant="brand"
-              className="flex-1 h-10"
-              loading={mutation.isPending}
-            >
-              חייב
-            </Button>
-          </div>
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  className="flex-1"
+                  disabled={mutation.isPending}
+                >
+                  ביטול
+                </Button>
+                <Button
+                  type="submit"
+                  variant="brand"
+                  className="flex-1 h-10"
+                  loading={mutation.isPending}
+                >
+                  חייב
+                </Button>
+              </div>
             </>
           )}
         </form>

@@ -1357,6 +1357,7 @@ export namespace reservation {
         carSellingPrice: number
         erpSellingPrice: number
         profitOnCar: number
+        totalPrice: number
         currencyCode: string
         createdAt: string
         pickupDate: string

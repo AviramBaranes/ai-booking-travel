@@ -77,7 +77,8 @@ export function CurrencyGroupCard({ entity, group }: CurrencyGroupCardProps) {
             {group.reservations.length} הזמנות פתוחות
             {selectedIds.length > 0 && (
               <span className="text-navy font-medium">
-                {" "}• {selectedIds.length} נבחרו
+                {" "}
+                • {selectedIds.length} נבחרו
               </span>
             )}
           </p>
@@ -107,16 +108,37 @@ export function CurrencyGroupCard({ entity, group }: CurrencyGroupCardProps) {
                   aria-label="בחר הכל"
                 />
               </th>
-              <th className="px-4 py-3 text-start whitespace-nowrap">מס׳ הזמנה</th>
-              <th className="px-4 py-3 text-start whitespace-nowrap">מס׳ ספק</th>
-              <th className="px-4 py-3 text-start whitespace-nowrap">סטטוס תשלום</th>
-              <th className="px-4 py-3 text-start whitespace-nowrap">סטטוס הזמנה</th>
-              <th className="px-4 py-3 text-start whitespace-nowrap">מחיר רכש</th>
-              <th className="px-4 py-3 text-start whitespace-nowrap">מחיר מכירה</th>
-              <th className="px-4 py-3 text-start whitespace-nowrap">מחיר כיסוי</th>
+              <th className="px-4 py-3 text-start whitespace-nowrap">
+                מס׳ הזמנה
+              </th>
+              <th className="px-4 py-3 text-start whitespace-nowrap">
+                מס׳ ספק
+              </th>
+              <th className="px-4 py-3 text-start whitespace-nowrap">
+                סטטוס תשלום
+              </th>
+              <th className="px-4 py-3 text-start whitespace-nowrap">
+                סטטוס הזמנה
+              </th>
+              <th className="px-4 py-3 text-start whitespace-nowrap">
+                מחיר רכש
+              </th>
+              <th className="px-4 py-3 text-start whitespace-nowrap">
+                מחיר מכירה
+              </th>
+              <th className="px-4 py-3 text-start whitespace-nowrap">
+                מחיר כיסוי
+              </th>
               <th className="px-4 py-3 text-start whitespace-nowrap">רווח</th>
-              <th className="px-4 py-3 text-start whitespace-nowrap">תאריך יצירה</th>
-              <th className="px-4 py-3 text-start whitespace-nowrap">תאריך איסוף</th>
+              <th className="px-4 py-3 text-start whitespace-nowrap">
+                סה״כ לתשלום
+              </th>
+              <th className="px-4 py-3 text-start whitespace-nowrap">
+                תאריך יצירה
+              </th>
+              <th className="px-4 py-3 text-start whitespace-nowrap">
+                תאריך איסוף
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -169,6 +191,9 @@ export function CurrencyGroupCard({ entity, group }: CurrencyGroupCardProps) {
                     }
                   >
                     {currencyFormatter.format(r.profitOnCar)}
+                  </td>
+                  <td className="px-4 py-3 text-start whitespace-nowrap font-medium">
+                    {currencyFormatter.format(r.totalPrice)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-text-secondary">
                     {formatDate(r.createdAt)}

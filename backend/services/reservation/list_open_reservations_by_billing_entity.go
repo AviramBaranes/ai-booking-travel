@@ -55,6 +55,7 @@ type BillingReservation struct {
 	CarSellingPrice     float64 `json:"carSellingPrice"`
 	ERPSellingPrice     float64 `json:"erpSellingPrice"`
 	ProfitOnCar         float64 `json:"profitOnCar"`
+	TotalPrice          float64 `json:"totalPrice"`
 	CurrencyCode        string  `json:"currencyCode"`
 	CreatedAt           string  `json:"createdAt"`
 	PickupDate          string  `json:"pickupDate"`
@@ -156,6 +157,7 @@ func toCurrencyGroups(rows []db.GetPaymentPendingReservationsByAgentsIDsRow) []C
 			CarSellingPrice:     pd.carSellingPrice,
 			ERPSellingPrice:     pd.erpSellingPrice,
 			ProfitOnCar:         pd.carProfit,
+			TotalPrice:          pd.totalPrice,
 			CurrencyCode:        r.CurrencyCode,
 			CreatedAt:           db.TimestamptzToString(r.CreatedAt),
 			PickupDate:          db.DateToString(r.PickupDate),
@@ -170,6 +172,7 @@ type priceDetails struct {
 	carSellingPrice  float64
 	carProfit        float64
 	erpSellingPrice  float64
+	totalPrice       float64
 }
 
 // roundPrice rounds a price to 2 decimal places.
@@ -188,5 +191,6 @@ func getReservationPriceDetails(row db.GetPaymentPendingReservationsByAgentsIDsR
 		carSellingPrice:  roundPrice(carSellingPrice),
 		carProfit:        roundPrice(carSellingPrice - carPurchasePrice),
 		erpSellingPrice:  roundPrice(float64(row.BtErpPrice)),
+		totalPrice:       roundPrice(carSellingPrice + float64(row.BtErpPrice)),
 	}
 }
