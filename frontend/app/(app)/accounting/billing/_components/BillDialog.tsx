@@ -119,7 +119,7 @@ export function BillDialog({
           className="flex flex-col gap-4"
         >
           {success ? (
-            <SuccessBadge text="החיוב הופק בהצלחה" />
+            <SuccessBadge>החיוב הופק בהצלחה</SuccessBadge>
           ) : (
             <>
               <div className="flex flex-col gap-1.5">

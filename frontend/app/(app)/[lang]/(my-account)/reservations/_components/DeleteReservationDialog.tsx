@@ -77,7 +77,7 @@ export function DeleteReservationDialog({
         </Button>
         <div className="p-0 text-center">
           {!!translatedError && <ErrorDisplay>{translatedError}</ErrorDisplay>}
-          {successMessage && <SuccessBadge text={successMessage} />}
+          {successMessage && <SuccessBadge>{successMessage}</SuccessBadge>}
         </div>
       </DialogContent>
     </Dialog>

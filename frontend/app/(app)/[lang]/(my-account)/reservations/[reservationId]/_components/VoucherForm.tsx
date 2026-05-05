@@ -75,7 +75,7 @@ export function VoucherForm({
         {t("apply")}
       </Button>
       {!!translatedError && <ErrorDisplay>{translatedError}</ErrorDisplay>}
-      {successMessage && <SuccessBadge text={successMessage} />}
+      {successMessage && <SuccessBadge>{successMessage}</SuccessBadge>}
     </form>
   );
 }
