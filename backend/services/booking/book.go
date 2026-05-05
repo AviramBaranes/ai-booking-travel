@@ -95,6 +95,7 @@ func (s *Service) Book(ctx context.Context, params BookRequest) (*BookResponse, 
 		rlog.Error("failed to create reservation after successful booking",
 			"confirmationNumber", confID, "error", err)
 		notifications.CriticalErrorEventTopic.Publish(ctx, &notifications.CriticalErrorEvent{
+			Subject: "Reservation creation failed after successful booking",
 			Message: fmt.Sprintf("failed to create reservation after successful booking, confirmationNumber: %s, error: %v", confID, err),
 		})
 		return nil, errReservationCreationFailed

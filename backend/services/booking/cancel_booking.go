@@ -27,6 +27,7 @@ func CancelBooking(ctx context.Context, e *reservation.BookingCancellationEvent)
 	if err != nil {
 		rlog.Error("unsupported broker for cancellation", "broker", b, "reservationId", e.ReservationID)
 		notifications.CriticalErrorEventTopic.Publish(ctx, &notifications.CriticalErrorEvent{
+			Subject: "Unsupported broker for booking cancellation",
 			Message: fmt.Sprintf("unsupported broker for cancellation: %v, reservationId: %v", b, e.ReservationID),
 		})
 		return err
@@ -36,6 +37,7 @@ func CancelBooking(ctx context.Context, e *reservation.BookingCancellationEvent)
 	if err != nil {
 		rlog.Error("failed to cancel booking", "broker", b, "reservationId", e.ReservationID, "error", err)
 		notifications.CriticalErrorEventTopic.Publish(ctx, &notifications.CriticalErrorEvent{
+			Subject: "Failed to cancel booking",
 			Message: fmt.Sprintf("failed to cancel booking: %s, bookingID: %v, reservationId: %v, error: %v", b.Name(), e.BrokerReservationID, e.ReservationID, err),
 		})
 		return err
