@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -25,15 +25,13 @@ export function ExpiredSearchGate({
 }: ExpiredSearchGateProps) {
   const t = useTranslations("booking.expiredSearch");
   const queryClient = useQueryClient();
-  const router = useRouter();
-  const params = useParams<{ lang: string }>();
-
-  const langParam = params.lang;
-  const lang = Array.isArray(langParam) ? langParam[0] : langParam;
+  const { lang } = useParams<{ lang: string }>();
 
   const [isExpired, setIsExpired] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(REDIRECT_SECONDS);
+  const [isTabFocused, setIsTabFocused] = useState(true);
   const redirectedRef = useRef(false);
+  const pendingRedirectRef = useRef(false);
 
   const redirectHref = useMemo(
     () => `/${lang}/results?${searchRequestToParams(searchRequest)}`,
@@ -43,8 +41,41 @@ export function ExpiredSearchGate({
   const redirectToResults = useCallback(() => {
     if (redirectedRef.current) return;
     redirectedRef.current = true;
-    router.push(redirectHref);
-  }, [router, redirectHref]);
+    location.href = redirectHref;
+  }, [redirectHref]);
+
+  const redirectWhenFocused = useCallback(() => {
+    if (document.hidden || !document.hasFocus()) {
+      pendingRedirectRef.current = true;
+      return;
+    }
+
+    redirectToResults();
+  }, [redirectToResults]);
+
+  useEffect(() => {
+    const handleVisibilityOrFocus = () => {
+      const focused = !document.hidden && document.hasFocus();
+      setIsTabFocused(focused);
+
+      if (focused && pendingRedirectRef.current) {
+        pendingRedirectRef.current = false;
+        redirectToResults();
+      }
+    };
+
+    handleVisibilityOrFocus();
+
+    document.addEventListener("visibilitychange", handleVisibilityOrFocus);
+    window.addEventListener("focus", handleVisibilityOrFocus);
+    window.addEventListener("blur", handleVisibilityOrFocus);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+      window.removeEventListener("focus", handleVisibilityOrFocus);
+      window.removeEventListener("blur", handleVisibilityOrFocus);
+    };
+  }, [redirectToResults]);
 
   // On mount: compute time remaining based on when data was originally fetched.
   // If there's no data at all, redirect immediately.
@@ -53,7 +84,7 @@ export function ExpiredSearchGate({
     const state = queryClient.getQueryState(queryKey);
 
     if (!state?.dataUpdatedAt) {
-      redirectToResults();
+      redirectWhenFocused();
       return;
     }
 
@@ -75,17 +106,17 @@ export function ExpiredSearchGate({
 
     return () => clearTimeout(expiryTimer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [queryClient, redirectWhenFocused, searchRequest]);
 
   // Start redirect countdown once expired.
   useEffect(() => {
-    if (!isExpired) return;
+    if (!isExpired || !isTabFocused) return;
 
     const interval = setInterval(() => {
       setSecondsLeft((previous) => {
         if (previous <= 1) {
           clearInterval(interval);
-          redirectToResults();
+          redirectWhenFocused();
           return 0;
         }
         return previous - 1;
@@ -93,7 +124,7 @@ export function ExpiredSearchGate({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isExpired, redirectToResults]);
+  }, [isExpired, isTabFocused, redirectWhenFocused]);
 
   if (!isExpired) {
     return <>{children}</>;
