@@ -20,7 +20,7 @@ func CalculateDaysCount(pickupDate, pickupTime, dropoffDate, dropoffTime string)
 		return 0, fmt.Errorf("invalid dropoff datetime: %s %s: %w", dropoffDate, dropoffTime, err)
 	}
 
-	days := int(dropoffDateTime.Sub(pickupDateTime).Hours()/24) + 1
+	days := int(dropoffDateTime.Sub(pickupDateTime).Hours() / 24)
 	if dropoffDateTime.Sub(pickupDateTime).Hours()/24 > float64(days) {
 		days++
 	}
