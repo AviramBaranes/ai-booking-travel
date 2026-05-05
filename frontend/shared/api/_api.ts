@@ -52,7 +52,7 @@ export async function withErrorHandler<T>(
         window.location.href = `/${lang}?login=open`;
       }
     }
-    if (process.env.NODE_ENV === "development") console.error({ error });
+    if (process.env.NODE_ENV === "development") console.log({ error });
     if (error.details && typeof error.details.code === "string") {
       throw new AppError(error.details.code, error.details.field ?? null);
     }
