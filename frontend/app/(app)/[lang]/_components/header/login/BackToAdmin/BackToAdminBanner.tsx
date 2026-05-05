@@ -1,9 +1,10 @@
 import { getServerSession } from "next-auth";
 import { getTranslations } from "next-intl/server";
 import { BackToAdminButton } from "./BackToAdminButton";
+import { authOptions } from "@/shared/auth/authOptions";
 
 export async function BackToAdminBanner() {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   const t = await getTranslations("BackToAdmin");
 
   if (!session?.user?.isAdminAsAgent) return null;

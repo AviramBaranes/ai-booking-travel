@@ -120,7 +120,7 @@ export default function AgentsTable() {
           type: "password",
         },
         {
-          key: "id" as keyof accounts.AgentResponse,
+          key: "actions" as keyof accounts.AgentResponse,
           label: "פעולות",
           type: "text",
           editable: false,
