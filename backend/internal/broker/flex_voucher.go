@@ -6,7 +6,7 @@ import (
 	"net/url"
 )
 
-func (f Flex) GenerateVoucher(bookingID string) (string, error) {
+func (f Flex) GenerateVoucher(bookingID string, _ *VoucherData) (string, error) {
 	form := url.Values{}
 	form.Set("FCHReference", bookingID)
 	form.Set("SupplierReference", "")
