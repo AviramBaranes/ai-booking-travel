@@ -49,12 +49,19 @@ type Canceler interface {
 	Cancel(bookingID, lastName, supplierCode string) error
 }
 
+// VoucherProvider provides voucher generation capabilities for a broker.
+type VoucherProvider interface {
+	Name() Name
+	GenerateVoucher(bookingID string) (string, error)
+}
+
 // Broker composes all broker capabilities into a single interface.
 type Broker interface {
 	LocationSearcher
 	AvailabilitySearcher
 	Booker
 	Canceler
+	VoucherProvider
 }
 
 // LocationPage represents a page of locations returned by a broker, including the list of locations and a cursor for the next page.

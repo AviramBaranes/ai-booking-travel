@@ -109,3 +109,10 @@ type flexCancelResponse struct {
 	ReturnCode   int    `xml:"ReturnCode"`
 	ErrorMessage string `xml:"ErrorMessage"`
 }
+
+// flexGetVoucherResponse is the top-level XML response for the Flex GetVoucher API.
+type flexGetVoucherResponse struct {
+	ReturnCode   int    `xml:"ReturnCode"`
+	ErrorMessage string `xml:"ErrorMessage"`
+	HtmlVoucher  string `xml:"Voucher"`
+}
