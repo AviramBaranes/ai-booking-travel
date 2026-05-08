@@ -18,7 +18,7 @@ type Flex struct {
 
 const defaultTimeout = 5 * time.Minute
 
-// NewFlexWithErpCfg creates a new instance of the Flex broker with a default HTTP client and timeout.
+// NewFlexWithErpCfg creates a new instance of the Flex broker with a default HTTP client and timeout, and allows setting the ERP day charge configuration.
 func NewFlexWithErpCfg(erpDayCharge int) Flex {
 	return Flex{
 		erpDayCharge: erpDayCharge,

@@ -52,7 +52,7 @@ type Canceler interface {
 // VoucherProvider provides voucher generation capabilities for a broker.
 type VoucherProvider interface {
 	Name() Name
-	GenerateVoucher(bookingID string, data *VoucherData) (string, error)
+	GenerateVoucher(data *VoucherData) (string, error)
 }
 
 // VoucherData contains the details required to generate a voucher for a booking.
@@ -81,7 +81,7 @@ type VoucherData struct {
 	RateCode           string
 	ITCode             string
 	Passengers         int
-	Suitcases          string
+	Suitcases          int
 	PrepaidIncludes    []string
 	OptionalServices   []string
 }
