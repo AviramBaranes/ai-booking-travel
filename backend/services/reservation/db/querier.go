@@ -9,7 +9,7 @@ import (
 )
 
 type Querier interface {
-	ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) (int64, error)
+	ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) (Reservation, error)
 	CancelReservation(ctx context.Context, id int64) error
 	CountReservationsByUser(ctx context.Context, arg CountReservationsByUserParams) (int64, error)
 	GetOutboxByTopic(ctx context.Context, topic string) ([]Outbox, error)

@@ -42,10 +42,10 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 }
 
 // ApplyVoucher mocks base method.
-func (m *MockQuerier) ApplyVoucher(ctx context.Context, arg db.ApplyVoucherParams) (int64, error) {
+func (m *MockQuerier) ApplyVoucher(ctx context.Context, arg db.ApplyVoucherParams) (db.Reservation, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ApplyVoucher", ctx, arg)
-	ret0, _ := ret[0].(int64)
+	ret0, _ := ret[0].(db.Reservation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

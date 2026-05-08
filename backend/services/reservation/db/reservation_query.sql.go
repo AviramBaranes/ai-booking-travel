@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const applyVoucher = `-- name: ApplyVoucher :execrows
+const applyVoucher = `-- name: ApplyVoucher :one
 UPDATE reservations
 SET 
     reservation_status = 'vouchered',
@@ -21,6 +21,7 @@ WHERE
 id = $1
 AND
 user_id = $2
+RETURNING id, user_id, broker_reservation_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, country_code, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, discount_percentage, bt_erp_price, vat_percentage, total_price, pickup_date, return_date, pickup_time, dropoff_time, rental_days, driver_title, driver_first_name, driver_last_name, driver_age, pickup_location_name, dropoff_location_name, voucher_number, vouchered_at, created_at, updated_at
 `
 
 type ApplyVoucherParams struct {
@@ -29,12 +30,46 @@ type ApplyVoucherParams struct {
 	VoucherNumber *string
 }
 
-func (q *Queries) ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) (int64, error) {
-	result, err := q.db.Exec(ctx, applyVoucher, arg.ID, arg.UserID, arg.VoucherNumber)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
+func (q *Queries) ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) (Reservation, error) {
+	row := q.db.QueryRow(ctx, applyVoucher, arg.ID, arg.UserID, arg.VoucherNumber)
+	var i Reservation
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.BrokerReservationID,
+		&i.ReservationStatus,
+		&i.PaymentStatus,
+		&i.Broker,
+		&i.SupplierCode,
+		&i.CarDetails,
+		&i.PlanInclusions,
+		&i.CountryCode,
+		&i.CurrencyCode,
+		&i.CurrencyRate,
+		&i.PurchasePrice,
+		&i.MarkupPercentage,
+		&i.BrokerErpPrice,
+		&i.DiscountPercentage,
+		&i.BtErpPrice,
+		&i.VatPercentage,
+		&i.TotalPrice,
+		&i.PickupDate,
+		&i.ReturnDate,
+		&i.PickupTime,
+		&i.DropoffTime,
+		&i.RentalDays,
+		&i.DriverTitle,
+		&i.DriverFirstName,
+		&i.DriverLastName,
+		&i.DriverAge,
+		&i.PickupLocationName,
+		&i.DropoffLocationName,
+		&i.VoucherNumber,
+		&i.VoucheredAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const cancelReservation = `-- name: CancelReservation :exec
