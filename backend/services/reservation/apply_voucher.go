@@ -52,7 +52,7 @@ func (s *Service) ApplyVoucher(ctx context.Context, id int64, p ApplyVoucherRequ
 		return nil
 	}
 
-	userEmail, err := accounts.GetUserEmail(ctx, authData.UserID)
+	userEmail, err := accounts.GetUserEmail(ctx, accounts.GetUserEmailParams{UserID: authData.UserID})
 	if err != nil {
 		rlog.Error("getting user email for voucher", "error", err, "id", id, "userID", authData.UserID)
 		notifyVoucherError(ctx, "Voucher Send Failed — Could Not Resolve Recipient", id, reservation.Broker, p.Voucher, err)

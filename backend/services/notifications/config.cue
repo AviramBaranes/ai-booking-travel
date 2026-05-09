@@ -7,4 +7,4 @@ EmailPort: 587
 SMSUsername: "sogomatic"
 SMSSenderName: "Sogomatic"
 
-GotenbergURL: "http://localhost:3000"
+GotenbergURL: "http://localhost:8080"

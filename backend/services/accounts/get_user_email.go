@@ -8,7 +8,7 @@ import (
 	"encore.dev/rlog"
 )
 
-type GetUserEmailRequest struct {
+type GetUserEmailParams struct {
 	UserID int32
 }
 
@@ -17,13 +17,13 @@ type GetUserEmailResponse struct {
 }
 
 // encore:api private
-func (s *Service) GetUserEmail(ctx context.Context, id int32) (*GetUserEmailResponse, error) {
-	user, err := s.query.GetUserById(ctx, id)
+func (s *Service) GetUserEmail(ctx context.Context, params GetUserEmailParams) (*GetUserEmailResponse, error) {
+	user, err := s.query.GetUserById(ctx, params.UserID)
 	if err != nil {
 		if errs.Code(err) == errs.NotFound {
 			return nil, api_errors.ErrNotFound
 		}
-		rlog.Error("failed to get user email", "error", err, "id", id)
+		rlog.Error("failed to get user email", "error", err, "id", params.UserID)
 		return nil, api_errors.ErrInternalError
 	}
 	return &GetUserEmailResponse{Email: user.Email}, nil
