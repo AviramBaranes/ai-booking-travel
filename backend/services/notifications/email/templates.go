@@ -19,3 +19,11 @@ type MonthlyReportData struct {
 var MonthlyReportTemplate = Template[MonthlyReportData]{
 	name: "monthly_report",
 }
+
+type VoucherEmailData struct {
+	VoucherNumber string
+}
+
+var VoucherEmailTemplate = Template[VoucherEmailData]{
+	name: "send_voucher",
+}

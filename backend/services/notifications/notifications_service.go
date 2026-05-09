@@ -1,6 +1,7 @@
 package notifications
 
 import (
+	"encore.app/internal/pdf"
 	"encore.app/services/notifications/email"
 	"encore.app/services/notifications/sms"
 	"encore.dev/config"
@@ -9,8 +10,9 @@ import (
 
 // encore:service
 type Service struct {
-	emailSender email.Sender
-	smsSender   sms.Sender
+	emailSender  email.Sender
+	smsSender    sms.Sender
+	pdfConverter pdf.PDFConverter
 }
 
 // Config holds the configuration for the notifications service, including email settings.
@@ -20,6 +22,7 @@ type Config struct {
 	EmailPort     config.Int
 	SMSUsername   config.String
 	SMSSenderName config.String
+	GotenbergURL  config.String
 }
 
 var cfg = config.Load[*Config]()
@@ -48,7 +51,8 @@ func initService() (*Service, error) {
 	)
 
 	return &Service{
-		emailSender: es,
-		smsSender:   ss,
+		emailSender:  es,
+		smsSender:    ss,
+		pdfConverter: pdf.NewPdfConverter(cfg.GotenbergURL()),
 	}, nil
 }

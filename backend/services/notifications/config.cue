@@ -5,4 +5,6 @@ EmailHost: "smtp.gmail.com"
 EmailPort: 587
 
 SMSUsername: "sogomatic"
-SMSSenderName: "Sogomatic" 
+SMSSenderName: "Sogomatic"
+
+GotenbergURL: "http://localhost:3000"

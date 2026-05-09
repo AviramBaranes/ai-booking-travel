@@ -52,7 +52,14 @@ func (s *Service) ApplyVoucher(ctx context.Context, id int64, p ApplyVoucherRequ
 		return nil
 	}
 
-	err = sendVoucher(b, reservation)
+	userEmail, err := accounts.GetUserEmail(ctx, authData.UserID)
+	if err != nil {
+		rlog.Error("getting user email for voucher", "error", err, "id", id, "userID", authData.UserID)
+		notifyVoucherError(ctx, "Voucher Send Failed — Could Not Resolve Recipient", id, reservation.Broker, p.Voucher, err)
+		return nil
+	}
+
+	err = sendVoucher(ctx, b, reservation, userEmail.Email)
 	if err != nil {
 		rlog.Error("sending voucher", "error", err, "id", id, "voucher", p.Voucher)
 		notifyVoucherError(ctx, "Voucher Send Failed", id, reservation.Broker, p.Voucher, err)
@@ -81,7 +88,8 @@ func getVoucherProvider(b db.Broker) (broker.VoucherProvider, error) {
 	}
 }
 
-func sendVoucher(b broker.VoucherProvider, reservation db.Reservation) error {
+// sendVoucher generates a voucher using the broker's VoucherProvider and sends it to the recipient's email.
+func sendVoucher(ctx context.Context, b broker.VoucherProvider, reservation db.Reservation, recipientEmail string) error {
 	voucherData, err := toVoucherData(reservation)
 	if err != nil {
 		return fmt.Errorf("converting to voucher data: %w", err)
@@ -92,7 +100,15 @@ func sendVoucher(b broker.VoucherProvider, reservation db.Reservation) error {
 		return fmt.Errorf("generating voucher: %w", err)
 	}
 
-	_ = htmlVoucher
+	if err = notifications.SendVoucher(ctx, notifications.SendVoucherRequest{
+		RecipientEmail: recipientEmail,
+		VoucherNumber:  reservation.BrokerReservationID,
+		VoucherHTML:    htmlVoucher,
+		Broker:         notifications.VoucherBroker(reservation.Broker),
+	}); err != nil {
+		return fmt.Errorf("sending voucher email: %w", err)
+	}
+
 	return nil
 }
 
