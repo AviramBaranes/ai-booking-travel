@@ -19,6 +19,7 @@ type Querier interface {
 	CountLocationBrokerCodesWithLocation(ctx context.Context, arg CountLocationBrokerCodesWithLocationParams) (int64, error)
 	CreateCoupon(ctx context.Context, arg CreateCouponParams) (Coupon, error)
 	CreateCurrency(ctx context.Context, arg CreateCurrencyParams) (Currency, error)
+	CreatePriceOffer(ctx context.Context, arg CreatePriceOfferParams) (PriceOffer, error)
 	DeleteBrokerTranslation(ctx context.Context, id int32) error
 	DeleteCoupon(ctx context.Context, id int32) error
 	DeleteCurrency(ctx context.Context, id int32) error
@@ -39,6 +40,8 @@ type Querier interface {
 	GetLocationBrokerCode(ctx context.Context, arg GetLocationBrokerCodeParams) (LocationBrokerCode, error)
 	GetLocationByBrokerLocationID(ctx context.Context, brokerLocationID string) (Location, error)
 	GetLocationById(ctx context.Context, id int64) (Location, error)
+	GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdParams) (PriceOffer, error)
+	GetPriceOfferByToken(ctx context.Context, token pgtype.UUID) (PriceOffer, error)
 	GetSnapshotByID(ctx context.Context, id int64) (AvailablePlansSnapshot, error)
 	InsertAvailablePlansSnapshot(ctx context.Context, arg InsertAvailablePlansSnapshotParams) (int64, error)
 	InsertBrokerTranslation(ctx context.Context, sourceText string) (int32, error)
@@ -54,12 +57,14 @@ type Querier interface {
 	ListHertzMarkupRates(ctx context.Context, arg ListHertzMarkupRatesParams) ([]HertzMarkupRate, error)
 	ListLocationBrokerCodesWithLocation(ctx context.Context, arg ListLocationBrokerCodesWithLocationParams) ([]ListLocationBrokerCodesWithLocationRow, error)
 	ListPendingTranslations(ctx context.Context) ([]BrokerTranslation, error)
+	ListPriceOffersByAgent(ctx context.Context, arg ListPriceOffersByAgentParams) ([]ListPriceOffersByAgentRow, error)
 	SearchLocations(ctx context.Context, search string) ([]Location, error)
 	TranslatePendingTranslation(ctx context.Context, arg TranslatePendingTranslationParams) error
 	UpdateBrokerTranslation(ctx context.Context, arg UpdateBrokerTranslationParams) error
 	UpdateCoupon(ctx context.Context, arg UpdateCouponParams) (Coupon, error)
 	UpdateCurrency(ctx context.Context, arg UpdateCurrencyParams) (Currency, error)
 	UpdateHertzMarkupRate(ctx context.Context, arg UpdateHertzMarkupRateParams) (HertzMarkupRate, error)
+	UpdatePriceOffer(ctx context.Context, arg UpdatePriceOfferParams) error
 	UpsertCurrencies(ctx context.Context, arg UpsertCurrenciesParams) error
 	UpsertLocationByCountryCodeName(ctx context.Context, arg UpsertLocationByCountryCodeNameParams) (int64, error)
 	UpsertLocationByIATA(ctx context.Context, arg UpsertLocationByIATAParams) (int64, error)

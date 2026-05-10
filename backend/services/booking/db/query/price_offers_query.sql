@@ -1,0 +1,78 @@
+-- name: CreatePriceOffer :one
+INSERT INTO price_offers (
+    agent_id,
+    notes,
+    pickup_location_id,
+    dropoff_location_id,
+    pickup_date,
+    return_date,
+    pickup_time,
+    dropoff_time,
+    driver_age,
+    supplier_code,
+    car_details,
+    plan_inclusions,
+    currency_code,
+    purchase_price,
+    markup_percentage,
+    broker_erp_price,
+    bt_erp_price,
+    total_price,
+    offered_currency_code,
+    offered_price,
+    expires_at
+) VALUES (
+    sqlc.arg(agent_id),
+    sqlc.narg(notes),
+    sqlc.arg(pickup_location_id),
+    sqlc.arg(dropoff_location_id),
+    sqlc.arg(pickup_date),
+    sqlc.arg(return_date),
+    sqlc.arg(pickup_time),
+    sqlc.arg(dropoff_time),
+    sqlc.arg(driver_age),
+    sqlc.arg(supplier_code),
+    sqlc.arg(car_details),
+    sqlc.arg(plan_inclusions),
+    sqlc.arg(currency_code),
+    sqlc.arg(purchase_price),
+    sqlc.arg(markup_percentage),
+    sqlc.arg(broker_erp_price),
+    sqlc.arg(bt_erp_price),
+    sqlc.arg(total_price),
+    sqlc.arg(offered_currency_code),
+    sqlc.arg(offered_price),
+    sqlc.arg(expires_at)
+)
+RETURNING *;   
+
+-- name: GetPriceOfferByToken :one
+SELECT * FROM price_offers WHERE token = sqlc.arg(token);
+
+-- name: GetPriceOfferById :one
+SELECT * FROM price_offers WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
+
+-- name: UpdatePriceOffer :exec
+UPDATE price_offers SET
+    status = COALESCE(sqlc.narg(status), status),
+    notes = COALESCE(sqlc.narg(notes), notes),
+    offered_currency_code = COALESCE(sqlc.narg(offered_currency_code), offered_currency_code),
+    offered_price = COALESCE(sqlc.narg(offered_price), offered_price),
+    updated_at = now()
+WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
+
+-- name: ListPriceOffersByAgent :many
+SELECT price_offers.id, status, notes, 
+pl.name AS pickup_location, dl.name AS dropoff_location, 
+pickup_date, return_date, pickup_time, dropoff_time, 
+currency_code, total_price, offered_currency_code, offered_price, 
+expires_at, price_offers.created_at
+FROM price_offers
+    JOIN locations pl ON price_offers.pickup_location_id = pl.id
+    JOIN locations dl ON price_offers.dropoff_location_id = dl.id
+WHERE agent_id = sqlc.arg(agent_id)
+  AND (sqlc.narg(status)::offer_status IS NULL OR status = sqlc.narg(status)::offer_status)
+  AND (sqlc.narg(notes_search)::text IS NULL OR notes ILIKE '%' || sqlc.narg(notes_search)::text || '%')
+ORDER BY price_offers.created_at DESC
+LIMIT sqlc.arg(page_size)
+OFFSET sqlc.arg(page_offset);

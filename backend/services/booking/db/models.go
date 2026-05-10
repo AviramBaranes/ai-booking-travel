@@ -96,6 +96,49 @@ func (ns NullBrokerTranslationStatus) Value() (driver.Value, error) {
 	return string(ns.BrokerTranslationStatus), nil
 }
 
+type OfferStatus string
+
+const (
+	OfferStatusOpen     OfferStatus = "open"
+	OfferStatusBooked   OfferStatus = "booked"
+	OfferStatusDeclined OfferStatus = "declined"
+)
+
+func (e *OfferStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OfferStatus(s)
+	case string:
+		*e = OfferStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OfferStatus: %T", src)
+	}
+	return nil
+}
+
+type NullOfferStatus struct {
+	OfferStatus OfferStatus
+	Valid       bool // Valid is true if OfferStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOfferStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.OfferStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OfferStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOfferStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OfferStatus), nil
+}
+
 type AvailablePlansSnapshot struct {
 	ID          int64
 	CreatedAt   pgtype.Timestamptz
@@ -171,4 +214,33 @@ type LocationBrokerCode struct {
 	Enabled          bool
 	CreatedAt        pgtype.Timestamptz
 	UpdatedAt        pgtype.Timestamptz
+}
+
+type PriceOffer struct {
+	ID                  int64
+	Token               pgtype.UUID
+	AgentID             int32
+	Status              OfferStatus
+	Notes               *string
+	PickupLocationID    string
+	DropoffLocationID   string
+	PickupDate          pgtype.Date
+	ReturnDate          pgtype.Date
+	PickupTime          string
+	DropoffTime         string
+	DriverAge           int32
+	SupplierCode        string
+	CarDetails          []byte
+	PlanInclusions      []string
+	CurrencyCode        string
+	PurchasePrice       pgtype.Numeric
+	MarkupPercentage    pgtype.Numeric
+	BrokerErpPrice      pgtype.Numeric
+	BtErpPrice          int32
+	TotalPrice          int32
+	OfferedCurrencyCode string
+	OfferedPrice        int32
+	ExpiresAt           pgtype.Timestamptz
+	CreatedAt           pgtype.Timestamptz
+	UpdatedAt           pgtype.Timestamptz
 }
