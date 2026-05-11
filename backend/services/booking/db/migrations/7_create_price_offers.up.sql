@@ -10,11 +10,11 @@ CREATE TABLE
 
         pickup_location_id TEXT NOT NULL,
         dropoff_location_id TEXT NOT NULL,
-        pickup_date DATE NOT NULL,
-        return_date DATE NOT NULL,
+        pickup_date TEXT NOT NULL,
+        return_date TEXT NOT NULL,
         pickup_time TEXT NOT NULL,
         dropoff_time TEXT NOT NULL,
-        driver_age INT NOT NULL,
+        driver_age TEXT NOT NULL,
 
         supplier_code TEXT NOT NULL,
         car_details JSONB NOT NULL,
@@ -29,7 +29,6 @@ CREATE TABLE
         offered_currency_code TEXT NOT NULL,
         offered_price INT NOT NULL,
         
-        expires_at TIMESTAMPTZ NOT NULL, 
         created_at TIMESTAMPTZ NOT NULL DEFAULT now (),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now ()
     );

@@ -19,8 +19,7 @@ INSERT INTO price_offers (
     bt_erp_price,
     total_price,
     offered_currency_code,
-    offered_price,
-    expires_at
+    offered_price
 ) VALUES (
     sqlc.arg(agent_id),
     sqlc.arg(name),
@@ -41,8 +40,7 @@ INSERT INTO price_offers (
     sqlc.arg(bt_erp_price),
     sqlc.arg(total_price),
     sqlc.arg(offered_currency_code),
-    sqlc.arg(offered_price),
-    sqlc.arg(expires_at)
+    sqlc.arg(offered_price)
 )
 RETURNING *;   
 
@@ -66,7 +64,7 @@ SELECT price_offers.id, status, price_offers.name,
 pl.name AS pickup_location, dl.name AS dropoff_location, 
 pickup_date, return_date, pickup_time, dropoff_time, 
 currency_code, total_price, offered_currency_code, offered_price, 
-expires_at, price_offers.created_at
+price_offers.created_at
 FROM price_offers
     JOIN locations pl ON price_offers.pickup_location_id = pl.id
     JOIN locations dl ON price_offers.dropoff_location_id = dl.id

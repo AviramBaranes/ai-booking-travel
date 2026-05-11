@@ -224,11 +224,11 @@ type PriceOffer struct {
 	Name                string
 	PickupLocationID    string
 	DropoffLocationID   string
-	PickupDate          pgtype.Date
-	ReturnDate          pgtype.Date
+	PickupDate          string
+	ReturnDate          string
 	PickupTime          string
 	DropoffTime         string
-	DriverAge           int32
+	DriverAge           string
 	SupplierCode        string
 	CarDetails          []byte
 	PlanInclusions      []string
@@ -240,7 +240,6 @@ type PriceOffer struct {
 	TotalPrice          int32
 	OfferedCurrencyCode string
 	OfferedPrice        int32
-	ExpiresAt           pgtype.Timestamptz
 	CreatedAt           pgtype.Timestamptz
 	UpdatedAt           pgtype.Timestamptz
 }

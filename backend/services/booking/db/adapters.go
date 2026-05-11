@@ -32,3 +32,11 @@ func NullBrokerTranslationStatusFromString(s string) NullBrokerTranslationStatus
 		Valid:                   true,
 	}
 }
+
+// UuidToString converts a pgtype.UUID to its string representation, returning an empty string if the UUID is null.
+func UuidToString(u pgtype.UUID) string {
+	if !u.Valid {
+		return ""
+	}
+	return u.String()
+}
