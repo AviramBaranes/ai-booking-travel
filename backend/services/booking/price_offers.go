@@ -3,8 +3,10 @@ package booking
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/broker"
 	"encore.app/internal/pricing"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
@@ -30,7 +32,7 @@ type PriceOfferResponse struct {
 
 // CreatePriceOffer creates a new price offer based on the provided parameters, including details from the associated snapshot and plan, and returns the created offer's ID and token.
 //
-// encore:api public method=POST path=/booking/price-offers tag:agent
+// encore:api auth method=POST path=/booking/price-offers tag:agent
 func (s *Service) CreatePriceOffer(ctx context.Context, params CreatePriceOfferParams) (*PriceOfferResponse, error) {
 	snapshot, err := s.getSnapshot(ctx, params.SnapshotID)
 	if err != nil {
@@ -89,5 +91,71 @@ func (s *Service) CreatePriceOffer(ctx context.Context, params CreatePriceOfferP
 	return &PriceOfferResponse{
 		ID:    priceOffer.ID,
 		Token: db.UuidToString(priceOffer.Token),
+	}, nil
+}
+
+// GetPriceOfferResponse represents the public-facing details of a price offer, exposing only the offered price (no internal pricing breakdown).
+type GetPriceOfferResponse struct {
+	ID                  int64             `json:"id"`
+	Status              string            `json:"status"`
+	Name                string            `json:"name"`
+	CarDetails          broker.CarDetails `json:"carDetails"`
+	PlanInclusions      []string          `json:"planInclusions"`
+	IsErpIncluded       bool              `json:"isErpIncluded"`
+	CurrencyCode        string            `json:"currencyCode"`
+	TotalPrice          int32             `json:"totalPrice"`
+	PickupLocationName  string            `json:"pickupLocationName"`
+	DropoffLocationName string            `json:"dropoffLocationName"`
+	PickupDate          string            `json:"pickupDate"`
+	ReturnDate          string            `json:"returnDate"`
+	PickupTime          string            `json:"pickupTime"`
+	DropoffTime         string            `json:"dropoffTime"`
+	DriverAge           string            `json:"driverAge"`
+	CreatedAt           string            `json:"createdAt"`
+}
+
+// GetClientPriceOffer retrieves the details of a price offer based on the provided token, it doesn't exposed the agent internal pricing details.
+//
+// encore:api public method=GET path=/booking/price-offers/:token
+func (s *Service) GetClientPriceOffer(ctx context.Context, token string) (*GetPriceOfferResponse, error) {
+	uuid := db.StringToUuid(token)
+	if !uuid.Valid {
+		return nil, api_errors.ErrNotFound
+	}
+
+	row, err := s.query.GetPriceOfferByToken(ctx, uuid)
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return nil, api_errors.ErrNotFound
+		}
+		rlog.Error("failed to get price offer", "token", token, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	var carDetails broker.CarDetails
+	if err := json.Unmarshal(row.CarDetails, &carDetails); err != nil {
+		rlog.Error("failed to unmarshal car details", "token", token, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	isErpIncluded := (float64(row.BtErpPrice) + db.NumericToFloat64(row.BrokerErpPrice)) > 0
+
+	return &GetPriceOfferResponse{
+		ID:                  row.ID,
+		Status:              string(row.Status),
+		Name:                row.Name,
+		CarDetails:          carDetails,
+		PlanInclusions:      row.PlanInclusions,
+		IsErpIncluded:       isErpIncluded,
+		CurrencyCode:        row.OfferedCurrencyCode,
+		TotalPrice:          row.OfferedPrice,
+		PickupLocationName:  row.PickupLocation,
+		DropoffLocationName: row.DropoffLocation,
+		PickupDate:          row.PickupDate,
+		ReturnDate:          row.ReturnDate,
+		PickupTime:          row.PickupTime,
+		DropoffTime:         row.DropoffTime,
+		DriverAge:           row.DriverAge,
+		CreatedAt:           db.TimestamptzToString(row.CreatedAt),
 	}, nil
 }
