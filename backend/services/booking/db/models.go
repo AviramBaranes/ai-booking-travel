@@ -221,7 +221,7 @@ type PriceOffer struct {
 	Token               pgtype.UUID
 	AgentID             int32
 	Status              OfferStatus
-	Notes               *string
+	Name                string
 	PickupLocationID    string
 	DropoffLocationID   string
 	PickupDate          pgtype.Date

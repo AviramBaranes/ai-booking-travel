@@ -1,7 +1,7 @@
 -- name: CreatePriceOffer :one
 INSERT INTO price_offers (
     agent_id,
-    notes,
+    name,
     pickup_location_id,
     dropoff_location_id,
     pickup_date,
@@ -23,7 +23,7 @@ INSERT INTO price_offers (
     expires_at
 ) VALUES (
     sqlc.arg(agent_id),
-    sqlc.narg(notes),
+    sqlc.arg(name),
     sqlc.arg(pickup_location_id),
     sqlc.arg(dropoff_location_id),
     sqlc.arg(pickup_date),
@@ -55,14 +55,14 @@ SELECT * FROM price_offers WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent
 -- name: UpdatePriceOffer :exec
 UPDATE price_offers SET
     status = COALESCE(sqlc.narg(status), status),
-    notes = COALESCE(sqlc.narg(notes), notes),
+    name = COALESCE(sqlc.narg(name), name),
     offered_currency_code = COALESCE(sqlc.narg(offered_currency_code), offered_currency_code),
     offered_price = COALESCE(sqlc.narg(offered_price), offered_price),
     updated_at = now()
 WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
 
 -- name: ListPriceOffersByAgent :many
-SELECT price_offers.id, status, notes, 
+SELECT price_offers.id, status, price_offers.name, 
 pl.name AS pickup_location, dl.name AS dropoff_location, 
 pickup_date, return_date, pickup_time, dropoff_time, 
 currency_code, total_price, offered_currency_code, offered_price, 
@@ -72,7 +72,7 @@ FROM price_offers
     JOIN locations dl ON price_offers.dropoff_location_id = dl.id
 WHERE agent_id = sqlc.arg(agent_id)
   AND (sqlc.narg(status)::offer_status IS NULL OR status = sqlc.narg(status)::offer_status)
-  AND (sqlc.narg(notes_search)::text IS NULL OR notes ILIKE '%' || sqlc.narg(notes_search)::text || '%')
+  AND (sqlc.narg(name_search)::text IS NULL OR price_offers.name ILIKE '%' || sqlc.narg(name_search)::text || '%')
 ORDER BY price_offers.created_at DESC
 LIMIT sqlc.arg(page_size)
 OFFSET sqlc.arg(page_offset);

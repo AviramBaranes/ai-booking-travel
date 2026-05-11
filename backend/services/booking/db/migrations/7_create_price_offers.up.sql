@@ -6,7 +6,7 @@ CREATE TABLE
         token UUID NOT NULL UNIQUE DEFAULT gen_random_uuid (), 
         agent_id INT NOT NULL, 
         status offer_status NOT NULL DEFAULT 'open',
-        notes TEXT,
+        name TEXT NOT NULL,
 
         pickup_location_id TEXT NOT NULL,
         dropoff_location_id TEXT NOT NULL,
