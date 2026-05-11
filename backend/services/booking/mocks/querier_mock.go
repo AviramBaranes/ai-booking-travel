@@ -455,10 +455,10 @@ func (mr *MockQuerierMockRecorder) GetPriceOfferById(ctx, arg any) *gomock.Call 
 }
 
 // GetPriceOfferByToken mocks base method.
-func (m *MockQuerier) GetPriceOfferByToken(ctx context.Context, token pgtype.UUID) (db.PriceOffer, error) {
+func (m *MockQuerier) GetPriceOfferByToken(ctx context.Context, token pgtype.UUID) (db.GetPriceOfferByTokenRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPriceOfferByToken", ctx, token)
-	ret0, _ := ret[0].(db.PriceOffer)
+	ret0, _ := ret[0].(db.GetPriceOfferByTokenRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

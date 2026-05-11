@@ -45,7 +45,11 @@ INSERT INTO price_offers (
 RETURNING *;   
 
 -- name: GetPriceOfferByToken :one
-SELECT * FROM price_offers WHERE token = sqlc.arg(token);
+SELECT price_offers.* , pl.name AS pickup_location, dl.name AS dropoff_location
+FROM price_offers
+    JOIN locations pl ON price_offers.pickup_location_id = pl.id
+    JOIN locations dl ON price_offers.dropoff_location_id = dl.id
+ WHERE token = sqlc.arg(token);
 
 -- name: GetPriceOfferById :one
 SELECT * FROM price_offers WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
