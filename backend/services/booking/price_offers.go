@@ -25,6 +25,10 @@ type CreatePriceOfferParams struct {
 	OfferedPrice        int32  `json:"offeredPrice"`
 }
 
+func (p CreatePriceOfferParams) Validate() error {
+	return validation.ValidateStruct(p)
+}
+
 // CreatePriceOfferResponse represents the response returned after successfully creating a price offer, including the unique identifier and token for the created offer.
 type PriceOfferResponse struct {
 	ID    int64  `json:"id"`
@@ -385,4 +389,45 @@ func nullOfferStatusFromString(s string) db.NullOfferStatus {
 		return db.NullOfferStatus{}
 	}
 	return db.NullOfferStatus{OfferStatus: db.OfferStatus(s), Valid: true}
+}
+
+type UpdatePriceOfferParams struct {
+	Status              *string `json:"status" encore:"optional" validate:"omitempty,oneof=open booked declined"`
+	Name                *string `json:"name" encore:"optional" validate:"omitempty,notblank"`
+	OfferedCurrencyCode *string `json:"offeredCurrencyCode" encore:"optional" validate:"omitempty,len=3,uppercase_only"`
+	OfferedPrice        *int32  `json:"offeredPrice" encore:"optional" validate:"omitempty,gt=0"`
+}
+
+func (p UpdatePriceOfferParams) Validate() error {
+	return validation.ValidateStruct(p)
+}
+
+// UpdatePriceOffer updates a price offer's mutable fields for the authenticated agent.
+//
+// encore:api auth method=PATCH path=/booking/price-offers/:id tag:agent
+func (s *Service) UpdatePriceOffer(ctx context.Context, id int64, params UpdatePriceOfferParams) error {
+	authData := auth.GetAuthData()
+
+	var status db.NullOfferStatus
+	if params.Status != nil {
+		status = nullOfferStatusFromString(*params.Status)
+	}
+
+	err := s.query.UpdatePriceOffer(ctx, db.UpdatePriceOfferParams{
+		ID:                  id,
+		AgentID:             authData.UserID,
+		Status:              status,
+		Name:                params.Name,
+		OfferedCurrencyCode: params.OfferedCurrencyCode,
+		OfferedPrice:        params.OfferedPrice,
+	})
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return api_errors.ErrNotFound
+		}
+		rlog.Error("failed to update price offer", "id", id, "error", err)
+		return api_errors.ErrInternalError
+	}
+
+	return nil
 }
