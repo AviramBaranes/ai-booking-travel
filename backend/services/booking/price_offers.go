@@ -146,7 +146,7 @@ type GetAgentPriceOfferResponse struct {
 
 // GetClientPriceOffer retrieves the details of a price offer based on the provided token, it doesn't exposed the agent internal pricing details.
 //
-// encore:api public method=GET path=/booking/price-offers/:token
+// encore:api public method=GET path=/booking/price-offers/client/:token
 func (s *Service) GetClientPriceOffer(ctx context.Context, token string) (*GetPriceOfferResponse, error) {
 	uuid := db.StringToUuid(token)
 	if !uuid.Valid {
