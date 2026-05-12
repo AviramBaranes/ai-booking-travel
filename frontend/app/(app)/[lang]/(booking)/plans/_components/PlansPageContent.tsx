@@ -20,6 +20,7 @@ import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellat
 import { useState } from "react";
 import { ErpDialog } from "./ErpDialog";
 import { FeesNote } from "./FeesNote";
+import { PriceOfferDialog } from "./PriceOfferDialog";
 
 interface PlansPageContentProps {
   searchRequest: booking.SearchAvailabilityRequest;
@@ -42,6 +43,7 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
   const { data } = useAvailableCars(searchRequest, { fromCache: true });
 
   const [isErpDialogOpen, setIsErpDialogOpen] = useState(false);
+  const [isPriceOfferDialogOpen, setIsPriceOfferDialogOpen] = useState(false);
 
   if (!vehicle) {
     return <Loading />;
@@ -121,7 +123,7 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
             />
             <Button
               variant="brand"
-              className="mt-4 mx-auto type-paragraph font-bold py-6 px-8 cursor-pointer"
+              className="mt-4 type-paragraph font-bold py-6 px-8 cursor-pointer"
               onClick={() => {
                 if (isErpSelected) {
                   router.push(
@@ -133,6 +135,15 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
               }}
             >
               {t("continueCta")}
+            </Button>
+            <Button
+              variant="brand"
+              className="type-paragraph font-bold py-6 px-8 cursor-pointer bg-navy"
+              onClick={() => {
+                setIsPriceOfferDialogOpen(true);
+              }}
+            >
+              {t("sendQuoteCta")}
             </Button>
           </>
         </SelectedCarCard>
@@ -148,6 +159,11 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
         }}
         erpPrice={vehicle.plans[selectedPlan].erpPrice}
         erpPriceCurrency={vehicle.priceDetails.currency}
+      />
+      <PriceOfferDialog
+        open={isPriceOfferDialogOpen}
+        onOpenChange={setIsPriceOfferDialogOpen}
+        searchRequest={searchRequest}
       />
     </div>
   );

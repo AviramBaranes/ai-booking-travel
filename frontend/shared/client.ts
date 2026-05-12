@@ -819,11 +819,51 @@ export namespace booking {
         markUpNet: number
     }
 
+    /**
+     * CreatePriceOfferParams defines the parameters required to create a price offer.
+     */
+    export interface CreatePriceOfferParams {
+        snapshotId: number
+        rateQualifier: string
+        supplierCode: string
+        includeERP: boolean
+        name: string
+        offeredCurrencyCode: string
+        offeredPrice: number
+    }
+
     export interface CurrencyResponse {
         id: number
         currencyCode: string
         currencyISOName: string
         rate: number
+    }
+
+    /**
+     * GetAgentPriceOfferResponse represents the agent-facing details of a price offer, including internal pricing details.
+     */
+    export interface GetAgentPriceOfferResponse {
+        id: number
+        token: string
+        status: string
+        name: string
+        carDetails: broker.CarDetails
+        planInclusions: string[]
+        supplierCode: string
+        currencyCode: string
+        priceBefDesc: number
+        erpPrice: number
+        totalPrice: number
+        offeredCurrencyCode: string
+        offeredPrice: number
+        pickupLocationName: string
+        dropoffLocationName: string
+        pickupDate: string
+        returnDate: string
+        pickupTime: string
+        dropoffTime: string
+        driverAge: string
+        createdAt: string
     }
 
     /**
@@ -838,6 +878,28 @@ export namespace booking {
      */
     export interface GetPendingTranslationsResponse {
         translations: db.BrokerTranslation[]
+    }
+
+    /**
+     * GetPriceOfferResponse represents the public-facing details of a price offer, exposing only the offered price (no internal pricing breakdown).
+     */
+    export interface GetPriceOfferResponse {
+        id: number
+        status: string
+        name: string
+        carDetails: broker.CarDetails
+        planInclusions: string[]
+        isErpIncluded: boolean
+        currencyCode: string
+        totalPrice: number
+        pickupLocationName: string
+        dropoffLocationName: string
+        pickupDate: string
+        returnDate: string
+        pickupTime: string
+        dropoffTime: string
+        driverAge: string
+        createdAt: string
     }
 
     export interface HertzMarkupRateResponse {
@@ -914,6 +976,17 @@ export namespace booking {
         total: number
     }
 
+    export interface ListPriceOffersRequest {
+        Name?: string
+        Status?: string
+        Page: number
+    }
+
+    export interface ListPriceOffersResponse {
+        priceOffers: PriceOfferSummary[]
+        total: number
+    }
+
     export interface LocationResult {
         id: number
         name: string
@@ -948,6 +1021,31 @@ export namespace booking {
         info: string[]
         rateQualifier: string
         supplierCode: string
+    }
+
+    /**
+     * CreatePriceOfferResponse represents the response returned after successfully creating a price offer, including the unique identifier and token for the created offer.
+     */
+    export interface PriceOfferResponse {
+        id: number
+        token: string
+    }
+
+    export interface PriceOfferSummary {
+        id: number
+        status: string
+        name: string
+        pickupLocationName: string
+        dropoffLocationName: string
+        pickupDate: string
+        returnDate: string
+        pickupTime: string
+        dropoffTime: string
+        currencyCode: string
+        totalPrice: number
+        offeredCurrencyCode: string
+        offeredPrice: number
+        createdAt: string
     }
 
     /**
@@ -1026,6 +1124,13 @@ export namespace booking {
         markUpNet: number
     }
 
+    export interface UpdatePriceOfferParams {
+        status?: string
+        name?: string
+        offeredCurrencyCode?: string
+        offeredPrice?: number
+    }
+
     export class ServiceClient {
         private baseClient: BaseClient
 
@@ -1036,11 +1141,14 @@ export namespace booking {
             this.CreateCoupon = this.CreateCoupon.bind(this)
             this.CreateCurrency = this.CreateCurrency.bind(this)
             this.CreateHertzMarkupRate = this.CreateHertzMarkupRate.bind(this)
+            this.CreatePriceOffer = this.CreatePriceOffer.bind(this)
             this.DeleteBrokerTranslation = this.DeleteBrokerTranslation.bind(this)
             this.DeleteCoupon = this.DeleteCoupon.bind(this)
             this.DeleteCurrency = this.DeleteCurrency.bind(this)
             this.DeleteHertzMarkupRate = this.DeleteHertzMarkupRate.bind(this)
             this.DeleteLocation = this.DeleteLocation.bind(this)
+            this.GetAgentPriceOffer = this.GetAgentPriceOffer.bind(this)
+            this.GetClientPriceOffer = this.GetClientPriceOffer.bind(this)
             this.GetPendingTranslations = this.GetPendingTranslations.bind(this)
             this.InsertFlexLocations = this.InsertFlexLocations.bind(this)
             this.InsertHertzLocations = this.InsertHertzLocations.bind(this)
@@ -1050,6 +1158,7 @@ export namespace booking {
             this.ListCurrencies = this.ListCurrencies.bind(this)
             this.ListHertzMarkupRates = this.ListHertzMarkupRates.bind(this)
             this.ListLocations = this.ListLocations.bind(this)
+            this.ListPriceOffers = this.ListPriceOffers.bind(this)
             this.SearchAvailability = this.SearchAvailability.bind(this)
             this.SearchLocations = this.SearchLocations.bind(this)
             this.ToggleLocation = this.ToggleLocation.bind(this)
@@ -1058,6 +1167,7 @@ export namespace booking {
             this.UpdateCoupon = this.UpdateCoupon.bind(this)
             this.UpdateCurrency = this.UpdateCurrency.bind(this)
             this.UpdateHertzMarkupRate = this.UpdateHertzMarkupRate.bind(this)
+            this.UpdatePriceOffer = this.UpdatePriceOffer.bind(this)
             this.VerifyBrokerTranslation = this.VerifyBrokerTranslation.bind(this)
         }
 
@@ -1099,6 +1209,15 @@ export namespace booking {
         }
 
         /**
+         * CreatePriceOffer creates a new price offer based on the provided parameters, including details from the associated snapshot and plan, and returns the created offer's ID and token.
+         */
+        public async CreatePriceOffer(params: CreatePriceOfferParams): Promise<PriceOfferResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/booking/price-offers`, JSON.stringify(params))
+            return await resp.json() as PriceOfferResponse
+        }
+
+        /**
          * DeleteBrokerTranslation deletes a broker translation by ID.
          */
         public async DeleteBrokerTranslation(id: number): Promise<void> {
@@ -1132,6 +1251,24 @@ export namespace booking {
          */
         public async DeleteLocation(id: number): Promise<void> {
             await this.baseClient.callTypedAPI("DELETE", `/locations/${encodeURIComponent(id)}`)
+        }
+
+        /**
+         * GetAgentPriceOffer retrieves the details of a price offer for the authenticated agent, including internal pricing details.
+         */
+        public async GetAgentPriceOffer(id: number): Promise<GetAgentPriceOfferResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/booking/price-offers/agent/${encodeURIComponent(id)}`)
+            return await resp.json() as GetAgentPriceOfferResponse
+        }
+
+        /**
+         * GetClientPriceOffer retrieves the details of a price offer based on the provided token, it doesn't exposed the agent internal pricing details.
+         */
+        public async GetClientPriceOffer(token: string): Promise<GetPriceOfferResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/booking/price-offers/client/${encodeURIComponent(token)}`)
+            return await resp.json() as GetPriceOfferResponse
         }
 
         /**
@@ -1237,6 +1374,22 @@ export namespace booking {
         }
 
         /**
+         * ListPriceOffers returns a paginated list of the authenticated agent's price offers.
+         */
+        public async ListPriceOffers(params: ListPriceOffersRequest): Promise<ListPriceOffersResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                name:   params.Name,
+                page:   String(params.Page),
+                status: params.Status,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/booking/price-offers`, undefined, {query})
+            return await resp.json() as ListPriceOffersResponse
+        }
+
+        /**
          * SearchAvailability handles the http request for searching availability of vehicles.
          */
         public async SearchAvailability(params: SearchAvailabilityRequest): Promise<SearchAvailabilityResponse> {
@@ -1326,6 +1479,13 @@ export namespace booking {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("PUT", `/hertz-markup-rates/${encodeURIComponent(id)}`, JSON.stringify(params))
             return await resp.json() as HertzMarkupRateResponse
+        }
+
+        /**
+         * UpdatePriceOffer updates a price offer's mutable fields for the authenticated agent.
+         */
+        public async UpdatePriceOffer(id: number, params: UpdatePriceOfferParams): Promise<void> {
+            await this.baseClient.callTypedAPI("PATCH", `/booking/price-offers/${encodeURIComponent(id)}`, JSON.stringify(params))
         }
 
         /**

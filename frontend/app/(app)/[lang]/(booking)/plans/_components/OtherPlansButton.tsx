@@ -53,7 +53,6 @@ export function OtherPlansButton({
           className={`${dialogWidthClass} p-0 bg-background border-none rounded-3xl shadow-[0px_4px_24px_0px_rgba(0,0,0,0.25)] overflow-hidden ring-0`}
           showCloseButton={false}
         >
-          {/* Header — RTL order: title+icon on the right (first in DOM), X on the left (last in DOM) */}
           <div className="flex items-center justify-between px-12 pt-12 pb-0">
             <DialogTitle className="flex items-center gap-4">
               <ShieldCheck className="w-8 h-8 text-success" />
