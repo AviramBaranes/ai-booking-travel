@@ -1,17 +1,8 @@
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { booking } from "@/shared/client";
 import { useTranslations } from "next-intl";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useSelectedVehicle } from "../_hooks/useSelectedVehicle";
-import { CheckIcon, ShieldCheck, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { useDirection } from "@/shared/hooks/useDirection";
+import { ShieldCheck, X } from "lucide-react";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { createPriceOffer } from "@/shared/api/price-offers-api";
@@ -19,29 +10,13 @@ import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
 import { useParams } from "next/navigation";
-import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
-import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
+import { PriceOfferForm } from "../../../_components/priceOffer/PriceOfferForm";
 
 interface PriceOfferDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   searchRequest: booking.SearchAvailabilityRequest;
 }
-
-const PRICE_OFFER_CURRENCIES = [
-  {
-    code: "ILS",
-    symbol: "₪",
-  },
-  {
-    code: "USD",
-    symbol: "$",
-  },
-  {
-    code: "EUR",
-    symbol: "€",
-  },
-];
 
 const PRICE_OFFER_URL_PREFIX = "/price-offers/"; // + docNumber
 
@@ -51,14 +26,9 @@ export function PriceOfferDialog({
   searchRequest,
 }: PriceOfferDialogProps) {
   const { lang } = useParams();
-  const dir = useDirection();
   const t = useTranslations("booking.plansPage");
   const { data } = useAvailableCars(searchRequest, { fromCache: true });
   const vehicle = useSelectedVehicle(searchRequest);
-
-  const [priceOfferName, setPriceOfferName] = useState("");
-  const [price, setPrice] = useState(0);
-  const [currency, setCurrency] = useState("ILS");
 
   const [priceOfferId, setPriceOfferId] = useState<number | null>(null);
 
@@ -67,10 +37,18 @@ export function PriceOfferDialog({
   const selectedPlan = vehicle?.plans[selectedPlanIndex];
 
   const { mutate, error, isPending } = useMutation({
-    mutationFn: () =>
+    mutationFn: ({
+      name,
+      price,
+      currency,
+    }: {
+      name: string;
+      price: number;
+      currency: string;
+    }) =>
       createPriceOffer({
         includeERP: isErpSelected,
-        name: priceOfferName,
+        name,
         offeredCurrencyCode: currency,
         offeredPrice: price,
         snapshotId: data?.snapshotId ?? 0,
@@ -81,8 +59,6 @@ export function PriceOfferDialog({
       setPriceOfferId(data.id);
     },
   });
-
-  const translatedError = useTranslatedError(error);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -103,71 +79,22 @@ export function PriceOfferDialog({
           </button>
         </div>
         <hr />
-        <h5 className="type-h5 text-navy mx-0.5">{t("priceOfferSubtitle")}</h5>
         {!priceOfferId ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              mutate();
-            }}
-            className="bg-white shadow-card rounded-xl p-3 my-3 flex flex-col justify-center gap-3"
-          >
-            <Input
-              type="text"
-              className="bg-background py-6"
-              placeholder={t("enterPriceOfferName")}
-              value={priceOfferName}
-              onChange={(e) => setPriceOfferName(e.target.value)}
+          <>
+            <h5 className="type-h5 text-navy mx-0.5">
+              {t("priceOfferSubtitle")}
+            </h5>
+            <PriceOfferForm
+              error={error}
+              isPending={isPending}
+              nameInputPlaceholder={t("enterPriceOfferName")}
+              priceInputPlaceholder={t("enterPrice")}
+              submitText={t("createPriceOffer")}
+              onSubmit={({ name, price, currency }) => {
+                mutate({ name, price, currency });
+              }}
             />
-            <div className="flex gap-3">
-              <Input
-                type="number"
-                className="bg-background py-6"
-                placeholder={t("enterPrice")}
-                value={price > 0 ? price : ""}
-                onChange={(e) => setPrice(Number(e.target.value))}
-              />
-              <DropdownMenu dir={dir}>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="default"
-                    className="bg-background text-navy py-6 px-6 border-border"
-                  >
-                    {PRICE_OFFER_CURRENCIES.find((c) => c.code === currency)
-                      ?.symbol ?? ""}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  {PRICE_OFFER_CURRENCIES.map((c) => (
-                    <DropdownMenuItem
-                      key={c.code}
-                      onClick={() => {
-                        setCurrency(c.code);
-                      }}
-                      className="gap-2 flex"
-                    >
-                      <span>{c.symbol}</span>
-                      {c.code === currency && (
-                        <CheckIcon className="ms-auto size-4" />
-                      )}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            <Button
-              variant="brand"
-              className="font-bold py-6 px-8"
-              loading={isPending}
-              disabled={!priceOfferName || price <= 0}
-            >
-              {t("createPriceOffer")}
-            </Button>
-            {!!translatedError && (
-              <ErrorDisplay>{translatedError}</ErrorDisplay>
-            )}
-          </form>
+          </>
         ) : (
           <SuccessBadge>
             {t("priceOfferCreatedSuccess")}{" "}

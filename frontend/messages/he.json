@@ -126,7 +126,8 @@
       "ordering": "סיכום והזמנה",
       "backToResults": "חזרה לתוצאות החיפוש",
       "backToPlans": "חזרה לבחירת תוכנית",
-      "backToReservations": "חזרה לרשימת הזמנות"
+      "backToReservations": "חזרה לרשימת הזמנות",
+      "backToPriceOffers": "חזרה לרשימת הצעות מחיר"
     },
     "shared": {
       "rentalPriceForDays": "מחיר השכרה ל- {daysCount} ימים"
@@ -264,6 +265,30 @@
     }
   },
   "MyAccount": {
+    "summary": {
+      "includedIconAlt": "כלול",
+      "rentalSummary": {
+        "pickupDetails": "פרטי איסוף:",
+        "returnDetails": "פרטי החזרה:",
+        "stationDetails": "פרטי תחנה"
+      },
+      "labels": {
+        "rentalDays": "מספר ימי השכרה:",
+        "rentalPrice": "מחיר השכרה:",
+        "carType": "קבוצת הרכב:",
+        "brand": "חברת השכרה:",
+        "model": "דגם מייצג:",
+        "couponDiscount": "הנחה קופון:",
+        "fullCoverage": "כיסוי מלא:",
+        "totalToPay": "סה\"כ לתשלום:"
+      },
+      "sections": {
+        "rentalInfo": "פרטי השכרה",
+        "costBreakdown": "פירוט עלויות",
+        "carDetails": "פירוט הרכב",
+        "included": "מה כלול"
+      }
+    },
     "reservation": {
       "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
       "voucher": {
@@ -282,32 +307,12 @@
           "message": "*במידה והביטול הינו פחות מ-48 שעות לפני איסוף הרכב יתכנו דמי ביטול",
           "successMessage": "ההזמנה בוטלה בהצלחה"
         },
-        "includedIconAlt": "כלול",
         "labels": {
           "driverName": "שם הנהג:",
           "reservationNumber": "מס' הזמנה:",
           "reservationStatus": "סטטוס הזמנה",
           "paymentStatus": "סטטוס תשלום",
-          "createdAt": "נרשמה בתאריך:",
-          "rentalPrice": "מחיר השכרה:",
-          "couponDiscount": "הנחה קופון:",
-          "fullCoverage": "כיסוי מלא:",
-          "totalToPay": "סה\"כ לתשלום:",
-          "rentalDays": "מספר ימי השכרה:",
-          "carType": "קבוצת הרכב:",
-          "brand": "חברת השכרה:",
-          "model": "דגם מייצג:"
-        },
-        "sections": {
-          "costBreakdown": "פירוט עלויות",
-          "carDetails": "פירוט הרכב",
-          "included": "מה כלול"
-        },
-        "rental": {
-          "title": "פרטי השכרה:",
-          "pickupDetails": "פרטי איסוף:",
-          "returnDetails": "פרטי החזרה:",
-          "stationDetails": "פרטי תחנה"
+          "createdAt": "נרשמה בתאריך:"
         },
         "status": {
           "booked": "הוזמן",
@@ -349,6 +354,38 @@
       "pagination": {
         "prev": "הקודם",
         "next": "הבא"
+      }
+    },
+    "priceOffer": {
+      "summary": {
+        "title": "סיכום הצעת המחיר:",
+        "clientLink": "לינק ללקוח",
+        "editOffer": "עריכת הצעת מחיר",
+        "labels": {
+          "name": "שם הצעת מחיר:",
+          "status": "סטטוס",
+          "createdAt": "נרשמה בתאריך:",
+          "rentalPrice": "מחיר השכרה:",
+          "fullCoverage": "כיסוי מלא:",
+          "totalToPay": "סה\"כ לתשלום:",
+          "rentalDays": "מספר ימי השכרה:",
+          "carType": "קבוצת הרכב:",
+          "brand": "חברת השכרה:",
+          "model": "דגם מייצג:"
+        },
+        "status": {
+          "open": "פתוח",
+          "booked": "הוזמן",
+          "declined": "נדחה"
+        }
+      },
+      "editDialog": {
+        "title": "עריכת הצעת מחיר",
+        "subtitle": "שים לב כי הנך משנה את המחיר עבור הלקוח",
+        "priceOfferName": "שם הצעת המחיר",
+        "priceOfferPrice": "מחיר השכרה ללקוח",
+        "saveButton": "עדכון הצעת המחיר",
+        "priceOfferUpdatedSuccess": "הצעת המחיר עודכנה בהצלחה"
       }
     }
   }

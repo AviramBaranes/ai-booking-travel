@@ -3,9 +3,9 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { reservation } from "@/shared/client";
-import { OrderSummaryRow } from "./OrderSummaryRow";
 import { DeleteReservationButton } from "./DeleteReservationButton";
 import { statusToColor } from "../../../_utils/statusesStyles";
+import { SummaryRow } from "../../../../_components/SummaryRow";
 
 
 export function HeaderSection({
@@ -44,25 +44,25 @@ export function HeaderSection({
         </div>
       </div>
       <hr />
-      <OrderSummaryRow
+      <SummaryRow
         label={t("labels.driverName")}
         value={`${res.driverFirstName} ${res.driverLastName}`}
       />
-      <OrderSummaryRow
+      <SummaryRow
         label={t("labels.reservationNumber")}
         value={res.brokerReservationId}
       />
-      <OrderSummaryRow
+      <SummaryRow
         label={t("labels.reservationStatus")}
         value={t(`status.${res.reservationStatus}`)}
         valClassName={statusToColor(res.reservationStatus)}
       />
-      <OrderSummaryRow
+      <SummaryRow
         label={t("labels.paymentStatus")}
         value={t(`status.${res.paymentStatus}`)}
         valClassName={statusToColor(res.paymentStatus)}
       />
-      <OrderSummaryRow
+      <SummaryRow
         label={t("labels.createdAt")}
         value={new Date(res.createdAt).toLocaleDateString(lang)}
       />

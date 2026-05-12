@@ -1,7 +1,7 @@
 import { BackButton } from "@/shared/components/booking/BackButton";
-import { ReservationSummarySkeleton } from "./_components/ReservationSummarySkeleton";
 import { SelectedCarCardSkeleton } from "@/shared/components/booking/SelectedCarCard/SelectedCarCardSkeleton";
 import { getLang } from "@/shared/lang/lang";
+import { SummarySkeleton } from "../../_components/SummarySkeleton";
 
 export default async function ReservationLoading() {
   const lang = await getLang();
@@ -13,7 +13,7 @@ export default async function ReservationLoading() {
       />
       <div className="flex gap-2 mt-6">
         <div className="w-3/4">
-          <ReservationSummarySkeleton />
+          <SummarySkeleton />
         </div>
         <div className="w-1/4">
           <SelectedCarCardSkeleton />

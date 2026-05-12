@@ -18,7 +18,7 @@ function SubTitleSkeleton() {
   );
 }
 
-export function ReservationSummarySkeleton() {
+export function SummarySkeleton() {
   return (
     <div className="flex flex-col gap-2 shadow-card rounded-xl p-6 bg-white border border-cars-border">
       {/* Header */}

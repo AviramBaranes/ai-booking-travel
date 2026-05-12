@@ -206,6 +206,7 @@ CREATE TABLE
         supplier_code TEXT NOT NULL,
         car_details JSONB NOT NULL,
         plan_inclusions TEXT[] NOT NULL DEFAULT '{}',
+        -- rental_days INT NOT NULL CHECK (rental_days > 0),
 
         currency_code TEXT NOT NULL,
         purchase_price NUMERIC(12, 2) NOT NULL,

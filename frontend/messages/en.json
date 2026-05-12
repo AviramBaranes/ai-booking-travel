@@ -126,7 +126,8 @@
       "ordering": "Summary and Order",
       "backToResults": "Back to Search Results",
       "backToPlans": "Back to Plan Selection",
-      "backToReservations": "Back to Reservations"
+      "backToReservations": "Back to Reservations",
+      "backToPriceOffers": "Back to Price Offers"
     },
     "shared": {
       "rentalPriceForDays": "Rental price for {daysCount} days:"
@@ -264,6 +265,30 @@
     }
   },
   "MyAccount": {
+    "summary": {
+      "includedIconAlt": "Included",
+      "rentalSummary": {
+        "pickupDetails": "Pickup details:",
+        "returnDetails": "Return details:",
+        "stationDetails": "Station details"
+      },
+      "labels": {
+        "rentalDays": "Rental days:",
+        "rentalPrice": "Rental price:",
+        "carType": "Car type:",
+        "brand": "Rental company:",
+        "model": "Model:",
+        "couponDiscount": "Coupon discount:",
+        "fullCoverage": "Full coverage:",
+        "totalToPay": "Total to pay:"
+      },
+      "sections": {
+        "rentalInfo": "Rental details",
+        "costBreakdown": "Cost breakdown",
+        "carDetails": "Car details",
+        "included": "What's included"
+      }
+    },
     "reservation": {
       "freeCancellation": "Free cancellation up to 48 hours before pickup",
       "enterVoucherCode": "Enter voucher code",
@@ -282,31 +307,12 @@
           "message": "*If the cancellation is less than 48 hours before pickup, cancellation fees may apply",
           "successMessage": "The reservation has been successfully canceled"
         },
-        "includedIconAlt": "Included",
         "labels": {
           "driverName": "Driver name:",
           "reservationNumber": "Reservation number:",
-          "status": "Status:",
-          "createdAt": "Created on:",
-          "rentalPrice": "Rental price:",
-          "couponDiscount": "Coupon discount:",
-          "fullCoverage": "Full coverage:",
-          "totalToPay": "Total to pay:",
-          "rentalDays": "Rental days:",
-          "carType": "Car type:",
-          "brand": "Rental company:",
-          "model": "Model:"
-        },
-        "sections": {
-          "costBreakdown": "Cost breakdown",
-          "carDetails": "Car details",
-          "included": "What's included"
-        },
-        "rental": {
-          "title": "Rental details:",
-          "pickupDetails": "Pickup details:",
-          "returnDetails": "Return details:",
-          "stationDetails": "Station details"
+          "reservationStatus": "Reservation Status",
+          "paymentStatus": "Payment Status",
+          "createdAt": "Created on:"
         },
         "status": {
           "booked": "Booked",
@@ -348,6 +354,37 @@
       "pagination": {
         "prev": "Previous",
         "next": "Next"
+      }
+    },
+    "priceOffer": {
+      "summary": {
+        "title": "Price Offer Summary:",
+        "clientLink": "Print price offer",
+        "labels": {
+          "name": "Price offer name:",
+          "status": "Status:",
+          "createdAt": "Created on:",
+          "rentalPrice": "Rental price:",
+          "fullCoverage": "Full coverage:",
+          "totalToPay": "Total to pay:",
+          "rentalDays": "Rental days:",
+          "carType": "Car type:",
+          "brand": "Rental company:",
+          "model": "Model:"
+        },
+        "status": {
+          "open": "Open",
+          "booked": "Booked",
+          "declined": "Declined"
+        }
+      },
+      "editDialog": {
+        "title": "Edit Price Offer",
+        "subtitle": "Note that you are changing the price for the customer",
+        "priceOfferName": "Price offer name",
+        "priceOfferPrice": "Rental price for the customer",
+        "saveButton": "Update Price Offer",
+        "priceOfferUpdatedSuccess": "The price offer has been successfully updated"
       }
     }
   }

@@ -9,7 +9,7 @@ import { fetchSuppliersGallery } from "@/shared/server/cms";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { BackButton } from "../../../../../../shared/components/booking/BackButton";
 import { ReservationSummary } from "./_components/ReservationSummary/ReservationSummary";
-import { ReservationSummarySkeleton } from "./_components/ReservationSummarySkeleton";
+import { SummarySkeleton } from "../../_components/SummarySkeleton";
 
 export default async function ReservationDetailsPage({
   params,
@@ -40,7 +40,7 @@ export default async function ReservationDetailsPage({
         </div>
         <div className="flex gap-2 mt-6 print:flex-col print:gap-6">
           <div className="w-3/4 print:w-full">
-            <Suspense fallback={<ReservationSummarySkeleton />}>
+            <Suspense fallback={<SummarySkeleton />}>
               <ReservationSummary reservationId={Number(reservationId)} />
             </Suspense>
           </div>

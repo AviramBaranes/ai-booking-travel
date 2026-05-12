@@ -1,17 +1,17 @@
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { OrderSummarySubTitle } from "./OrderSummarySubTitle";
+import { SummarySubTitle } from "./SummarySubTitle";
 
 export function IncludedSection({
   planInclusions,
 }: {
   planInclusions: string[];
 }) {
-  const t = useTranslations("MyAccount.reservation.summary");
+  const t = useTranslations("MyAccount.summary");
 
   return (
     <>
-      <OrderSummarySubTitle title={t("sections.included")} />
+      <SummarySubTitle title={t("sections.included")} />
       <ul>
         {planInclusions.map((inclusion) => (
           <li

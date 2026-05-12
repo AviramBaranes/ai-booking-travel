@@ -1,4 +1,4 @@
-export function OrderSummaryRow({
+export function SummaryRow({
   label,
   value,
   valClassName,
