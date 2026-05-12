@@ -82,3 +82,10 @@ WHERE agent_id = sqlc.arg(agent_id)
 ORDER BY price_offers.created_at DESC
 LIMIT sqlc.arg(page_size)
 OFFSET sqlc.arg(page_offset);
+
+-- name: CountPriceOffersByAgent :one
+SELECT COUNT(*)::BIGINT AS total
+FROM price_offers
+WHERE agent_id = sqlc.arg(agent_id)
+  AND (sqlc.narg(status)::offer_status IS NULL OR status = sqlc.narg(status)::offer_status)
+  AND (sqlc.narg(name_search)::text IS NULL OR price_offers.name ILIKE '%' || sqlc.narg(name_search)::text || '%');

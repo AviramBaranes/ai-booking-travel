@@ -11,6 +11,27 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countPriceOffersByAgent = `-- name: CountPriceOffersByAgent :one
+SELECT COUNT(*)::BIGINT AS total
+FROM price_offers
+WHERE agent_id = $1
+  AND ($2::offer_status IS NULL OR status = $2::offer_status)
+  AND ($3::text IS NULL OR price_offers.name ILIKE '%' || $3::text || '%')
+`
+
+type CountPriceOffersByAgentParams struct {
+	AgentID    int32
+	Status     NullOfferStatus
+	NameSearch *string
+}
+
+func (q *Queries) CountPriceOffersByAgent(ctx context.Context, arg CountPriceOffersByAgentParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countPriceOffersByAgent, arg.AgentID, arg.Status, arg.NameSearch)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const createPriceOffer = `-- name: CreatePriceOffer :one
 INSERT INTO price_offers (
     agent_id,

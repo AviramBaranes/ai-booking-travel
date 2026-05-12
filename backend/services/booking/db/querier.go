@@ -17,6 +17,7 @@ type Querier interface {
 	CountHertzMarkupRates(ctx context.Context, arg CountHertzMarkupRatesParams) (int64, error)
 	CountLocationBrokerCodesByLocationID(ctx context.Context, locationID int64) (int64, error)
 	CountLocationBrokerCodesWithLocation(ctx context.Context, arg CountLocationBrokerCodesWithLocationParams) (int64, error)
+	CountPriceOffersByAgent(ctx context.Context, arg CountPriceOffersByAgentParams) (int64, error)
 	CreateCoupon(ctx context.Context, arg CreateCouponParams) (Coupon, error)
 	CreateCurrency(ctx context.Context, arg CreateCurrencyParams) (Currency, error)
 	CreatePriceOffer(ctx context.Context, arg CreatePriceOfferParams) (PriceOffer, error)
