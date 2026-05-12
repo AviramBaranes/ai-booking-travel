@@ -440,10 +440,10 @@ func (mr *MockQuerierMockRecorder) GetLocationById(ctx, id any) *gomock.Call {
 }
 
 // GetPriceOfferById mocks base method.
-func (m *MockQuerier) GetPriceOfferById(ctx context.Context, arg db.GetPriceOfferByIdParams) (db.PriceOffer, error) {
+func (m *MockQuerier) GetPriceOfferById(ctx context.Context, arg db.GetPriceOfferByIdParams) (db.GetPriceOfferByIdRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPriceOfferById", ctx, arg)
-	ret0, _ := ret[0].(db.PriceOffer)
+	ret0, _ := ret[0].(db.GetPriceOfferByIdRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

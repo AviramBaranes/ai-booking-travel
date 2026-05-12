@@ -52,7 +52,11 @@ FROM price_offers
  WHERE token = sqlc.arg(token);
 
 -- name: GetPriceOfferById :one
-SELECT * FROM price_offers WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
+SELECT price_offers.* , pl.name AS pickup_location, dl.name AS dropoff_location
+FROM price_offers
+    JOIN locations pl ON price_offers.pickup_location_id = pl.id
+    JOIN locations dl ON price_offers.dropoff_location_id = dl.id
+WHERE price_offers.id = sqlc.arg(id) AND price_offers.agent_id = sqlc.arg(agent_id);
 
 -- name: UpdatePriceOffer :exec
 UPDATE price_offers SET

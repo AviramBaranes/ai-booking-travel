@@ -136,7 +136,11 @@ func (q *Queries) CreatePriceOffer(ctx context.Context, arg CreatePriceOfferPara
 }
 
 const getPriceOfferById = `-- name: GetPriceOfferById :one
-SELECT id, token, agent_id, status, name, pickup_location_id, dropoff_location_id, pickup_date, return_date, pickup_time, dropoff_time, driver_age, supplier_code, car_details, plan_inclusions, currency_code, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, total_price, offered_currency_code, offered_price, created_at, updated_at FROM price_offers WHERE id = $1 AND agent_id = $2
+SELECT price_offers.id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.return_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.created_at, price_offers.updated_at , pl.name AS pickup_location, dl.name AS dropoff_location
+FROM price_offers
+    JOIN locations pl ON price_offers.pickup_location_id = pl.id
+    JOIN locations dl ON price_offers.dropoff_location_id = dl.id
+WHERE price_offers.id = $1 AND price_offers.agent_id = $2
 `
 
 type GetPriceOfferByIdParams struct {
@@ -144,9 +148,39 @@ type GetPriceOfferByIdParams struct {
 	AgentID int32
 }
 
-func (q *Queries) GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdParams) (PriceOffer, error) {
+type GetPriceOfferByIdRow struct {
+	ID                  int64
+	Token               pgtype.UUID
+	AgentID             int32
+	Status              OfferStatus
+	Name                string
+	PickupLocationID    string
+	DropoffLocationID   string
+	PickupDate          pgtype.Date
+	ReturnDate          pgtype.Date
+	PickupTime          string
+	DropoffTime         string
+	DriverAge           string
+	SupplierCode        string
+	CarDetails          []byte
+	PlanInclusions      []string
+	CurrencyCode        string
+	PurchasePrice       pgtype.Numeric
+	MarkupPercentage    pgtype.Numeric
+	BrokerErpPrice      pgtype.Numeric
+	BtErpPrice          int32
+	TotalPrice          int32
+	OfferedCurrencyCode string
+	OfferedPrice        int32
+	CreatedAt           pgtype.Timestamptz
+	UpdatedAt           pgtype.Timestamptz
+	PickupLocation      string
+	DropoffLocation     string
+}
+
+func (q *Queries) GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdParams) (GetPriceOfferByIdRow, error) {
 	row := q.db.QueryRow(ctx, getPriceOfferById, arg.ID, arg.AgentID)
-	var i PriceOffer
+	var i GetPriceOfferByIdRow
 	err := row.Scan(
 		&i.ID,
 		&i.Token,
@@ -173,6 +207,8 @@ func (q *Queries) GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdPa
 		&i.OfferedPrice,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PickupLocation,
+		&i.DropoffLocation,
 	)
 	return i, err
 }

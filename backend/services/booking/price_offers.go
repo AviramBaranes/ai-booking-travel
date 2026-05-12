@@ -114,6 +114,31 @@ type GetPriceOfferResponse struct {
 	CreatedAt           string            `json:"createdAt"`
 }
 
+// GetAgentPriceOfferResponse represents the agent-facing details of a price offer, including internal pricing details.
+type GetAgentPriceOfferResponse struct {
+	ID                  int64             `json:"id"`
+	Token               string            `json:"token"`
+	Status              string            `json:"status"`
+	Name                string            `json:"name"`
+	CarDetails          broker.CarDetails `json:"carDetails"`
+	PlanInclusions      []string          `json:"planInclusions"`
+	SupplierCode        string            `json:"supplierCode"`
+	CurrencyCode        string            `json:"currencyCode"`
+	CarFullPrice        int               `json:"priceBefDesc"`
+	ErpPrice            int               `json:"erpPrice"`
+	TotalPrice          int32             `json:"totalPrice"`
+	OfferedCurrencyCode string            `json:"offeredCurrencyCode"`
+	OfferedPrice        int32             `json:"offeredPrice"`
+	PickupLocationName  string            `json:"pickupLocationName"`
+	DropoffLocationName string            `json:"dropoffLocationName"`
+	PickupDate          string            `json:"pickupDate"`
+	ReturnDate          string            `json:"returnDate"`
+	PickupTime          string            `json:"pickupTime"`
+	DropoffTime         string            `json:"dropoffTime"`
+	DriverAge           string            `json:"driverAge"`
+	CreatedAt           string            `json:"createdAt"`
+}
+
 // GetClientPriceOffer retrieves the details of a price offer based on the provided token, it doesn't exposed the agent internal pricing details.
 //
 // encore:api public method=GET path=/booking/price-offers/:token
@@ -158,4 +183,77 @@ func (s *Service) GetClientPriceOffer(ctx context.Context, token string) (*GetPr
 		DriverAge:           row.DriverAge,
 		CreatedAt:           db.TimestamptzToString(row.CreatedAt),
 	}, nil
+}
+
+// GetAgentPriceOffer retrieves the details of a price offer for the authenticated agent, including internal pricing details.
+//
+// encore:api auth method=GET path=/booking/price-offers/agent/:id tag:agent
+func (s *Service) GetAgentPriceOffer(ctx context.Context, id int64) (*GetAgentPriceOfferResponse, error) {
+	authData := auth.GetAuthData()
+
+	row, err := s.query.GetPriceOfferById(ctx, db.GetPriceOfferByIdParams{
+		ID:      id,
+		AgentID: authData.UserID,
+	})
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return nil, api_errors.ErrNotFound
+		}
+		rlog.Error("failed to get price offer", "id", id, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	var carDetails broker.CarDetails
+	if err := json.Unmarshal(row.CarDetails, &carDetails); err != nil {
+		rlog.Error("failed to unmarshal car details", "id", id, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	priceDetails := calculatePriceOfferDetails(row)
+
+	return &GetAgentPriceOfferResponse{
+		ID:                  row.ID,
+		Token:               db.UuidToString(row.Token),
+		Status:              string(row.Status),
+		Name:                row.Name,
+		CarDetails:          carDetails,
+		PlanInclusions:      row.PlanInclusions,
+		SupplierCode:        row.SupplierCode,
+		CurrencyCode:        row.CurrencyCode,
+		CarFullPrice:        priceDetails.carFullPrice,
+		ErpPrice:            priceDetails.erpPrice,
+		TotalPrice:          row.TotalPrice,
+		OfferedCurrencyCode: row.OfferedCurrencyCode,
+		OfferedPrice:        row.OfferedPrice,
+		PickupLocationName:  row.PickupLocation,
+		DropoffLocationName: row.DropoffLocation,
+		PickupDate:          db.DateToString(row.PickupDate),
+		ReturnDate:          db.DateToString(row.ReturnDate),
+		PickupTime:          row.PickupTime,
+		DropoffTime:         row.DropoffTime,
+		DriverAge:           row.DriverAge,
+		CreatedAt:           db.TimestamptzToString(row.CreatedAt),
+	}, nil
+}
+
+// priceOfferPriceDetails holds the calculated price details for a price offer.
+type priceOfferPriceDetails struct {
+	carFullPrice int
+	erpPrice     int
+}
+
+// calculatePriceOfferDetails calculates the price details for a price offer based on the given parameters.
+func calculatePriceOfferDetails(offer db.GetPriceOfferByIdRow) priceOfferPriceDetails {
+	pp := db.NumericToFloat64(offer.PurchasePrice)
+	mp := db.NumericToFloat64(offer.MarkupPercentage)
+	bErp := db.NumericToFloat64(offer.BrokerErpPrice)
+	btErp := float64(offer.BtErpPrice)
+
+	carFullPrice := pricing.RoundToInt(pricing.ApplyMarkup(pp, mp))
+	erpFullPrice := pricing.RoundToInt(pricing.ApplyMarkup(bErp, mp) + btErp)
+
+	return priceOfferPriceDetails{
+		carFullPrice: carFullPrice,
+		erpPrice:     erpFullPrice,
+	}
 }
