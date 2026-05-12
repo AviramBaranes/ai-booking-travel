@@ -39,9 +39,9 @@ func (s Service) storePlansDetails(ctx context.Context, plans []planPriceDetails
 	ID, err := s.query.InsertAvailablePlansSnapshot(ctx, db.InsertAvailablePlansSnapshotParams{
 		Plans:       plansJson,
 		DriverAge:   strconv.Itoa(reqParams.DriverAge),
-		PickupDate:  reqParams.PickupDate,
+		PickupDate:  db.DateFromString(reqParams.PickupDate),
 		PickupTime:  reqParams.PickupTime,
-		ReturnDate:  reqParams.DropoffDate,
+		ReturnDate:  db.DateFromString(reqParams.DropoffDate),
 		ReturnTime:  reqParams.DropoffTime,
 		CountryCode: countryCode,
 	})

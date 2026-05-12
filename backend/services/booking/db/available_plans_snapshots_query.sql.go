@@ -61,9 +61,9 @@ RETURNING id
 
 type InsertAvailablePlansSnapshotParams struct {
 	DriverAge   string
-	PickupDate  string
+	PickupDate  pgtype.Date
 	PickupTime  string
-	ReturnDate  string
+	ReturnDate  pgtype.Date
 	ReturnTime  string
 	CountryCode string
 	Plans       []byte

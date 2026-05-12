@@ -58,3 +58,24 @@ func TimestamptzToString(ts pgtype.Timestamptz) string {
 	}
 	return ts.Time.Format(time.RFC3339)
 }
+
+// DateFromString parses a "2006-01-02" string into a pgtype.Date.
+// The input is expected to be pre-validated; on parse error it returns a zero pgtype.Date with Valid=false.
+func DateFromString(s string) pgtype.Date {
+	var d pgtype.Date
+	t, err := time.Parse("2006-01-02", s)
+	if err != nil {
+		return d
+	}
+	d.Time = t
+	d.Valid = true
+	return d
+}
+
+// DateToString formats a pgtype.Date as a "2006-01-02" string.
+func DateToString(d pgtype.Date) string {
+	if !d.Valid {
+		return ""
+	}
+	return d.Time.Format("2006-01-02")
+}

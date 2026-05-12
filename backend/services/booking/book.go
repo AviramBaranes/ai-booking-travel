@@ -119,8 +119,8 @@ func (s *Service) buildCreateReservationRequest(
 	authData := auth.GetAuthData()
 
 	rentalDays, _ := broker.CalculateDaysCount(
-		snapshot.PickupDate, snapshot.PickupTime,
-		snapshot.ReturnDate, snapshot.ReturnTime,
+		db.DateToString(snapshot.PickupDate), snapshot.PickupTime,
+		db.DateToString(snapshot.ReturnDate), snapshot.ReturnTime,
 	)
 
 	driverAge, _ := strconv.Atoi(snapshot.DriverAge)
@@ -144,8 +144,8 @@ func (s *Service) buildCreateReservationRequest(
 		SupplierCode:        plan.SupplierCode,
 		CarDetails:          &plan.CarDetails,
 		PlanInclusions:      plan.Inclusions,
-		PickupDate:          snapshot.PickupDate,
-		ReturnDate:          snapshot.ReturnDate,
+		PickupDate:          db.DateToString(snapshot.PickupDate),
+		ReturnDate:          db.DateToString(snapshot.ReturnDate),
 		RentalDays:          rentalDays,
 		DriverTitle:         params.DriverTitle,
 		DriverFirstName:     params.DriverFirstName,
@@ -218,8 +218,8 @@ func bookCarAtBroker(snapshot db.AvailablePlansSnapshot, plan planPriceDetails, 
 		DriverLastName:  params.DriverLastName,
 		FlightNumber:    params.FlightNumber,
 		DriverAge:       snapshot.DriverAge,
-		PickupDate:      snapshot.PickupDate,
-		DropoffDate:     snapshot.ReturnDate,
+		PickupDate:      db.DateToString(snapshot.PickupDate),
+		DropoffDate:     db.DateToString(snapshot.ReturnDate),
 		PickupTime:      snapshot.PickupTime,
 		DropoffTime:     snapshot.ReturnTime,
 		CountryCode:     snapshot.CountryCode,

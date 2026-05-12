@@ -10,8 +10,8 @@ CREATE TABLE
 
         pickup_location_id TEXT NOT NULL,
         dropoff_location_id TEXT NOT NULL,
-        pickup_date TEXT NOT NULL,
-        return_date TEXT NOT NULL,
+        pickup_date DATE NOT NULL,
+        return_date DATE NOT NULL,
         pickup_time TEXT NOT NULL,
         dropoff_time TEXT NOT NULL,
         driver_age TEXT NOT NULL,

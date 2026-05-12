@@ -1,13 +1,14 @@
-create unlogged table available_plans_snapshots (
-    id bigserial primary key,
-    created_at timestamptz not null default now (),
-    driver_age text not null,
-    pickup_date text not null,
-    pickup_time text not null,
-    return_date text not null,
-    return_time text not null,
-    country_code text not null,
-    plans json not null
-);
+CREATE UNLOGGED TABLE
+    available_plans_snapshots (
+        id BIGSERIAL PRIMARY KEY,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        driver_age TEXT NOT NULL,
+        pickup_date DATE NOT NULL,
+        pickup_time TEXT NOT NULL,
+        return_date DATE NOT NULL,
+        return_time TEXT NOT NULL,
+        country_code TEXT NOT NULL,
+        plans JSON NOT NULL
+    );
 
-create index available_plans_snapshots_created_at_idx on available_plans_snapshots (created_at);
+CREATE INDEX available_plans_snapshots_created_at_idx ON available_plans_snapshots (created_at);

@@ -63,8 +63,8 @@ type CreatePriceOfferParams struct {
 	Name                string
 	PickupLocationID    string
 	DropoffLocationID   string
-	PickupDate          string
-	ReturnDate          string
+	PickupDate          pgtype.Date
+	ReturnDate          pgtype.Date
 	PickupTime          string
 	DropoffTime         string
 	DriverAge           string
@@ -193,8 +193,8 @@ type GetPriceOfferByTokenRow struct {
 	Name                string
 	PickupLocationID    string
 	DropoffLocationID   string
-	PickupDate          string
-	ReturnDate          string
+	PickupDate          pgtype.Date
+	ReturnDate          pgtype.Date
 	PickupTime          string
 	DropoffTime         string
 	DriverAge           string
@@ -281,8 +281,8 @@ type ListPriceOffersByAgentRow struct {
 	Name                string
 	PickupLocation      string
 	DropoffLocation     string
-	PickupDate          string
-	ReturnDate          string
+	PickupDate          pgtype.Date
+	ReturnDate          pgtype.Date
 	PickupTime          string
 	DropoffTime         string
 	CurrencyCode        string

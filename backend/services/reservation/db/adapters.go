@@ -22,6 +22,7 @@ func NumericToFloat64(n pgtype.Numeric) float64 {
 }
 
 // DateFromString parses a "2006-01-02" string into a pgtype.Date.
+// The input is expected to be pre-validated; on parse error it returns a zero pgtype.Date with Valid=false.
 func DateFromString(s string) pgtype.Date {
 	var d pgtype.Date
 	t, err := time.Parse("2006-01-02", s)
