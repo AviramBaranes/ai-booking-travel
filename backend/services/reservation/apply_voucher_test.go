@@ -7,6 +7,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/validation"
+	"encore.app/services/reservation/db"
 	"encore.dev/beta/errs"
 	"encore.dev/et"
 	"go.uber.org/mock/gomock"
@@ -60,7 +61,7 @@ func TestApplyVoucher(t *testing.T) {
 
 	t.Run("it send internal err if db fails", func(t *testing.T) {
 		q, s := mockService(t)
-		q.EXPECT().ApplyVoucher(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
+		q.EXPECT().ApplyVoucher(gomock.Any(), gomock.Any()).Return(db.Reservation{}, errors.New("db error"))
 		et.MockService[Interface]("reservation", s)
 		ctx := authContext(123)
 

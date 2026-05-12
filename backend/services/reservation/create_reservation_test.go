@@ -195,7 +195,7 @@ func TestCreateReservationValidation(t *testing.T) {
 		},
 		{
 			name:    "rejects invalid driver title",
-			modify:  func(p *CreateReservationRequest) { p.DriverTitle = "Dr" },
+			modify:  func(p *CreateReservationRequest) { p.DriverTitle = "Professor" },
 			wantErr: invalidValueErr("driverTitle"),
 		},
 		{
