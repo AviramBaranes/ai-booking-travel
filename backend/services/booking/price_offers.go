@@ -19,10 +19,10 @@ type CreatePriceOfferParams struct {
 	SnapshotID          int64  `json:"snapshotId" validate:"required"`
 	RateQualifier       string `json:"rateQualifier" validate:"required"`
 	SupplierCode        string `json:"supplierCode" validate:"required"`
-	IncludeERP          bool   `json:"includeERP"`
-	Name                string `json:"name"`
-	OfferedCurrencyCode string `json:"offeredCurrencyCode"`
-	OfferedPrice        int32  `json:"offeredPrice"`
+	IncludeERP          bool   `json:"includeERP" validate:"required"`
+	Name                string `json:"name" validate:"required,notblank"`
+	OfferedCurrencyCode string `json:"offeredCurrencyCode" validate:"required,len=3,uppercase_only"`
+	OfferedPrice        int32  `json:"offeredPrice" validate:"required,gt=0"`
 }
 
 func (p CreatePriceOfferParams) Validate() error {

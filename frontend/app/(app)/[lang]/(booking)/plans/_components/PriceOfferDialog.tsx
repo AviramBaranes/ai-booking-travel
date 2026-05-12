@@ -19,6 +19,8 @@ import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
 import { useParams } from "next/navigation";
+import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
+import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 
 interface PriceOfferDialogProps {
   open: boolean;
@@ -79,6 +81,8 @@ export function PriceOfferDialog({
       setPriceOfferId(data.id);
     },
   });
+
+  const translatedError = useTranslatedError(error);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -160,6 +164,9 @@ export function PriceOfferDialog({
             >
               {t("createPriceOffer")}
             </Button>
+            {!!translatedError && (
+              <ErrorDisplay>{translatedError}</ErrorDisplay>
+            )}
           </form>
         ) : (
           <SuccessBadge>
