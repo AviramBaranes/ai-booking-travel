@@ -6,7 +6,10 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { updatePriceOffer } from "@/shared/api/price-offers-api";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
-import { PriceOfferForm } from "@/app/(app)/[lang]/_components/priceOffer/PriceOfferForm";
+import {
+  PriceOfferForm,
+  PriceOfferStatus,
+} from "@/app/(app)/[lang]/_components/priceOffer/PriceOfferForm";
 import { usePriceOffer } from "../../_hooks/usePriceOffer";
 
 interface EditPriceOfferDialogProps {
@@ -16,6 +19,7 @@ interface EditPriceOfferDialogProps {
   initialName: string;
   initialPrice: number;
   initialCurrency: string;
+  initialStatus: PriceOfferStatus;
 }
 
 export function EditPriceOfferDialog({
@@ -25,6 +29,7 @@ export function EditPriceOfferDialog({
   initialName,
   initialPrice,
   initialCurrency,
+  initialStatus,
 }: EditPriceOfferDialogProps) {
   const { refetch } = usePriceOffer(priceOfferId);
   const t = useTranslations("MyAccount.priceOffer.editDialog");
@@ -67,14 +72,17 @@ export function EditPriceOfferDialog({
           <>
             <h5 className="type-h5 text-navy mx-0.5">{t("subtitle")}</h5>
             <PriceOfferForm
+              showStatusSelect
               error={error}
               isPending={isPending}
               nameInputPlaceholder={t("priceOfferName")}
               priceInputPlaceholder={t("priceOfferPrice")}
+              statusLabel={t("statusLabel")}
               submitText={t("saveButton")}
-              onSubmit={({ name, price, currency }) => {
+              onSubmit={({ name, price, currency, status }) => {
                 mutate({
                   name,
+                  status,
                   offeredPrice: price,
                   offeredCurrencyCode: currency,
                 });
@@ -82,6 +90,7 @@ export function EditPriceOfferDialog({
               initialCurrency={initialCurrency}
               initialName={initialName}
               initialPrice={initialPrice}
+              initialStatus={initialStatus}
             />
           </>
         ) : (

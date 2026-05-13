@@ -384,6 +384,7 @@
         "priceOfferName": "Price offer name",
         "priceOfferPrice": "Rental price for the customer",
         "saveButton": "Update Price Offer",
+        "statusLabel": "Change offer status:",
         "priceOfferUpdatedSuccess": "The price offer has been successfully updated"
       }
     }

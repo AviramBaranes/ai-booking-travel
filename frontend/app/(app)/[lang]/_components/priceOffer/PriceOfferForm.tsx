@@ -11,6 +11,9 @@ import { Button } from "@/components/ui/button";
 import { CheckIcon } from "lucide-react";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
+import { useTranslations } from "next-intl";
+import { statusToColor } from "../../(my-account)/price-offers/_utils/statusesStyles";
+import { Label } from "@/components/ui/label";
 
 const PRICE_OFFER_CURRENCIES = [
   {
@@ -27,16 +30,28 @@ const PRICE_OFFER_CURRENCIES = [
   },
 ];
 
+const PRICE_OFFER_STATUSES: PriceOfferStatus[] = ["open", "booked", "declined"];
+
+export type PriceOfferStatus = "open" | "booked" | "declined";
+
 interface PriceOfferFormProps {
-  onSubmit: (data: { name: string; price: number; currency: string }) => void;
+  onSubmit: (data: {
+    name: string;
+    price: number;
+    currency: string;
+    status?: PriceOfferStatus;
+  }) => void;
   isPending: boolean;
   error: Error | null;
   nameInputPlaceholder: string;
   priceInputPlaceholder: string;
   submitText: string;
+  statusLabel?: string;
+  showStatusSelect?: boolean;
   initialName?: string;
   initialPrice?: number;
   initialCurrency?: string;
+  initialStatus?: PriceOfferStatus;
 }
 
 export function PriceOfferForm({
@@ -46,14 +61,21 @@ export function PriceOfferForm({
   nameInputPlaceholder,
   priceInputPlaceholder,
   submitText,
+  initialStatus,
+  statusLabel,
+  showStatusSelect = false,
   initialName = "",
   initialPrice = 0,
   initialCurrency = "ILS",
 }: PriceOfferFormProps) {
   const dir = useDirection();
+  const t = useTranslations("MyAccount.priceOffer.summary");
   const [priceOfferName, setPriceOfferName] = useState(initialName);
   const [price, setPrice] = useState(initialPrice);
   const [currency, setCurrency] = useState(initialCurrency);
+  const [status, setStatus] = useState<PriceOfferStatus | null>(
+    initialStatus ?? null,
+  );
 
   const translatedError = useTranslatedError(error);
 
@@ -65,6 +87,7 @@ export function PriceOfferForm({
           name: priceOfferName,
           price,
           currency,
+          status: showStatusSelect && status ? status : undefined,
         });
       }}
       className="bg-white shadow-card rounded-xl p-3 my-3 flex flex-col justify-center gap-3"
@@ -112,6 +135,41 @@ export function PriceOfferForm({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {showStatusSelect && (
+        <>
+        <Label className="text-sm mt-1">{statusLabel}</Label>
+          <DropdownMenu dir={dir}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="default"
+                className="bg-background text-navy py-6 px-4 border-border w-full justify-between"
+              >
+                <span
+                  className={`font-medium ${status ? statusToColor(status) : "text-navy"}`}
+                >
+                  {status ? t(`status.${status}`) : t("labels.status")}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width)">
+              {PRICE_OFFER_STATUSES.map((s) => (
+                <DropdownMenuItem
+                  key={s}
+                  onClick={() => {
+                    setStatus(s);
+                  }}
+                  className="gap-2 flex"
+                >
+                  <span className={statusToColor(s)}>{t(`status.${s}`)}</span>
+                  {s === status && <CheckIcon className="ms-auto size-4" />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      )}
 
       <Button
         variant="brand"

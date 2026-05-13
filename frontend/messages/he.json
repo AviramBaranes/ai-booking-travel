@@ -385,6 +385,7 @@
         "priceOfferName": "שם הצעת המחיר",
         "priceOfferPrice": "מחיר השכרה ללקוח",
         "saveButton": "עדכון הצעת המחיר",
+        "statusLabel": "שנה סטטוס הצעה:",
         "priceOfferUpdatedSuccess": "הצעת המחיר עודכנה בהצלחה"
       }
     }

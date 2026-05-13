@@ -7,6 +7,7 @@ import { useState } from "react";
 import { statusToColor } from "../../../_utils/statusesStyles";
 import { booking } from "@/shared/client";
 import { EditPriceOfferDialog } from "./EditPriceOfferDialog";
+import { PriceOfferStatus } from "@/app/(app)/[lang]/_components/priceOffer/PriceOfferForm";
 
 const CLIENT_PRICE_OFFER_LINK_PREFIX = "/offers/";
 
@@ -68,12 +69,13 @@ export function HeaderSection({
         value={new Date(priceOffer.createdAt).toLocaleDateString(lang)}
       />
       <EditPriceOfferDialog
-        onOpenChange={setIsEditDialogOpen}
         open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
         priceOfferId={priceOffer.id}
         initialName={priceOffer.name}
         initialPrice={priceOffer.offeredPrice}
         initialCurrency={priceOffer.offeredCurrencyCode}
+        initialStatus={priceOffer.status as PriceOfferStatus}
       />
     </>
   );
