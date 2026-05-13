@@ -229,6 +229,7 @@ type PriceOffer struct {
 	PickupTime          string
 	DropoffTime         string
 	DriverAge           string
+	RentalDays          int32
 	SupplierCode        string
 	CarDetails          []byte
 	PlanInclusions      []string

@@ -117,12 +117,7 @@ func (s *Service) buildCreateReservationRequest(
 	confirmationNumber string,
 ) reservation.CreateReservationRequest {
 	authData := auth.GetAuthData()
-
-	rentalDays, _ := broker.CalculateDaysCount(
-		db.DateToString(snapshot.PickupDate), snapshot.PickupTime,
-		db.DateToString(snapshot.ReturnDate), snapshot.ReturnTime,
-	)
-
+	rentalDays, _ := calculateSnapshotRentalDays(snapshot)
 	driverAge, _ := strconv.Atoi(snapshot.DriverAge)
 
 	var btErpPrice int
@@ -164,6 +159,13 @@ func (s *Service) buildCreateReservationRequest(
 		PickupLocationName:  pickupLocName,
 		DropoffLocationName: dropoffLocName,
 	}
+}
+
+func calculateSnapshotRentalDays(snapshot db.AvailablePlansSnapshot) (int, error) {
+	return broker.CalculateDaysCount(
+		db.DateToString(snapshot.PickupDate), snapshot.PickupTime,
+		db.DateToString(snapshot.ReturnDate), snapshot.ReturnTime,
+	)
 }
 
 // getSnapshot retrieves the snapshot row for the given snapshot ID.

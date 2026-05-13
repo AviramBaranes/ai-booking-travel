@@ -862,6 +862,7 @@ export namespace booking {
         returnDate: string
         pickupTime: string
         dropoffTime: string
+        rentalDays: number
         driverAge: string
         createdAt: string
     }

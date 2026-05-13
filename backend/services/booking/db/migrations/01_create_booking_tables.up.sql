@@ -202,6 +202,7 @@ CREATE TABLE
         pickup_time TEXT NOT NULL,
         dropoff_time TEXT NOT NULL,
         driver_age TEXT NOT NULL,
+        rental_days INT NOT NULL CHECK (rental_days > 0),
 
         supplier_code TEXT NOT NULL,
         car_details JSONB NOT NULL,

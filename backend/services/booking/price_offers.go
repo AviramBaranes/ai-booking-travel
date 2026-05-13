@@ -64,6 +64,12 @@ func (s *Service) CreatePriceOffer(ctx context.Context, params CreatePriceOfferP
 		brokerErpPrice = plan.SupplierErpPrice
 	}
 
+	rentalDays, err := calculateSnapshotRentalDays(snapshot)
+	if err != nil {
+		rlog.Error("failed to calculate rental days for snapshot", "snapshotId", params.SnapshotID, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
 	totalPrice := pricing.CalculateTotalPrice(plan.CarPurchasePrice, plan.MarkupPercentage, brokerErpPrice, btErpPrice, plan.DiscountPercentage)
 
 	priceOffer, err := s.query.CreatePriceOffer(ctx, db.CreatePriceOfferParams{
@@ -75,6 +81,7 @@ func (s *Service) CreatePriceOffer(ctx context.Context, params CreatePriceOfferP
 		ReturnDate:          snapshot.ReturnDate,
 		PickupTime:          snapshot.PickupTime,
 		DropoffTime:         snapshot.ReturnTime,
+		RentalDays:          int32(rentalDays),
 		DriverAge:           snapshot.DriverAge,
 		SupplierCode:        params.SupplierCode,
 		CarDetails:          carDetailsJSON,
@@ -140,6 +147,7 @@ type GetAgentPriceOfferResponse struct {
 	ReturnDate          string            `json:"returnDate"`
 	PickupTime          string            `json:"pickupTime"`
 	DropoffTime         string            `json:"dropoffTime"`
+	RentalDays          int32             `json:"rentalDays"`
 	DriverAge           string            `json:"driverAge"`
 	CreatedAt           string            `json:"createdAt"`
 }
@@ -234,6 +242,7 @@ func (s *Service) GetAgentPriceOffer(ctx context.Context, id int64) (*GetAgentPr
 		DropoffLocationName: row.DropoffLocation,
 		PickupDate:          db.DateToString(row.PickupDate),
 		ReturnDate:          db.DateToString(row.ReturnDate),
+		RentalDays:          row.RentalDays,
 		PickupTime:          row.PickupTime,
 		DropoffTime:         row.DropoffTime,
 		DriverAge:           row.DriverAge,

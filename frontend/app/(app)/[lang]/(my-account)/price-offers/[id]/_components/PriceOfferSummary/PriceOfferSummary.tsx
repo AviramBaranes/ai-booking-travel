@@ -25,7 +25,7 @@ export function PriceOfferSummary({ priceOfferId }: { priceOfferId: number }) {
         brand={priceOffer.carDetails.supplierName}
         model={priceOffer.carDetails.model}
         carType={priceOffer.carDetails.carType}
-        rentalDays={0}
+        rentalDays={priceOffer.rentalDays}
       />
       <IncludedSection planInclusions={priceOffer.planInclusions} />
       <CostBreakdownSection
