@@ -401,8 +401,8 @@ func TestGetAgentPriceOffer(t *testing.T) {
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 
-	_, pickupCode, pickupName := seedPriceOfferLocation(t, q, "agent-pickup")
-	_, dropoffCode, dropoffName := seedPriceOfferLocation(t, q, "agent-dropoff")
+	pickupID, pickupCode, pickupName := seedPriceOfferLocation(t, q, "agent-pickup")
+	dropoffID, dropoffCode, dropoffName := seedPriceOfferLocation(t, q, "agent-dropoff")
 	plan := defaultPlan(pickupCode, dropoffCode)
 	snapshotID := seedSnapshot(t, q, []planPriceDetails{plan})
 
@@ -462,6 +462,12 @@ func TestGetAgentPriceOffer(t *testing.T) {
 		}
 		if resp.DropoffLocationName != dropoffName {
 			t.Errorf("dropoff location: got %q, want %q", resp.DropoffLocationName, dropoffName)
+		}
+		if resp.PickupLocationID != pickupID {
+			t.Errorf("pickup location id: got %d, want %d", resp.PickupLocationID, pickupID)
+		}
+		if resp.DropoffLocationID != dropoffID {
+			t.Errorf("dropoff location id: got %d, want %d", resp.DropoffLocationID, dropoffID)
 		}
 
 		// Pricing math:
