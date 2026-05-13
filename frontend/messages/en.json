@@ -44,6 +44,7 @@
     "helloCustomer": "Hello, Customer",
     "profile": "Personal Details",
     "reservations": "My Reservations",
+    "priceOffers": "Price Offers",
     "logout": "Logout"
   },
   "Login": {

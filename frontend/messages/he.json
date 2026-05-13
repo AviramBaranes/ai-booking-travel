@@ -44,6 +44,7 @@
     "helloCustomer": "שלום לקוח",
     "profile": "פרטים אישיים",
     "reservations": "ההזמנות שלי",
+    "priceOffers": "הצעות מחיר",
     "logout": "התנתק"
   },
   "Login": {

@@ -5,7 +5,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CalendarDays, User } from "lucide-react";
+import { BadgePercent, CalendarDays, User } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
@@ -23,8 +23,8 @@ export function AuthenticatedDropdown() {
 
   if (!session.data?.user || session.data.user.role === "admin") return null;
 
-  const greetingKey =
-    session.data.user.role === "agent" ? "helloAgent" : "helloCustomer";
+  const isAgent = session.data.user.role === "agent";
+  const greetingKey = isAgent ? "helloAgent" : "helloCustomer";
 
   const itemBase =
     "flex items-center gap-2 px-4 min-h-[71px] w-full font-medium text-[16px] transition-colors";
@@ -54,16 +54,29 @@ export function AuthenticatedDropdown() {
         </div>
 
         {/* Profile link */}
-        {/* <Link
-          href={`/${lang}/profile`}
-          className={navItem(`/${lang}/profile`)}
-          onClick={() => setOpen(false)}
-        >
-          <User
-            className={`size-6 shrink-0 ${pathname.startsWith(`/${lang}/profile`) ? "text-white" : "text-brand"}`}
-          />
-          <span>{t("profile")}</span>
-        </Link> */}
+        {isAgent ? (
+          <Link
+            href={`/${lang}/price-offers`}
+            className={navItem(`/${lang}/price-offers`)}
+            onClick={() => setOpen(false)}
+          >
+            <BadgePercent
+              className={`size-6 shrink-0 ${pathname.startsWith(`/${lang}/price-offers`) ? "text-white" : "text-brand"}`}
+            />
+            <span>{t("priceOffers")}</span>
+          </Link>
+        ) : (
+          <Link
+            href={`/${lang}/profile`}
+            className={navItem(`/${lang}/profile`)}
+            onClick={() => setOpen(false)}
+          >
+            <User
+              className={`size-6 shrink-0 ${pathname.startsWith(`/${lang}/profile`) ? "text-white" : "text-brand"}`}
+            />
+            <span>{t("profile")}</span>
+          </Link>
+        )}
 
         {/* Reservations link */}
         <Link
