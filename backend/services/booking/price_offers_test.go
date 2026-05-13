@@ -46,14 +46,14 @@ func uniqueLocName(prefix string) string {
 	return fmt.Sprintf("%s-%d-%d", prefix, time.Now().UnixNano(), nextLocSeq())
 }
 
-// seedPriceOfferLocation inserts a location and returns its stringified ID
-// (which is what is stored in price_offers.pickup_location_id / dropoff_location_id)
-// alongside the location name for assertions on JOIN-derived fields.
-func seedPriceOfferLocation(t *testing.T, q *db.Queries, namePrefix string) (string, string) {
+// seedPriceOfferLocation inserts a canonical location plus its Flex broker mapping.
+// It returns the canonical location ID, broker location code, and location name.
+func seedPriceOfferLocation(t *testing.T, q *db.Queries, namePrefix string) (int64, string, string) {
 	t.Helper()
 	ctx := context.Background()
 	city := "TestCity"
 	name := uniqueLocName(namePrefix)
+	brokerLocationCode := uniqueLocName(namePrefix + "-broker")
 	loc, err := q.InsertLocation(ctx, db.InsertLocationParams{
 		Country:     "TestCountry",
 		CountryCode: "TC",
@@ -63,8 +63,15 @@ func seedPriceOfferLocation(t *testing.T, q *db.Queries, namePrefix string) (str
 	if err != nil {
 		t.Fatalf("failed to seed location: %v", err)
 	}
+	if _, err := q.InsertLocationBrokerCode(ctx, db.InsertLocationBrokerCodeParams{
+		LocationID:       loc.ID,
+		Broker:           db.BrokerFlex,
+		BrokerLocationID: brokerLocationCode,
+	}); err != nil {
+		t.Fatalf("failed to seed location broker code: %v", err)
+	}
 	t.Cleanup(func() { _ = q.DeleteLocationByID(ctx, loc.ID) })
-	return strconv.FormatInt(loc.ID, 10), loc.Name
+	return loc.ID, brokerLocationCode, loc.Name
 }
 
 // seedSnapshot inserts an available_plans_snapshots row with the given plans
@@ -163,9 +170,9 @@ func TestCreatePriceOffer(t *testing.T) {
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 
-	pickupID, _ := seedPriceOfferLocation(t, q, "create-pickup")
-	dropoffID, _ := seedPriceOfferLocation(t, q, "create-dropoff")
-	plan := defaultPlan(pickupID, dropoffID)
+	pickupID, pickupCode, _ := seedPriceOfferLocation(t, q, "create-pickup")
+	dropoffID, dropoffCode, _ := seedPriceOfferLocation(t, q, "create-dropoff")
+	plan := defaultPlan(pickupCode, dropoffCode)
 	snapshotID := seedSnapshot(t, q, []planPriceDetails{plan})
 
 	t.Run("rejects missing snapshot id", func(t *testing.T) {
@@ -264,10 +271,10 @@ func TestCreatePriceOffer(t *testing.T) {
 			t.Errorf("total price: got %d, want %d", row.TotalPrice, 164)
 		}
 		if row.PickupLocationID != pickupID {
-			t.Errorf("pickup location id: got %q, want %q", row.PickupLocationID, pickupID)
+			t.Errorf("pickup location id: got %d, want %d", row.PickupLocationID, pickupID)
 		}
 		if row.DropoffLocationID != dropoffID {
-			t.Errorf("dropoff location id: got %q, want %q", row.DropoffLocationID, dropoffID)
+			t.Errorf("dropoff location id: got %d, want %d", row.DropoffLocationID, dropoffID)
 		}
 	})
 
@@ -307,9 +314,9 @@ func TestGetClientPriceOffer(t *testing.T) {
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 
-	pickupID, pickupName := seedPriceOfferLocation(t, q, "client-pickup")
-	dropoffID, dropoffName := seedPriceOfferLocation(t, q, "client-dropoff")
-	plan := defaultPlan(pickupID, dropoffID)
+	_, pickupCode, pickupName := seedPriceOfferLocation(t, q, "client-pickup")
+	_, dropoffCode, dropoffName := seedPriceOfferLocation(t, q, "client-dropoff")
+	plan := defaultPlan(pickupCode, dropoffCode)
 	snapshotID := seedSnapshot(t, q, []planPriceDetails{plan})
 
 	t.Run("returns 404 for invalid token", func(t *testing.T) {
@@ -394,9 +401,9 @@ func TestGetAgentPriceOffer(t *testing.T) {
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 
-	pickupID, pickupName := seedPriceOfferLocation(t, q, "agent-pickup")
-	dropoffID, dropoffName := seedPriceOfferLocation(t, q, "agent-dropoff")
-	plan := defaultPlan(pickupID, dropoffID)
+	_, pickupCode, pickupName := seedPriceOfferLocation(t, q, "agent-pickup")
+	_, dropoffCode, dropoffName := seedPriceOfferLocation(t, q, "agent-dropoff")
+	plan := defaultPlan(pickupCode, dropoffCode)
 	snapshotID := seedSnapshot(t, q, []planPriceDetails{plan})
 
 	t.Run("returns 404 for non-existent id", func(t *testing.T) {
@@ -533,9 +540,9 @@ func TestListPriceOffers(t *testing.T) {
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 
-	pickupID, _ := seedPriceOfferLocation(t, q, "list-pickup")
-	dropoffID, _ := seedPriceOfferLocation(t, q, "list-dropoff")
-	plan := defaultPlan(pickupID, dropoffID)
+	_, pickupCode, _ := seedPriceOfferLocation(t, q, "list-pickup")
+	_, dropoffCode, _ := seedPriceOfferLocation(t, q, "list-dropoff")
+	plan := defaultPlan(pickupCode, dropoffCode)
 	snapshotID := seedSnapshot(t, q, []planPriceDetails{plan})
 
 	createOffer := func(t *testing.T, name string) *PriceOfferResponse {
@@ -748,9 +755,9 @@ func TestUpdatePriceOffer(t *testing.T) {
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 
-	pickupID, _ := seedPriceOfferLocation(t, q, "update-pickup")
-	dropoffID, _ := seedPriceOfferLocation(t, q, "update-dropoff")
-	plan := defaultPlan(pickupID, dropoffID)
+	_, pickupCode, _ := seedPriceOfferLocation(t, q, "update-pickup")
+	_, dropoffCode, _ := seedPriceOfferLocation(t, q, "update-dropoff")
+	plan := defaultPlan(pickupCode, dropoffCode)
 	snapshotID := seedSnapshot(t, q, []planPriceDetails{plan})
 
 	createOffer := func(t *testing.T, name string) *PriceOfferResponse {

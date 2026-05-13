@@ -70,13 +70,19 @@ func (s *Service) CreatePriceOffer(ctx context.Context, params CreatePriceOfferP
 		return nil, api_errors.ErrInternalError
 	}
 
+	pickupLocationID, dropoffLocationID, err := s.getLocationIDs(ctx, plan.PickupLocationCode, plan.DropoffLocationCode, string(plan.Broker))
+	if err != nil {
+		rlog.Error("failed to get location IDs for price offer", "pickupBrokerLocationID", plan.PickupLocationCode, "dropoffBrokerLocationID", plan.DropoffLocationCode, "broker", plan.Broker, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
 	totalPrice := pricing.CalculateTotalPrice(plan.CarPurchasePrice, plan.MarkupPercentage, brokerErpPrice, btErpPrice, plan.DiscountPercentage)
 
 	priceOffer, err := s.query.CreatePriceOffer(ctx, db.CreatePriceOfferParams{
 		AgentID:             authData.UserID,
 		Name:                params.Name,
-		PickupLocationID:    plan.PickupLocationCode,
-		DropoffLocationID:   plan.DropoffLocationCode,
+		PickupLocationID:    pickupLocationID,
+		DropoffLocationID:   dropoffLocationID,
 		PickupDate:          snapshot.PickupDate,
 		ReturnDate:          snapshot.ReturnDate,
 		PickupTime:          snapshot.PickupTime,
@@ -104,6 +110,31 @@ func (s *Service) CreatePriceOffer(ctx context.Context, params CreatePriceOfferP
 		ID:    priceOffer.ID,
 		Token: db.UuidToString(priceOffer.Token),
 	}, nil
+}
+
+// getLocationsNames retrieves the pickup and dropoff location names based on their respective codes.
+func (s *Service) getLocationIDs(ctx context.Context, pickupBrokerLocationID, dropoffBrokerLocationID string, broker string) (int64, int64, error) {
+	pickupLocationID, err := s.query.GetLocationIDByBrokerCode(ctx, db.GetLocationIDByBrokerCodeParams{
+		Broker:           db.Broker(broker),
+		BrokerLocationID: pickupBrokerLocationID,
+	})
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if pickupBrokerLocationID == dropoffBrokerLocationID {
+		return pickupLocationID, pickupLocationID, nil
+	}
+
+	dropoffLocationID, err := s.query.GetLocationIDByBrokerCode(ctx, db.GetLocationIDByBrokerCodeParams{
+		Broker:           db.Broker(broker),
+		BrokerLocationID: dropoffBrokerLocationID,
+	})
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return pickupLocationID, dropoffLocationID, nil
 }
 
 // GetPriceOfferResponse represents the public-facing details of a price offer, exposing only the offered price (no internal pricing breakdown).
@@ -143,6 +174,8 @@ type GetAgentPriceOfferResponse struct {
 	OfferedPrice        int32             `json:"offeredPrice"`
 	PickupLocationName  string            `json:"pickupLocationName"`
 	DropoffLocationName string            `json:"dropoffLocationName"`
+	PickupLocationID    int64             `json:"pickupLocationId"`
+	DropoffLocationID   int64             `json:"dropoffLocationId"`
 	PickupDate          string            `json:"pickupDate"`
 	ReturnDate          string            `json:"returnDate"`
 	PickupTime          string            `json:"pickupTime"`
@@ -240,13 +273,15 @@ func (s *Service) GetAgentPriceOffer(ctx context.Context, id int64) (*GetAgentPr
 		OfferedPrice:        row.OfferedPrice,
 		PickupLocationName:  row.PickupLocation,
 		DropoffLocationName: row.DropoffLocation,
-		PickupDate:          db.DateToString(row.PickupDate),
-		ReturnDate:          db.DateToString(row.ReturnDate),
-		RentalDays:          row.RentalDays,
-		PickupTime:          row.PickupTime,
-		DropoffTime:         row.DropoffTime,
-		DriverAge:           row.DriverAge,
-		CreatedAt:           db.TimestamptzToString(row.CreatedAt),
+		// PickupLocationID:    row.PickupLocationID,
+		// DropoffLocationID:   row.DropoffLocationID,
+		PickupDate:  db.DateToString(row.PickupDate),
+		ReturnDate:  db.DateToString(row.ReturnDate),
+		RentalDays:  row.RentalDays,
+		PickupTime:  row.PickupTime,
+		DropoffTime: row.DropoffTime,
+		DriverAge:   row.DriverAge,
+		CreatedAt:   db.TimestamptzToString(row.CreatedAt),
 	}, nil
 }
 

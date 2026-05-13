@@ -79,6 +79,14 @@ JOIN location_broker_codes lbc ON lbc.location_id = l.id
 WHERE lbc.broker_location_id = @broker_location_id
 LIMIT 1;
 
+-- name: GetLocationIDByBrokerCode :one
+SELECT lbc.location_id
+FROM location_broker_codes lbc
+WHERE lbc.broker = sqlc.arg(broker)::broker
+  AND lbc.broker_location_id = sqlc.arg(broker_location_id)
+  AND lbc.enabled = TRUE
+LIMIT 1;
+
 -- name: DeleteLocationByID :exec
 DELETE FROM locations
 WHERE id = sqlc.arg(id);

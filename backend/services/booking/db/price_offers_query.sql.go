@@ -84,8 +84,8 @@ RETURNING id, token, agent_id, status, name, pickup_location_id, dropoff_locatio
 type CreatePriceOfferParams struct {
 	AgentID             int32
 	Name                string
-	PickupLocationID    string
-	DropoffLocationID   string
+	PickupLocationID    int64
+	DropoffLocationID   int64
 	PickupDate          pgtype.Date
 	ReturnDate          pgtype.Date
 	RentalDays          int32
@@ -164,8 +164,8 @@ func (q *Queries) CreatePriceOffer(ctx context.Context, arg CreatePriceOfferPara
 const getPriceOfferById = `-- name: GetPriceOfferById :one
 SELECT price_offers.id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.return_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.created_at, price_offers.updated_at , pl.name AS pickup_location, dl.name AS dropoff_location
 FROM price_offers
-    JOIN locations pl ON price_offers.pickup_location_id::bigint = pl.id
-    JOIN locations dl ON price_offers.dropoff_location_id::bigint = dl.id
+    JOIN locations pl ON price_offers.pickup_location_id = pl.id
+    JOIN locations dl ON price_offers.dropoff_location_id = dl.id
 WHERE price_offers.id = $1 AND price_offers.agent_id = $2
 `
 
@@ -180,8 +180,8 @@ type GetPriceOfferByIdRow struct {
 	AgentID             int32
 	Status              OfferStatus
 	Name                string
-	PickupLocationID    string
-	DropoffLocationID   string
+	PickupLocationID    int64
+	DropoffLocationID   int64
 	PickupDate          pgtype.Date
 	ReturnDate          pgtype.Date
 	PickupTime          string
@@ -244,8 +244,8 @@ func (q *Queries) GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdPa
 const getPriceOfferByToken = `-- name: GetPriceOfferByToken :one
 SELECT price_offers.id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.return_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.created_at, price_offers.updated_at , pl.name AS pickup_location, dl.name AS dropoff_location
 FROM price_offers
-    JOIN locations pl ON price_offers.pickup_location_id::bigint = pl.id
-    JOIN locations dl ON price_offers.dropoff_location_id::bigint = dl.id
+    JOIN locations pl ON price_offers.pickup_location_id = pl.id
+    JOIN locations dl ON price_offers.dropoff_location_id = dl.id
  WHERE token = $1
 `
 
@@ -255,8 +255,8 @@ type GetPriceOfferByTokenRow struct {
 	AgentID             int32
 	Status              OfferStatus
 	Name                string
-	PickupLocationID    string
-	DropoffLocationID   string
+	PickupLocationID    int64
+	DropoffLocationID   int64
 	PickupDate          pgtype.Date
 	ReturnDate          pgtype.Date
 	PickupTime          string
@@ -323,8 +323,8 @@ pickup_date, return_date, pickup_time, dropoff_time,
 currency_code, total_price, offered_currency_code, offered_price, 
 price_offers.created_at
 FROM price_offers
-    JOIN locations pl ON price_offers.pickup_location_id::bigint = pl.id
-    JOIN locations dl ON price_offers.dropoff_location_id::bigint = dl.id
+    JOIN locations pl ON price_offers.pickup_location_id = pl.id
+    JOIN locations dl ON price_offers.dropoff_location_id = dl.id
 WHERE agent_id = $1
   AND ($2::offer_status IS NULL OR status = $2::offer_status)
   AND ($3::text IS NULL OR price_offers.name ILIKE '%' || $3::text || '%')

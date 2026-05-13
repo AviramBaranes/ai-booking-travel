@@ -41,6 +41,7 @@ type Querier interface {
 	GetLocationBrokerCode(ctx context.Context, arg GetLocationBrokerCodeParams) (LocationBrokerCode, error)
 	GetLocationByBrokerLocationID(ctx context.Context, brokerLocationID string) (Location, error)
 	GetLocationById(ctx context.Context, id int64) (Location, error)
+	GetLocationIDByBrokerCode(ctx context.Context, arg GetLocationIDByBrokerCodeParams) (int64, error)
 	GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdParams) (GetPriceOfferByIdRow, error)
 	GetPriceOfferByToken(ctx context.Context, token pgtype.UUID) (GetPriceOfferByTokenRow, error)
 	GetSnapshotByID(ctx context.Context, id int64) (AvailablePlansSnapshot, error)

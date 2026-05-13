@@ -195,8 +195,8 @@ CREATE TABLE
         status offer_status NOT NULL DEFAULT 'open',
         name TEXT NOT NULL,
 
-        pickup_location_id TEXT NOT NULL,
-        dropoff_location_id TEXT NOT NULL,
+        pickup_location_id BIGINT NOT NULL REFERENCES locations (id),
+        dropoff_location_id BIGINT NOT NULL REFERENCES locations (id),
         pickup_date DATE NOT NULL,
         return_date DATE NOT NULL,
         pickup_time TEXT NOT NULL,

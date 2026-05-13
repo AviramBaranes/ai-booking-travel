@@ -65,6 +65,27 @@ func (q *Queries) GetLocationById(ctx context.Context, id int64) (Location, erro
 	return i, err
 }
 
+const getLocationIDByBrokerCode = `-- name: GetLocationIDByBrokerCode :one
+SELECT lbc.location_id
+FROM location_broker_codes lbc
+WHERE lbc.broker = $1::broker
+  AND lbc.broker_location_id = $2
+  AND lbc.enabled = TRUE
+LIMIT 1
+`
+
+type GetLocationIDByBrokerCodeParams struct {
+	Broker           Broker
+	BrokerLocationID string
+}
+
+func (q *Queries) GetLocationIDByBrokerCode(ctx context.Context, arg GetLocationIDByBrokerCodeParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getLocationIDByBrokerCode, arg.Broker, arg.BrokerLocationID)
+	var location_id int64
+	err := row.Scan(&location_id)
+	return location_id, err
+}
+
 const insertLocation = `-- name: InsertLocation :one
 INSERT INTO locations (country, country_code, city, name, iata)
 VALUES ($1, $2, $3, $4, $5)

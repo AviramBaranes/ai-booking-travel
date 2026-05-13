@@ -222,8 +222,8 @@ type PriceOffer struct {
 	AgentID             int32
 	Status              OfferStatus
 	Name                string
-	PickupLocationID    string
-	DropoffLocationID   string
+	PickupLocationID    int64
+	DropoffLocationID   int64
 	PickupDate          pgtype.Date
 	ReturnDate          pgtype.Date
 	PickupTime          string
