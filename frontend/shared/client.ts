@@ -858,6 +858,8 @@ export namespace booking {
         offeredPrice: number
         pickupLocationName: string
         dropoffLocationName: string
+        pickupLocationId: number
+        dropoffLocationId: number
         pickupDate: string
         returnDate: string
         pickupTime: string

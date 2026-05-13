@@ -360,7 +360,9 @@
       "summary": {
         "title": "Price Offer Summary:",
         "clientLink": "Print price offer",
-        "labels": {
+        "editOffer": "Edit Price Offer",
+        "renewOffer": "Renew Offer",
+          "labels": {
           "name": "Price offer name:",
           "status": "Status:",
           "createdAt": "Created on:",

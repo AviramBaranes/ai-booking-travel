@@ -20,6 +20,7 @@ import {
   OPEN_DIALOG_QUERY_KEY,
   OPEN_DIALOG_QUERY_VALUE,
 } from "../../header/login/useDialogOpenFromQuery";
+import { formatDate } from "@/shared/utils/formatDate";
 
 export type SearchFieldHandle = {
   focus: () => void;
@@ -44,6 +45,7 @@ export interface SearchFormFields {
 interface SearchFormProps extends Partial<SearchFormFields> {
   className?: string;
 }
+
 
 export function SearchForm({ className, ...fields }: SearchFormProps) {
   const router = useRouter();
@@ -90,13 +92,6 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
     control,
     name: "pickupDate",
   });
-
-  function formatDate(date: Date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
 
   function onSubmit(data: SearchFormValues) {
     clearSession();
