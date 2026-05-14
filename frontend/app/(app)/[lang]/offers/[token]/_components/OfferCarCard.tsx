@@ -12,7 +12,7 @@ export async function ClientOfferCarCard({
   const t = await getTranslations("MyAccount.reservation");
 
   return (
-    <div className="sticky top-24">
+    <div className="sticky top-4">
       <SelectedCarCardWrapper>
         <SelectedCarHeader carDetails={offer.carDetails} />
         <FreeCancellationBadge
