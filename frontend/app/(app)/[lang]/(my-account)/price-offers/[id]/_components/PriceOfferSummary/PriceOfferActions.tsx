@@ -1,13 +1,15 @@
-import { useState } from "react";
-import { Copy, Check, Edit, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Copy, Check, Edit, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { PriceOfferStatus } from "@/app/(app)/[lang]/_components/priceOffer/PriceOfferForm";
 import { EditPriceOfferDialog } from "./EditPriceOfferDialog";
 import { useParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { renewPriceOffer } from "@/shared/api/price-offers-api";
 import { usePriceOffer } from "../../_hooks/usePriceOffer";
+import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
 
 const CLIENT_PRICE_OFFER_LINK_PREFIX = "/offers/";
 
@@ -27,12 +29,38 @@ export function PriceOfferActions({ priceOfferId }: { priceOfferId: number }) {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const { mutate: renewOffer, isPending } = useMutation({
+  const {
+    mutate: renewOffer,
+    isPending,
+    error,
+  } = useMutation({
     mutationFn: (id: number) => renewPriceOffer(id),
-    onSuccess: () => {
+    onSuccess: ({ found }) => {
       refetch();
+      if (found) {
+        toast.success(t("renewSuccessMessage"), {
+          duration: 3000,
+          position: "top-center",
+        });
+      } else {
+        toast.error(t("renewErrorMessage"), {
+          duration: 3000,
+          position: "top-center",
+        });
+      }
     },
   });
+
+  const translatedError = useTranslatedError(error);
+
+  useEffect(() => {
+    if (translatedError) {
+      toast.error(translatedError, {
+        duration: 3000,
+        position: "top-center",
+      });
+    }
+  }, [translatedError]);
 
   return (
     <>
@@ -61,7 +89,7 @@ export function PriceOfferActions({ priceOfferId }: { priceOfferId: number }) {
         <Button
           variant="ghost"
           loading={isPending}
-          className="py-6 text-border-muted font-semibold flex gap-4"
+          className="py-6 text-border-muted font-semibold min-w-30 flex gap-4"
           onClick={() => renewOffer(priceOfferId)}
         >
           <RefreshCw className="w-6 h-6" />

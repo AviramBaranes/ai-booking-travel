@@ -362,6 +362,8 @@
         "clientLink": "Print price offer",
         "editOffer": "Edit Price Offer",
         "renewOffer": "Renew Offer",
+        "renewSuccessMessage": "The renewal was successful - note that cost prices or car details may have changed.",
+        "renewErrorMessage": "The renewal failed, this car is no longer available.",
         "labels": {
           "name": "Price offer name:",
           "status": "Status:",

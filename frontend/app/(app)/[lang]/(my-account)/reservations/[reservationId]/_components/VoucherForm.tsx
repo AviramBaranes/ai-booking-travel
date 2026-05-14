@@ -10,7 +10,6 @@ import { applyVoucher } from "@/shared/api/reservations-api";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
-import { useReservation } from "../_hooks/useReservation";
 
 const applyVoucherSchema = zod.object({
   voucherCode: zod.string().min(1, "requiredField"),
