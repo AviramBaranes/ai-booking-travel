@@ -760,6 +760,17 @@ export namespace booking {
         flightNumber?: string
     }
 
+    /**
+     * BookPriceOfferParams defines the parameters required to book a car rental based on a price offer.
+     */
+    export interface BookPriceOfferParams {
+        priceOfferId: number
+        driverTitle: string
+        driverFirstName: string
+        driverLastName: string
+        flightNumber?: string
+    }
+
     export interface BookResponse {
         reservationId: number
     }
@@ -1145,6 +1156,7 @@ export namespace booking {
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
             this.Book = this.Book.bind(this)
+            this.BookPriceOffer = this.BookPriceOffer.bind(this)
             this.BulkToggleLocations = this.BulkToggleLocations.bind(this)
             this.CreateCoupon = this.CreateCoupon.bind(this)
             this.CreateCurrency = this.CreateCurrency.bind(this)
@@ -1183,6 +1195,12 @@ export namespace booking {
         public async Book(params: BookParams): Promise<BookResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/booking`, JSON.stringify(params))
+            return await resp.json() as BookResponse
+        }
+
+        public async BookPriceOffer(params: BookPriceOfferParams): Promise<BookResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/offers/book`, JSON.stringify(params))
             return await resp.json() as BookResponse
         }
 

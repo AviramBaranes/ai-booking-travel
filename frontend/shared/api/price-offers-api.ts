@@ -31,3 +31,7 @@ export function updatePriceOffer(
 export function renewPriceOffer(id: number) {
   return withErrorHandler((client) => client.booking.RenewPriceOffer(id));
 }
+
+export function bookPriceOffer(params: booking.BookPriceOfferParams) {
+  return withErrorHandler((client) => client.booking.BookPriceOffer(params));
+}

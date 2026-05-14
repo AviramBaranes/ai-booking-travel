@@ -272,8 +272,8 @@ func (s *Service) getLocationsNames(ctx context.Context, pickupBrokerLocationID,
 	return pickupLoc.Name, dropoffLoc.Name, nil
 }
 
-// BookByPriceOfferParams defines the parameters required to book a car rental based on a price offer.
-type BookByPriceOfferParams struct {
+// BookPriceOfferParams defines the parameters required to book a car rental based on a price offer.
+type BookPriceOfferParams struct {
 	PriceOfferID    int64  `json:"priceOfferId" validate:"required"`
 	DriverTitle     string `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Mrs' 'Ms' 'Miss' 'Dr'"`
 	DriverFirstName string `json:"driverFirstName" validate:"required,uppercase_only"`
@@ -281,12 +281,12 @@ type BookByPriceOfferParams struct {
 	FlightNumber    string `json:"flightNumber" encore:"optional"`
 }
 
-func (p BookByPriceOfferParams) Validate() error {
+func (p BookPriceOfferParams) Validate() error {
 	return validation.ValidateStruct(p)
 }
 
 //encore:api auth method=POST path=/offers/book tag:agent
-func (s *Service) BookByPriceOffer(ctx context.Context, params BookByPriceOfferParams) (*BookResponse, error) {
+func (s *Service) BookPriceOffer(ctx context.Context, params BookPriceOfferParams) (*BookResponse, error) {
 	authData := auth.GetAuthData()
 
 	offer, err := s.getBookablePriceOffer(ctx, params.PriceOfferID, authData.UserID)
@@ -352,7 +352,7 @@ func ensurePriceOfferRenewedRecently(offer db.GetPriceOfferByIdRow, priceOfferID
 	return nil
 }
 
-func bookPriceOfferAtBroker(offer db.GetPriceOfferByIdRow, params BookByPriceOfferParams) (broker.BookingResponse, broker.CarDetails, error) {
+func bookPriceOfferAtBroker(offer db.GetPriceOfferByIdRow, params BookPriceOfferParams) (broker.BookingResponse, broker.CarDetails, error) {
 	b, err := getBroker(offer.Broker)
 	if err != nil {
 		rlog.Error("failed to get broker for price offer booking", "error", err)
@@ -383,7 +383,7 @@ func unmarshalPriceOfferCarDetails(offer db.GetPriceOfferByIdRow) (broker.CarDet
 	return offerCarDetails, nil
 }
 
-func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, params BookByPriceOfferParams, offerCarDetails broker.CarDetails) broker.BookingParams {
+func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, params BookPriceOfferParams, offerCarDetails broker.CarDetails) broker.BookingParams {
 	return broker.BookingParams{
 		RateQualifier:   offer.RateQualifier,
 		SupplierCode:    offer.SupplierCode,
@@ -409,7 +409,7 @@ func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, params BookByPr
 func buildPriceOfferReservationRequest(
 	userID int32,
 	offer db.GetPriceOfferByIdRow,
-	params BookByPriceOfferParams,
+	params BookPriceOfferParams,
 	confirmationNumber string,
 	offerCarDetails broker.CarDetails,
 ) (reservation.CreateReservationRequest, error) {
