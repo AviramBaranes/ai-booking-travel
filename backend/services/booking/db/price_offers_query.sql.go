@@ -256,7 +256,7 @@ SELECT price_offers.id, price_offers.token, price_offers.agent_id, price_offers.
 FROM price_offers
     JOIN locations pl ON price_offers.pickup_location_id = pl.id
     JOIN locations dl ON price_offers.dropoff_location_id = dl.id
- WHERE token = $1
+ WHERE token = $1 AND status != 'unavailable'
 `
 
 type GetPriceOfferByTokenRow struct {
@@ -425,7 +425,7 @@ UPDATE price_offers SET
     total_price = $8,
     renewed_at = now(),
     updated_at = now()
-WHERE id = $9 AND agent_id = $10
+WHERE id = $9 AND agent_id = $10 AND status != 'unavailable'
 `
 
 type RenewPriceOfferDetailsParams struct {
@@ -499,7 +499,7 @@ UPDATE price_offers SET
     offered_currency_code = COALESCE($3, offered_currency_code),
     offered_price = COALESCE($4, offered_price),
     updated_at = now()
-WHERE id = $5 AND agent_id = $6
+WHERE id = $5 AND agent_id = $6 AND status != 'unavailable'
 `
 
 type UpdatePriceOfferParams struct {

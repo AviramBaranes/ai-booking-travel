@@ -53,7 +53,7 @@ SELECT price_offers.* , pl.name AS pickup_location, dl.name AS dropoff_location
 FROM price_offers
     JOIN locations pl ON price_offers.pickup_location_id = pl.id
     JOIN locations dl ON price_offers.dropoff_location_id = dl.id
- WHERE token = sqlc.arg(token);
+ WHERE token = sqlc.arg(token) AND status != 'unavailable';
 
 -- name: GetPriceOfferById :one
 SELECT price_offers.* , pl.name AS pickup_location, dl.name AS dropoff_location
@@ -69,7 +69,7 @@ UPDATE price_offers SET
     offered_currency_code = COALESCE(sqlc.narg(offered_currency_code), offered_currency_code),
     offered_price = COALESCE(sqlc.narg(offered_price), offered_price),
     updated_at = now()
-WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
+WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id) AND status != 'unavailable';
 
 -- name: RenewPriceOfferDetails :exec
 UPDATE price_offers SET
@@ -83,7 +83,7 @@ UPDATE price_offers SET
     total_price = sqlc.arg(total_price),
     renewed_at = now(),
     updated_at = now()
-WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
+WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id) AND status != 'unavailable';
 
 -- name: RenewPriceOfferUnavailable :exec
 UPDATE price_offers SET
