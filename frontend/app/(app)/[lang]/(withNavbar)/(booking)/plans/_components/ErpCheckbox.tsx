@@ -2,9 +2,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { booking } from "@/shared/client";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
-import { RentalPriceForDays } from "../../../../../../shared/components/booking/RentalPriceForDays";
 import { formatPrice } from "@/shared/utils/formatPrice";
 import { useBookingSettings } from "@/shared/hooks/useBookingSettings";
+import { RentalPriceForDays } from "@/shared/components/booking/RentalPriceForDays";
 
 interface ErpCheckboxProps {
   vehicle: booking.AvailableVehicle;

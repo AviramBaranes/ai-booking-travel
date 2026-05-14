@@ -6,11 +6,8 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { updatePriceOffer } from "@/shared/api/price-offers-api";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
-import {
-  PriceOfferForm,
-  PriceOfferStatus,
-} from "@/app/(app)/[lang]/_components/priceOffer/PriceOfferForm";
 import { usePriceOffer } from "../../_hooks/usePriceOffer";
+import { PriceOfferForm, PriceOfferStatus } from "@/app/(app)/[lang]/(withNavbar)/_components/priceOffer/PriceOfferForm";
 
 interface EditPriceOfferDialogProps {
   open: boolean;

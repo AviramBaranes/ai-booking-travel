@@ -47,8 +47,8 @@ var (
 	)
 )
 
-// BookResponse represents the response returned after a successful booking, including the booking reference number and any relevant details.
-type BookRequest struct {
+// BookParams defines the parameters required to book a car rental based on a previously retrieved snapshot of available plans. It includes details about the selected plan, driver information, and optional add-ons. Validation tags ensure that all required fields are provided and correctly formatted.
+type BookParams struct {
 	SnapshotID      int64                `json:"snapshotId" validate:"required"`
 	RateQualifier   string               `json:"rateQualifier" validate:"required"`
 	SupplierCode    string               `json:"supplierCode" validate:"required"`
@@ -61,7 +61,7 @@ type BookRequest struct {
 	FlightNumber    string               `json:"flightNumber" encore:"optional"`
 }
 
-func (p BookRequest) Validate() error {
+func (p BookParams) Validate() error {
 	return validation.ValidateStruct(p)
 }
 
@@ -70,7 +70,7 @@ type BookResponse struct {
 }
 
 //encore:api auth method=POST path=/booking tag:agent
-func (s *Service) Book(ctx context.Context, params BookRequest) (*BookResponse, error) {
+func (s *Service) Book(ctx context.Context, params BookParams) (*BookResponse, error) {
 	snapshot, err := s.getSnapshot(ctx, params.SnapshotID)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func (s *Service) Book(ctx context.Context, params BookRequest) (*BookResponse, 
 func (s *Service) buildCreateReservationRequest(
 	snapshot db.AvailablePlansSnapshot,
 	plan planPriceDetails,
-	params BookRequest,
+	params BookParams,
 	confirmationNumber string,
 ) reservation.CreateReservationRequest {
 	authData := auth.GetAuthData()
@@ -199,7 +199,7 @@ func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode st
 }
 
 // bookCarAtBroker performs the actual booking with the broker using the provided plan details and booking request parameters.
-func bookCarAtBroker(snapshot db.AvailablePlansSnapshot, plan planPriceDetails, params BookRequest) (string, error) {
+func bookCarAtBroker(snapshot db.AvailablePlansSnapshot, plan planPriceDetails, params BookParams) (string, error) {
 	b, err := getBrokerByPlan(plan)
 	if err != nil {
 		rlog.Error("failed to get broker for plan", "RateQualifier", plan.RateQualifier, "error", err)

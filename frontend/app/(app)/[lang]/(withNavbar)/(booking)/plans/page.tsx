@@ -1,13 +1,13 @@
-import { getLang } from "@/shared/lang/lang";
 import { parseSearchQuery, toSearchRequest } from "../results/searchQuery";
 import { redirect } from "next/navigation";
+import { getLang } from "@/shared/lang/lang";
 import { BookingStepper } from "../_components/BookingStepper";
 import { SearchDataBanner } from "@/shared/components/booking/SearchDataBanner";
-import { BackButton } from "../../../../../shared/components/booking/BackButton";
-import { OrderPageContent } from "./_components/OrderPageContent";
+import { BackButton } from "@/shared/components/booking/BackButton";
+import { PlansPageContent } from "./_components/PlansPageContent";
 import { ExpiredSearchGate } from "../_components/ExpiredSearchGate";
 
-export default async function OrderPage({
+export default async function PlansPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string>>;
@@ -24,7 +24,7 @@ export default async function OrderPage({
 
   return (
     <main className="w-2/3 mx-auto pt-15 pb-6">
-      <BookingStepper currentStep="ordering" />
+      <BookingStepper currentStep="plans" />
       <div className="my-4">
         <SearchDataBanner
           pickUpLocationId={query.pickupLocationId}
@@ -40,9 +40,9 @@ export default async function OrderPage({
           fromCache
         />
       </div>
-      <BackButton translationKey="backToPlans" />
+      <BackButton translationKey="backToResults" />
       <ExpiredSearchGate searchRequest={searchRequest}>
-        <OrderPageContent searchRequest={searchRequest} />
+        <PlansPageContent searchRequest={searchRequest} />
       </ExpiredSearchGate>
     </main>
   );

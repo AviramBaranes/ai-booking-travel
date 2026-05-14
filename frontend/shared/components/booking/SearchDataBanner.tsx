@@ -1,14 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import {
-  SearchForm,
-  SearchFormFields,
-} from "@/app/(app)/[lang]/_components/home/SearchForm/SearchForm";
 import { booking } from "@/shared/client";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 import { SearchDataBannerDisplay } from "./SearchDataBannerDisplay";
 import { SearchDataFormWrapper } from "./SearchDataFormWrapper";
+import { SearchForm, SearchFormFields } from "@/app/(app)/[lang]/(withNavbar)/_components/home/SearchForm/SearchForm";
 
 interface SearchDataBannerProps extends Omit<
   SearchFormFields,

@@ -2,9 +2,9 @@ import "../globals.css";
 import { getPayload } from "payload";
 import config from "@payload-config";
 import { NotFoundContent } from "@/shared/components/NotFoundContent";
-import { Footer } from "./[lang]/_components/footer/Footer";
-import { Navbar } from "./[lang]/_components/header/navbar/Navbar";
 import localFont from "next/font/local";
+import { Navbar } from "./[lang]/(withNavbar)/_components/header/navbar/Navbar";
+import { Footer } from "./[lang]/(withNavbar)/_components/footer/Footer";
 
 const polin = localFont({
   src: [
