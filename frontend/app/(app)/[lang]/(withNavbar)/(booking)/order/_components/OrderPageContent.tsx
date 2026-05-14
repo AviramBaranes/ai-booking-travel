@@ -34,7 +34,6 @@ interface OrderPageContentProps {
 
 export function OrderPageContent({ searchRequest }: OrderPageContentProps) {
   const t = useTranslations("booking.orderPage");
-  const tError = useTranslations("ApiErrors");
   const { lang } = useParams();
   const router = useRouter();
   const { data: bookingSettings } = useBookingSettings();
@@ -70,30 +69,6 @@ export function OrderPageContent({ searchRequest }: OrderPageContentProps) {
   }
 
   const selectedPlan = vehicle.plans[selectedPlanIndex];
-
-  // async function onSubmit(formData: OrderFormValues) {
-  //   setError(null);
-  //   setIsSubmitting(true);
-  //   try {
-  //     const result = await bookCar({
-  //       snapshotId: data!.snapshotId,
-  //       rateQualifier: selectedPlan.rateQualifier,
-  //       supplierCode: selectedPlan.supplierCode,
-  //       planId: String(selectedPlan.planId),
-  //       includeERP: isErpSelected,
-  //       selectedAddOns: selectedAddons,
-  //       driverTitle: formData.driverTitle,
-  //       driverFirstName: formData.driverFirstName,
-  //       driverLastName: formData.driverLastName,
-  //       flightNumber: formData.flightNumber,
-  //     });
-  //     router.push(`/${lang}/reservations/${result.reservationId}`);
-  //   } catch (err) {
-  //     setError(isAppError(err) ? tError(err.code) : t("submitError"));
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // }
 
   const { mutate, isPending, error } = useMutation({
     mutationFn: bookCar,

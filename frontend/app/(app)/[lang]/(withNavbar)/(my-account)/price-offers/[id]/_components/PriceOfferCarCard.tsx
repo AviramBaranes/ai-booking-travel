@@ -24,12 +24,16 @@ import { bookPriceOffer } from "@/shared/api/price-offers-api";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
+import { useBookingSettings } from "@/shared/hooks/useBookingSettings";
+import { Page } from "@/payload-types";
 
 export function PriceOfferCarCard({ priceOfferId }: { priceOfferId: number }) {
   const router = useRouter();
   const { lang } = useParams();
 
   const { data: priceOffer } = usePriceOffer(priceOfferId);
+  const { data: bookingSettings } = useBookingSettings();
+
   const t = useTranslations("MyAccount.priceOffer");
   const tOrder = useTranslations("booking.orderPage");
   const [showForm, setShowForm] = useState(false);
@@ -134,7 +138,11 @@ export function PriceOfferCarCard({ priceOfferId }: { priceOfferId: number }) {
                         {tOrder("termsCheckbox")}{" "}
                         <Link
                           target="_blank"
-                          href={"#"}
+                          href={
+                            typeof bookingSettings.orderTermsLink === "object"
+                              ? `/${lang}/${(bookingSettings.orderTermsLink as Page).slug}`
+                              : "#"
+                          }
                           className="text-link underline type-label"
                         >
                           {tOrder("termsLink")}

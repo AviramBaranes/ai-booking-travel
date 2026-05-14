@@ -114,6 +114,10 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 			},
 		}
 
+		if car.LocationDetails.LocationType != "Airport" && car.LocationDetails.LocationType != "Shuttle" {
+			continue
+		}
+
 		carsMap[carMapID] = car
 	}
 

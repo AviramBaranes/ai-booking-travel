@@ -5,11 +5,15 @@ import { PriceOfferCarCard } from "./_components/PriceOfferCarCard";
 import { SelectedCarCardSkeleton } from "@/shared/components/booking/SelectedCarCard/SelectedCarCardSkeleton";
 import { getQueryClient } from "@/shared/hooks/getQueryClient";
 import { suppliersGalleryKey } from "@/shared/hooks/useSuppliersGallery";
-import { fetchSuppliersGallery } from "@/shared/server/cms";
+import {
+  fetchBookingSettings,
+  fetchSuppliersGallery,
+} from "@/shared/server/cms";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { BackButton } from "@/shared/components/booking/BackButton";
 import { PriceOfferSummary } from "./_components/PriceOfferSummary/PriceOfferSummary";
 import { SummarySkeleton } from "@/shared/components/booking/SummarySkeleton";
+import { bookingSettingsKey } from "@/shared/hooks/useBookingSettings";
 
 export default async function PriceOfferPage({
   params,
@@ -24,10 +28,16 @@ export default async function PriceOfferPage({
   }
 
   const queryClient = getQueryClient();
-  await queryClient.fetchQuery({
-    queryKey: suppliersGalleryKey,
-    queryFn: fetchSuppliersGallery,
-  });
+  await Promise.all([
+    queryClient.fetchQuery({
+      queryKey: suppliersGalleryKey,
+      queryFn: fetchSuppliersGallery,
+    }),
+    queryClient.fetchQuery({
+      queryKey: bookingSettingsKey,
+      queryFn: fetchBookingSettings,
+    }),
+  ]);
 
   return (
     <main className="w-2/3 mx-auto pt-4 pb-6">
