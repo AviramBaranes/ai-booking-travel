@@ -19,7 +19,7 @@
     "plan_not_found": "This offer is no longer available. Please return to the results and choose another option.",
     "booking_failed": "We couldn't complete the booking. The car may no longer be available. Please try another option.",
     "reservation_creation_failed": "We couldn't confirm this reservation. The car may no longer be available. Please try another option.",
-    "offer_renewal_too_soon": "Offer renewal is only allowed after 1 hour from the last renewal",
+    "offer_renewal_too_soon": "Offer renewal is only allowed after 15 minutes from the last renewal",
     "user_not_found": "User not found",
     "email_already_exists": "Email already exists",
     "phone_already_exists": "Phone number already exists",

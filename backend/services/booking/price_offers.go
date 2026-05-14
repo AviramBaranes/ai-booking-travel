@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	errOfferRenewalTooSoon = api_errors.NewErrorWithDetail(errs.PermissionDenied, "offer renewal only allowed after 1 hour from last renewal", api_errors.ErrorDetails{
+	errOfferRenewalTooSoon = api_errors.NewErrorWithDetail(errs.PermissionDenied, "offer renewal only allowed after 15 minutes from last renewal", api_errors.ErrorDetails{
 		Code: api_errors.CodeOfferRenewalTooSoon,
 	})
 )
@@ -173,7 +173,7 @@ func (s *Service) RenewPriceOffer(ctx context.Context, id int64) (*RenewPriceOff
 		rlog.Error("price offer has invalid renewed_at", "id", id)
 		return nil, api_errors.ErrInternalError
 	}
-	if time.Since(offer.RenewedAt.Time) < time.Hour {
+	if time.Since(offer.RenewedAt.Time) < 15*time.Minute {
 		return nil, errOfferRenewalTooSoon
 	}
 
