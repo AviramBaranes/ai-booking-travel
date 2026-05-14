@@ -401,14 +401,14 @@
       "created_at": "Sort by creation date",
       "pickup_date": "Sort by pickup date",
       "showingXResults": "Showing {count} of {total}",
-      "noReservationsFound": "No reservations found matching the search criteria",
+      "noPriceOffersFound": "No price offers found matching the search criteria",
       "labels": {
+        "name": "Price offer name",
         "pickupDate": "Pickup date",
         "pickupLocation": "Pickup location",
-        "driverName": "Driver name",
-        "bookingNumber": "Reservation number",
-        "reservationStatus": "Reservation Status",
-        "paymentStatus": "Payment Status"
+        "status": "Status",
+        "totalPrice": "Total price to pay",
+        "offeredPrice": "Offered price"
       },
       "buttons": {
         "cancelOrder": "Cancel booking",

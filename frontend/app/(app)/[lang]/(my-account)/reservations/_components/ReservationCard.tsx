@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { AccountCardLabelValue } from "../../_components/AccountCardLabelValue";
 import { DeleteReservationDialog } from "./DeleteReservationDialog";
 import { VoucherReservationDialog } from "./VoucherReservationDialog";
 import { statusToBg, statusToColor } from "../_utils/statusesStyles";
@@ -35,19 +36,19 @@ export function ReservationCard({
         href={`/${lang}/reservations/${reservation.id}`}
         className="p-6 flex flex-col gap-4 rounded-xl bg-white shadow-card hover:shadow-card-hover hover:border hover:border-brand"
       >
-        <ReservationCardLabelValue
+        <AccountCardLabelValue
           label={tLabels("pickupDate")}
           value={reservation.pickupDate}
         />
-        <ReservationCardLabelValue
+        <AccountCardLabelValue
           label={tLabels("pickupLocation")}
           value={reservation.pickupLocationName}
         />
-        <ReservationCardLabelValue
+        <AccountCardLabelValue
           label={tLabels("driverName")}
           value={`${reservation.driverTitle} ${reservation.driverFirstName} ${reservation.driverLastName}`}
         />
-        <ReservationCardLabelValue
+        <AccountCardLabelValue
           valClassName="font-semibold"
           label={tLabels("bookingNumber")}
           value={reservation.brokerReservationId}
@@ -109,22 +110,5 @@ export function ReservationCard({
         />
       )}
     </>
-  );
-}
-
-function ReservationCardLabelValue({
-  label,
-  value,
-  valClassName,
-}: {
-  label: string;
-  value: string;
-  valClassName?: string;
-}) {
-  return (
-    <div className="px-6 py-1 flex flex-col">
-      <p className="text-xs text-muted">{label}</p>
-      <p className={`text-sm text-navy ${valClassName}`}>{value}</p>
-    </div>
   );
 }

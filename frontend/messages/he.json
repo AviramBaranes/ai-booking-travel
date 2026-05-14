@@ -401,14 +401,14 @@
       "created_at": "מיין לפי תאריך יצירה",
       "pickup_date": "מיין לפי תאריך איסוף",
       "showingXResults": "מציג {count} מתוך {total}",
-      "noReservationsFound": "לא נמצאו הזמנות עם הקריטריונים האלו",
+      "noPriceOffersFound": "לא נמצאו הצעות מחיר עם הקריטריונים האלו",
       "labels": {
+        "name": "שם הצעת המחיר",
         "pickupDate": "תאריך לקיחה",
         "pickupLocation": "מיקום הלקיחה",
-        "driverName": "שם הנהג/ת",
-        "bookingNumber": "מספר הזמנה",
-        "reservationStatus": "סטטוס הזמנה",
-        "paymentStatus": "סטטוס תשלום"
+        "status": "סטטוס",
+        "totalPrice": "סה\"כ לתשלום",
+        "offeredPrice": "מחיר מוצע"
       },
       "buttons": {
         "cancelOrder": "ביטול הזמנה",

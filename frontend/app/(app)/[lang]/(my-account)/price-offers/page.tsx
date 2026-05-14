@@ -2,6 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { NewOrderButton } from "../_components/NewOrderButton";
 import { PriceOfferResultsCounter } from "./_components/PriceOfferResultsCounter";
+import { PriceOffersGrid } from "./_components/PriceOffersGrid";
+import { AccountGridSkeleton } from "../_components/AccountGridSkeleton";
 import { ClearFilterRow } from "./_components/filters/ClearFilterRow";
 import { FilterForm } from "./_components/filters/FilterForm";
 
@@ -33,6 +35,12 @@ export default async function PriceOffersPage({
           }
         >
           <PriceOfferResultsCounter />
+        </Suspense>
+        <Suspense
+          key={`grid-${suspenseKey}`}
+          fallback={<AccountGridSkeleton />}
+        >
+          <PriceOffersGrid />
         </Suspense>
       </div>
       <div className="mb-15" />

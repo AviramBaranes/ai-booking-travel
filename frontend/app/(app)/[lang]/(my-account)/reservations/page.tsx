@@ -7,7 +7,7 @@ import { Suspense } from "react";
 import { ReservationResultsCounter } from "./_components/ReservationResultsCounter";
 import { ReservationsGrid } from "./_components/ReservationsGrid";
 import { PaginationButtons } from "./_components/filters/PaginationButtons";
-import { ReservationGridSkeleton } from "./_components/ReservationGridSkeleton";
+import { AccountGridSkeleton } from "../_components/AccountGridSkeleton";
 
 export default async function ReservationDetailsPage({
   searchParams,
@@ -42,7 +42,7 @@ export default async function ReservationDetailsPage({
         </div>
         <Suspense
           key={`grid-${suspenseKey}`}
-          fallback={<ReservationGridSkeleton />}
+          fallback={<AccountGridSkeleton />}
         >
           <ReservationsGrid />
         </Suspense>
