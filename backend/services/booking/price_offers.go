@@ -13,7 +13,14 @@ import (
 	"encore.app/internal/validation"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
+	"encore.dev/beta/errs"
 	"encore.dev/rlog"
+)
+
+var (
+	errOfferRenewalTooSoon = api_errors.NewErrorWithDetail(errs.PermissionDenied, "offer renewal only allowed after 1 hour from last renewal", api_errors.ErrorDetails{
+		Code: api_errors.CodeOfferRenewalTooSoon,
+	})
 )
 
 // CreatePriceOfferParams defines the parameters required to create a price offer.
@@ -167,7 +174,7 @@ func (s *Service) RenewPriceOffer(ctx context.Context, id int64) (*RenewPriceOff
 		return nil, api_errors.ErrInternalError
 	}
 	if time.Since(offer.RenewedAt.Time) < time.Hour {
-		return nil, api_errors.ErrUnauthorized
+		return nil, errOfferRenewalTooSoon
 	}
 
 	driverAge, err := strconv.Atoi(offer.DriverAge)

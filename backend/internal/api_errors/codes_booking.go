@@ -9,4 +9,5 @@ const (
 	CodeBookingFailed                  = "booking_failed"
 	CodeReservationCreationFailed      = "reservation_creation_failed"
 	CodeFlightNumberRequired           = "flight_number_required"
+	CodeOfferRenewalTooSoon            = "offer_renewal_too_soon"
 )
