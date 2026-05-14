@@ -724,6 +724,20 @@ func (mr *MockQuerierMockRecorder) ListPriceOffersByAgent(ctx, arg any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPriceOffersByAgent", reflect.TypeOf((*MockQuerier)(nil).ListPriceOffersByAgent), ctx, arg)
 }
 
+// RenewPriceOfferDetails mocks base method.
+func (m *MockQuerier) RenewPriceOfferDetails(ctx context.Context, arg db.RenewPriceOfferDetailsParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RenewPriceOfferDetails", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RenewPriceOfferDetails indicates an expected call of RenewPriceOfferDetails.
+func (mr *MockQuerierMockRecorder) RenewPriceOfferDetails(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewPriceOfferDetails", reflect.TypeOf((*MockQuerier)(nil).RenewPriceOfferDetails), ctx, arg)
+}
+
 // SearchLocations mocks base method.
 func (m *MockQuerier) SearchLocations(ctx context.Context, search string) ([]db.Location, error) {
 	m.ctrl.T.Helper()
@@ -737,6 +751,20 @@ func (m *MockQuerier) SearchLocations(ctx context.Context, search string) ([]db.
 func (mr *MockQuerierMockRecorder) SearchLocations(ctx, search any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchLocations", reflect.TypeOf((*MockQuerier)(nil).SearchLocations), ctx, search)
+}
+
+// SetPriceOfferUpdatedAt mocks base method.
+func (m *MockQuerier) SetPriceOfferUpdatedAt(ctx context.Context, arg db.SetPriceOfferUpdatedAtParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetPriceOfferUpdatedAt", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetPriceOfferUpdatedAt indicates an expected call of SetPriceOfferUpdatedAt.
+func (mr *MockQuerierMockRecorder) SetPriceOfferUpdatedAt(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPriceOfferUpdatedAt", reflect.TypeOf((*MockQuerier)(nil).SetPriceOfferUpdatedAt), ctx, arg)
 }
 
 // TranslatePendingTranslation mocks base method.

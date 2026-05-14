@@ -10,6 +10,7 @@ INSERT INTO price_offers (
     pickup_time,
     dropoff_time,
     driver_age,
+    rate_qualifier,
     supplier_code,
     car_details,
     plan_inclusions,
@@ -32,6 +33,7 @@ INSERT INTO price_offers (
     sqlc.arg(pickup_time),
     sqlc.arg(dropoff_time),
     sqlc.arg(driver_age),
+    sqlc.arg(rate_qualifier),
     sqlc.arg(supplier_code),
     sqlc.arg(car_details),
     sqlc.arg(plan_inclusions),
@@ -67,6 +69,24 @@ UPDATE price_offers SET
     offered_currency_code = COALESCE(sqlc.narg(offered_currency_code), offered_currency_code),
     offered_price = COALESCE(sqlc.narg(offered_price), offered_price),
     updated_at = now()
+WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
+
+-- name: RenewPriceOfferDetails :exec
+UPDATE price_offers SET
+    car_details = sqlc.arg(car_details),
+    plan_inclusions = sqlc.arg(plan_inclusions),
+    currency_code = sqlc.arg(currency_code),
+    purchase_price = sqlc.arg(purchase_price),
+    markup_percentage = sqlc.arg(markup_percentage),
+    broker_erp_price = sqlc.arg(broker_erp_price),
+    bt_erp_price = sqlc.arg(bt_erp_price),
+    total_price = sqlc.arg(total_price),
+    updated_at = now()
+WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
+
+-- name: SetPriceOfferUpdatedAt :exec
+UPDATE price_offers SET
+    updated_at = sqlc.arg(updated_at)
 WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
 
 -- name: ListPriceOffersByAgent :many

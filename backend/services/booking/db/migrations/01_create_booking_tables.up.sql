@@ -204,6 +204,7 @@ CREATE TABLE
         driver_age TEXT NOT NULL,
         rental_days INT NOT NULL CHECK (rental_days > 0),
 
+        rate_qualifier TEXT NOT NULL,
         supplier_code TEXT NOT NULL,
         car_details JSONB NOT NULL,
         plan_inclusions TEXT[] NOT NULL DEFAULT '{}',

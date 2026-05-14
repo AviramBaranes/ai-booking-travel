@@ -15,6 +15,8 @@ import (
 	"encore.app/services/booking/db"
 	"encore.dev/beta/auth"
 	"encore.dev/beta/errs"
+	"encore.dev/et"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // --- Helpers ---
@@ -163,6 +165,21 @@ func planNotFoundErr() error {
 
 func int32Ptr(v int32) *int32 { return &v }
 
+func makePriceOfferRenewable(t *testing.T, q *db.Queries, ctx context.Context, offerID int64, agentID int32) {
+	t.Helper()
+	err := q.SetPriceOfferUpdatedAt(ctx, db.SetPriceOfferUpdatedAtParams{
+		ID:      offerID,
+		AgentID: agentID,
+		UpdatedAt: pgtype.Timestamptz{
+			Time:  time.Now().AddDate(0, 0, -1),
+			Valid: true,
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to backdate price offer updated_at: %v", err)
+	}
+}
+
 // --- CreatePriceOffer ---
 
 func TestCreatePriceOffer(t *testing.T) {
@@ -244,6 +261,9 @@ func TestCreatePriceOffer(t *testing.T) {
 		}
 		if row.AgentID != agentID {
 			t.Errorf("agent id: got %d, want %d", row.AgentID, agentID)
+		}
+		if row.RateQualifier != plan.RateQualifier {
+			t.Errorf("rate qualifier: got %q, want %q", row.RateQualifier, plan.RateQualifier)
 		}
 		if row.SupplierCode != plan.SupplierCode {
 			t.Errorf("supplier code: got %q, want %q", row.SupplierCode, plan.SupplierCode)
@@ -520,6 +540,204 @@ func TestGetAgentPriceOffer(t *testing.T) {
 	})
 }
 
+// --- RenewPriceOffer ---
+
+func TestRenewPriceOffer(t *testing.T) {
+	const agentID int32 = 200004
+	ctx := priceOfferAuthContext(agentID)
+	q := testQuerier()
+
+	pickupID, pickupCode, _ := seedPriceOfferLocation(t, q, "renew-pickup")
+	dropoffID, dropoffCode, _ := seedPriceOfferLocation(t, q, "renew-dropoff")
+	plan := defaultPlan(pickupCode, dropoffCode)
+	snapshotID := seedSnapshot(t, q, []planPriceDetails{plan})
+
+	createOffer := func(t *testing.T, name string, includeERP bool) *PriceOfferResponse {
+		t.Helper()
+		p := validCreatePriceOfferParams(snapshotID, plan)
+		p.Name = name
+		p.IncludeERP = includeERP
+		resp, err := CreatePriceOffer(ctx, p)
+		if err != nil {
+			t.Fatalf("failed to create offer: %v", err)
+		}
+		return resp
+	}
+
+	t.Run("returns 404 for non-existent id", func(t *testing.T) {
+		et.MockEndpoint(SearchAvailability, func(context.Context, SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
+			t.Fatal("SearchAvailability should not be called for missing offers")
+			return nil, nil
+		})
+
+		_, err := RenewPriceOffer(ctx, 99999999)
+		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
+	})
+
+	t.Run("rejects renewal less than one day after update", func(t *testing.T) {
+		offer := createOffer(t, "Too Fresh", true)
+		et.MockEndpoint(SearchAvailability, func(context.Context, SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
+			t.Fatal("SearchAvailability should not be called before the renewal window")
+			return nil, nil
+		})
+
+		_, err := RenewPriceOffer(ctx, offer.ID)
+		api_errors.AssertApiError(t, api_errors.ErrUnauthorized, err)
+	})
+
+	t.Run("refreshes pricing details when original plan is still available", func(t *testing.T) {
+		offer := createOffer(t, "Renew Found", true)
+		makePriceOfferRenewable(t, q, ctx, offer.ID, agentID)
+		renewedPlan := defaultPlan(pickupCode, dropoffCode)
+		renewedPlan.CarDetails.Model = "Honda Civic"
+		renewedPlan.Inclusions = []string{"Liability Insurance"}
+		renewedPlan.CurrencyCode = "EUR"
+		renewedPlan.CarPurchasePrice = 200
+		renewedPlan.SupplierErpPrice = 20
+		renewedPlan.MarkupPercentage = 25
+		renewedPlan.ChargedERPPriceWithVat = 30
+		renewedPlan.DiscountPercentage = 0
+		renewedSnapshotID := seedSnapshot(t, q, []planPriceDetails{renewedPlan})
+
+		et.MockEndpoint(SearchAvailability, func(_ context.Context, req SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
+			if req.PickupLocationID != pickupID {
+				t.Errorf("pickup location id: got %d, want %d", req.PickupLocationID, pickupID)
+			}
+			if req.DropoffLocationID != dropoffID {
+				t.Errorf("dropoff location id: got %d, want %d", req.DropoffLocationID, dropoffID)
+			}
+			if req.PickupDate != "2026-08-01" || req.DropoffDate != "2026-08-05" {
+				t.Errorf("dates: got pickup=%q dropoff=%q", req.PickupDate, req.DropoffDate)
+			}
+			if req.PickupTime != "08:00" || req.DropoffTime != "10:00" {
+				t.Errorf("times: got pickup=%q dropoff=%q", req.PickupTime, req.DropoffTime)
+			}
+			if req.DriverAge != 30 {
+				t.Errorf("driver age: got %d, want 30", req.DriverAge)
+			}
+			return &SearchAvailabilityResponse{SnapshotID: renewedSnapshotID}, nil
+		})
+
+		resp, err := RenewPriceOffer(ctx, offer.ID)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if !resp.Found {
+			t.Fatal("found: got false, want true")
+		}
+
+		row, err := q.GetPriceOfferById(ctx, db.GetPriceOfferByIdParams{ID: offer.ID, AgentID: agentID})
+		if err != nil {
+			t.Fatalf("failed to fetch renewed offer: %v", err)
+		}
+		var carDetails broker.CarDetails
+		if err := json.Unmarshal(row.CarDetails, &carDetails); err != nil {
+			t.Fatalf("failed to unmarshal renewed car details: %v", err)
+		}
+		if carDetails.Model != "Honda Civic" {
+			t.Errorf("car model: got %q, want Honda Civic", carDetails.Model)
+		}
+		if len(row.PlanInclusions) != 1 || row.PlanInclusions[0] != "Liability Insurance" {
+			t.Errorf("plan inclusions: got %+v", row.PlanInclusions)
+		}
+		if row.CurrencyCode != "EUR" {
+			t.Errorf("currency code: got %q, want EUR", row.CurrencyCode)
+		}
+		if db.NumericToFloat64(row.PurchasePrice) != 200 {
+			t.Errorf("purchase price: got %v, want 200", db.NumericToFloat64(row.PurchasePrice))
+		}
+		if db.NumericToFloat64(row.MarkupPercentage) != 25 {
+			t.Errorf("markup percentage: got %v, want 25", db.NumericToFloat64(row.MarkupPercentage))
+		}
+		if db.NumericToFloat64(row.BrokerErpPrice) != 20 {
+			t.Errorf("broker erp price: got %v, want 20", db.NumericToFloat64(row.BrokerErpPrice))
+		}
+		if row.BtErpPrice != 30 {
+			t.Errorf("bt erp price: got %d, want 30", row.BtErpPrice)
+		}
+		if row.TotalPrice != 305 {
+			t.Errorf("total price: got %d, want 305", row.TotalPrice)
+		}
+		if string(row.Status) != "open" {
+			t.Errorf("status: got %q, want open", row.Status)
+		}
+	})
+
+	t.Run("preserves excluded erp behavior when refreshing prices", func(t *testing.T) {
+		offer := createOffer(t, "Renew No ERP", false)
+		makePriceOfferRenewable(t, q, ctx, offer.ID, agentID)
+		renewedPlan := defaultPlan(pickupCode, dropoffCode)
+		renewedPlan.CarPurchasePrice = 200
+		renewedPlan.SupplierErpPrice = 20
+		renewedPlan.MarkupPercentage = 25
+		renewedPlan.ChargedERPPriceWithVat = 30
+		renewedPlan.DiscountPercentage = 0
+		renewedSnapshotID := seedSnapshot(t, q, []planPriceDetails{renewedPlan})
+
+		et.MockEndpoint(SearchAvailability, func(context.Context, SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
+			return &SearchAvailabilityResponse{SnapshotID: renewedSnapshotID}, nil
+		})
+
+		resp, err := RenewPriceOffer(ctx, offer.ID)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if !resp.Found {
+			t.Fatal("found: got false, want true")
+		}
+
+		row, err := q.GetPriceOfferById(ctx, db.GetPriceOfferByIdParams{ID: offer.ID, AgentID: agentID})
+		if err != nil {
+			t.Fatalf("failed to fetch renewed offer: %v", err)
+		}
+		if db.NumericToFloat64(row.BrokerErpPrice) != 0 {
+			t.Errorf("broker erp price: got %v, want 0", db.NumericToFloat64(row.BrokerErpPrice))
+		}
+		if row.BtErpPrice != 0 {
+			t.Errorf("bt erp price: got %d, want 0", row.BtErpPrice)
+		}
+		if row.TotalPrice != 250 {
+			t.Errorf("total price: got %d, want 250", row.TotalPrice)
+		}
+	})
+
+	t.Run("declines offer when refreshed plan is unavailable", func(t *testing.T) {
+		offer := createOffer(t, "Renew Missing", true)
+		makePriceOfferRenewable(t, q, ctx, offer.ID, agentID)
+		unmatchedPlan := defaultPlan(pickupCode, dropoffCode)
+		unmatchedPlan.RateQualifier = "OTHER-RQ"
+		unmatchedSnapshotID := seedSnapshot(t, q, []planPriceDetails{unmatchedPlan})
+
+		before, err := q.GetPriceOfferById(ctx, db.GetPriceOfferByIdParams{ID: offer.ID, AgentID: agentID})
+		if err != nil {
+			t.Fatalf("failed to fetch offer before renew: %v", err)
+		}
+
+		et.MockEndpoint(SearchAvailability, func(context.Context, SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
+			return &SearchAvailabilityResponse{SnapshotID: unmatchedSnapshotID}, nil
+		})
+
+		resp, err := RenewPriceOffer(ctx, offer.ID)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.Found {
+			t.Fatal("found: got true, want false")
+		}
+
+		row, err := q.GetPriceOfferById(ctx, db.GetPriceOfferByIdParams{ID: offer.ID, AgentID: agentID})
+		if err != nil {
+			t.Fatalf("failed to fetch declined offer: %v", err)
+		}
+		if string(row.Status) != "declined" {
+			t.Errorf("status: got %q, want declined", row.Status)
+		}
+		if row.TotalPrice != before.TotalPrice {
+			t.Errorf("total price should be unchanged: got %d, want %d", row.TotalPrice, before.TotalPrice)
+		}
+	})
+}
+
 // --- ListPriceOffers ---
 
 func TestListPriceOffers(t *testing.T) {
@@ -542,7 +760,7 @@ func TestListPriceOffers(t *testing.T) {
 		})
 	})
 
-	const agentID int32 = 200004
+	const agentID int32 = 200006
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 
@@ -757,7 +975,7 @@ func TestUpdatePriceOffer(t *testing.T) {
 		})
 	})
 
-	const agentID int32 = 200005
+	const agentID int32 = 200007
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 

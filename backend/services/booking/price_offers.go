@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strconv"
+	"time"
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
@@ -33,6 +35,10 @@ func (p CreatePriceOfferParams) Validate() error {
 type PriceOfferResponse struct {
 	ID    int64  `json:"id"`
 	Token string `json:"token"`
+}
+
+type RenewPriceOfferResponse struct {
+	Found bool `json:"found"`
 }
 
 // CreatePriceOffer creates a new price offer based on the provided parameters, including details from the associated snapshot and plan, and returns the created offer's ID and token.
@@ -89,6 +95,7 @@ func (s *Service) CreatePriceOffer(ctx context.Context, params CreatePriceOfferP
 		DropoffTime:         snapshot.ReturnTime,
 		RentalDays:          int32(rentalDays),
 		DriverAge:           snapshot.DriverAge,
+		RateQualifier:       params.RateQualifier,
 		SupplierCode:        params.SupplierCode,
 		CarDetails:          carDetailsJSON,
 		PlanInclusions:      plan.Inclusions,
@@ -135,6 +142,130 @@ func (s *Service) getLocationIDs(ctx context.Context, pickupBrokerLocationID, dr
 	}
 
 	return pickupLocationID, dropoffLocationID, nil
+}
+
+// RenewPriceOffer refreshes the stored pricing details for a price offer if the original plan is still available.
+//
+// encore:api auth method=POST path=/booking/price-offers/:id/renew tag:agent
+func (s *Service) RenewPriceOffer(ctx context.Context, id int64) (*RenewPriceOfferResponse, error) {
+	authData := auth.GetAuthData()
+
+	offer, err := s.query.GetPriceOfferById(ctx, db.GetPriceOfferByIdParams{
+		ID:      id,
+		AgentID: authData.UserID,
+	})
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return nil, api_errors.ErrNotFound
+		}
+		rlog.Error("failed to get price offer for renewal", "id", id, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	if !offer.UpdatedAt.Valid {
+		rlog.Error("price offer has invalid updated_at", "id", id)
+		return nil, api_errors.ErrInternalError
+	}
+	now := time.Now()
+	updatedAt := offer.UpdatedAt.Time.In(now.Location())
+	if !updatedAt.Before(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())) {
+		return nil, api_errors.ErrUnauthorized
+	}
+
+	driverAge, err := strconv.Atoi(offer.DriverAge)
+	if err != nil {
+		rlog.Error("failed to parse price offer driver age", "id", id, "driverAge", offer.DriverAge, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	availability, err := SearchAvailability(ctx, SearchAvailabilityRequest{
+		PickupLocationID:  offer.PickupLocationID,
+		DropoffLocationID: offer.DropoffLocationID,
+		PickupTime:        offer.PickupTime,
+		DropoffTime:       offer.DropoffTime,
+		PickupDate:        db.DateToString(offer.PickupDate),
+		DropoffDate:       db.DateToString(offer.ReturnDate),
+		DriverAge:         driverAge,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if availability == nil || availability.SnapshotID == 0 {
+		return s.declineRenewedPriceOffer(ctx, offer)
+	}
+
+	snapshot, err := s.getSnapshot(ctx, availability.SnapshotID)
+	if err != nil {
+		return nil, err
+	}
+
+	plan, err := findPlan(snapshot, offer.RateQualifier, offer.SupplierCode)
+	if err != nil {
+		if err == errPlanNotFound {
+			return s.declineRenewedPriceOffer(ctx, offer)
+		}
+		return nil, err
+	}
+
+	if err := s.renewPriceOfferDetails(ctx, offer, plan); err != nil {
+		return nil, err
+	}
+
+	return &RenewPriceOfferResponse{Found: true}, nil
+}
+
+func (s *Service) declineRenewedPriceOffer(ctx context.Context, offer db.GetPriceOfferByIdRow) (*RenewPriceOfferResponse, error) {
+	err := s.query.UpdatePriceOffer(ctx, db.UpdatePriceOfferParams{
+		ID:      offer.ID,
+		AgentID: offer.AgentID,
+		Status:  db.NullOfferStatus{OfferStatus: db.OfferStatusDeclined, Valid: true},
+	})
+	if err != nil {
+		rlog.Error("failed to decline unavailable price offer", "id", offer.ID, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	return &RenewPriceOfferResponse{Found: false}, nil
+}
+
+func (s *Service) renewPriceOfferDetails(ctx context.Context, offer db.GetPriceOfferByIdRow, plan planPriceDetails) error {
+	carDetailsJSON, err := json.Marshal(plan.CarDetails)
+	if err != nil {
+		rlog.Error("failed to marshal renewed price offer car details", "id", offer.ID, "error", err)
+		return api_errors.ErrInternalError
+	}
+
+	var btErpPrice int
+	var brokerErpPrice float64
+	if isPriceOfferErpIncluded(offer) {
+		btErpPrice = plan.ChargedERPPriceWithVat
+		brokerErpPrice = plan.SupplierErpPrice
+	}
+
+	totalPrice := pricing.CalculateTotalPrice(plan.CarPurchasePrice, plan.MarkupPercentage, brokerErpPrice, btErpPrice, plan.DiscountPercentage)
+
+	err = s.query.RenewPriceOfferDetails(ctx, db.RenewPriceOfferDetailsParams{
+		ID:               offer.ID,
+		AgentID:          offer.AgentID,
+		CarDetails:       carDetailsJSON,
+		PlanInclusions:   plan.Inclusions,
+		CurrencyCode:     plan.CurrencyCode,
+		PurchasePrice:    db.NumericFromFloat64(plan.CarPurchasePrice),
+		MarkupPercentage: db.NumericFromFloat64(plan.MarkupPercentage),
+		BrokerErpPrice:   db.NumericFromFloat64(brokerErpPrice),
+		BtErpPrice:       int32(btErpPrice),
+		TotalPrice:       int32(totalPrice),
+	})
+	if err != nil {
+		rlog.Error("failed to renew price offer details", "id", offer.ID, "error", err)
+		return api_errors.ErrInternalError
+	}
+
+	return nil
+}
+
+func isPriceOfferErpIncluded(offer db.GetPriceOfferByIdRow) bool {
+	return offer.BtErpPrice != 0 || db.NumericToFloat64(offer.BrokerErpPrice) != 0
 }
 
 // GetPriceOfferResponse represents the public-facing details of a price offer, exposing only the offered price (no internal pricing breakdown).
