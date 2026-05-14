@@ -4,9 +4,9 @@ import { formatPrice } from "@/shared/utils/formatPrice";
 import clsx from "clsx";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { RentalPriceForDays } from "../../../../../../../shared/components/booking/RentalPriceForDays";
 import { ContinueToPlansLink } from "./ContinueToPlansLink";
 import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellationBadge";
+import { RentalPriceForDays } from "@/shared/components/booking/RentalPriceForDays";
 
 export function CarPriceDetails({
   vehicle,

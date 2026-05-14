@@ -1,13 +1,13 @@
 import { booking } from "@/shared/client";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { SupplierLogo } from "../../../../../../../shared/components/booking/SupplierLogo";
 import { CarTags } from "./CarTags";
 import { CarModel } from "./CarModel";
-import { CarDetailsPills } from "../../../../../../../shared/components/booking/CarDetailsPills";
 import { CarChecks } from "./CarChecks";
 import { CarSignals } from "./CarSignals";
 import { CarPriceDetails } from "./CarPriceDetails";
+import { SupplierLogo } from "@/shared/components/booking/SupplierLogo";
+import { CarDetailsPills } from "@/shared/components/booking/CarDetailsPills";
 
 interface CarCardProps {
   vehicle: booking.AvailableVehicle;
