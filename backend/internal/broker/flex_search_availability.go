@@ -75,7 +75,6 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 
 		addOns, ok := addOnsMap[s.name]
 		if !ok {
-			rlog.Warn("no add-ons found for supplier in CarAvailability response, using empty add-on list", "supplier_name", s.name)
 			addOns = []AddOn{}
 		}
 

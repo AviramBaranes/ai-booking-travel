@@ -16,6 +16,10 @@ func DetectLangMiddleware(req middleware.Request, next middleware.Next) middlewa
 
 	// set the lang in the context
 	ctx := req.Context()
+	if _, ok := ctx.Value(lang.ContextKey).(string); ok {
+		return next(req)
+	}
+
 	ctx = context.WithValue(ctx, lang.ContextKey, langCode)
 	req = req.WithContext(ctx)
 	return next(req)
