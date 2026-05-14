@@ -143,7 +143,7 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
                 setIsPriceOfferDialogOpen(true);
               }}
             >
-              {t("sendQuoteCta")}
+              {t("createPriceOffer")}
             </Button>
           </>
         </SelectedCarCard>
