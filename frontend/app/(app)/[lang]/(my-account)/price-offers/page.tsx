@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { NewOrderButton } from "../_components/NewOrderButton";
+import { ClearFilterRow } from "./_components/filters/ClearFilterRow";
 import { FilterForm } from "./_components/filters/FilterForm";
 
 export default async function PriceOffersPage() {
@@ -11,6 +12,7 @@ export default async function PriceOffersPage() {
       <div className="flex flex-col gap-6">
         <h5 className="type-h5 text-navy">{t("title")}</h5>
         <FilterForm />
+        <ClearFilterRow />
       </div>
       <div className="mb-15" />
     </main>
