@@ -390,6 +390,37 @@
         "statusLabel": "שנה סטטוס הצעה:",
         "priceOfferUpdatedSuccess": "הצעת המחיר עודכנה בהצלחה"
       }
+    },
+    "priceOffers": {
+      "newSearch": "חיפוש חדש",
+      "title": "רשימת הצעות מחיר",
+      "filtersLabel": "חיפוש הזמנה לפי",
+      "bookingIdPlaceholder": "מספר הזמנה",
+      "statusPlaceholder": "סטטוס",
+      "pickupDatePlaceholder": "תאריך איסוף",
+      "driverNamePlaceholder": "שם הנהג",
+      "searchButton": "חיפוש הזמנה",
+      "created_at": "מיין לפי תאריך יצירה",
+      "pickup_date": "מיין לפי תאריך איסוף",
+      "showingXResults": "מציג {count} מתוך {total}",
+      "noReservationsFound": "לא נמצאו הזמנות עם הקריטריונים האלו",
+      "labels": {
+        "pickupDate": "תאריך לקיחה",
+        "pickupLocation": "מיקום הלקיחה",
+        "driverName": "שם הנהג/ת",
+        "bookingNumber": "מספר הזמנה",
+        "reservationStatus": "סטטוס הזמנה",
+        "paymentStatus": "סטטוס תשלום"
+      },
+      "buttons": {
+        "cancelOrder": "ביטול הזמנה",
+        "voucherOrder": "כרטוס הזמנה"
+      },
+      "voucherDialogTitle": "כרטוס הזמנה מס' {bookingId}",
+      "pagination": {
+        "prev": "הקודם",
+        "next": "הבא"
+      }
     }
   }
 }

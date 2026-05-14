@@ -363,7 +363,7 @@
         "clientLink": "Print price offer",
         "editOffer": "Edit Price Offer",
         "renewOffer": "Renew Offer",
-          "labels": {
+        "labels": {
           "name": "Price offer name:",
           "status": "Status:",
           "createdAt": "Created on:",
@@ -389,6 +389,37 @@
         "saveButton": "Update Price Offer",
         "statusLabel": "Change offer status:",
         "priceOfferUpdatedSuccess": "The price offer has been successfully updated"
+      }
+    },
+    "priceOffers": {
+      "newSearch": "New Search",
+      "title": "Price Offer List",
+      "filtersLabel": "Search booking by",
+      "bookingIdPlaceholder": "Reservation number",
+      "statusPlaceholder": "Status",
+      "pickupDatePlaceholder": "Pickup date",
+      "driverNamePlaceholder": "Driver name",
+      "searchButton": "Search booking",
+      "created_at": "Sort by creation date",
+      "pickup_date": "Sort by pickup date",
+      "showingXResults": "Showing {count} of {total}",
+      "noReservationsFound": "No reservations found matching the search criteria",
+      "labels": {
+        "pickupDate": "Pickup date",
+        "pickupLocation": "Pickup location",
+        "driverName": "Driver name",
+        "bookingNumber": "Reservation number",
+        "reservationStatus": "Reservation Status",
+        "paymentStatus": "Payment Status"
+      },
+      "buttons": {
+        "cancelOrder": "Cancel booking",
+        "voucherOrder": "Apply voucher"
+      },
+      "voucherDialogTitle": "Apply voucher for reservation #{bookingId}",
+      "pagination": {
+        "prev": "Previous",
+        "next": "Next"
       }
     }
   }
