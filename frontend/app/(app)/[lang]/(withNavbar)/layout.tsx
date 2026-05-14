@@ -7,7 +7,7 @@ import { authOptions } from "@/shared/auth/authOptions";
 import { Navbar } from "./_components/header/navbar/Navbar";
 import { Footer } from "./_components/footer/Footer";
 import { BackToAdminBanner } from "./_components/header/login/BackToAdmin/BackToAdminBanner";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 const polin = localFont({
   src: [

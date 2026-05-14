@@ -3,13 +3,13 @@ import { useTranslations } from "next-intl";
 import { Copy, Check, Edit, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { PriceOfferStatus } from "@/app/(app)/[lang]/_components/priceOffer/PriceOfferForm";
 import { EditPriceOfferDialog } from "./EditPriceOfferDialog";
 import { useParams } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { renewPriceOffer } from "@/shared/api/price-offers-api";
 import { usePriceOffer } from "../../_hooks/usePriceOffer";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
+import { PriceOfferStatus } from "../../../_hooks/usePriceOfferFilters";
 
 const CLIENT_PRICE_OFFER_LINK_PREFIX = "/offers/";
 
