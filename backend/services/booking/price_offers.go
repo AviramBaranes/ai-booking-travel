@@ -311,6 +311,7 @@ type GetPriceOfferResponse struct {
 	DropoffLocationName string            `json:"dropoffLocationName"`
 	PickupDate          string            `json:"pickupDate"`
 	ReturnDate          string            `json:"returnDate"`
+	RentalDays          int32             `json:"rentalDays"`
 	PickupTime          string            `json:"pickupTime"`
 	DropoffTime         string            `json:"dropoffTime"`
 	DriverAge           string            `json:"driverAge"`
@@ -384,6 +385,7 @@ func (s *Service) GetClientPriceOffer(ctx context.Context, token string) (*GetPr
 		DropoffLocationName: row.DropoffLocation,
 		PickupDate:          db.DateToString(row.PickupDate),
 		ReturnDate:          db.DateToString(row.ReturnDate),
+		RentalDays:          row.RentalDays,
 		PickupTime:          row.PickupTime,
 		DropoffTime:         row.DropoffTime,
 		DriverAge:           row.DriverAge,

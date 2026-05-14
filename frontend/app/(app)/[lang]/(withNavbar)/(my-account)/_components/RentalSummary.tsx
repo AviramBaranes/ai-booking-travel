@@ -1,4 +1,5 @@
-import { reservation } from "@/shared/client";
+"use client";
+
 import { useTranslations } from "next-intl";
 import { SummarySubTitle } from "./SummarySubTitle";
 import { LocationDateTimeSummary } from "./LocationSummary";

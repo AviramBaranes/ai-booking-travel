@@ -3,7 +3,7 @@
 import { NextIntlClientProvider } from "next-intl";
 import { AuthTokenProvider } from "@/shared/components/providers/AuthTokenProvider";
 import { SessionProvider } from "next-auth/react";
-import { QueryProvider } from "../../_components/providers/QueryProvider";
+import { QueryProvider } from "../../../_components/providers/QueryProvider";
 
 interface BookingProvidersProps {
   children: React.ReactNode;

@@ -1,3 +1,4 @@
+"use client";
 import { broker } from "@/shared/client";
 import { SupplierLogo } from "../SupplierLogo";
 import Image from "next/image";

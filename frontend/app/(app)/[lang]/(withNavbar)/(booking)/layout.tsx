@@ -1,6 +1,6 @@
 import { getLang } from "@/shared/lang/lang";
 import { getMessages } from "next-intl/server";
-import { AppProviders } from "../_components/providers/AppProviders";
+import { AppProviders } from "../../_components/providers/AppProviders";
 
 export default async function BookingLayout({
   children,

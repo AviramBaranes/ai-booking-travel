@@ -1,5 +1,6 @@
+"use client";
+
 import { useTranslations } from "next-intl";
-import { reservation } from "@/shared/client";
 import { SummarySubTitle } from "./SummarySubTitle";
 import { SummaryRow } from "./SummaryRow";
 

@@ -745,9 +745,9 @@ export namespace booking {
     }
 
     /**
-     * BookResponse represents the response returned after a successful booking, including the booking reference number and any relevant details.
+     * BookParams defines the parameters required to book a car rental based on a previously retrieved snapshot of available plans. It includes details about the selected plan, driver information, and optional add-ons. Validation tags ensure that all required fields are provided and correctly formatted.
      */
-    export interface BookRequest {
+    export interface BookParams {
         snapshotId: number
         rateQualifier: string
         supplierCode: string
@@ -899,6 +899,7 @@ export namespace booking {
         dropoffLocationName: string
         pickupDate: string
         returnDate: string
+        rentalDays: number
         pickupTime: string
         dropoffTime: string
         driverAge: string
@@ -1179,7 +1180,7 @@ export namespace booking {
             this.VerifyBrokerTranslation = this.VerifyBrokerTranslation.bind(this)
         }
 
-        public async Book(params: BookRequest): Promise<BookResponse> {
+        public async Book(params: BookParams): Promise<BookResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/booking`, JSON.stringify(params))
             return await resp.json() as BookResponse

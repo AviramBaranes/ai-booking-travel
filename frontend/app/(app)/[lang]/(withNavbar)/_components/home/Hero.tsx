@@ -2,7 +2,7 @@ import { Homepage } from "@/payload-types";
 import { Populated } from "@/shared/types/payload";
 import Image from "next/image";
 import { SearchForm } from "./SearchForm/SearchForm";
-import { AppProviders } from "../providers/AppProviders";
+import { AppProviders } from "../../../_components/providers/AppProviders";
 import { getLang } from "@/shared/lang/lang";
 import { getMessages } from "next-intl/server";
 

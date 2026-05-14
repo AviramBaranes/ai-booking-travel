@@ -4,7 +4,7 @@ import config from "@payload-config";
 import Link from "next/link";
 import { MegaDropdown } from "./MegaDropdown";
 import type { Populated } from "@/shared/types/payload";
-import { AppProviders } from "../../providers/AppProviders";
+import { AppProviders } from "../../../../_components/providers/AppProviders";
 import { getMessages } from "next-intl/server";
 import { NavbarActions } from "./NavbarActions";
 

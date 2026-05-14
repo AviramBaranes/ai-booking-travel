@@ -6,7 +6,6 @@ import { IncludedSection } from "../../../../_components/IncludedSection";
 import { CostBreakdownSection } from "../../../../_components/CostBreakdownSection";
 import { RentalSummary } from "../../../../_components/RentalSummary";
 import { useReservation } from "../../_hooks/useReservation";
-import { useTranslations } from "next-intl";
 
 export function ReservationSummary({
   reservationId,
