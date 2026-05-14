@@ -19,6 +19,15 @@ export function getClientPriceOffer(token: string) {
   );
 }
 
-export function updatePriceOffer(id: number, params: booking.UpdatePriceOfferParams) {
-  return withErrorHandler((client) => client.booking.UpdatePriceOffer(id, params));
+export function updatePriceOffer(
+  id: number,
+  params: booking.UpdatePriceOfferParams,
+) {
+  return withErrorHandler((client) =>
+    client.booking.UpdatePriceOffer(id, params),
+  );
+}
+
+export function renewPriceOffer(id: number) {
+  return withErrorHandler((client) => client.booking.RenewPriceOffer(id));
 }

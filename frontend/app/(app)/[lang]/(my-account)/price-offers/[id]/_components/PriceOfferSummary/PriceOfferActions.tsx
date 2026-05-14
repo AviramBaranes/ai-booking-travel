@@ -1,21 +1,21 @@
 import { useState } from "react";
-import { Copy, Check, Edit, Search } from "lucide-react";
+import { Copy, Check, Edit, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { booking } from "@/shared/client";
 import { useTranslations } from "next-intl";
 import { PriceOfferStatus } from "@/app/(app)/[lang]/_components/priceOffer/PriceOfferForm";
 import { EditPriceOfferDialog } from "./EditPriceOfferDialog";
 import { useParams } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import { renewPriceOffer } from "@/shared/api/price-offers-api";
+import { usePriceOffer } from "../../_hooks/usePriceOffer";
 
 const CLIENT_PRICE_OFFER_LINK_PREFIX = "/offers/";
 
-export function PriceOfferActions({
-  priceOffer,
-}: {
-  priceOffer: booking.GetAgentPriceOfferResponse;
-}) {
+export function PriceOfferActions({ priceOfferId }: { priceOfferId: number }) {
   const { lang } = useParams();
   const t = useTranslations("MyAccount.priceOffer.summary");
+
+  const { data: priceOffer, refetch } = usePriceOffer(priceOfferId);
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -27,20 +27,12 @@ export function PriceOfferActions({
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  function researchOffer() {
-    const urlParams = new URLSearchParams();
-
-    urlParams.set("pl", priceOffer.pickupLocationId.toString());
-    urlParams.set("rl", priceOffer.dropoffLocationId.toString());
-    urlParams.set("pd", priceOffer.pickupDate);
-    urlParams.set("pt", priceOffer.pickupTime);
-    urlParams.set("rd", priceOffer.returnDate);
-    urlParams.set("rt", priceOffer.dropoffTime);
-    urlParams.set("da", priceOffer.driverAge.toString());
-
-    const href = `/${lang}/results?${urlParams.toString()}`;
-    window.open(href, "_blank");
-  }
+  const { mutate: renewOffer, isPending } = useMutation({
+    mutationFn: (id: number) => renewPriceOffer(id),
+    onSuccess: () => {
+      refetch();
+    },
+  });
 
   return (
     <>
@@ -68,17 +60,18 @@ export function PriceOfferActions({
         </Button>
         <Button
           variant="ghost"
+          loading={isPending}
           className="py-6 text-border-muted font-semibold flex gap-4"
-          onClick={researchOffer}
+          onClick={() => renewOffer(priceOfferId)}
         >
-          <Search className="w-6 h-6" />
+          <RefreshCw className="w-6 h-6" />
           {t("renewOffer")}
         </Button>
       </div>
       <EditPriceOfferDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
-        priceOfferId={priceOffer.id}
+        priceOfferId={priceOfferId}
         initialName={priceOffer.name}
         initialPrice={priceOffer.offeredPrice}
         initialCurrency={priceOffer.offeredCurrencyCode}

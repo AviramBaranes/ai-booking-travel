@@ -18,7 +18,7 @@ export function HeaderSection({
       <div className="flex items-center justify-between">
         <h5 className="type-h5 text-navy">{t("title")}</h5>
         {priceOffer.status !== "unavailable" && (
-          <PriceOfferActions priceOffer={priceOffer} />
+          <PriceOfferActions priceOfferId={priceOffer.id} />
         )}
       </div>
       <hr />
