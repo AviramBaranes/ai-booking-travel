@@ -9,7 +9,7 @@ import { fetchSuppliersGallery } from "@/shared/server/cms";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { BackButton } from "@/shared/components/booking/BackButton";
 import { ReservationSummary } from "./_components/ReservationSummary/ReservationSummary";
-import { SummarySkeleton } from "../../_components/SummarySkeleton";
+import { SummarySkeleton } from "@/shared/components/booking/SummarySkeleton";
 
 export default async function ReservationDetailsPage({
   params,

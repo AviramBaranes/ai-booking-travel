@@ -1,16 +1,9 @@
-import { BackButton } from "@/shared/components/booking/BackButton";
 import { SelectedCarCardSkeleton } from "@/shared/components/booking/SelectedCarCard/SelectedCarCardSkeleton";
 import { SummarySkeleton } from "@/shared/components/booking/SummarySkeleton";
-import { getLang } from "@/shared/lang/lang";
 
-export default async function ReservationLoading() {
-  const lang = await getLang();
+export default function Loading() {
   return (
-    <main className="w-2/3 mx-auto pt-15 pb-6">
-      <BackButton
-        translationKey="backToReservations"
-        href={`/${lang}/reservations`}
-      />
+    <main className="w-2/3 mx-auto pt-4 pb-6">
       <div className="flex gap-2 mt-6">
         <div className="w-3/4">
           <SummarySkeleton />

@@ -8,8 +8,8 @@ import { suppliersGalleryKey } from "@/shared/hooks/useSuppliersGallery";
 import { fetchSuppliersGallery } from "@/shared/server/cms";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { BackButton } from "@/shared/components/booking/BackButton";
-import { SummarySkeleton } from "../../_components/SummarySkeleton";
 import { PriceOfferSummary } from "./_components/PriceOfferSummary/PriceOfferSummary";
+import { SummarySkeleton } from "@/shared/components/booking/SummarySkeleton";
 
 export default async function PriceOfferPage({
   params,
