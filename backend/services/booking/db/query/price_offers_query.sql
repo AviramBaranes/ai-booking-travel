@@ -82,8 +82,9 @@ UPDATE price_offers SET
     name = COALESCE(sqlc.narg(name), name),
     offered_currency_code = COALESCE(sqlc.narg(offered_currency_code), offered_currency_code),
     offered_price = COALESCE(sqlc.narg(offered_price), offered_price),
+    reservation_id = sqlc.narg(reservation_id),
     updated_at = now()
-WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id) AND status != 'unavailable';
+WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id) AND status != 'unavailable' AND reservation_id IS NULL;
 
 -- name: RenewPriceOfferDetails :exec
 UPDATE price_offers SET
@@ -104,12 +105,12 @@ UPDATE price_offers SET
     status = 'unavailable',
     renewed_at = now(),
     updated_at = now()
-WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
+WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id) AND reservation_id IS NULL;
 
 -- name: SetPriceOfferRenewedAt :exec
 UPDATE price_offers SET
     renewed_at = sqlc.arg(renewed_at)
-WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
+WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id) AND reservation_id IS NULL;
 
 -- name: ListPriceOffersByAgent :many
 SELECT price_offers.id, status, price_offers.name, 

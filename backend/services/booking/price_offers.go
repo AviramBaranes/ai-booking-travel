@@ -324,6 +324,7 @@ type GetPriceOfferResponse struct {
 // GetAgentPriceOfferResponse represents the agent-facing details of a price offer, including internal pricing details.
 type GetAgentPriceOfferResponse struct {
 	ID                  int64             `json:"id"`
+	ReservationID       *int64            `json:"reservationId,omitempty" encore:"optional"`
 	Token               string            `json:"token"`
 	Status              string            `json:"status"`
 	Name                string            `json:"name"`
@@ -346,6 +347,7 @@ type GetAgentPriceOfferResponse struct {
 	DropoffTime         string            `json:"dropoffTime"`
 	RentalDays          int32             `json:"rentalDays"`
 	DriverAge           string            `json:"driverAge"`
+	RenewedAt           string            `json:"renewedAt"`
 	CreatedAt           string            `json:"createdAt"`
 }
 
@@ -424,6 +426,7 @@ func (s *Service) GetAgentPriceOffer(ctx context.Context, id int64) (*GetAgentPr
 
 	return &GetAgentPriceOfferResponse{
 		ID:                  row.ID,
+		ReservationID:       row.ReservationID,
 		Token:               db.UuidToString(row.Token),
 		Status:              string(row.Status),
 		Name:                row.Name,
@@ -446,6 +449,7 @@ func (s *Service) GetAgentPriceOffer(ctx context.Context, id int64) (*GetAgentPr
 		PickupTime:          row.PickupTime,
 		DropoffTime:         row.DropoffTime,
 		DriverAge:           row.DriverAge,
+		RenewedAt:           db.TimestamptzToString(row.RenewedAt),
 		CreatedAt:           db.TimestamptzToString(row.CreatedAt),
 	}, nil
 }

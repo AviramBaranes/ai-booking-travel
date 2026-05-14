@@ -315,7 +315,7 @@ func (s *Service) BookPriceOffer(ctx context.Context, params BookPriceOfferParam
 		return nil, errReservationCreationFailed
 	}
 
-	s.markPriceOfferBooked(ctx, params.PriceOfferID, authData.UserID)
+	s.markPriceOfferBooked(ctx, params.PriceOfferID, reservation.ID, authData.UserID)
 
 	return &BookResponse{ReservationID: reservation.ID}, nil
 }
@@ -448,11 +448,12 @@ func buildPriceOfferReservationRequest(
 	}, nil
 }
 
-func (s *Service) markPriceOfferBooked(ctx context.Context, priceOfferID int64, agentID int32) {
+func (s *Service) markPriceOfferBooked(ctx context.Context, priceOfferID int64, reservationID int64, agentID int32) {
 	err := s.query.UpdatePriceOffer(ctx, db.UpdatePriceOfferParams{
-		ID:      priceOfferID,
-		AgentID: agentID,
-		Status:  db.NullOfferStatus{OfferStatus: db.OfferStatusBooked, Valid: true},
+		ID:            priceOfferID,
+		AgentID:       agentID,
+		ReservationID: &reservationID,
+		Status:        db.NullOfferStatus{OfferStatus: db.OfferStatusBooked, Valid: true},
 	})
 	if err != nil {
 		rlog.Error("failed to update price offer status after successful booking",

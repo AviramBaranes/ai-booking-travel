@@ -219,6 +219,7 @@ type LocationBrokerCode struct {
 
 type PriceOffer struct {
 	ID                  int64
+	ReservationID       *int64
 	Token               pgtype.UUID
 	AgentID             int32
 	Status              OfferStatus

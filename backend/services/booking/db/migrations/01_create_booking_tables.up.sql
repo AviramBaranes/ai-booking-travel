@@ -190,6 +190,7 @@ CREATE TYPE offer_status AS ENUM ('open', 'booked', 'declined', 'unavailable');
 CREATE TABLE
     price_offers (
         id BIGSERIAL PRIMARY KEY,
+        reservation_id BIGINT,
         token UUID NOT NULL UNIQUE DEFAULT gen_random_uuid (), 
         agent_id INT NOT NULL, 
         status offer_status NOT NULL DEFAULT 'open',
