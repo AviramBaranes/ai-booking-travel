@@ -162,13 +162,11 @@ func (s *Service) RenewPriceOffer(ctx context.Context, id int64) (*RenewPriceOff
 		return nil, api_errors.ErrInternalError
 	}
 
-	if !offer.UpdatedAt.Valid {
-		rlog.Error("price offer has invalid updated_at", "id", id)
+	if !offer.RenewedAt.Valid {
+		rlog.Error("price offer has invalid renewed_at", "id", id)
 		return nil, api_errors.ErrInternalError
 	}
-	now := time.Now()
-	updatedAt := offer.UpdatedAt.Time.In(now.Location())
-	if !updatedAt.Before(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())) {
+	if time.Since(offer.RenewedAt.Time) < time.Hour {
 		return nil, api_errors.ErrUnauthorized
 	}
 
@@ -191,7 +189,7 @@ func (s *Service) RenewPriceOffer(ctx context.Context, id int64) (*RenewPriceOff
 		return nil, err
 	}
 	if availability == nil || availability.SnapshotID == 0 {
-		return s.declineRenewedPriceOffer(ctx, offer)
+		return s.markRenewedPriceOfferUnavailable(ctx, offer)
 	}
 
 	snapshot, err := s.getSnapshot(ctx, availability.SnapshotID)
@@ -202,7 +200,7 @@ func (s *Service) RenewPriceOffer(ctx context.Context, id int64) (*RenewPriceOff
 	plan, err := findPlan(snapshot, offer.RateQualifier, offer.SupplierCode)
 	if err != nil {
 		if err == errPlanNotFound {
-			return s.declineRenewedPriceOffer(ctx, offer)
+			return s.markRenewedPriceOfferUnavailable(ctx, offer)
 		}
 		return nil, err
 	}
@@ -214,14 +212,13 @@ func (s *Service) RenewPriceOffer(ctx context.Context, id int64) (*RenewPriceOff
 	return &RenewPriceOfferResponse{Found: true}, nil
 }
 
-func (s *Service) declineRenewedPriceOffer(ctx context.Context, offer db.GetPriceOfferByIdRow) (*RenewPriceOfferResponse, error) {
-	err := s.query.UpdatePriceOffer(ctx, db.UpdatePriceOfferParams{
+func (s *Service) markRenewedPriceOfferUnavailable(ctx context.Context, offer db.GetPriceOfferByIdRow) (*RenewPriceOfferResponse, error) {
+	err := s.query.RenewPriceOfferUnavailable(ctx, db.RenewPriceOfferUnavailableParams{
 		ID:      offer.ID,
 		AgentID: offer.AgentID,
-		Status:  db.NullOfferStatus{OfferStatus: db.OfferStatusDeclined, Valid: true},
 	})
 	if err != nil {
-		rlog.Error("failed to decline unavailable price offer", "id", offer.ID, "error", err)
+		rlog.Error("failed to mark renewed price offer unavailable", "id", offer.ID, "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 

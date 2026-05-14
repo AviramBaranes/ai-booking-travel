@@ -738,6 +738,20 @@ func (mr *MockQuerierMockRecorder) RenewPriceOfferDetails(ctx, arg any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewPriceOfferDetails", reflect.TypeOf((*MockQuerier)(nil).RenewPriceOfferDetails), ctx, arg)
 }
 
+// RenewPriceOfferUnavailable mocks base method.
+func (m *MockQuerier) RenewPriceOfferUnavailable(ctx context.Context, arg db.RenewPriceOfferUnavailableParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RenewPriceOfferUnavailable", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RenewPriceOfferUnavailable indicates an expected call of RenewPriceOfferUnavailable.
+func (mr *MockQuerierMockRecorder) RenewPriceOfferUnavailable(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RenewPriceOfferUnavailable", reflect.TypeOf((*MockQuerier)(nil).RenewPriceOfferUnavailable), ctx, arg)
+}
+
 // SearchLocations mocks base method.
 func (m *MockQuerier) SearchLocations(ctx context.Context, search string) ([]db.Location, error) {
 	m.ctrl.T.Helper()
@@ -753,18 +767,18 @@ func (mr *MockQuerierMockRecorder) SearchLocations(ctx, search any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchLocations", reflect.TypeOf((*MockQuerier)(nil).SearchLocations), ctx, search)
 }
 
-// SetPriceOfferUpdatedAt mocks base method.
-func (m *MockQuerier) SetPriceOfferUpdatedAt(ctx context.Context, arg db.SetPriceOfferUpdatedAtParams) error {
+// SetPriceOfferRenewedAt mocks base method.
+func (m *MockQuerier) SetPriceOfferRenewedAt(ctx context.Context, arg db.SetPriceOfferRenewedAtParams) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetPriceOfferUpdatedAt", ctx, arg)
+	ret := m.ctrl.Call(m, "SetPriceOfferRenewedAt", ctx, arg)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// SetPriceOfferUpdatedAt indicates an expected call of SetPriceOfferUpdatedAt.
-func (mr *MockQuerierMockRecorder) SetPriceOfferUpdatedAt(ctx, arg any) *gomock.Call {
+// SetPriceOfferRenewedAt indicates an expected call of SetPriceOfferRenewedAt.
+func (mr *MockQuerierMockRecorder) SetPriceOfferRenewedAt(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPriceOfferUpdatedAt", reflect.TypeOf((*MockQuerier)(nil).SetPriceOfferUpdatedAt), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPriceOfferRenewedAt", reflect.TypeOf((*MockQuerier)(nil).SetPriceOfferRenewedAt), ctx, arg)
 }
 
 // TranslatePendingTranslation mocks base method.

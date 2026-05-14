@@ -61,8 +61,9 @@ type Querier interface {
 	ListPendingTranslations(ctx context.Context) ([]BrokerTranslation, error)
 	ListPriceOffersByAgent(ctx context.Context, arg ListPriceOffersByAgentParams) ([]ListPriceOffersByAgentRow, error)
 	RenewPriceOfferDetails(ctx context.Context, arg RenewPriceOfferDetailsParams) error
+	RenewPriceOfferUnavailable(ctx context.Context, arg RenewPriceOfferUnavailableParams) error
 	SearchLocations(ctx context.Context, search string) ([]Location, error)
-	SetPriceOfferUpdatedAt(ctx context.Context, arg SetPriceOfferUpdatedAtParams) error
+	SetPriceOfferRenewedAt(ctx context.Context, arg SetPriceOfferRenewedAtParams) error
 	TranslatePendingTranslation(ctx context.Context, arg TranslatePendingTranslationParams) error
 	UpdateBrokerTranslation(ctx context.Context, arg UpdateBrokerTranslationParams) error
 	UpdateCoupon(ctx context.Context, arg UpdateCouponParams) (Coupon, error)

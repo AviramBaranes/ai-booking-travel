@@ -185,7 +185,7 @@ CREATE TABLE
 -- 
 -- 
 -- 
-CREATE TYPE offer_status AS ENUM ('open', 'booked', 'declined');
+CREATE TYPE offer_status AS ENUM ('open', 'booked', 'declined', 'unavailable');
 
 CREATE TABLE
     price_offers (
@@ -219,6 +219,7 @@ CREATE TABLE
         offered_currency_code TEXT NOT NULL,
         offered_price INT NOT NULL,
         
+        renewed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         created_at TIMESTAMPTZ NOT NULL DEFAULT now (),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now ()
     );

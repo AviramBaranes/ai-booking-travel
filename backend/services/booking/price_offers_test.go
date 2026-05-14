@@ -167,16 +167,16 @@ func int32Ptr(v int32) *int32 { return &v }
 
 func makePriceOfferRenewable(t *testing.T, q *db.Queries, ctx context.Context, offerID int64, agentID int32) {
 	t.Helper()
-	err := q.SetPriceOfferUpdatedAt(ctx, db.SetPriceOfferUpdatedAtParams{
+	err := q.SetPriceOfferRenewedAt(ctx, db.SetPriceOfferRenewedAtParams{
 		ID:      offerID,
 		AgentID: agentID,
-		UpdatedAt: pgtype.Timestamptz{
-			Time:  time.Now().AddDate(0, 0, -1),
+		RenewedAt: pgtype.Timestamptz{
+			Time:  time.Now().Add(-61 * time.Minute),
 			Valid: true,
 		},
 	})
 	if err != nil {
-		t.Fatalf("failed to backdate price offer updated_at: %v", err)
+		t.Fatalf("failed to backdate price offer renewed_at: %v", err)
 	}
 }
 
@@ -574,7 +574,7 @@ func TestRenewPriceOffer(t *testing.T) {
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
-	t.Run("rejects renewal less than one day after update", func(t *testing.T) {
+	t.Run("rejects renewal less than one hour after renewal", func(t *testing.T) {
 		offer := createOffer(t, "Too Fresh", true)
 		et.MockEndpoint(SearchAvailability, func(context.Context, SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
 			t.Fatal("SearchAvailability should not be called before the renewal window")
@@ -701,7 +701,7 @@ func TestRenewPriceOffer(t *testing.T) {
 		}
 	})
 
-	t.Run("declines offer when refreshed plan is unavailable", func(t *testing.T) {
+	t.Run("marks offer unavailable when refreshed plan is unavailable", func(t *testing.T) {
 		offer := createOffer(t, "Renew Missing", true)
 		makePriceOfferRenewable(t, q, ctx, offer.ID, agentID)
 		unmatchedPlan := defaultPlan(pickupCode, dropoffCode)
@@ -729,8 +729,8 @@ func TestRenewPriceOffer(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to fetch declined offer: %v", err)
 		}
-		if string(row.Status) != "declined" {
-			t.Errorf("status: got %q, want declined", row.Status)
+		if string(row.Status) != "unavailable" {
+			t.Errorf("status: got %q, want unavailable", row.Status)
 		}
 		if row.TotalPrice != before.TotalPrice {
 			t.Errorf("total price should be unchanged: got %d, want %d", row.TotalPrice, before.TotalPrice)

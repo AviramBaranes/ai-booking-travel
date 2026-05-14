@@ -99,9 +99,10 @@ func (ns NullBrokerTranslationStatus) Value() (driver.Value, error) {
 type OfferStatus string
 
 const (
-	OfferStatusOpen     OfferStatus = "open"
-	OfferStatusBooked   OfferStatus = "booked"
-	OfferStatusDeclined OfferStatus = "declined"
+	OfferStatusOpen        OfferStatus = "open"
+	OfferStatusBooked      OfferStatus = "booked"
+	OfferStatusDeclined    OfferStatus = "declined"
+	OfferStatusUnavailable OfferStatus = "unavailable"
 )
 
 func (e *OfferStatus) Scan(src interface{}) error {
@@ -242,6 +243,7 @@ type PriceOffer struct {
 	TotalPrice          int32
 	OfferedCurrencyCode string
 	OfferedPrice        int32
+	RenewedAt           pgtype.Timestamptz
 	CreatedAt           pgtype.Timestamptz
 	UpdatedAt           pgtype.Timestamptz
 }

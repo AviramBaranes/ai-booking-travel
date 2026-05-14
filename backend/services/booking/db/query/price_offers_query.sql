@@ -81,12 +81,20 @@ UPDATE price_offers SET
     broker_erp_price = sqlc.arg(broker_erp_price),
     bt_erp_price = sqlc.arg(bt_erp_price),
     total_price = sqlc.arg(total_price),
+    renewed_at = now(),
     updated_at = now()
 WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
 
--- name: SetPriceOfferUpdatedAt :exec
+-- name: RenewPriceOfferUnavailable :exec
 UPDATE price_offers SET
-    updated_at = sqlc.arg(updated_at)
+    status = 'unavailable',
+    renewed_at = now(),
+    updated_at = now()
+WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
+
+-- name: SetPriceOfferRenewedAt :exec
+UPDATE price_offers SET
+    renewed_at = sqlc.arg(renewed_at)
 WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id);
 
 -- name: ListPriceOffersByAgent :many

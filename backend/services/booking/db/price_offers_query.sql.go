@@ -80,7 +80,7 @@ INSERT INTO price_offers (
     $21,
     $22
 )
-RETURNING id, token, agent_id, status, name, pickup_location_id, dropoff_location_id, pickup_date, return_date, pickup_time, dropoff_time, driver_age, rental_days, rate_qualifier, supplier_code, car_details, plan_inclusions, currency_code, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, total_price, offered_currency_code, offered_price, created_at, updated_at
+RETURNING id, token, agent_id, status, name, pickup_location_id, dropoff_location_id, pickup_date, return_date, pickup_time, dropoff_time, driver_age, rental_days, rate_qualifier, supplier_code, car_details, plan_inclusions, currency_code, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, total_price, offered_currency_code, offered_price, renewed_at, created_at, updated_at
 `
 
 type CreatePriceOfferParams struct {
@@ -160,6 +160,7 @@ func (q *Queries) CreatePriceOffer(ctx context.Context, arg CreatePriceOfferPara
 		&i.TotalPrice,
 		&i.OfferedCurrencyCode,
 		&i.OfferedPrice,
+		&i.RenewedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -167,7 +168,7 @@ func (q *Queries) CreatePriceOffer(ctx context.Context, arg CreatePriceOfferPara
 }
 
 const getPriceOfferById = `-- name: GetPriceOfferById :one
-SELECT price_offers.id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.return_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.rate_qualifier, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.created_at, price_offers.updated_at , pl.name AS pickup_location, dl.name AS dropoff_location
+SELECT price_offers.id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.return_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.rate_qualifier, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.renewed_at, price_offers.created_at, price_offers.updated_at , pl.name AS pickup_location, dl.name AS dropoff_location
 FROM price_offers
     JOIN locations pl ON price_offers.pickup_location_id = pl.id
     JOIN locations dl ON price_offers.dropoff_location_id = dl.id
@@ -205,6 +206,7 @@ type GetPriceOfferByIdRow struct {
 	TotalPrice          int32
 	OfferedCurrencyCode string
 	OfferedPrice        int32
+	RenewedAt           pgtype.Timestamptz
 	CreatedAt           pgtype.Timestamptz
 	UpdatedAt           pgtype.Timestamptz
 	PickupLocation      string
@@ -240,6 +242,7 @@ func (q *Queries) GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdPa
 		&i.TotalPrice,
 		&i.OfferedCurrencyCode,
 		&i.OfferedPrice,
+		&i.RenewedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.PickupLocation,
@@ -249,7 +252,7 @@ func (q *Queries) GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdPa
 }
 
 const getPriceOfferByToken = `-- name: GetPriceOfferByToken :one
-SELECT price_offers.id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.return_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.rate_qualifier, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.created_at, price_offers.updated_at , pl.name AS pickup_location, dl.name AS dropoff_location
+SELECT price_offers.id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.return_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.rate_qualifier, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.renewed_at, price_offers.created_at, price_offers.updated_at , pl.name AS pickup_location, dl.name AS dropoff_location
 FROM price_offers
     JOIN locations pl ON price_offers.pickup_location_id = pl.id
     JOIN locations dl ON price_offers.dropoff_location_id = dl.id
@@ -282,6 +285,7 @@ type GetPriceOfferByTokenRow struct {
 	TotalPrice          int32
 	OfferedCurrencyCode string
 	OfferedPrice        int32
+	RenewedAt           pgtype.Timestamptz
 	CreatedAt           pgtype.Timestamptz
 	UpdatedAt           pgtype.Timestamptz
 	PickupLocation      string
@@ -317,6 +321,7 @@ func (q *Queries) GetPriceOfferByToken(ctx context.Context, token pgtype.UUID) (
 		&i.TotalPrice,
 		&i.OfferedCurrencyCode,
 		&i.OfferedPrice,
+		&i.RenewedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.PickupLocation,
@@ -418,6 +423,7 @@ UPDATE price_offers SET
     broker_erp_price = $6,
     bt_erp_price = $7,
     total_price = $8,
+    renewed_at = now(),
     updated_at = now()
 WHERE id = $9 AND agent_id = $10
 `
@@ -451,20 +457,38 @@ func (q *Queries) RenewPriceOfferDetails(ctx context.Context, arg RenewPriceOffe
 	return err
 }
 
-const setPriceOfferUpdatedAt = `-- name: SetPriceOfferUpdatedAt :exec
+const renewPriceOfferUnavailable = `-- name: RenewPriceOfferUnavailable :exec
 UPDATE price_offers SET
-    updated_at = $1
+    status = 'unavailable',
+    renewed_at = now(),
+    updated_at = now()
+WHERE id = $1 AND agent_id = $2
+`
+
+type RenewPriceOfferUnavailableParams struct {
+	ID      int64
+	AgentID int32
+}
+
+func (q *Queries) RenewPriceOfferUnavailable(ctx context.Context, arg RenewPriceOfferUnavailableParams) error {
+	_, err := q.db.Exec(ctx, renewPriceOfferUnavailable, arg.ID, arg.AgentID)
+	return err
+}
+
+const setPriceOfferRenewedAt = `-- name: SetPriceOfferRenewedAt :exec
+UPDATE price_offers SET
+    renewed_at = $1
 WHERE id = $2 AND agent_id = $3
 `
 
-type SetPriceOfferUpdatedAtParams struct {
-	UpdatedAt pgtype.Timestamptz
+type SetPriceOfferRenewedAtParams struct {
+	RenewedAt pgtype.Timestamptz
 	ID        int64
 	AgentID   int32
 }
 
-func (q *Queries) SetPriceOfferUpdatedAt(ctx context.Context, arg SetPriceOfferUpdatedAtParams) error {
-	_, err := q.db.Exec(ctx, setPriceOfferUpdatedAt, arg.UpdatedAt, arg.ID, arg.AgentID)
+func (q *Queries) SetPriceOfferRenewedAt(ctx context.Context, arg SetPriceOfferRenewedAtParams) error {
+	_, err := q.db.Exec(ctx, setPriceOfferRenewedAt, arg.RenewedAt, arg.ID, arg.AgentID)
 	return err
 }
 
