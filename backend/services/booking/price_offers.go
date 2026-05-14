@@ -204,7 +204,7 @@ func (s *Service) RenewPriceOffer(ctx context.Context, id int64) (*RenewPriceOff
 		return nil, err
 	}
 
-	plan, err := findPlan(snapshot, offer.RateQualifier, offer.SupplierCode)
+	plan, err := findPriceOfferRenewalPlan(snapshot, offer)
 	if err != nil {
 		if err == errPlanNotFound {
 			return s.markRenewedPriceOfferUnavailable(ctx, offer)
@@ -217,6 +217,31 @@ func (s *Service) RenewPriceOffer(ctx context.Context, id int64) (*RenewPriceOff
 	}
 
 	return &RenewPriceOfferResponse{Found: true}, nil
+}
+
+func findPriceOfferRenewalPlan(snapshot db.AvailablePlansSnapshot, offer db.GetPriceOfferByIdRow) (planPriceDetails, error) {
+	var offerCarDetails broker.CarDetails
+	if err := json.Unmarshal(offer.CarDetails, &offerCarDetails); err != nil {
+		rlog.Error("failed to unmarshal price offer car details", "id", offer.ID, "error", err)
+		return planPriceDetails{}, api_errors.ErrInternalError
+	}
+
+	var plans []planPriceDetails
+	if err := json.Unmarshal(snapshot.Plans, &plans); err != nil {
+		rlog.Error("failed to unmarshal plans JSON", "error", err)
+		return planPriceDetails{}, api_errors.ErrInternalError
+	}
+
+	for _, plan := range plans {
+		if plan.SupplierCode == offer.SupplierCode &&
+			plan.CarDetails.Model == offerCarDetails.Model &&
+			plan.CarDetails.SupplierName == offerCarDetails.SupplierName &&
+			plan.CarDetails.Acriss == offerCarDetails.Acriss {
+			return plan, nil
+		}
+	}
+
+	return planPriceDetails{}, errPlanNotFound
 }
 
 func (s *Service) markRenewedPriceOfferUnavailable(ctx context.Context, offer db.GetPriceOfferByIdRow) (*RenewPriceOfferResponse, error) {

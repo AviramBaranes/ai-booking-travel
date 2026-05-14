@@ -582,14 +582,15 @@ func TestRenewPriceOffer(t *testing.T) {
 		})
 
 		_, err := RenewPriceOffer(ctx, offer.ID)
-		api_errors.AssertApiError(t, api_errors.ErrUnauthorized, err)
+		api_errors.AssertApiError(t, errOfferRenewalTooSoon, err)
 	})
 
 	t.Run("refreshes pricing details when original plan is still available", func(t *testing.T) {
 		offer := createOffer(t, "Renew Found", true)
 		makePriceOfferRenewable(t, q, ctx, offer.ID, agentID)
 		renewedPlan := defaultPlan(pickupCode, dropoffCode)
-		renewedPlan.CarDetails.Model = "Honda Civic"
+		renewedPlan.RateQualifier = "RQ-FRESH-SEARCH"
+		renewedPlan.CarDetails.Seats = 4
 		renewedPlan.Inclusions = []string{"Liability Insurance"}
 		renewedPlan.CurrencyCode = "EUR"
 		renewedPlan.CarPurchasePrice = 200
@@ -634,8 +635,11 @@ func TestRenewPriceOffer(t *testing.T) {
 		if err := json.Unmarshal(row.CarDetails, &carDetails); err != nil {
 			t.Fatalf("failed to unmarshal renewed car details: %v", err)
 		}
-		if carDetails.Model != "Honda Civic" {
-			t.Errorf("car model: got %q, want Honda Civic", carDetails.Model)
+		if carDetails.Model != "Toyota Corolla" {
+			t.Errorf("car model: got %q, want Toyota Corolla", carDetails.Model)
+		}
+		if carDetails.Seats != 4 {
+			t.Errorf("car seats: got %d, want 4", carDetails.Seats)
 		}
 		if len(row.PlanInclusions) != 1 || row.PlanInclusions[0] != "Liability Insurance" {
 			t.Errorf("plan inclusions: got %+v", row.PlanInclusions)
@@ -705,7 +709,8 @@ func TestRenewPriceOffer(t *testing.T) {
 		offer := createOffer(t, "Renew Missing", true)
 		makePriceOfferRenewable(t, q, ctx, offer.ID, agentID)
 		unmatchedPlan := defaultPlan(pickupCode, dropoffCode)
-		unmatchedPlan.RateQualifier = "OTHER-RQ"
+		unmatchedPlan.RateQualifier = "RQ-FRESH-SEARCH"
+		unmatchedPlan.CarDetails.Acriss = "IDMR"
 		unmatchedSnapshotID := seedSnapshot(t, q, []planPriceDetails{unmatchedPlan})
 
 		before, err := q.GetPriceOfferById(ctx, db.GetPriceOfferByIdParams{ID: offer.ID, AgentID: agentID})
