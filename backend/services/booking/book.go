@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
@@ -45,6 +46,10 @@ var (
 		"Flight number is required for this office",
 		api_errors.ErrorDetails{Code: api_errors.CodeFlightNumberRequired},
 	)
+
+	errOldOffer = api_errors.NewErrorWithDetail(errs.PermissionDenied, "offer is too old, renew it first", api_errors.ErrorDetails{
+		Code: api_errors.CodeOldOffer,
+	})
 )
 
 // BookParams defines the parameters required to book a car rental based on a previously retrieved snapshot of available plans. It includes details about the selected plan, driver information, and optional add-ons. Validation tags ensure that all required fields are provided and correctly formatted.
@@ -265,4 +270,204 @@ func (s *Service) getLocationsNames(ctx context.Context, pickupBrokerLocationID,
 	}
 
 	return pickupLoc.Name, dropoffLoc.Name, nil
+}
+
+// BookByPriceOfferParams defines the parameters required to book a car rental based on a price offer.
+type BookByPriceOfferParams struct {
+	PriceOfferID    int64  `json:"priceOfferId" validate:"required"`
+	DriverTitle     string `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Mrs' 'Ms' 'Miss' 'Dr'"`
+	DriverFirstName string `json:"driverFirstName" validate:"required,uppercase_only"`
+	DriverLastName  string `json:"driverLastName" validate:"required,uppercase_only"`
+	FlightNumber    string `json:"flightNumber" encore:"optional"`
+}
+
+func (p BookByPriceOfferParams) Validate() error {
+	return validation.ValidateStruct(p)
+}
+
+//encore:api auth method=POST path=/offers/book tag:agent
+func (s *Service) BookByPriceOffer(ctx context.Context, params BookByPriceOfferParams) (*BookResponse, error) {
+	authData := auth.GetAuthData()
+
+	offer, err := s.getBookablePriceOffer(ctx, params.PriceOfferID, authData.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	bookingRes, offerCarDetails, err := bookPriceOfferAtBroker(offer, params)
+	if err != nil {
+		return nil, err
+	}
+
+	reservationReq, err := buildPriceOfferReservationRequest(authData.UserID, offer, params, bookingRes.ConfirmationNumber, offerCarDetails)
+	if err != nil {
+		return nil, err
+	}
+
+	reservation, err := reservation.CreateReservation(ctx, reservationReq)
+	if err != nil {
+		rlog.Error("failed to create reservation after successful booking",
+			"confirmationNumber", bookingRes.ConfirmationNumber, "error", err)
+		notifications.CriticalErrorEventTopic.Publish(ctx, &notifications.CriticalErrorEvent{
+			Subject: "Reservation creation failed after successful booking",
+			Message: fmt.Sprintf("failed to create reservation after successful booking, confirmationNumber: %s, error: %v", bookingRes.ConfirmationNumber, err),
+		})
+		return nil, errReservationCreationFailed
+	}
+
+	s.markPriceOfferBooked(ctx, params.PriceOfferID, authData.UserID)
+
+	return &BookResponse{ReservationID: reservation.ID}, nil
+}
+
+func (s *Service) getBookablePriceOffer(ctx context.Context, priceOfferID int64, agentID int32) (db.GetPriceOfferByIdRow, error) {
+	offer, err := s.query.GetPriceOfferById(ctx, db.GetPriceOfferByIdParams{
+		ID:      priceOfferID,
+		AgentID: agentID,
+	})
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return db.GetPriceOfferByIdRow{}, api_errors.ErrNotFound
+		}
+		rlog.Error("failed to get price offer for renewal", "id", priceOfferID, "error", err)
+		return db.GetPriceOfferByIdRow{}, api_errors.ErrInternalError
+	}
+
+	if err := ensurePriceOfferRenewedRecently(offer, priceOfferID); err != nil {
+		return db.GetPriceOfferByIdRow{}, err
+	}
+
+	return offer, nil
+}
+
+func ensurePriceOfferRenewedRecently(offer db.GetPriceOfferByIdRow, priceOfferID int64) error {
+	if !offer.RenewedAt.Valid {
+		rlog.Error("price offer has invalid renewed_at", "id", priceOfferID)
+		return api_errors.ErrInternalError
+	}
+	if time.Since(offer.RenewedAt.Time) > 15*time.Minute {
+		return errOldOffer
+	}
+
+	return nil
+}
+
+func bookPriceOfferAtBroker(offer db.GetPriceOfferByIdRow, params BookByPriceOfferParams) (broker.BookingResponse, broker.CarDetails, error) {
+	b, err := getBroker(offer.Broker)
+	if err != nil {
+		rlog.Error("failed to get broker for price offer booking", "error", err)
+		return broker.BookingResponse{}, broker.CarDetails{}, api_errors.ErrInternalError
+	}
+
+	offerCarDetails, err := unmarshalPriceOfferCarDetails(offer)
+	if err != nil {
+		return broker.BookingResponse{}, broker.CarDetails{}, err
+	}
+
+	bookingRes, err := b.Book(buildPriceOfferBookingParams(offer, params, offerCarDetails))
+	if err != nil {
+		rlog.Error("failed to book car at broker", "broker", b.Name(), "error", err)
+		return broker.BookingResponse{}, broker.CarDetails{}, err
+	}
+
+	return bookingRes, offerCarDetails, nil
+}
+
+func unmarshalPriceOfferCarDetails(offer db.GetPriceOfferByIdRow) (broker.CarDetails, error) {
+	var offerCarDetails broker.CarDetails
+	if err := json.Unmarshal(offer.CarDetails, &offerCarDetails); err != nil {
+		rlog.Error("failed to unmarshal price offer car details", "id", offer.ID, "error", err)
+		return broker.CarDetails{}, api_errors.ErrInternalError
+	}
+
+	return offerCarDetails, nil
+}
+
+func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, params BookByPriceOfferParams, offerCarDetails broker.CarDetails) broker.BookingParams {
+	return broker.BookingParams{
+		RateQualifier:   offer.RateQualifier,
+		SupplierCode:    offer.SupplierCode,
+		Acriss:          offerCarDetails.Acriss,
+		PlanID:          offer.PlanID,
+		PickupLocation:  offer.PickupBrokerLocationID,
+		DropoffLocation: offer.DropoffBrokerLocationID,
+		IncludeERP:      isPriceOfferErpIncluded(offer),
+		SelectedAddOns:  []broker.SelectAddOn{},
+		DriverTitle:     params.DriverTitle,
+		DriverFirstName: params.DriverFirstName,
+		DriverLastName:  params.DriverLastName,
+		FlightNumber:    params.FlightNumber,
+		DriverAge:       offer.DriverAge,
+		PickupDate:      db.DateToString(offer.PickupDate),
+		DropoffDate:     db.DateToString(offer.ReturnDate),
+		PickupTime:      offer.PickupTime,
+		DropoffTime:     offer.DropoffTime,
+		CountryCode:     offer.CurrencyCode,
+	}
+}
+
+func buildPriceOfferReservationRequest(
+	userID int32,
+	offer db.GetPriceOfferByIdRow,
+	params BookByPriceOfferParams,
+	confirmationNumber string,
+	offerCarDetails broker.CarDetails,
+) (reservation.CreateReservationRequest, error) {
+	driverAge, err := strconv.Atoi(offer.DriverAge)
+	if err != nil {
+		rlog.Error("failed to convert driver age to int", "driverAge", offer.DriverAge, "error", err)
+		return reservation.CreateReservationRequest{}, api_errors.ErrInternalError
+	}
+
+	return reservation.CreateReservationRequest{
+		UserID:              userID,
+		BrokerReservationID: confirmationNumber,
+		Broker:              string(offer.Broker),
+		SupplierCode:        offer.SupplierCode,
+		CarDetails:          &offerCarDetails,
+		PlanInclusions:      offer.PlanInclusions,
+		PickupDate:          db.DateToString(offer.PickupDate),
+		ReturnDate:          db.DateToString(offer.ReturnDate),
+		RentalDays:          int(offer.RentalDays),
+		DriverTitle:         params.DriverTitle,
+		DriverFirstName:     params.DriverFirstName,
+		DriverLastName:      params.DriverLastName,
+		DriverAge:           driverAge,
+		CountryCode:         offer.CountryCode,
+		CurrencyCode:        offer.CurrencyCode,
+		CurrencyRate:        db.NumericToFloat64(offer.CurrencyRate),
+		PurchasePrice:       db.NumericToFloat64(offer.PurchasePrice),
+		MarkupPercentage:    db.NumericToFloat64(offer.MarkupPercentage),
+		DiscountPercentage:  0,
+		BrokerErpPrice:      db.NumericToFloat64(offer.BrokerErpPrice),
+		BtErpPrice:          int(offer.BtErpPrice),
+		PickupTime:          offer.PickupTime,
+		DropoffTime:         offer.DropoffTime,
+		PickupLocationName:  offer.PickupLocation,
+		DropoffLocationName: offer.DropoffLocation,
+	}, nil
+}
+
+func (s *Service) markPriceOfferBooked(ctx context.Context, priceOfferID int64, agentID int32) {
+	err := s.query.UpdatePriceOffer(ctx, db.UpdatePriceOfferParams{
+		ID:      priceOfferID,
+		AgentID: agentID,
+		Status:  db.NullOfferStatus{OfferStatus: db.OfferStatusBooked, Valid: true},
+	})
+	if err != nil {
+		rlog.Error("failed to update price offer status after successful booking",
+			"priceOfferID", priceOfferID, "error", err)
+	}
+}
+
+// getBroker returns the broker implementation based on the broker stored in the db.
+func getBroker(dbBroker db.Broker) (broker.Booker, error) {
+	switch dbBroker {
+	case db.BrokerHertz:
+		return broker.NewHertz(), nil
+	case db.BrokerFlex:
+		return broker.NewFlex(), nil
+	default:
+		return nil, api_errors.ErrInternalError
+	}
 }

@@ -204,13 +204,15 @@ CREATE TABLE
         driver_age TEXT NOT NULL,
         rental_days INT NOT NULL CHECK (rental_days > 0),
 
+        plan_id TEXT NOT NULL,
+        broker broker NOT NULL,
         rate_qualifier TEXT NOT NULL,
         supplier_code TEXT NOT NULL,
         car_details JSONB NOT NULL,
         plan_inclusions TEXT[] NOT NULL DEFAULT '{}',
-        -- rental_days INT NOT NULL CHECK (rental_days > 0),
 
         currency_code TEXT NOT NULL,
+        currency_rate NUMERIC(12, 4) NOT NULL,
         purchase_price NUMERIC(12, 2) NOT NULL,
         markup_percentage NUMERIC(12, 2) NOT NULL,
         broker_erp_price NUMERIC(12, 2) NOT NULL,

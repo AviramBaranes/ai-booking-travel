@@ -10,11 +10,14 @@ INSERT INTO price_offers (
     pickup_time,
     dropoff_time,
     driver_age,
+    plan_id,
+    broker,
     rate_qualifier,
     supplier_code,
     car_details,
     plan_inclusions,
     currency_code,
+    currency_rate,
     purchase_price,
     markup_percentage,
     broker_erp_price,
@@ -33,11 +36,14 @@ INSERT INTO price_offers (
     sqlc.arg(pickup_time),
     sqlc.arg(dropoff_time),
     sqlc.arg(driver_age),
+    sqlc.arg(plan_id),
+    sqlc.arg(broker),
     sqlc.arg(rate_qualifier),
     sqlc.arg(supplier_code),
     sqlc.arg(car_details),
     sqlc.arg(plan_inclusions),
     sqlc.arg(currency_code),
+    sqlc.arg(currency_rate),
     sqlc.arg(purchase_price),
     sqlc.arg(markup_percentage),
     sqlc.arg(broker_erp_price),
@@ -56,10 +62,18 @@ FROM price_offers
  WHERE token = sqlc.arg(token) AND status != 'unavailable';
 
 -- name: GetPriceOfferById :one
-SELECT price_offers.* , pl.name AS pickup_location, dl.name AS dropoff_location
+SELECT 
+    price_offers.*, 
+    pl.name AS pickup_location, 
+    pl.country_code,
+    dl.name AS dropoff_location, 
+    lbc_pickup.broker_location_id AS pickup_broker_location_id,
+    lbc_dropoff.broker_location_id AS dropoff_broker_location_id
 FROM price_offers
     JOIN locations pl ON price_offers.pickup_location_id = pl.id
     JOIN locations dl ON price_offers.dropoff_location_id = dl.id
+    JOIN location_broker_codes lbc_pickup ON lbc_pickup.location_id = pl.id AND lbc_pickup.broker = price_offers.broker
+    JOIN location_broker_codes lbc_dropoff ON lbc_dropoff.location_id = dl.id AND lbc_dropoff.broker = price_offers.broker
 WHERE price_offers.id = sqlc.arg(id) AND price_offers.agent_id = sqlc.arg(agent_id);
 
 -- name: UpdatePriceOffer :exec

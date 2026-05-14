@@ -231,11 +231,14 @@ type PriceOffer struct {
 	DropoffTime         string
 	DriverAge           string
 	RentalDays          int32
+	PlanID              string
+	Broker              Broker
 	RateQualifier       string
 	SupplierCode        string
 	CarDetails          []byte
 	PlanInclusions      []string
 	CurrencyCode        string
+	CurrencyRate        pgtype.Numeric
 	PurchasePrice       pgtype.Numeric
 	MarkupPercentage    pgtype.Numeric
 	BrokerErpPrice      pgtype.Numeric
