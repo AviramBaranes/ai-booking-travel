@@ -1,28 +1,35 @@
 "use client";
 
-import { MoreHorizontal } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
-import { useReservationFilters } from "../../_hooks/useReservationFilters";
-import { useReservations } from "../../_hooks/useReservations";
+import { cn } from "@/lib/utils";
+import { MoreHorizontal } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-const ITEMS_PER_PAGE = 8;
+const DEFAULT_ITEMS_PER_PAGE = 8;
 
 const pageButtonClass =
   "h-9 w-9 rounded-none border border-[#e5e7eb] bg-white text-sm font-medium text-[#4a5565] hover:bg-gray-50 shadow-none";
 
-export function PaginationButtons() {
+export function PaginationButtons({
+  total,
+  page,
+  searchParams,
+  basePath,
+  previousLabel,
+  nextLabel,
+  itemsPerPage = DEFAULT_ITEMS_PER_PAGE,
+}: {
+  total: number;
+  page: number;
+  searchParams: { toString: () => string };
+  basePath: string;
+  previousLabel: string;
+  nextLabel: string;
+  itemsPerPage?: number;
+}) {
   const router = useRouter();
-  const t = useTranslations("MyAccount.reservations");
-  const { lang, searchParams, sortBy, filters, page } = useReservationFilters();
-  const {
-    data: { total },
-  } = useReservations({ Page: page, SortBy: sortBy, ...filters });
-
-  const maxPage = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+  const maxPage = Math.max(1, Math.ceil(total / itemsPerPage));
 
   function navigateTo(targetPage: number) {
     const nextQuery = new URLSearchParams(searchParams.toString());
@@ -31,8 +38,8 @@ export function PaginationButtons() {
     } else {
       nextQuery.set("page", String(targetPage));
     }
+
     const queryString = nextQuery.toString();
-    const basePath = `/${lang}/reservations`;
     router.push(queryString ? `${basePath}?${queryString}` : basePath);
   }
 
@@ -54,32 +61,30 @@ export function PaginationButtons() {
         aria-label="Pagination"
         className="overflow-hidden rounded-xl shadow-card"
       >
-        {/* Prev */}
         <Button
           variant="outline"
           onClick={() => navigateTo(page - 1)}
           disabled={page <= 1}
           className={cn(pageButtonClass, "w-auto px-3 rounded-l-xl")}
         >
-          {t("pagination.prev")}
+          {previousLabel}
         </Button>
 
-        {/* Window pages */}
-        {windowPages.map((p) => (
+        {windowPages.map((pageNumber) => (
           <Button
-            key={p}
+            key={pageNumber}
             variant="outline"
-            onClick={() => navigateTo(p)}
+            onClick={() => navigateTo(pageNumber)}
             className={cn(
               pageButtonClass,
-              p === page && "bg-[#f9fafb] text-brand-blue hover:bg-[#f9fafb]",
+              pageNumber === page &&
+                "bg-[#f9fafb] text-brand-blue hover:bg-[#f9fafb]",
             )}
           >
-            {p}
+            {pageNumber}
           </Button>
         ))}
 
-        {/* Ellipsis — not clickable */}
         {showEllipsis && (
           <Button
             variant="outline"
@@ -94,7 +99,6 @@ export function PaginationButtons() {
           </Button>
         )}
 
-        {/* Last page */}
         {showLastPage && (
           <Button
             variant="outline"
@@ -109,14 +113,13 @@ export function PaginationButtons() {
           </Button>
         )}
 
-        {/* Next */}
         <Button
           variant="outline"
           onClick={() => navigateTo(page + 1)}
           disabled={page >= maxPage}
           className={cn(pageButtonClass, "w-auto px-3 rounded-r-xl")}
         >
-          {t("pagination.next")}
+          {nextLabel}
         </Button>
       </ButtonGroup>
     </div>

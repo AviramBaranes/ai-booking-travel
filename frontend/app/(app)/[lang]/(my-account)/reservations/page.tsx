@@ -6,7 +6,7 @@ import { SortDropdown } from "./_components/filters/SortDropdown";
 import { Suspense } from "react";
 import { ReservationResultsCounter } from "./_components/ReservationResultsCounter";
 import { ReservationsGrid } from "./_components/ReservationsGrid";
-import { PaginationButtons } from "./_components/filters/PaginationButtons";
+import { ReservationPaginationButtons } from "./_components/filters/ReservationPaginationButtons";
 import { AccountGridSkeleton } from "../_components/AccountGridSkeleton";
 
 export default async function ReservationDetailsPage({
@@ -47,7 +47,7 @@ export default async function ReservationDetailsPage({
           <ReservationsGrid />
         </Suspense>
         <Suspense key={`pagination-${suspenseKey}`}>
-          <PaginationButtons />
+          <ReservationPaginationButtons />
         </Suspense>
       </div>
       <div className="mb-15" />

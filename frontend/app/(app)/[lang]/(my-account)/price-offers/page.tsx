@@ -6,6 +6,7 @@ import { PriceOffersGrid } from "./_components/PriceOffersGrid";
 import { AccountGridSkeleton } from "../_components/AccountGridSkeleton";
 import { ClearFilterRow } from "./_components/filters/ClearFilterRow";
 import { FilterForm } from "./_components/filters/FilterForm";
+import { PriceOfferPaginationButtons } from "./_components/filters/PriceOfferPaginationButtons";
 
 export default async function PriceOffersPage({
   searchParams,
@@ -41,6 +42,9 @@ export default async function PriceOffersPage({
           fallback={<AccountGridSkeleton />}
         >
           <PriceOffersGrid />
+        </Suspense>
+        <Suspense key={`pagination-${suspenseKey}`}>
+          <PriceOfferPaginationButtons />
         </Suspense>
       </div>
       <div className="mb-15" />
