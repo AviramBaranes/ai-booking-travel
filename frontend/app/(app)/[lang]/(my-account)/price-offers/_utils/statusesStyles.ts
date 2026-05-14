@@ -8,6 +8,7 @@ export function statusToColor(status: string) {
     case "booked":
       return "text-success font-semibold";
     case "declined":
+    case "unavailable":
       return "text-destructive font-semibold";
     case "open":
       return "text-brand font-semibold";

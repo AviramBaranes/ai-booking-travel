@@ -1051,6 +1051,10 @@ export namespace booking {
         createdAt: string
     }
 
+    export interface RenewPriceOfferResponse {
+        found: boolean
+    }
+
     /**
      * SearchAvailabilityRequest represents the request for searching availability of vehicles.
      */
@@ -1162,6 +1166,7 @@ export namespace booking {
             this.ListHertzMarkupRates = this.ListHertzMarkupRates.bind(this)
             this.ListLocations = this.ListLocations.bind(this)
             this.ListPriceOffers = this.ListPriceOffers.bind(this)
+            this.RenewPriceOffer = this.RenewPriceOffer.bind(this)
             this.SearchAvailability = this.SearchAvailability.bind(this)
             this.SearchLocations = this.SearchLocations.bind(this)
             this.ToggleLocation = this.ToggleLocation.bind(this)
@@ -1390,6 +1395,15 @@ export namespace booking {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/booking/price-offers`, undefined, {query})
             return await resp.json() as ListPriceOffersResponse
+        }
+
+        /**
+         * RenewPriceOffer refreshes the stored pricing details for a price offer if the original plan is still available.
+         */
+        public async RenewPriceOffer(id: number): Promise<RenewPriceOfferResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/booking/price-offers/${encodeURIComponent(id)}/renew`)
+            return await resp.json() as RenewPriceOfferResponse
         }
 
         /**

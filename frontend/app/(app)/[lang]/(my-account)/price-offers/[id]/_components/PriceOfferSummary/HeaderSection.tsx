@@ -17,7 +17,9 @@ export function HeaderSection({
     <>
       <div className="flex items-center justify-between">
         <h5 className="type-h5 text-navy">{t("title")}</h5>
-        <PriceOfferActions priceOffer={priceOffer} />
+        {priceOffer.status !== "unavailable" && (
+          <PriceOfferActions priceOffer={priceOffer} />
+        )}
       </div>
       <hr />
       <SummaryRow label={t("labels.name")} value={priceOffer.name} />
