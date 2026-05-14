@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Copy, Check, Edit, RefreshCw } from "lucide-react";
+import { Copy, Check, Edit, RefreshCw, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { EditPriceOfferDialog } from "./EditPriceOfferDialog";
@@ -10,6 +10,7 @@ import { renewPriceOffer } from "@/shared/api/price-offers-api";
 import { usePriceOffer } from "../../_hooks/usePriceOffer";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
 import { PriceOfferStatus } from "../../../_hooks/usePriceOfferFilters";
+import Link from "next/link";
 
 const CLIENT_PRICE_OFFER_LINK_PREFIX = "/offers/";
 
@@ -64,47 +65,59 @@ export function PriceOfferActions({ priceOfferId }: { priceOfferId: number }) {
 
   return (
     <>
-      <div className="flex gap-1 items-center w-1/4 justify-end">
-        <Button
-          variant="ghost"
-          className="py-6 text-border-muted font-semibold flex gap-4"
-          onClick={handleCopy}
-          disabled={isCopied}
+      {priceOffer.status === "booked" ? (
+        <Link
+          href={`/${lang}/reservations/${priceOffer.reservationId}`}
+          className="py-6 text-brand-blue font-semibold flex gap-4 mx-1"
         >
-          {isCopied ? (
-            <Check className="w-6 h-6 text-green-500" />
-          ) : (
-            <Copy className="w-6 h-6" />
-          )}
-          {t("clientLink")}
-        </Button>
-        <Button
-          variant="ghost"
-          className="py-6 text-border-muted font-semibold flex gap-4"
-          onClick={() => setIsEditDialogOpen(true)}
-        >
-          <Edit className="w-6 h-6" />
-          {t("editOffer")}
-        </Button>
-        <Button
-          variant="ghost"
-          loading={isPending}
-          className="py-6 text-border-muted font-semibold min-w-30 flex gap-4"
-          onClick={() => renewOffer(priceOfferId)}
-        >
-          <RefreshCw className="w-6 h-6" />
-          {t("renewOffer")}
-        </Button>
-      </div>
-      <EditPriceOfferDialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        priceOfferId={priceOfferId}
-        initialName={priceOffer.name}
-        initialPrice={priceOffer.offeredPrice}
-        initialCurrency={priceOffer.offeredCurrencyCode}
-        initialStatus={priceOffer.status as PriceOfferStatus}
-      />
+          <ExternalLink className="w-6 h-6" />
+          {t("viewReservation")}
+        </Link>
+      ) : (
+        <>
+          <div className="flex gap-1 items-center w-1/4 justify-end">
+            <Button
+              variant="ghost"
+              className="py-6 text-border-muted font-semibold flex gap-4"
+              onClick={handleCopy}
+              disabled={isCopied}
+            >
+              {isCopied ? (
+                <Check className="w-6 h-6 text-green-500" />
+              ) : (
+                <Copy className="w-6 h-6" />
+              )}
+              {t("clientLink")}
+            </Button>
+            <Button
+              variant="ghost"
+              className="py-6 text-border-muted font-semibold flex gap-4"
+              onClick={() => setIsEditDialogOpen(true)}
+            >
+              <Edit className="w-6 h-6" />
+              {t("editOffer")}
+            </Button>
+            <Button
+              variant="ghost"
+              loading={isPending}
+              className="py-6 text-border-muted font-semibold min-w-30 flex gap-4"
+              onClick={() => renewOffer(priceOfferId)}
+            >
+              <RefreshCw className="w-6 h-6" />
+              {t("renewOffer")}
+            </Button>
+          </div>
+          <EditPriceOfferDialog
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            priceOfferId={priceOfferId}
+            initialName={priceOffer.name}
+            initialPrice={priceOffer.offeredPrice}
+            initialCurrency={priceOffer.offeredCurrencyCode}
+            initialStatus={priceOffer.status as PriceOfferStatus}
+          />
+        </>
+      )}
     </>
   );
 }

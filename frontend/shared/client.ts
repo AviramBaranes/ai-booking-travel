@@ -855,6 +855,7 @@ export namespace booking {
      */
     export interface GetAgentPriceOfferResponse {
         id: number
+        reservationId?: number
         token: string
         status: string
         name: string
@@ -877,6 +878,7 @@ export namespace booking {
         dropoffTime: string
         rentalDays: number
         driverAge: string
+        renewedAt: string
         createdAt: string
     }
 

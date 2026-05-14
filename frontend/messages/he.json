@@ -358,11 +358,15 @@
       }
     },
     "priceOffer": {
+      "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
+      "orderCTA": "בצע הזמנה",
+      "orderDialogTitle": "הזמנת הצעה",
       "summary": {
         "title": "סיכום הצעת המחיר:",
         "clientLink": "לינק ללקוח",
         "editOffer": "עריכת הצעת מחיר",
         "renewOffer": "חידוש נתונים",
+        "viewReservation": "צפייה בהזמנה",
         "renewSuccessMessage": "החידוש בוצע בהצלחה - שים לב, מחירי העלות או פרטי הרכב אולי השתנו.",
         "renewErrorMessage": "החידוש נכשל, הצעה זאת כבר לא זמינה.",
         "labels": {

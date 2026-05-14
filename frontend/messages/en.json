@@ -358,11 +358,15 @@
       }
     },
     "priceOffer": {
+      "freeCancellation": "Free cancellation up to 48 hours before pickup",
+      "orderCTA": "Book",
+      "orderDialogTitle": "Book Offer",
       "summary": {
         "title": "Price Offer Summary:",
         "clientLink": "Print price offer",
         "editOffer": "Edit Price Offer",
         "renewOffer": "Renew Offer",
+        "viewReservation": "View Reservation",
         "renewSuccessMessage": "The renewal was successful - note that cost prices or car details may have changed.",
         "renewErrorMessage": "The renewal failed, this car is no longer available.",
         "labels": {

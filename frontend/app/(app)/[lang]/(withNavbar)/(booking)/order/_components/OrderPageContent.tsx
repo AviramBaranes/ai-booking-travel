@@ -23,15 +23,14 @@ import { useRouter, useParams } from "next/navigation";
 import { bookCar } from "@/shared/api/booking-api";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { orderFormSchema, type OrderFormValues } from "./orderFormSchema";
 import { isAppError } from "@/shared/api/AppError";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { ErpCheckbox } from "../../plans/_components/ErpCheckbox";
-import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { searchRequestToParams } from "../../results/searchQuery";
 import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellationBadge";
+import { orderFormSchema, OrderFormValues } from "@/shared/components/booking/OrderForm/orderFormSchema";
 
 interface OrderPageContentProps {
   searchRequest: booking.SearchAvailabilityRequest;
