@@ -11,7 +11,7 @@ MonthlyReport: {
 		VoucherNumber:        "מספר שובר"
 		AgentVoucherNumber:   "מספר שובר סוכן"
 		PickupDate:           "תאריך איסוף"
-		ReturnDate:           "תאריך החזרה"
+		DropoffDate:          "תאריך החזרה"
 		CountryCode:          "קוד מדינה"
 		RentalDays:           "ימי השכרה"
 		Currency:             "מטבע עסקה"

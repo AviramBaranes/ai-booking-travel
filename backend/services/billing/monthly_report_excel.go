@@ -34,7 +34,7 @@ const (
 	colVoucherNumber
 	colAgentVoucherNumber
 	colPickupDate
-	colReturnDate
+	colDropoffDate
 	colCountryCode
 	colRentalDays
 	colCurrency
@@ -59,7 +59,7 @@ func monthlyReportHeaders() [monthlyReportColCount]string {
 		colVoucherNumber:        h.VoucherNumber(),
 		colAgentVoucherNumber:   h.AgentVoucherNumber(),
 		colPickupDate:           h.PickupDate(),
-		colReturnDate:           h.ReturnDate(),
+		colDropoffDate:          h.DropoffDate(),
 		colCountryCode:          h.CountryCode(),
 		colRentalDays:           h.RentalDays(),
 		colCurrency:             h.Currency(),
@@ -245,7 +245,7 @@ func reservationToReportRow(r Reservations) []any {
 	row[colVoucherNumber] = r.ReservationID
 	row[colAgentVoucherNumber] = r.VoucherNumber
 	row[colPickupDate] = r.PickupDate
-	row[colReturnDate] = r.ReturnDate
+	row[colDropoffDate] = r.DropoffDate
 	row[colCountryCode] = r.CountryCode
 	row[colRentalDays] = r.RentalDays
 	row[colCurrency] = r.Currency

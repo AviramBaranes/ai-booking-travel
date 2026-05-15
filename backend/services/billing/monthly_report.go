@@ -37,7 +37,7 @@ type Reservations struct {
 	VoucherDate             string
 	VoucherNumber           string
 	PickupDate              string
-	ReturnDate              string
+	DropoffDate             string
 	RentalDays              int
 	CountryCode             string
 	Currency                string
@@ -162,7 +162,7 @@ func toReportReservation(r reservation.OpenReservation, agentInfo AgentInfo) Res
 		VoucherDate:             formatDate(r.VoucheredAt),
 		VoucherNumber:           r.VoucherNumber,
 		PickupDate:              formatDate(r.PickupDate),
-		ReturnDate:              formatDate(r.DropoffDate),
+		DropoffDate:             formatDate(r.DropoffDate),
 		RentalDays:              r.RentalDays,
 		CountryCode:             r.CountryCode,
 		Currency:                r.CurrencyCode,

@@ -23,7 +23,7 @@ type monthlyReportHeadersConfig struct {
 	VoucherNumber        config.String
 	AgentVoucherNumber   config.String
 	PickupDate           config.String
-	ReturnDate           config.String
+	DropoffDate          config.String
 	CountryCode          config.String
 	RentalDays           config.String
 	Currency             config.String
