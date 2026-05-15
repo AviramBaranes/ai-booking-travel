@@ -101,7 +101,7 @@
     "loadingMessage": "Cancellation fee 5% or 100 ILS, whichever is lower, up to 48 hours before car pickup"
   },
   "SearchForm": {
-    "returnDifferentLoc": "Return car at a different location?",
+    "dropoffDifferentLoc": "Return car at a different location?",
     "ageRange": "Driver age: {ageRange}",
     "agePopoverLabel": "What is the driver's age?",
     "save": "Save",
@@ -270,7 +270,7 @@
       "includedIconAlt": "Included",
       "rentalSummary": {
         "pickupDetails": "Pickup details:",
-        "returnDetails": "Return details:",
+        "dropoffDetails": "Return details:",
         "stationDetails": "Station details"
       },
       "labels": {

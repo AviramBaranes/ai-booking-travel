@@ -68,7 +68,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
   const { control, handleSubmit, setValue } = useForm<SearchFormValues>({
     resolver: zodResolver(searchFormSchema),
     defaultValues: {
-      isReturnDifferentLoc:
+      isDropoffDifferentLoc:
         !!fields.dropOffLocation &&
         fields.dropOffLocation.id !== fields.pickUpLocation?.id,
       driverAge: fields.driverAge ?? 30,
@@ -82,10 +82,10 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
     },
   });
 
-  const isReturnDifferentLoc =
+  const isDropoffDifferentLoc =
     useWatch({
       control,
-      name: "isReturnDifferentLoc",
+      name: "isDropoffDifferentLoc",
     }) ?? false;
 
   const pickupDate = useWatch({
@@ -100,15 +100,15 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
 
     urlParams.set("pl", data.pickupLocation.toString());
     urlParams.set(
-      "rl",
-      data.isReturnDifferentLoc
+      "dl",
+      data.isDropoffDifferentLoc
         ? data.dropoffLocation!.toString()
         : data.pickupLocation.toString(),
     );
     urlParams.set("pd", formatDate(data.pickupDate!));
     urlParams.set("pt", data.pickupTime);
-    urlParams.set("rd", formatDate(data.dropoffDate!));
-    urlParams.set("rt", data.dropoffTime);
+    urlParams.set("dd", formatDate(data.dropoffDate!));
+    urlParams.set("dt", data.dropoffTime);
     urlParams.set("da", data.driverAge.toString());
 
     if (data.couponCode) {
@@ -133,13 +133,13 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
     >
       <div className="bg-navy w-fit py-2 rounded-t-xl flex items-center text-white type-h6 px-6 gap-5">
         <Controller
-          name="isReturnDifferentLoc"
+          name="isDropoffDifferentLoc"
           control={control}
           render={({ field }) => (
             <DifferentLocCheckbox
-              label={t("returnDifferentLoc")}
-              isReturnDifferentLoc={field.value ?? false}
-              setIsReturnDifferentLoc={field.onChange}
+              label={t("dropoffDifferentLoc")}
+              isDropoffDifferentLoc={field.value ?? false}
+              setIsDropoffDifferentLoc={field.onChange}
             />
           )}
         />
@@ -185,7 +185,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
                 placeholder={t("pickupLocationPlaceholder")}
                 onSelect={(id) => {
                   field.onChange(id);
-                  if (isReturnDifferentLoc) {
+                  if (isDropoffDifferentLoc) {
                     dropoffLocationRef.current?.focus();
                   } else {
                     pickupDateRef.current?.focus();
@@ -199,7 +199,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
               />
             )}
           />
-          {isReturnDifferentLoc && (
+          {isDropoffDifferentLoc && (
             <Controller
               name="dropoffLocation"
               control={control}
@@ -223,7 +223,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
             />
           )}
         </div>
-        <div className={isReturnDifferentLoc ? "w-1/10" : "w-1/6"}>
+        <div className={isDropoffDifferentLoc ? "w-1/10" : "w-1/6"}>
           <Controller
             name="pickupDate"
             control={control}
@@ -246,7 +246,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
             )}
           />
         </div>
-        <div className={isReturnDifferentLoc ? "w-1/12" : "w-1/10"}>
+        <div className={isDropoffDifferentLoc ? "w-1/12" : "w-1/10"}>
           <Controller
             name="pickupTime"
             control={control}
@@ -264,7 +264,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
             )}
           />
         </div>
-        <div className={isReturnDifferentLoc ? "w-1/10" : "w-1/6"}>
+        <div className={isDropoffDifferentLoc ? "w-1/10" : "w-1/6"}>
           <Controller
             name="dropoffDate"
             control={control}
@@ -282,7 +282,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
             )}
           />
         </div>
-        <div className={isReturnDifferentLoc ? "w-1/12" : "w-1/10"}>
+        <div className={isDropoffDifferentLoc ? "w-1/12" : "w-1/10"}>
           <Controller
             name="dropoffTime"
             control={control}

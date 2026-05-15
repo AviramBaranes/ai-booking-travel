@@ -101,7 +101,7 @@
     "loadingMessage": "דמי ביטול 5% או 100 ש״ח הנמוך מביניהם עד 48 שעות לפני איסוף הרכב"
   },
   "SearchForm": {
-    "returnDifferentLoc": "החזרת הרכב במקום אחר?",
+    "dropoffDifferentLoc": "החזרת הרכב במקום אחר?",
     "ageRange": "גיל הנהג/ת: {ageRange}",
     "agePopoverLabel": "מה גיל הנהג/ת",
     "save": "שמירה",
@@ -270,7 +270,7 @@
       "includedIconAlt": "כלול",
       "rentalSummary": {
         "pickupDetails": "פרטי איסוף:",
-        "returnDetails": "פרטי החזרה:",
+        "dropoffDetails": "פרטי החזרה:",
         "stationDetails": "פרטי תחנה"
       },
       "labels": {

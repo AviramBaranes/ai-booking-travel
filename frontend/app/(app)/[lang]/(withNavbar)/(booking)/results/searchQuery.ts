@@ -2,11 +2,11 @@ import { booking } from "@/shared/client";
 
 export interface SearchQuery {
   pickupLocationId: number;
-  returnLocationId: number;
+  dropoffLocationId: number;
   pickupDate: Date;
-  returnDate: Date;
+  dropoffDate: Date;
   pickupTime: string;
-  returnTime: string;
+  dropoffTime: string;
   driverAge: number;
   couponCode?: string;
 }
@@ -17,11 +17,11 @@ export function toSearchRequest(
   const fmt = (d: Date) => d.toISOString().split("T")[0];
   return {
     PickupLocationID: query.pickupLocationId,
-    DropoffLocationID: query.returnLocationId,
+    DropoffLocationID: query.dropoffLocationId,
     PickupDate: fmt(query.pickupDate),
-    DropoffDate: fmt(query.returnDate),
+    DropoffDate: fmt(query.dropoffDate),
     PickupTime: query.pickupTime,
-    DropoffTime: query.returnTime,
+    DropoffTime: query.dropoffTime,
     DriverAge: query.driverAge,
     CouponCode: query.couponCode ?? "",
   };
@@ -32,11 +32,11 @@ export function searchRequestToParams(
 ): string {
   const params = new URLSearchParams({
     pl: String(request.PickupLocationID),
-    rl: String(request.DropoffLocationID),
+    dl: String(request.DropoffLocationID),
     pd: request.PickupDate,
     pt: request.PickupTime,
-    rd: request.DropoffDate,
-    rt: request.DropoffTime,
+    dd: request.DropoffDate,
+    dt: request.DropoffTime,
     da: String(request.DriverAge),
   });
 
@@ -49,38 +49,38 @@ export function searchRequestToParams(
 
 export function parseSearchQuery(params: URLSearchParams): SearchQuery | null {
   const pl = params.get("pl");
-  const rl = params.get("rl");
+  const dl = params.get("dl");
   const pd = params.get("pd");
   const pt = params.get("pt");
-  const rd = params.get("rd");
-  const rt = params.get("rt");
+  const dd = params.get("dd");
+  const dt = params.get("dt");
   const da = params.get("da");
 
-  if (!pl || !rl || !pd || !pt || !rd || !rt || !da) return null;
+  if (!pl || !dl || !pd || !pt || !dd || !dt || !da) return null;
 
   const pickupLocationId = parseInt(pl, 10);
-  const returnLocationId = parseInt(rl, 10);
+  const dropoffLocationId = parseInt(dl, 10);
   const driverAge = parseInt(da, 10);
   const pickupDate = new Date(pd);
-  const returnDate = new Date(rd);
+  const dropoffDate = new Date(dd);
 
   if (
     isNaN(pickupLocationId) ||
-    isNaN(returnLocationId) ||
+    isNaN(dropoffLocationId) ||
     isNaN(driverAge) ||
     isNaN(pickupDate.getTime()) ||
-    isNaN(returnDate.getTime())
+    isNaN(dropoffDate.getTime())
   ) {
     return null;
   }
 
   return {
     pickupLocationId,
-    returnLocationId,
+    dropoffLocationId,
     pickupDate,
-    returnDate,
+    dropoffDate,
     pickupTime: pt,
-    returnTime: rt,
+    dropoffTime: dt,
     driverAge,
     couponCode: params.get("cc") ?? undefined,
   };

@@ -2,7 +2,7 @@ import z from "zod";
 
 export function searchSchema(t: (key: string) => string) {
   const baseSchema = z.object({
-    isReturnDifferentLoc: z.boolean().optional(),
+    isDropoffDifferentLoc: z.boolean().optional(),
     pickupLocation: z.int({ error: t("validation.required") }),
     dropoffLocation: z.int({ error: t("validation.required") }).optional(),
     pickupDate: z.date({ error: t("validation.required") }),
@@ -19,7 +19,7 @@ export function searchSchema(t: (key: string) => string) {
 
   const crossFieldSchema = z
     .object({
-      isReturnDifferentLoc: z.boolean().optional(),
+      isDropoffDifferentLoc: z.boolean().optional(),
       dropoffLocation: z.any().optional(),
       pickupDate: z.any().optional(),
       dropoffDate: z.any().optional(),
@@ -27,7 +27,7 @@ export function searchSchema(t: (key: string) => string) {
       dropoffTime: z.any().optional(),
     })
     .superRefine((data, ctx) => {
-      if (data.isReturnDifferentLoc && !data.dropoffLocation) {
+      if (data.isDropoffDifferentLoc && !data.dropoffLocation) {
         ctx.addIssue({
           code: "custom",
           path: ["dropoffLocation"],

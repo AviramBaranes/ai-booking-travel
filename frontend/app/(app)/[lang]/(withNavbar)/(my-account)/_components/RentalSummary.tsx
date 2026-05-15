@@ -38,7 +38,7 @@ export function RentalSummary({
         </div>
         <div className="w-1/2">
           <LocationDateTimeSummary
-            title={t("rentalSummary.returnDetails")}
+            title={t("rentalSummary.dropoffDetails")}
             date={dropoffDate}
             time={dropoffTime}
             locationName={dropoffLocationName}

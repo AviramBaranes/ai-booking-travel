@@ -28,11 +28,11 @@ export default async function OrderPage({
       <div className="my-4">
         <SearchDataBanner
           pickUpLocationId={query.pickupLocationId}
-          dropOffLocationId={query.returnLocationId}
+          dropOffLocationId={query.dropoffLocationId}
           pickUpTime={query.pickupTime}
-          dropOffTime={query.returnTime}
+          dropOffTime={query.dropoffTime}
           pickUpDate={query.pickupDate}
-          dropOffDate={query.returnDate}
+          dropOffDate={query.dropoffDate}
           driverAge={query.driverAge}
           couponCode={query.couponCode}
           searchRequest={searchRequest}
