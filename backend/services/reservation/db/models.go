@@ -168,7 +168,7 @@ type Reservation struct {
 	VatPercentage       pgtype.Numeric
 	TotalPrice          int32
 	PickupDate          pgtype.Date
-	ReturnDate          pgtype.Date
+	DropoffDate         pgtype.Date
 	PickupTime          string
 	DropoffTime         string
 	RentalDays          int32

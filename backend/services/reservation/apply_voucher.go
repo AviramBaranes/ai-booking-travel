@@ -127,7 +127,7 @@ func toVoucherData(reservation db.Reservation) (*broker.VoucherData, error) {
 		PickupDate:         db.DateToString(reservation.PickupDate),
 		PickupTime:         reservation.PickupTime,
 		DropoffLoc:         reservation.DropoffLocationName,
-		DropoffDate:        db.DateToString(reservation.ReturnDate),
+		DropoffDate:        db.DateToString(reservation.DropoffDate),
 		DropoffTime:        reservation.DropoffTime,
 		CarGroupDesc:       carDetails.CarGroup,
 		LeadModel:          carDetails.Model,

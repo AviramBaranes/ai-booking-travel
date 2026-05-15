@@ -69,7 +69,7 @@ func TestCancelReservation(t *testing.T) {
 		params.UserID = userID
 		params.PickupDate = pickup.Format("2006-01-02")
 		params.PickupTime = "12:00"
-		params.ReturnDate = pickup.Add(48 * time.Hour).Format("2006-01-02")
+		params.DropoffDate = pickup.Add(48 * time.Hour).Format("2006-01-02")
 		res, err := CreateReservation(ctx, *params)
 		if err != nil {
 			t.Fatalf("failed to create reservation: %v", err)
@@ -98,7 +98,7 @@ func TestCancelReservation(t *testing.T) {
 		params := validCreateReservationParams()
 		params.UserID = userID
 		params.PickupDate = futurePickup()
-		params.ReturnDate = time.Now().Add(35 * 24 * time.Hour).Format("2006-01-02")
+		params.DropoffDate = time.Now().Add(35 * 24 * time.Hour).Format("2006-01-02")
 		res, err := CreateReservation(ctx, *params)
 		if err != nil {
 			t.Fatalf("failed to create reservation: %v", err)

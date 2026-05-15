@@ -26,7 +26,7 @@ CREATE TABLE
         vat_percentage NUMERIC(5, 2) NOT NULL,
         total_price INT NOT NULL,
         pickup_date DATE NOT NULL,
-        return_date DATE NOT NULL,
+        dropoff_date DATE NOT NULL,
         pickup_time TEXT NOT NULL DEFAULT '',
         dropoff_time TEXT NOT NULL DEFAULT '',
         rental_days INT NOT NULL CHECK (rental_days > 0),

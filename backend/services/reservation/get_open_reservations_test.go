@@ -68,7 +68,7 @@ func TestGetOpenReservations(t *testing.T) {
 			p.DriverFirstName = "Voucher"
 			p.DriverLastName = "Holder"
 			p.PickupDate = "2026-07-01"
-			p.ReturnDate = "2026-07-05"
+			p.DropoffDate = "2026-07-05"
 			p.RentalDays = 4
 			p.CountryCode = "US"
 			p.CurrencyCode = "USD"
@@ -85,7 +85,7 @@ func TestGetOpenReservations(t *testing.T) {
 			p.DriverFirstName = "Cancel"
 			p.DriverLastName = "Person"
 			p.PickupDate = "2026-08-10"
-			p.ReturnDate = "2026-08-13"
+			p.DropoffDate = "2026-08-13"
 			p.RentalDays = 3
 			p.CountryCode = "FR"
 			p.CurrencyCode = "EUR"

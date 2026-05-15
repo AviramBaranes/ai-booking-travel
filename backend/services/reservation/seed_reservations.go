@@ -86,16 +86,16 @@ func (s *Service) SeedReservations(ctx context.Context) (*SeedReservationsRespon
 
 		// Rental days between 2 and 14
 		rentalDays := 2 + rng.Intn(13)
-		returnDate := pickupDate.AddDate(0, 0, rentalDays)
+		dropoffDate := pickupDate.AddDate(0, 0, rentalDays)
 
-		// Ensure return date doesn't exceed end of June
-		maxReturn := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
-		if returnDate.After(maxReturn) {
-			returnDate = maxReturn
-			rentalDays = int(returnDate.Sub(pickupDate).Hours() / 24)
+		// Ensure dropoff date doesn't exceed end of June
+		maxDropoff := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
+		if dropoffDate.After(maxDropoff) {
+			dropoffDate = maxDropoff
+			rentalDays = int(dropoffDate.Sub(pickupDate).Hours() / 24)
 			if rentalDays < 1 {
 				rentalDays = 1
-				returnDate = pickupDate.AddDate(0, 0, 1)
+				dropoffDate = pickupDate.AddDate(0, 0, 1)
 			}
 		}
 
@@ -119,7 +119,7 @@ func (s *Service) SeedReservations(ctx context.Context) (*SeedReservationsRespon
 			VatPercentage:       src.VatPercentage,
 			TotalPrice:          src.TotalPrice,
 			PickupDate:          db.DateFromString(pickupDate.Format("2006-01-02")),
-			ReturnDate:          db.DateFromString(returnDate.Format("2006-01-02")),
+			DropoffDate:         db.DateFromString(dropoffDate.Format("2006-01-02")),
 			PickupTime:          src.PickupTime,
 			DropoffTime:         src.DropoffTime,
 			RentalDays:          int32(rentalDays),

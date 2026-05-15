@@ -62,7 +62,7 @@ func mapRowsToOpenReservations(rows []db.GetPaymentPendingReservationsRow) []Ope
 			VoucherNumber:       ptrToString(row.VoucherNumber),
 			DriverName:          fmt.Sprintf("%s %s %s", row.DriverTitle, row.DriverFirstName, row.DriverLastName),
 			PickupDate:          db.DateToString(row.PickupDate),
-			DropoffDate:         db.DateToString(row.ReturnDate),
+			DropoffDate:         db.DateToString(row.DropoffDate),
 			RentalDays:          int(row.RentalDays),
 			CountryCode:         row.CountryCode,
 			CurrencyCode:        row.CurrencyCode,

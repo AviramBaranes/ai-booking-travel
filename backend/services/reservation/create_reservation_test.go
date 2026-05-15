@@ -54,7 +54,7 @@ func validCreateReservationParams() *CreateReservationRequest {
 		BrokerErpPrice:      15.00,
 		BtErpPrice:          20,
 		PickupDate:          "2026-04-01",
-		ReturnDate:          "2026-04-05",
+		DropoffDate:         "2026-04-05",
 		PickupTime:          "08:00",
 		DropoffTime:         "10:30",
 		RentalDays:          4,
@@ -159,9 +159,9 @@ func TestCreateReservationValidation(t *testing.T) {
 			wantErr: invalidValueErr("pickupDate"),
 		},
 		{
-			name:    "rejects invalid return date format",
-			modify:  func(p *CreateReservationRequest) { p.ReturnDate = "2026/04/05" },
-			wantErr: invalidValueErr("returnDate"),
+			name:    "rejects invalid dropoff date format",
+			modify:  func(p *CreateReservationRequest) { p.DropoffDate = "2026/04/05" },
+			wantErr: invalidValueErr("dropoffDate"),
 		},
 		{
 			name:    "rejects missing pickup time",

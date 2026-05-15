@@ -36,7 +36,7 @@ type CreateReservationRequest struct {
 	BrokerErpPrice      float64            `json:"brokerErpPrice" validate:"gte=0"`
 	BtErpPrice          int                `json:"btErpPrice" validate:"gte=0"`
 	PickupDate          string             `json:"pickupDate" validate:"required,datetime=2006-01-02"`
-	ReturnDate          string             `json:"returnDate" validate:"required,datetime=2006-01-02"`
+	DropoffDate         string             `json:"dropoffDate" validate:"required,datetime=2006-01-02"`
 	PickupTime          string             `json:"pickupTime" validate:"required,notblank"`
 	DropoffTime         string             `json:"dropoffTime" validate:"required,notblank"`
 	RentalDays          int                `json:"rentalDays" validate:"required,gte=1"`
@@ -86,7 +86,7 @@ func (s *Service) CreateReservation(ctx context.Context, p CreateReservationRequ
 		VatPercentage:       db.NumericFromFloat64(cfg.VAT()),
 		TotalPrice:          int32(totalPrice),
 		PickupDate:          db.DateFromString(p.PickupDate),
-		ReturnDate:          db.DateFromString(p.ReturnDate),
+		DropoffDate:         db.DateFromString(p.DropoffDate),
 		PickupTime:          p.PickupTime,
 		DropoffTime:         p.DropoffTime,
 		RentalDays:          int32(p.RentalDays),

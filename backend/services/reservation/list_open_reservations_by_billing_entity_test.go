@@ -208,7 +208,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			p.BtErpPrice = 20
 			p.CurrencyCode = "USD"
 			p.PickupDate = "2026-07-01"
-			p.ReturnDate = "2026-07-05"
+			p.DropoffDate = "2026-07-05"
 		})
 		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id, UserID: agentID, VoucherNumber: &vn}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)

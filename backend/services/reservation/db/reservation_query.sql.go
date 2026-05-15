@@ -21,7 +21,7 @@ WHERE
 id = $1
 AND
 user_id = $2
-RETURNING id, user_id, broker_reservation_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, country_code, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, discount_percentage, bt_erp_price, vat_percentage, total_price, pickup_date, return_date, pickup_time, dropoff_time, rental_days, driver_title, driver_first_name, driver_last_name, driver_age, pickup_location_name, dropoff_location_name, voucher_number, vouchered_at, created_at, updated_at
+RETURNING id, user_id, broker_reservation_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, country_code, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, discount_percentage, bt_erp_price, vat_percentage, total_price, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, driver_title, driver_first_name, driver_last_name, driver_age, pickup_location_name, dropoff_location_name, voucher_number, vouchered_at, created_at, updated_at
 `
 
 type ApplyVoucherParams struct {
@@ -54,7 +54,7 @@ func (q *Queries) ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) (Res
 		&i.VatPercentage,
 		&i.TotalPrice,
 		&i.PickupDate,
-		&i.ReturnDate,
+		&i.DropoffDate,
 		&i.PickupTime,
 		&i.DropoffTime,
 		&i.RentalDays,
@@ -131,7 +131,7 @@ SELECT
     vouchered_at,
     voucher_number,
     pickup_date,
-    return_date,
+    dropoff_date,
     country_code,
     rental_days,
     currency_code,
@@ -159,7 +159,7 @@ type GetPaymentPendingReservationsRow struct {
 	VoucheredAt         pgtype.Timestamptz
 	VoucherNumber       *string
 	PickupDate          pgtype.Date
-	ReturnDate          pgtype.Date
+	DropoffDate         pgtype.Date
 	CountryCode         string
 	RentalDays          int32
 	CurrencyCode        string
@@ -191,7 +191,7 @@ func (q *Queries) GetPaymentPendingReservations(ctx context.Context) ([]GetPayme
 			&i.VoucheredAt,
 			&i.VoucherNumber,
 			&i.PickupDate,
-			&i.ReturnDate,
+			&i.DropoffDate,
 			&i.CountryCode,
 			&i.RentalDays,
 			&i.CurrencyCode,
@@ -304,7 +304,7 @@ SELECT
     vat_percentage,
     total_price,
     pickup_date,
-    return_date,
+    dropoff_date,
     pickup_time,
     dropoff_time,
     rental_days,
@@ -342,7 +342,7 @@ type GetReservationByIDRow struct {
 	VatPercentage       pgtype.Numeric
 	TotalPrice          int32
 	PickupDate          pgtype.Date
-	ReturnDate          pgtype.Date
+	DropoffDate         pgtype.Date
 	PickupTime          string
 	DropoffTime         string
 	RentalDays          int32
@@ -381,7 +381,7 @@ func (q *Queries) GetReservationByID(ctx context.Context, id int64) (GetReservat
 		&i.VatPercentage,
 		&i.TotalPrice,
 		&i.PickupDate,
-		&i.ReturnDate,
+		&i.DropoffDate,
 		&i.PickupTime,
 		&i.DropoffTime,
 		&i.RentalDays,
@@ -417,7 +417,7 @@ INSERT INTO reservations (
     vat_percentage,
     total_price,
     pickup_date,
-    return_date,
+    dropoff_date,
     pickup_time,
     dropoff_time,
     rental_days,
@@ -476,7 +476,7 @@ type InsertReservationParams struct {
 	VatPercentage       pgtype.Numeric
 	TotalPrice          int32
 	PickupDate          pgtype.Date
-	ReturnDate          pgtype.Date
+	DropoffDate         pgtype.Date
 	PickupTime          string
 	DropoffTime         string
 	RentalDays          int32
@@ -507,7 +507,7 @@ func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationPa
 		arg.VatPercentage,
 		arg.TotalPrice,
 		arg.PickupDate,
-		arg.ReturnDate,
+		arg.DropoffDate,
 		arg.PickupTime,
 		arg.DropoffTime,
 		arg.RentalDays,
