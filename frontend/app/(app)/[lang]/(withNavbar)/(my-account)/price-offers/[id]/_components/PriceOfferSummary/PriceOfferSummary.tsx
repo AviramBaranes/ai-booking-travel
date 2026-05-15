@@ -17,7 +17,7 @@ export function PriceOfferSummary({ priceOfferId }: { priceOfferId: number }) {
     <div className="flex flex-col gap-2 shadow-card rounded-xl p-6 bg-white border border-cars-border">
       <HeaderSection priceOffer={priceOffer} />
       <RentalSummary
-        dropoffDate={priceOffer.returnDate}
+        dropoffDate={priceOffer.dropoffDate}
         dropoffTime={priceOffer.dropoffTime}
         dropoffLocationName={priceOffer.dropoffLocationName}
         pickupDate={priceOffer.pickupDate}

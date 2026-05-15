@@ -19,7 +19,7 @@ export async function ClientOfferSummary({
     <div className="flex flex-col gap-2 shadow-card rounded-xl p-6 bg-white border border-cars-border">
       <HeaderSection offer={offer} lang={lang} />
       <RentalSummary
-        dropoffDate={offer.returnDate}
+        dropoffDate={offer.dropoffDate}
         dropoffTime={offer.dropoffTime}
         dropoffLocationName={offer.dropoffLocationName}
         pickupDate={offer.pickupDate}

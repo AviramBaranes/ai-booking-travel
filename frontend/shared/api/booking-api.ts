@@ -5,6 +5,6 @@ export function searchAvailableCars(p: booking.SearchAvailabilityRequest) {
   return withErrorHandler((client) => client.booking.SearchAvailability(p));
 }
 
-export function bookCar(p: booking.BookRequest) {
+export function bookCar(p: booking.BookParams) {
   return withErrorHandler((client) => client.booking.Book(p));
 }

@@ -873,7 +873,7 @@ export namespace booking {
         pickupLocationId: number
         dropoffLocationId: number
         pickupDate: string
-        returnDate: string
+        dropoffDate: string
         pickupTime: string
         dropoffTime: string
         rentalDays: number
@@ -911,7 +911,7 @@ export namespace booking {
         pickupLocationName: string
         dropoffLocationName: string
         pickupDate: string
-        returnDate: string
+        dropoffDate: string
         rentalDays: number
         pickupTime: string
         dropoffTime: string
@@ -1055,7 +1055,7 @@ export namespace booking {
         pickupLocationName: string
         dropoffLocationName: string
         pickupDate: string
-        returnDate: string
+        dropoffDate: string
         pickupTime: string
         dropoffTime: string
         currencyCode: string
