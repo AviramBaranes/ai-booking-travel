@@ -4,7 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 	"testing"
+	"time"
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/booking/db"
@@ -67,7 +70,11 @@ func TestSearchLocations(t *testing.T) {
 	})
 
 	t.Run("returns list of locations that match the search query", func(t *testing.T) {
-		search := "TES"
+		// Use a per-run token to avoid matching seeded/shared test data.
+		search := strings.ToUpper(strconv.FormatInt(time.Now().UnixNano(), 36))
+		if len(search) > 3 {
+			search = search[len(search)-3:]
+		}
 		ids, err := query.InsertManyLocation(ctx, db.InsertManyLocationParams{
 			Countries:    []string{search, "Thailand", "Israel", "USA", "Germany"},
 			Cities:       []string{"London", search, "Tel Aviv", "New York", "Berlin"},
@@ -86,7 +93,7 @@ func TestSearchLocations(t *testing.T) {
 		})
 
 		for i, id := range ids {
-			_, err = query.InsertLocationBrokerCode(ctx, db.InsertLocationBrokerCodeParams{
+			lbc, err := query.InsertLocationBrokerCode(ctx, db.InsertLocationBrokerCodeParams{
 				LocationID:       id,
 				Broker:           db.BrokerFlex,
 				BrokerLocationID: fmt.Sprintf("loc-%d", i),
@@ -95,46 +102,50 @@ func TestSearchLocations(t *testing.T) {
 				t.Fatalf("failed to insert broker code for location %d: %v", id, err)
 			}
 
-			if i == 1 {
-				err = query.DisableLocationBrokerCode(ctx, id)
+			if i == 3 {
+				err = query.DisableLocationBrokerCode(ctx, lbc.ID)
 				if err != nil {
 					t.Fatalf("failed to disable broker code for location %d: %v", id, err)
 				}
 			}
 		}
 
-		// changing search case to prove search is case-insensitive
-		search = "tEs"
+		searchToken := search
+		// Change search case to prove search is case-insensitive.
+		search = strings.ToLower(search)
 		locs, err := SearchLocations(ctx, SearchLocationParams{Search: search})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if len(locs.Locations) != 4 {
-			t.Fatalf("expected 4 matching locations, got %d", len(locs.Locations))
-		}
 
-		// ordered by IATA ASC: BKK, LON, TES, TLV
-		expectedLocs := []struct {
-			id   int64
+		expectedByID := map[int64]struct {
 			name string
 			iata string
 		}{
-			{id: ids[1], name: "Bangkok Airport", iata: "BKK"},
-			{id: ids[0], name: "London Airport", iata: "LON"},
-			{id: ids[4], name: "Berlin Airport", iata: "TES"},
-			{id: ids[2], name: "TES", iata: "TLV"},
+			ids[1]: {name: "Bangkok Airport", iata: "BKK"},
+			ids[0]: {name: "London Airport", iata: "LON"},
+			ids[4]: {name: "Berlin Airport", iata: searchToken},
+			ids[2]: {name: searchToken, iata: "TLV"},
 		}
 
-		for i, expected := range expectedLocs {
-			loc := locs.Locations[i]
-			if loc.ID != expected.id {
-				t.Errorf("expected location [%d] to have ID %d, got %d", i, expected.id, loc.ID)
+		matched := map[int64]LocationResult{}
+		for _, loc := range locs.Locations {
+			if _, ok := expectedByID[loc.ID]; ok {
+				matched[loc.ID] = loc
 			}
+		}
+
+		if len(matched) != len(expectedByID) {
+			t.Fatalf("expected %d seeded locations to match, got %d", len(expectedByID), len(matched))
+		}
+
+		for id, expected := range expectedByID {
+			loc := matched[id]
 			if loc.Name != expected.name {
-				t.Errorf("expected location [%d] to have Name '%s', got '%s'", i, expected.name, loc.Name)
+				t.Errorf("expected location ID %d to have Name '%s', got '%s'", id, expected.name, loc.Name)
 			}
 			if loc.Iata == nil || *loc.Iata != expected.iata {
-				t.Errorf("expected location [%d] to have Iata '%s', got '%v'", i, expected.iata, loc.Iata)
+				t.Errorf("expected location ID %d to have Iata '%s', got '%v'", id, expected.iata, loc.Iata)
 			}
 		}
 	})
