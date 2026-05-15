@@ -5,7 +5,7 @@ INSERT INTO price_offers (
     pickup_location_id,
     dropoff_location_id,
     pickup_date,
-    return_date,
+    dropoff_date,
     rental_days,
     pickup_time,
     dropoff_time,
@@ -31,7 +31,7 @@ INSERT INTO price_offers (
     sqlc.arg(pickup_location_id),
     sqlc.arg(dropoff_location_id),
     sqlc.arg(pickup_date),
-    sqlc.arg(return_date),
+    sqlc.arg(dropoff_date),
     sqlc.arg(rental_days),
     sqlc.arg(pickup_time),
     sqlc.arg(dropoff_time),
@@ -115,7 +115,7 @@ WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id) AND reservation_id IS 
 -- name: ListPriceOffersByAgent :many
 SELECT price_offers.id, status, price_offers.name, 
 pl.name AS pickup_location, dl.name AS dropoff_location, 
-pickup_date, return_date, pickup_time, dropoff_time, 
+pickup_date, dropoff_date, pickup_time, dropoff_time, 
 currency_code, total_price, offered_currency_code, offered_price, 
 price_offers.created_at
 FROM price_offers

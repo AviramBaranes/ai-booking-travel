@@ -22,7 +22,7 @@ func (q *Queries) DeleteOldAvailablePlansSnapshots(ctx context.Context, createdA
 }
 
 const deleteSnapshotByID = `-- name: DeleteSnapshotByID :exec
-DELETE FROM available_plans_snapshots WHERE ID = $1
+DELETE FROM available_plans_snapshots WHERE id = $1
 `
 
 func (q *Queries) DeleteSnapshotByID(ctx context.Context, id int64) error {
@@ -31,7 +31,7 @@ func (q *Queries) DeleteSnapshotByID(ctx context.Context, id int64) error {
 }
 
 const getSnapshotByID = `-- name: GetSnapshotByID :one
-SELECT id, created_at, driver_age, pickup_date, pickup_time, return_date, return_time, country_code, plans
+SELECT id, created_at, driver_age, pickup_date, pickup_time, dropoff_date, dropoff_time, country_code, plans
 FROM available_plans_snapshots
 WHERE id = $1
 `
@@ -45,8 +45,8 @@ func (q *Queries) GetSnapshotByID(ctx context.Context, id int64) (AvailablePlans
 		&i.DriverAge,
 		&i.PickupDate,
 		&i.PickupTime,
-		&i.ReturnDate,
-		&i.ReturnTime,
+		&i.DropoffDate,
+		&i.DropoffTime,
 		&i.CountryCode,
 		&i.Plans,
 	)
@@ -54,7 +54,7 @@ func (q *Queries) GetSnapshotByID(ctx context.Context, id int64) (AvailablePlans
 }
 
 const insertAvailablePlansSnapshot = `-- name: InsertAvailablePlansSnapshot :one
-INSERT INTO available_plans_snapshots (driver_age, pickup_date, pickup_time, return_date, return_time, country_code, plans)
+INSERT INTO available_plans_snapshots (driver_age, pickup_date, pickup_time, dropoff_date, dropoff_time, country_code, plans)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id
 `
@@ -63,8 +63,8 @@ type InsertAvailablePlansSnapshotParams struct {
 	DriverAge   string
 	PickupDate  pgtype.Date
 	PickupTime  string
-	ReturnDate  pgtype.Date
-	ReturnTime  string
+	DropoffDate pgtype.Date
+	DropoffTime string
 	CountryCode string
 	Plans       []byte
 }
@@ -74,8 +74,8 @@ func (q *Queries) InsertAvailablePlansSnapshot(ctx context.Context, arg InsertAv
 		arg.DriverAge,
 		arg.PickupDate,
 		arg.PickupTime,
-		arg.ReturnDate,
-		arg.ReturnTime,
+		arg.DropoffDate,
+		arg.DropoffTime,
 		arg.CountryCode,
 		arg.Plans,
 	)

@@ -97,9 +97,9 @@ func (s *Service) CreatePriceOffer(ctx context.Context, params CreatePriceOfferP
 		PickupLocationID:    pickupLocationID,
 		DropoffLocationID:   dropoffLocationID,
 		PickupDate:          snapshot.PickupDate,
-		ReturnDate:          snapshot.ReturnDate,
+		DropoffDate:         snapshot.DropoffDate,
 		PickupTime:          snapshot.PickupTime,
-		DropoffTime:         snapshot.ReturnTime,
+		DropoffTime:         snapshot.DropoffTime,
 		RentalDays:          int32(rentalDays),
 		DriverAge:           snapshot.DriverAge,
 		PlanID:              strconv.Itoa(plan.PlanID),
@@ -192,7 +192,7 @@ func (s *Service) RenewPriceOffer(ctx context.Context, id int64) (*RenewPriceOff
 		PickupTime:        offer.PickupTime,
 		DropoffTime:       offer.DropoffTime,
 		PickupDate:        db.DateToString(offer.PickupDate),
-		DropoffDate:       db.DateToString(offer.ReturnDate),
+		DropoffDate:       db.DateToString(offer.DropoffDate),
 		DriverAge:         driverAge,
 	})
 	if err != nil {
@@ -313,7 +313,7 @@ type GetPriceOfferResponse struct {
 	PickupLocationName  string            `json:"pickupLocationName"`
 	DropoffLocationName string            `json:"dropoffLocationName"`
 	PickupDate          string            `json:"pickupDate"`
-	ReturnDate          string            `json:"returnDate"`
+	DropoffDate         string            `json:"dropoffDate"`
 	RentalDays          int32             `json:"rentalDays"`
 	PickupTime          string            `json:"pickupTime"`
 	DropoffTime         string            `json:"dropoffTime"`
@@ -342,7 +342,7 @@ type GetAgentPriceOfferResponse struct {
 	PickupLocationID    int64             `json:"pickupLocationId"`
 	DropoffLocationID   int64             `json:"dropoffLocationId"`
 	PickupDate          string            `json:"pickupDate"`
-	ReturnDate          string            `json:"returnDate"`
+	DropoffDate         string            `json:"dropoffDate"`
 	PickupTime          string            `json:"pickupTime"`
 	DropoffTime         string            `json:"dropoffTime"`
 	RentalDays          int32             `json:"rentalDays"`
@@ -389,7 +389,7 @@ func (s *Service) GetClientPriceOffer(ctx context.Context, token string) (*GetPr
 		PickupLocationName:  row.PickupLocation,
 		DropoffLocationName: row.DropoffLocation,
 		PickupDate:          db.DateToString(row.PickupDate),
-		ReturnDate:          db.DateToString(row.ReturnDate),
+		DropoffDate:         db.DateToString(row.DropoffDate),
 		RentalDays:          row.RentalDays,
 		PickupTime:          row.PickupTime,
 		DropoffTime:         row.DropoffTime,
@@ -444,7 +444,7 @@ func (s *Service) GetAgentPriceOffer(ctx context.Context, id int64) (*GetAgentPr
 		PickupLocationID:    row.PickupLocationID,
 		DropoffLocationID:   row.DropoffLocationID,
 		PickupDate:          db.DateToString(row.PickupDate),
-		ReturnDate:          db.DateToString(row.ReturnDate),
+		DropoffDate:         db.DateToString(row.DropoffDate),
 		RentalDays:          row.RentalDays,
 		PickupTime:          row.PickupTime,
 		DropoffTime:         row.DropoffTime,
@@ -493,7 +493,7 @@ type PriceOfferSummary struct {
 	PickupLocationName  string `json:"pickupLocationName"`
 	DropoffLocationName string `json:"dropoffLocationName"`
 	PickupDate          string `json:"pickupDate"`
-	ReturnDate          string `json:"returnDate"`
+	DropoffDate         string `json:"dropoffDate"`
 	PickupTime          string `json:"pickupTime"`
 	DropoffTime         string `json:"dropoffTime"`
 	CurrencyCode        string `json:"currencyCode"`
@@ -584,7 +584,7 @@ func mapRowsToPriceOfferSummaries(rows []db.ListPriceOffersByAgentRow) []PriceOf
 			PickupLocationName:  r.PickupLocation,
 			DropoffLocationName: r.DropoffLocation,
 			PickupDate:          db.DateToString(r.PickupDate),
-			ReturnDate:          db.DateToString(r.ReturnDate),
+			DropoffDate:         db.DateToString(r.DropoffDate),
 			PickupTime:          r.PickupTime,
 			DropoffTime:         r.DropoffTime,
 			CurrencyCode:        r.CurrencyCode,

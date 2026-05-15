@@ -145,7 +145,7 @@ func (s *Service) buildCreateReservationRequest(
 		CarDetails:          &plan.CarDetails,
 		PlanInclusions:      plan.Inclusions,
 		PickupDate:          db.DateToString(snapshot.PickupDate),
-		ReturnDate:          db.DateToString(snapshot.ReturnDate),
+		ReturnDate:          db.DateToString(snapshot.DropoffDate),
 		RentalDays:          rentalDays,
 		DriverTitle:         params.DriverTitle,
 		DriverFirstName:     params.DriverFirstName,
@@ -160,7 +160,7 @@ func (s *Service) buildCreateReservationRequest(
 		BrokerErpPrice:      brokerErpPrice,
 		BtErpPrice:          btErpPrice,
 		PickupTime:          snapshot.PickupTime,
-		DropoffTime:         snapshot.ReturnTime,
+		DropoffTime:         snapshot.DropoffTime,
 		PickupLocationName:  pickupLocName,
 		DropoffLocationName: dropoffLocName,
 	}
@@ -169,7 +169,7 @@ func (s *Service) buildCreateReservationRequest(
 func calculateSnapshotRentalDays(snapshot db.AvailablePlansSnapshot) (int, error) {
 	return broker.CalculateDaysCount(
 		db.DateToString(snapshot.PickupDate), snapshot.PickupTime,
-		db.DateToString(snapshot.ReturnDate), snapshot.ReturnTime,
+		db.DateToString(snapshot.DropoffDate), snapshot.DropoffTime,
 	)
 }
 
@@ -226,9 +226,9 @@ func bookCarAtBroker(snapshot db.AvailablePlansSnapshot, plan planPriceDetails, 
 		FlightNumber:    params.FlightNumber,
 		DriverAge:       snapshot.DriverAge,
 		PickupDate:      db.DateToString(snapshot.PickupDate),
-		DropoffDate:     db.DateToString(snapshot.ReturnDate),
+		DropoffDate:     db.DateToString(snapshot.DropoffDate),
 		PickupTime:      snapshot.PickupTime,
-		DropoffTime:     snapshot.ReturnTime,
+		DropoffTime:     snapshot.DropoffTime,
 		CountryCode:     snapshot.CountryCode,
 	})
 	if err != nil {
@@ -399,7 +399,7 @@ func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, params BookPric
 		FlightNumber:    params.FlightNumber,
 		DriverAge:       offer.DriverAge,
 		PickupDate:      db.DateToString(offer.PickupDate),
-		DropoffDate:     db.DateToString(offer.ReturnDate),
+		DropoffDate:     db.DateToString(offer.DropoffDate),
 		PickupTime:      offer.PickupTime,
 		DropoffTime:     offer.DropoffTime,
 		CountryCode:     offer.CurrencyCode,
@@ -427,7 +427,7 @@ func buildPriceOfferReservationRequest(
 		CarDetails:          &offerCarDetails,
 		PlanInclusions:      offer.PlanInclusions,
 		PickupDate:          db.DateToString(offer.PickupDate),
-		ReturnDate:          db.DateToString(offer.ReturnDate),
+		ReturnDate:          db.DateToString(offer.DropoffDate),
 		RentalDays:          int(offer.RentalDays),
 		DriverTitle:         params.DriverTitle,
 		DriverFirstName:     params.DriverFirstName,

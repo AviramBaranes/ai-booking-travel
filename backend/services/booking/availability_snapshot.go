@@ -41,8 +41,8 @@ func (s Service) storePlansDetails(ctx context.Context, plans []planPriceDetails
 		DriverAge:   strconv.Itoa(reqParams.DriverAge),
 		PickupDate:  db.DateFromString(reqParams.PickupDate),
 		PickupTime:  reqParams.PickupTime,
-		ReturnDate:  db.DateFromString(reqParams.DropoffDate),
-		ReturnTime:  reqParams.DropoffTime,
+		DropoffDate: db.DateFromString(reqParams.DropoffDate),
+		DropoffTime: reqParams.DropoffTime,
 		CountryCode: countryCode,
 	})
 	if err != nil {

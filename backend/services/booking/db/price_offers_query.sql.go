@@ -39,7 +39,7 @@ INSERT INTO price_offers (
     pickup_location_id,
     dropoff_location_id,
     pickup_date,
-    return_date,
+    dropoff_date,
     rental_days,
     pickup_time,
     dropoff_time,
@@ -86,7 +86,7 @@ INSERT INTO price_offers (
     $24,
     $25
 )
-RETURNING id, reservation_id, token, agent_id, status, name, pickup_location_id, dropoff_location_id, pickup_date, return_date, pickup_time, dropoff_time, driver_age, rental_days, plan_id, broker, rate_qualifier, supplier_code, car_details, plan_inclusions, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, total_price, offered_currency_code, offered_price, renewed_at, created_at, updated_at
+RETURNING id, reservation_id, token, agent_id, status, name, pickup_location_id, dropoff_location_id, pickup_date, dropoff_date, pickup_time, dropoff_time, driver_age, rental_days, plan_id, broker, rate_qualifier, supplier_code, car_details, plan_inclusions, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, total_price, offered_currency_code, offered_price, renewed_at, created_at, updated_at
 `
 
 type CreatePriceOfferParams struct {
@@ -95,7 +95,7 @@ type CreatePriceOfferParams struct {
 	PickupLocationID    int64
 	DropoffLocationID   int64
 	PickupDate          pgtype.Date
-	ReturnDate          pgtype.Date
+	DropoffDate         pgtype.Date
 	RentalDays          int32
 	PickupTime          string
 	DropoffTime         string
@@ -124,7 +124,7 @@ func (q *Queries) CreatePriceOffer(ctx context.Context, arg CreatePriceOfferPara
 		arg.PickupLocationID,
 		arg.DropoffLocationID,
 		arg.PickupDate,
-		arg.ReturnDate,
+		arg.DropoffDate,
 		arg.RentalDays,
 		arg.PickupTime,
 		arg.DropoffTime,
@@ -156,7 +156,7 @@ func (q *Queries) CreatePriceOffer(ctx context.Context, arg CreatePriceOfferPara
 		&i.PickupLocationID,
 		&i.DropoffLocationID,
 		&i.PickupDate,
-		&i.ReturnDate,
+		&i.DropoffDate,
 		&i.PickupTime,
 		&i.DropoffTime,
 		&i.DriverAge,
@@ -185,7 +185,7 @@ func (q *Queries) CreatePriceOffer(ctx context.Context, arg CreatePriceOfferPara
 
 const getPriceOfferById = `-- name: GetPriceOfferById :one
 SELECT 
-    price_offers.id, price_offers.reservation_id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.return_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.plan_id, price_offers.broker, price_offers.rate_qualifier, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.currency_rate, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.renewed_at, price_offers.created_at, price_offers.updated_at, 
+    price_offers.id, price_offers.reservation_id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.dropoff_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.plan_id, price_offers.broker, price_offers.rate_qualifier, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.currency_rate, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.renewed_at, price_offers.created_at, price_offers.updated_at, 
     pl.name AS pickup_location, 
     pl.country_code,
     dl.name AS dropoff_location, 
@@ -214,7 +214,7 @@ type GetPriceOfferByIdRow struct {
 	PickupLocationID        int64
 	DropoffLocationID       int64
 	PickupDate              pgtype.Date
-	ReturnDate              pgtype.Date
+	DropoffDate             pgtype.Date
 	PickupTime              string
 	DropoffTime             string
 	DriverAge               string
@@ -257,7 +257,7 @@ func (q *Queries) GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdPa
 		&i.PickupLocationID,
 		&i.DropoffLocationID,
 		&i.PickupDate,
-		&i.ReturnDate,
+		&i.DropoffDate,
 		&i.PickupTime,
 		&i.DropoffTime,
 		&i.DriverAge,
@@ -290,7 +290,7 @@ func (q *Queries) GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdPa
 }
 
 const getPriceOfferByToken = `-- name: GetPriceOfferByToken :one
-SELECT price_offers.id, price_offers.reservation_id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.return_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.plan_id, price_offers.broker, price_offers.rate_qualifier, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.currency_rate, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.renewed_at, price_offers.created_at, price_offers.updated_at , pl.name AS pickup_location, dl.name AS dropoff_location
+SELECT price_offers.id, price_offers.reservation_id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.dropoff_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.plan_id, price_offers.broker, price_offers.rate_qualifier, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.currency_rate, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.renewed_at, price_offers.created_at, price_offers.updated_at , pl.name AS pickup_location, dl.name AS dropoff_location
 FROM price_offers
     JOIN locations pl ON price_offers.pickup_location_id = pl.id
     JOIN locations dl ON price_offers.dropoff_location_id = dl.id
@@ -307,7 +307,7 @@ type GetPriceOfferByTokenRow struct {
 	PickupLocationID    int64
 	DropoffLocationID   int64
 	PickupDate          pgtype.Date
-	ReturnDate          pgtype.Date
+	DropoffDate         pgtype.Date
 	PickupTime          string
 	DropoffTime         string
 	DriverAge           string
@@ -347,7 +347,7 @@ func (q *Queries) GetPriceOfferByToken(ctx context.Context, token pgtype.UUID) (
 		&i.PickupLocationID,
 		&i.DropoffLocationID,
 		&i.PickupDate,
-		&i.ReturnDate,
+		&i.DropoffDate,
 		&i.PickupTime,
 		&i.DropoffTime,
 		&i.DriverAge,
@@ -379,7 +379,7 @@ func (q *Queries) GetPriceOfferByToken(ctx context.Context, token pgtype.UUID) (
 const listPriceOffersByAgent = `-- name: ListPriceOffersByAgent :many
 SELECT price_offers.id, status, price_offers.name, 
 pl.name AS pickup_location, dl.name AS dropoff_location, 
-pickup_date, return_date, pickup_time, dropoff_time, 
+pickup_date, dropoff_date, pickup_time, dropoff_time, 
 currency_code, total_price, offered_currency_code, offered_price, 
 price_offers.created_at
 FROM price_offers
@@ -408,7 +408,7 @@ type ListPriceOffersByAgentRow struct {
 	PickupLocation      string
 	DropoffLocation     string
 	PickupDate          pgtype.Date
-	ReturnDate          pgtype.Date
+	DropoffDate         pgtype.Date
 	PickupTime          string
 	DropoffTime         string
 	CurrencyCode        string
@@ -440,7 +440,7 @@ func (q *Queries) ListPriceOffersByAgent(ctx context.Context, arg ListPriceOffer
 			&i.PickupLocation,
 			&i.DropoffLocation,
 			&i.PickupDate,
-			&i.ReturnDate,
+			&i.DropoffDate,
 			&i.PickupTime,
 			&i.DropoffTime,
 			&i.CurrencyCode,

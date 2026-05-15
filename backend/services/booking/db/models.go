@@ -146,8 +146,8 @@ type AvailablePlansSnapshot struct {
 	DriverAge   string
 	PickupDate  pgtype.Date
 	PickupTime  string
-	ReturnDate  pgtype.Date
-	ReturnTime  string
+	DropoffDate pgtype.Date
+	DropoffTime string
 	CountryCode string
 	Plans       []byte
 }
@@ -227,7 +227,7 @@ type PriceOffer struct {
 	PickupLocationID    int64
 	DropoffLocationID   int64
 	PickupDate          pgtype.Date
-	ReturnDate          pgtype.Date
+	DropoffDate         pgtype.Date
 	PickupTime          string
 	DropoffTime         string
 	DriverAge           string

@@ -92,8 +92,8 @@ func seedSnapshot(t *testing.T, q *db.Queries, plans []planPriceDetails) int64 {
 		DriverAge:   "30",
 		PickupDate:  db.DateFromString("2026-08-01"),
 		PickupTime:  "08:00",
-		ReturnDate:  db.DateFromString("2026-08-05"),
-		ReturnTime:  "10:00",
+		DropoffDate: db.DateFromString("2026-08-05"),
+		DropoffTime: "10:00",
 		CountryCode: "US",
 	})
 	if err != nil {
@@ -381,8 +381,8 @@ func TestGetClientPriceOffer(t *testing.T) {
 		if resp.PickupDate != "2026-08-01" {
 			t.Errorf("pickup date: got %q, want 2026-08-01", resp.PickupDate)
 		}
-		if resp.ReturnDate != "2026-08-05" {
-			t.Errorf("return date: got %q, want 2026-08-05", resp.ReturnDate)
+		if resp.DropoffDate != "2026-08-05" {
+			t.Errorf("return date: got %q, want 2026-08-05", resp.DropoffDate)
 		}
 		if resp.PickupTime != "08:00" {
 			t.Errorf("pickup time: got %q, want 08:00", resp.PickupTime)
@@ -834,8 +834,8 @@ func TestListPriceOffers(t *testing.T) {
 		if got.PickupDate != "2026-08-01" {
 			t.Errorf("pickup date: got %q, want 2026-08-01", got.PickupDate)
 		}
-		if got.ReturnDate != "2026-08-05" {
-			t.Errorf("return date: got %q, want 2026-08-05", got.ReturnDate)
+		if got.DropoffDate != "2026-08-05" {
+			t.Errorf("return date: got %q, want 2026-08-05", got.DropoffDate)
 		}
 		if got.CurrencyCode != "USD" {
 			t.Errorf("currency code: got %q, want USD", got.CurrencyCode)
