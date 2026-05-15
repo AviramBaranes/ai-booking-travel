@@ -15,7 +15,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestSignAccessToken(t *testing.T) {
-	office_id := int32(10)
+	office_id := int64(10)
 	user := db.User{
 		ID:       123,
 		Role:     "agent",
@@ -120,7 +120,7 @@ func TestValidateAccessToken(t *testing.T) {
 }
 
 func TestSignRefreshToken(t *testing.T) {
-	userID := int32(456)
+	userID := int64(456)
 	tokenString, jti, exp, err := SignRefreshToken(userID)
 	if err != nil {
 		t.Fatalf("SignRefreshToken failed: %v", err)
@@ -150,7 +150,7 @@ func TestSignRefreshToken(t *testing.T) {
 }
 
 func TestValidateRefreshToken(t *testing.T) {
-	userID := int32(789)
+	userID := int64(789)
 	validToken, _, _, _ := SignRefreshToken(userID)
 
 	t.Run("Valid token", func(t *testing.T) {

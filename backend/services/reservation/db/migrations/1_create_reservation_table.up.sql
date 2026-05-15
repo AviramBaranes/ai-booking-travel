@@ -7,7 +7,7 @@ CREATE TYPE broker AS ENUM ('flex', 'hertz');
 CREATE TABLE
     reservations (
         id BIGSERIAL PRIMARY KEY,
-        user_id INT NOT NULL,
+        user_id BIGINT NOT NULL,
         broker_reservation_id TEXT NOT NULL,
         reservation_status reservation_status NOT NULL DEFAULT 'booked',
         payment_status payment_status NOT NULL DEFAULT 'unpaid',

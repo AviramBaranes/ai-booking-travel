@@ -15,14 +15,14 @@ import (
 // --- Request / Response types ---
 
 type ContactResponse struct {
-	ID                   int32   `json:"id"`
+	ID                   int64   `json:"id"`
 	FirstName            string  `json:"firstName"`
 	LastName             string  `json:"lastName"`
 	Role                 string  `json:"role"`
 	Cellphone            string  `json:"cellphone"`
 	Email                string  `json:"email"`
-	OfficeID             *int32  `json:"officeId"`
-	OrganizationID       *int32  `json:"organizationId"`
+	OfficeID             *int64  `json:"officeId"`
+	OrganizationID       *int64  `json:"organizationId"`
 	IsPaymentResponsible bool    `json:"isPaymentResponsible"`
 	OfficeName           *string `json:"officeName"`
 	OrganizationName     *string `json:"organizationName"`
@@ -30,8 +30,8 @@ type ContactResponse struct {
 
 type ListContactsRequest struct {
 	Search   string `query:"search"`
-	OfficeID int32  `query:"officeId" validate:"omitempty,gte=1"`
-	OrgID    int32  `query:"orgId" validate:"omitempty,gte=1"`
+	OfficeID int64  `query:"officeId" validate:"omitempty,gte=1"`
+	OrgID    int64  `query:"orgId" validate:"omitempty,gte=1"`
 	Page     int32  `query:"page" validate:"required,gte=1"`
 }
 
@@ -50,8 +50,8 @@ type CreateContactRequest struct {
 	Role                 string `json:"role" validate:"required,notblank"`
 	Cellphone            string `json:"cellphone" validate:"required,notblank"`
 	Email                string `json:"email" validate:"required,email"`
-	OfficeID             *int32 `json:"officeId" encore:"optional"`
-	OrganizationID       *int32 `json:"organizationId" encore:"optional"`
+	OfficeID             *int64 `json:"officeId" encore:"optional"`
+	OrganizationID       *int64 `json:"organizationId" encore:"optional"`
 	IsPaymentResponsible bool   `json:"isPaymentResponsible" encore:"optional"`
 }
 
@@ -79,8 +79,8 @@ type UpdateContactRequest struct {
 	Role                 *string `json:"role" validate:"omitempty,notblank" encore:"optional"`
 	Cellphone            *string `json:"cellphone" validate:"omitempty,notblank" encore:"optional"`
 	Email                *string `json:"email" validate:"omitempty,email" encore:"optional"`
-	OfficeID             *int32  `json:"officeId" encore:"optional"`
-	OrganizationID       *int32  `json:"organizationId" encore:"optional"`
+	OfficeID             *int64  `json:"officeId" encore:"optional"`
+	OrganizationID       *int64  `json:"organizationId" encore:"optional"`
 	IsPaymentResponsible *bool   `json:"isPaymentResponsible" encore:"optional"`
 }
 
@@ -135,12 +135,12 @@ func (s *Service) ListContacts(ctx context.Context, params *ListContactsRequest)
 		searchPtr = &s
 	}
 
-	var officeIDPtr *int32
+	var officeIDPtr *int64
 	if params.OfficeID > 0 {
 		officeIDPtr = &params.OfficeID
 	}
 
-	var orgIDPtr *int32
+	var orgIDPtr *int64
 	if params.OrgID > 0 {
 		orgIDPtr = &params.OrgID
 	}
@@ -201,7 +201,7 @@ func (s *Service) CreateContact(ctx context.Context, params CreateContactRequest
 // UpdateContact updates an existing contact.
 //
 //encore:api auth method=PUT path=/contacts/:id tag:admin
-func (s *Service) UpdateContact(ctx context.Context, id int32, params UpdateContactRequest) (*ContactResponse, error) {
+func (s *Service) UpdateContact(ctx context.Context, id int64, params UpdateContactRequest) (*ContactResponse, error) {
 	row, err := s.query.UpdateContact(ctx, db.UpdateContactParams{
 		ID:                   id,
 		FirstName:            params.FirstName,
@@ -228,7 +228,7 @@ func (s *Service) UpdateContact(ctx context.Context, id int32, params UpdateCont
 // DeleteContact deletes a contact by its ID.
 //
 //encore:api auth method=DELETE path=/contacts/:id tag:admin
-func (s *Service) DeleteContact(ctx context.Context, id int32) error {
+func (s *Service) DeleteContact(ctx context.Context, id int64) error {
 	err := s.query.DeleteContact(ctx, id)
 	if err != nil {
 		rlog.Error("failed to delete contact", "error", err, "id", id)

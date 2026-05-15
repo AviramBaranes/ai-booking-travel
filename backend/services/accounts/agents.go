@@ -15,12 +15,12 @@ import (
 // --- Request / Response types ---
 
 type AgentResponse struct {
-	ID               int32      `json:"id"`
+	ID               int64      `json:"id"`
 	FirstName        string     `json:"firstName"`
 	LastName         string     `json:"lastName"`
 	Email            string     `json:"email"`
 	PhoneNumber      *string    `json:"phoneNumber"`
-	OfficeID         *int32     `json:"officeId"`
+	OfficeID         *int64     `json:"officeId"`
 	OfficeName       *string    `json:"officeName"`
 	OrganizationName *string    `json:"organizationName"`
 	LastLogin        *time.Time `json:"lastLogin"`
@@ -30,8 +30,8 @@ type AgentResponse struct {
 
 type ListAgentsRequest struct {
 	Search   string `query:"search"`
-	OfficeID int32  `query:"officeId"`
-	OrgID    int32  `query:"orgId"`
+	OfficeID int64  `query:"officeId"`
+	OrgID    int64  `query:"orgId"`
 	Page     int32  `query:"page" validate:"required,gte=1"`
 }
 
@@ -50,7 +50,7 @@ type CreateAgentRequest struct {
 	Email       string `json:"email" validate:"required,email"`
 	Password    string `json:"password" validate:"required,min=8" encore:"sensitive"`
 	PhoneNumber string `json:"phoneNumber" validate:"required,israeli_phone"`
-	OfficeID    int32  `json:"officeId" validate:"required,gte=1"`
+	OfficeID    int64  `json:"officeId" validate:"required,gte=1"`
 }
 
 func (p CreateAgentRequest) Validate() error {
@@ -61,7 +61,7 @@ func (p CreateAgentRequest) Validate() error {
 }
 
 type CreateAgentResponse struct {
-	ID int32 `json:"id"`
+	ID int64 `json:"id"`
 }
 
 // --- Helpers ---
@@ -97,12 +97,12 @@ func (s *Service) ListAgents(ctx context.Context, params *ListAgentsRequest) (*L
 		searchPtr = &params.Search
 	}
 
-	var officeIDPtr *int32
+	var officeIDPtr *int64
 	if params.OfficeID != 0 {
 		officeIDPtr = &params.OfficeID
 	}
 
-	var orgIDPtr *int32
+	var orgIDPtr *int64
 	if params.OrgID != 0 {
 		orgIDPtr = &params.OrgID
 	}
@@ -176,18 +176,18 @@ func (s *Service) CreateAgent(ctx context.Context, params CreateAgentRequest) (*
 
 // GetAgentsByOfficeID retrieves agent IDs for a given office ID.
 type GetAgentsResponse struct {
-	IDs       []int32
+	IDs       []int64
 	IsOrganic bool
 }
 
 // GetAgentsByOfficeIDRequest is the request type for GetAgentsByOfficeID.
 type GetAgentsByOfficeIDRequest struct {
-	OfficeID int32
+	OfficeID int64
 }
 
 // GetAgentsByOrganizationIDRequest is the request type for GetAgentsByOrganizationID.
 type GetAgentsByOrganizationIDRequest struct {
-	OrgID int32
+	OrgID int64
 }
 
 // GetAgentsByOfficeID retrieves agent IDs for a given office ID.
@@ -206,7 +206,7 @@ func (s *Service) GetAgentsByOfficeID(ctx context.Context, p GetAgentsByOfficeID
 		return nil, api_errors.ErrNotFound
 	}
 
-	ids := make([]int32, 0, len(rows))
+	ids := make([]int64, 0, len(rows))
 	for _, r := range rows {
 		ids = append(ids, r.ID)
 	}
@@ -233,7 +233,7 @@ func (s *Service) GetAgentsByOrganizationID(ctx context.Context, p GetAgentsByOr
 		return nil, api_errors.ErrNotFound
 	}
 
-	ids := make([]int32, 0, len(rows))
+	ids := make([]int64, 0, len(rows))
 	for _, r := range rows {
 		ids = append(ids, r.ID)
 	}

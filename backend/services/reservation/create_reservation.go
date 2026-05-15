@@ -21,7 +21,7 @@ var cfg = config.Load[*ReservationCfg]()
 
 // CreateReservationRequest defines the parameters required to create a reservation.
 type CreateReservationRequest struct {
-	UserID              int32              `json:"userId" validate:"required"`
+	UserID              int64              `json:"userId" validate:"required"`
 	BrokerReservationID string             `json:"brokerReservationId" validate:"required,notblank"`
 	Broker              string             `json:"broker" validate:"required,oneof=flex hertz"`
 	SupplierCode        string             `json:"supplierCode" validate:"required,notblank"`
@@ -69,7 +69,7 @@ func (s *Service) CreateReservation(ctx context.Context, p CreateReservationRequ
 	totalPrice := pricing.CalculateTotalPrice(p.PurchasePrice, p.MarkupPercentage, p.BrokerErpPrice, p.BtErpPrice, p.DiscountPercentage)
 
 	id, err := s.query.InsertReservation(ctx, db.InsertReservationParams{
-		UserID:              int32(p.UserID),
+		UserID:              p.UserID,
 		BrokerReservationID: p.BrokerReservationID,
 		Broker:              db.Broker(p.Broker),
 		SupplierCode:        p.SupplierCode,

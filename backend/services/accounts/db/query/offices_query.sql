@@ -16,8 +16,8 @@ JOIN organizations org ON org.id = o.organization_id
 LEFT JOIN contacts c ON c.office_id = o.id
 LEFT JOIN users u ON (u.office_id = o.id AND u.role = 'agent')
 WHERE
-    (sqlc.narg(name)::VARCHAR IS NULL            OR o.name ILIKE '%' || sqlc.narg(name)::VARCHAR || '%')
-    AND (sqlc.narg(organization_id)::INTEGER IS NULL OR o.organization_id = sqlc.narg(organization_id)::INTEGER)
+    (sqlc.narg(name)::TEXT IS NULL            OR o.name ILIKE '%' || sqlc.narg(name)::TEXT || '%')
+    AND (sqlc.narg(organization_id)::BIGINT IS NULL OR o.organization_id = sqlc.narg(organization_id)::BIGINT)
 GROUP BY o.id, org.name
 ORDER BY o.name
 LIMIT  sqlc.arg(page_size)::BIGINT
@@ -27,8 +27,8 @@ OFFSET sqlc.arg(page_offset)::BIGINT;
 SELECT COUNT(*)::BIGINT AS total
 FROM offices o
 WHERE
-    (sqlc.narg(name)::VARCHAR IS NULL            OR o.name ILIKE '%' || sqlc.narg(name)::VARCHAR || '%')
-    AND (sqlc.narg(organization_id)::INTEGER IS NULL OR o.organization_id = sqlc.narg(organization_id)::INTEGER);
+    (sqlc.narg(name)::TEXT IS NULL            OR o.name ILIKE '%' || sqlc.narg(name)::TEXT || '%')
+    AND (sqlc.narg(organization_id)::BIGINT IS NULL OR o.organization_id = sqlc.narg(organization_id)::BIGINT);
 
 -- name: CreateOffice :one
 INSERT INTO offices (name, organization_id, icount_client_id, phone, address, created_at, updated_at)
@@ -66,10 +66,10 @@ ORDER BY o.name;
 -- name: GetOfficeIcountClientID :one
 SELECT icount_client_id
 FROM offices
-WHERE id = sqlc.arg(id)::INTEGER;
+WHERE id = sqlc.arg(id)::BIGINT;
 
 -- name: GetOfficeBillingState :one
 SELECT o.icount_client_id, o.organization_id, org.is_organic
 FROM offices o
 JOIN organizations org ON org.id = o.organization_id
-WHERE o.id = sqlc.arg(id)::INTEGER;
+WHERE o.id = sqlc.arg(id)::BIGINT;

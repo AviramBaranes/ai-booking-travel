@@ -143,7 +143,7 @@ func TestCreateAccountant(t *testing.T) {
 	t.Run("returns error when check exists db fails", func(t *testing.T) {
 		t.Parallel()
 		q, s := accountantMockService(t)
-		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int32(0), errors.New("db error"))
+		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
 		_, err := s.CreateAccountant(ctx, CreateAccountantRequest{
 			FirstName: "DB",
@@ -157,7 +157,7 @@ func TestCreateAccountant(t *testing.T) {
 	t.Run("returns error when create db fails", func(t *testing.T) {
 		t.Parallel()
 		q, s := accountantMockService(t)
-		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int32(0), db.ErrNoRows)
+		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), db.ErrNoRows)
 		q.EXPECT().CreateStaffUser(gomock.Any(), gomock.Any()).Return(db.CreateStaffUserRow{}, errors.New("db error"))
 
 		_, err := s.CreateAccountant(ctx, CreateAccountantRequest{

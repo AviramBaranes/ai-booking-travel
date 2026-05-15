@@ -320,7 +320,7 @@ func (s *Service) BookPriceOffer(ctx context.Context, params BookPriceOfferParam
 	return &BookResponse{ReservationID: reservation.ID}, nil
 }
 
-func (s *Service) getBookablePriceOffer(ctx context.Context, priceOfferID int64, agentID int32) (db.GetPriceOfferByIdRow, error) {
+func (s *Service) getBookablePriceOffer(ctx context.Context, priceOfferID int64, agentID int64) (db.GetPriceOfferByIdRow, error) {
 	offer, err := s.query.GetPriceOfferById(ctx, db.GetPriceOfferByIdParams{
 		ID:      priceOfferID,
 		AgentID: agentID,
@@ -407,7 +407,7 @@ func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, params BookPric
 }
 
 func buildPriceOfferReservationRequest(
-	userID int32,
+	userID int64,
 	offer db.GetPriceOfferByIdRow,
 	params BookPriceOfferParams,
 	confirmationNumber string,
@@ -448,7 +448,7 @@ func buildPriceOfferReservationRequest(
 	}, nil
 }
 
-func (s *Service) markPriceOfferBooked(ctx context.Context, priceOfferID int64, reservationID int64, agentID int32) {
+func (s *Service) markPriceOfferBooked(ctx context.Context, priceOfferID int64, reservationID int64, agentID int64) {
 	err := s.query.UpdatePriceOffer(ctx, db.UpdatePriceOfferParams{
 		ID:            priceOfferID,
 		AgentID:       agentID,

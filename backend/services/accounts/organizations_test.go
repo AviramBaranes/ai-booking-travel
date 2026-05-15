@@ -18,7 +18,7 @@ import (
 func validCreateOrgParams() CreateOrganizationRequest {
 	phone := "0521234567"
 	address := "123 Test St"
-	obligo := 1000.0
+	obligo := int32(1000)
 	icountClientID := int32(100)
 	return CreateOrganizationRequest{
 		Name:           "Test Organization",
@@ -36,7 +36,7 @@ func validUpdateOrgParams() UpdateOrganizationRequest {
 	icountClientID := int32(200)
 	phone := "0529876543"
 	address := "456 Updated St"
-	obligo := 2000.0
+	obligo := int32(2000)
 	return UpdateOrganizationRequest{
 		Name:           &name,
 		IsOrganic:      &isOrganic,
@@ -106,7 +106,7 @@ func TestListOrganizations(t *testing.T) {
 		}
 
 		// No overlap between pages
-		page1IDs := make(map[int32]bool)
+		page1IDs := make(map[int64]bool)
 		for _, o := range page1.Organizations {
 			page1IDs[o.ID] = true
 		}
@@ -417,7 +417,7 @@ func TestCreateOrganization(t *testing.T) {
 
 	t.Run("validation rejects negative obligo", func(t *testing.T) {
 		p := validCreateOrgParams()
-		neg := -1.0
+		neg := int32(-1)
 		p.Obligo = &neg
 		api_errors.AssertApiError(t, invalidValueErr("obligo"), p.Validate())
 	})
@@ -522,7 +522,7 @@ func TestUpdateOrganization(t *testing.T) {
 
 	t.Run("validation rejects negative obligo", func(t *testing.T) {
 		p := validUpdateOrgParams()
-		neg := -1.0
+		neg := int32(-1)
 		p.Obligo = &neg
 		api_errors.AssertApiError(t, invalidValueErr("obligo"), p.Validate())
 	})

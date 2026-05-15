@@ -69,9 +69,9 @@ func TestGenerateMonthlyReport(t *testing.T) {
 			}, nil
 		})
 
-		var gotIDs []int32
+		var gotIDs []int64
 		et.MockEndpoint(accounts.GetBillingContacts, func(_ context.Context, p *accounts.GetBillingContactsRequest) (*accounts.GetBillingContactsResponse, error) {
-			gotIDs = append([]int32(nil), p.AgentsIDs...)
+			gotIDs = append([]int64(nil), p.AgentsIDs...)
 			return &accounts.GetBillingContactsResponse{Contacts: nil}, nil
 		})
 		et.MockEndpoint(notifications.SendMonthlyReport, func(_ context.Context, _ notifications.SendMonthlyReportRequest) error {
@@ -84,7 +84,7 @@ func TestGenerateMonthlyReport(t *testing.T) {
 		}
 
 		sort.Slice(gotIDs, func(i, j int) bool { return gotIDs[i] < gotIDs[j] })
-		want := []int32{10, 20, 30}
+		want := []int64{10, 20, 30}
 		if len(gotIDs) != len(want) {
 			t.Fatalf("agentsIDs = %v, want %v", gotIDs, want)
 		}

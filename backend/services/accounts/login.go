@@ -29,13 +29,13 @@ func (p LoginParams) Validate() error {
 
 // LoginResponse defines the response structure for user login.
 type LoginResponse struct {
-	ID           int32       `json:"id"`
+	ID           int64       `json:"id"`
 	Email        string      `json:"email,omitempty"`
 	Role         db.UserRole `json:"role,omitempty"`
 	AccessToken  string      `json:"accessToken"`
 	RefreshToken string      `json:"refreshToken"`
 	PhoneNumber  string      `json:"phoneNumber,omitempty"`
-	OfficeID     *int32      `json:"officeId,omitempty"`
+	OfficeID     *int64      `json:"officeId,omitempty"`
 }
 
 // encore:api public path=/login method=POST
@@ -70,7 +70,7 @@ func (s *Service) Login(ctx context.Context, p LoginParams) (*LoginResponse, err
 	}, nil
 }
 
-func (s *Service) generateTokens(ctx context.Context, user db.User, adminRefID *int32) (string, string, error) {
+func (s *Service) generateTokens(ctx context.Context, user db.User, adminRefID *int64) (string, string, error) {
 	accessToken, err := jwt.SignAccessToken(user, adminRefID)
 	if err != nil {
 		return "", "", errs.Wrap(err, "failed to sign access token")
@@ -95,7 +95,7 @@ func (s *Service) generateTokens(ctx context.Context, user db.User, adminRefID *
 }
 
 type LoginAsAgentParams struct {
-	AgentID int32 `json:"agentId" validate:"required"`
+	AgentID int64 `json:"agentId" validate:"required"`
 }
 
 func (p LoginAsAgentParams) Validate() error {
@@ -135,7 +135,7 @@ func (s *Service) LoginAsAgent(ctx context.Context, params LoginAsAgentParams) (
 func (s *Service) LoginBackToAdmin(ctx context.Context) (*LoginResponse, error) {
 	authData := GetAuthData()
 
-	var adminID int32
+	var adminID int64
 	if authData.AdminRefID == nil {
 		return nil, ErrInvalidCredentials
 	}

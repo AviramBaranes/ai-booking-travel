@@ -194,7 +194,7 @@ SELECT
     pickup_date
 FROM reservations
 WHERE
-    user_id = ANY(sqlc.arg(agent_ids)::INT[])
+    user_id = ANY(sqlc.arg(agent_ids)::BIGINT[])
 AND(
     (reservation_status = 'vouchered' AND payment_status = 'unpaid')
 OR

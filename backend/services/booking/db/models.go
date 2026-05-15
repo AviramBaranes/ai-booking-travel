@@ -221,7 +221,7 @@ type PriceOffer struct {
 	ID                  int64
 	ReservationID       *int64
 	Token               pgtype.UUID
-	AgentID             int32
+	AgentID             int64
 	Status              OfferStatus
 	Name                string
 	PickupLocationID    int64

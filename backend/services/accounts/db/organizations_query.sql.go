@@ -15,7 +15,7 @@ const countOrganizations = `-- name: CountOrganizations :one
 SELECT COUNT(*)::BIGINT AS total
 FROM organizations o
 WHERE
-    ($1::VARCHAR IS NULL       OR o.name ILIKE '%' || $1::VARCHAR || '%')
+    ($1::TEXT IS NULL       OR o.name ILIKE '%' || $1::TEXT || '%')
     AND ($2::BOOLEAN IS NULL OR o.is_organic = $2::BOOLEAN)
 `
 
@@ -52,7 +52,7 @@ type CreateOrganizationParams struct {
 	IcountClientID *int32
 	Phone          *string
 	Address        *string
-	Obligo         pgtype.Numeric
+	Obligo         *int32
 }
 
 func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error) {
@@ -82,7 +82,7 @@ func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganization
 const getOrganizationBillingState = `-- name: GetOrganizationBillingState :one
 SELECT is_organic, icount_client_id
 FROM organizations
-WHERE id = $1::INTEGER
+WHERE id = $1::BIGINT
 `
 
 type GetOrganizationBillingStateRow struct {
@@ -90,7 +90,7 @@ type GetOrganizationBillingStateRow struct {
 	IcountClientID *int32
 }
 
-func (q *Queries) GetOrganizationBillingState(ctx context.Context, id int32) (GetOrganizationBillingStateRow, error) {
+func (q *Queries) GetOrganizationBillingState(ctx context.Context, id int64) (GetOrganizationBillingStateRow, error) {
 	row := q.db.QueryRow(ctx, getOrganizationBillingState, id)
 	var i GetOrganizationBillingStateRow
 	err := row.Scan(&i.IsOrganic, &i.IcountClientID)
@@ -100,10 +100,10 @@ func (q *Queries) GetOrganizationBillingState(ctx context.Context, id int32) (Ge
 const getOrganizationIcountClientID = `-- name: GetOrganizationIcountClientID :one
 SELECT icount_client_id
 FROM organizations
-WHERE id = $1::INTEGER
+WHERE id = $1::BIGINT
 `
 
-func (q *Queries) GetOrganizationIcountClientID(ctx context.Context, id int32) (*int32, error) {
+func (q *Queries) GetOrganizationIcountClientID(ctx context.Context, id int64) (*int32, error) {
 	row := q.db.QueryRow(ctx, getOrganizationIcountClientID, id)
 	var icount_client_id *int32
 	err := row.Scan(&icount_client_id)
@@ -119,7 +119,7 @@ ORDER BY name
 `
 
 type ListOrganicOrganizationsRow struct {
-	ID   int32
+	ID   int64
 	Name string
 }
 
@@ -162,7 +162,7 @@ LEFT JOIN offices of ON of.organization_id = o.id
 LEFT JOIN contacts c ON (c.organization_id = o.id OR c.office_id = of.id)
 LEFT JOIN users u ON (u.office_id = of.id AND u.role = 'agent')
 WHERE
-    ($1::VARCHAR IS NULL       OR o.name ILIKE '%' || $1::VARCHAR || '%')
+    ($1::TEXT IS NULL       OR o.name ILIKE '%' || $1::TEXT || '%')
     AND ($2::BOOLEAN IS NULL OR o.is_organic = $2::BOOLEAN)
 GROUP BY o.id
 ORDER BY o.name
@@ -178,13 +178,13 @@ type ListOrganizationsParams struct {
 }
 
 type ListOrganizationsRow struct {
-	ID             int32
+	ID             int64
 	Name           string
 	IsOrganic      bool
 	IcountClientID *int32
 	Phone          *string
 	Address        *string
-	Obligo         pgtype.Numeric
+	Obligo         *int32
 	CreatedAt      pgtype.Timestamptz
 	UpdatedAt      pgtype.Timestamptz
 	OfficeCount    int64
@@ -250,8 +250,8 @@ type UpdateOrganizationParams struct {
 	IcountClientID *int32
 	Phone          *string
 	Address        *string
-	Obligo         pgtype.Numeric
-	ID             int32
+	Obligo         *int32
+	ID             int64
 }
 
 func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error) {

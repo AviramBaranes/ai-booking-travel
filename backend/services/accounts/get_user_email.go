@@ -9,7 +9,7 @@ import (
 )
 
 type GetUserEmailParams struct {
-	UserID int32
+	UserID int64
 }
 
 type GetUserEmailResponse struct {

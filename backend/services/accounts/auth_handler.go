@@ -19,10 +19,10 @@ const (
 )
 
 type AuthData struct {
-	UserID     int32
+	UserID     int64
 	Role       UserRole
-	OfficeID   int32
-	AdminRefID *int32
+	OfficeID   int64
+	AdminRefID *int64
 }
 
 // encore: authhandler
@@ -32,7 +32,7 @@ func AuthHandler(ctx context.Context, token string) (auth.UID, *AuthData, error)
 		return "", nil, api_errors.ErrUnauthenticated
 	}
 
-	var officeID int32
+	var officeID int64
 	if claims.OfficeID != nil {
 		officeID = *claims.OfficeID
 	}

@@ -116,7 +116,7 @@ func (mr *MockQuerierMockRecorder) GetPaymentPendingReservations(ctx any) *gomoc
 }
 
 // GetPaymentPendingReservationsByAgentsIDs mocks base method.
-func (m *MockQuerier) GetPaymentPendingReservationsByAgentsIDs(ctx context.Context, agentIds []int32) ([]db.GetPaymentPendingReservationsByAgentsIDsRow, error) {
+func (m *MockQuerier) GetPaymentPendingReservationsByAgentsIDs(ctx context.Context, agentIds []int64) ([]db.GetPaymentPendingReservationsByAgentsIDsRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPaymentPendingReservationsByAgentsIDs", ctx, agentIds)
 	ret0, _ := ret[0].([]db.GetPaymentPendingReservationsByAgentsIDsRow)

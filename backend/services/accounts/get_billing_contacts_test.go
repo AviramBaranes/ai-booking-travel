@@ -37,7 +37,7 @@ func seedOrg(t *testing.T, isOrganic bool) db.Organization {
 	return org
 }
 
-func seedOffice(t *testing.T, orgID int32) db.Office {
+func seedOffice(t *testing.T, orgID int64) db.CreateOfficeRow {
 	t.Helper()
 	o, err := query.CreateOffice(context.Background(), db.CreateOfficeParams{
 		Name: randomName(), OrganizationID: orgID,
@@ -50,7 +50,7 @@ func seedOffice(t *testing.T, orgID int32) db.Office {
 
 // seedContact creates a contact attached to either an office or an organization.
 // Exactly one of officeID or orgID must be non-nil.
-func seedContact(t *testing.T, officeID, orgID *int32, isPaymentResponsible bool) db.Contact {
+func seedContact(t *testing.T, officeID, orgID *int64, isPaymentResponsible bool) db.Contact {
 	t.Helper()
 	c, err := query.CreateContact(context.Background(), db.CreateContactParams{
 		FirstName:            randomName(),
@@ -94,7 +94,7 @@ func TestGetBillingContacts(t *testing.T) {
 		q.EXPECT().GetAgentsBillingContacts(gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("db error"))
 
-		_, err := ms.GetBillingContacts(ctx, &GetBillingContactsRequest{AgentsIDs: []int32{1}})
+		_, err := ms.GetBillingContacts(ctx, &GetBillingContactsRequest{AgentsIDs: []int64{1}})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -112,7 +112,7 @@ func TestGetBillingContacts(t *testing.T) {
 		agent := seedAgent(t, s, randomName()+"@test.com", randomIsraeliPhoneNumber(), office.ID)
 		seedContact(t, &office.ID, nil, false)
 
-		resp, err = s.GetBillingContacts(ctx, &GetBillingContactsRequest{AgentsIDs: []int32{agent.ID}})
+		resp, err = s.GetBillingContacts(ctx, &GetBillingContactsRequest{AgentsIDs: []int64{agent.ID}})
 		if err != nil || len(resp.Contacts) != 0 {
 			t.Fatalf("no payresp: err=%v, contacts=%d", err, len(resp.Contacts))
 		}
@@ -178,7 +178,7 @@ func TestGetBillingContacts(t *testing.T) {
 
 		// Single request carrying every agent, admin and customer ID under test.
 		// agentCExcluded is intentionally omitted to verify scoping by request IDs.
-		ids := []int32{
+		ids := []int64{
 			agentA1.ID, agentA2.ID,
 			agentB1a.ID, agentB1b.ID, agentB2.ID,
 			agentC.ID,

@@ -15,7 +15,7 @@ func TestAuthHandler(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Valid token", func(t *testing.T) {
-		office_id := int32(123)
+		office_id := int64(123)
 		user := db.User{
 			ID:       123,
 			Role:     db.UserRoleAgent,
@@ -54,7 +54,7 @@ func TestAuthHandler(t *testing.T) {
 	})
 
 	t.Run("Expired token", func(t *testing.T) {
-		office_id := int32(456)
+		office_id := int64(456)
 		user := db.User{
 			ID:       456,
 			Role:     db.UserRoleAgent,

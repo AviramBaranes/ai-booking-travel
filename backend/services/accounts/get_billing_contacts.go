@@ -15,13 +15,13 @@ type GetBillingContactsResponse struct {
 
 // Agent represents an agent associated with a billing contact.
 type Agent struct {
-	ID   int32
+	ID   int64
 	Name string
 }
 
 // Office represents an office associated with a billing contact.
 type Office struct {
-	ID     int32
+	ID     int64
 	Name   string
 	Agents []Agent
 }
@@ -30,7 +30,7 @@ type Office struct {
 type BillingContact struct {
 	ContactName      string
 	ContactEmail     string
-	OrganizationID   int32
+	OrganizationID   int64
 	OrganizationName string
 	IsOrganic        bool
 	Offices          []Office
@@ -38,7 +38,7 @@ type BillingContact struct {
 
 // GetBillingContactsRequest is the request type for GetBillingContacts.
 type GetBillingContactsRequest struct {
-	AgentsIDs []int32
+	AgentsIDs []int64
 }
 
 // encore:api private
@@ -62,8 +62,8 @@ func (s *Service) GetBillingContacts(ctx context.Context, p *GetBillingContactsR
 }
 
 // createContactsMap converts a db.ListContactsRow to a ContactResponse.
-func createContactsMap(rows []db.GetAgentsBillingContactsRow) map[int32]BillingContact {
-	contactsMap := make(map[int32]BillingContact)
+func createContactsMap(rows []db.GetAgentsBillingContactsRow) map[int64]BillingContact {
+	contactsMap := make(map[int64]BillingContact)
 	for _, r := range rows {
 		contact, exists := contactsMap[r.ContactID]
 		if !exists {
@@ -108,8 +108,8 @@ func createContactsMap(rows []db.GetAgentsBillingContactsRow) map[int32]BillingC
 
 // GetIcountClientIDRequest is the request type for GetIcountClientID.
 type GetIcountClientIDParams struct {
-	OfficeID       *int32
-	OrganizationID *int32
+	OfficeID       *int64
+	OrganizationID *int64
 }
 
 // GetIcountClientIDResponse is the response type for GetIcountClientID.

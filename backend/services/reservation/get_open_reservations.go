@@ -14,7 +14,7 @@ type OpenReservation struct {
 	ID                  int64
 	PaymentStatus       string
 	BrokerReservationID string
-	AgentID             int32
+	AgentID             int64
 	CreatedAt           string
 	VoucheredAt         string
 	VoucherNumber       string

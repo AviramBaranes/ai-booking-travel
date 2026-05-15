@@ -33,8 +33,8 @@ var (
 // ListOpenReservationsByBillingEntityRequest filters open reservations by a billing unit.
 // Exactly one of OfficeID or OrgID must be provided.
 type ListOpenReservationsByBillingEntityRequest struct {
-	OfficeID int32 `query:"office_id" encore:"optional"`
-	OrgID    int32 `query:"org_id" encore:"optional"`
+	OfficeID int64 `query:"office_id" encore:"optional"`
+	OrgID    int64 `query:"org_id" encore:"optional"`
 }
 
 func (r *ListOpenReservationsByBillingEntityRequest) Validate() error {
@@ -96,7 +96,7 @@ func (s *Service) ListOpenReservationsByBillingEntity(ctx context.Context, req *
 
 // getAgentsByBillingEntity resolves agent IDs from the given billing unit and validates
 // that the billing unit type matches the organization's organic setting.
-func (s *Service) getAgentsByBillingEntity(ctx context.Context, officeID, orgID int32) ([]int32, error) {
+func (s *Service) getAgentsByBillingEntity(ctx context.Context, officeID, orgID int64) ([]int64, error) {
 	if officeID != 0 {
 		r, err := accounts.GetAgentsByOfficeID(ctx, accounts.GetAgentsByOfficeIDRequest{
 			OfficeID: officeID,

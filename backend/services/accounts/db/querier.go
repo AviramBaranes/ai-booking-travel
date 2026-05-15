@@ -9,7 +9,7 @@ import (
 )
 
 type Querier interface {
-	CheckUserExists(ctx context.Context, email string) (int32, error)
+	CheckUserExists(ctx context.Context, email string) (int64, error)
 	CountAgents(ctx context.Context, arg CountAgentsParams) (int64, error)
 	CountContacts(ctx context.Context, arg CountContactsParams) (int64, error)
 	CountOffices(ctx context.Context, arg CountOfficesParams) (int64, error)
@@ -17,23 +17,23 @@ type Querier interface {
 	CreateAgent(ctx context.Context, arg CreateAgentParams) (CreateAgentRow, error)
 	CreateContact(ctx context.Context, arg CreateContactParams) (Contact, error)
 	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (CreateCustomerRow, error)
-	CreateOffice(ctx context.Context, arg CreateOfficeParams) (Office, error)
+	CreateOffice(ctx context.Context, arg CreateOfficeParams) (CreateOfficeRow, error)
 	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error)
 	CreateStaffUser(ctx context.Context, arg CreateStaffUserParams) (CreateStaffUserRow, error)
-	DeleteContact(ctx context.Context, id int32) error
+	DeleteContact(ctx context.Context, id int64) error
 	DeleteRefreshToken(ctx context.Context, jti string) error
-	DeleteRefreshTokensByUserId(ctx context.Context, userID int32) error
-	DeleteUser(ctx context.Context, id int32) error
-	GetAgentsBillingContacts(ctx context.Context, usersIds []int32) ([]GetAgentsBillingContactsRow, error)
-	GetAgentsByOfficeID(ctx context.Context, officeID int32) ([]GetAgentsByOfficeIDRow, error)
-	GetAgentsByOrganizationID(ctx context.Context, organizationID int32) ([]GetAgentsByOrganizationIDRow, error)
-	GetOfficeBillingState(ctx context.Context, id int32) (GetOfficeBillingStateRow, error)
-	GetOfficeIcountClientID(ctx context.Context, id int32) (*int32, error)
-	GetOrganizationBillingState(ctx context.Context, id int32) (GetOrganizationBillingStateRow, error)
-	GetOrganizationIcountClientID(ctx context.Context, id int32) (*int32, error)
+	DeleteRefreshTokensByUserId(ctx context.Context, userID int64) error
+	DeleteUser(ctx context.Context, id int64) error
+	GetAgentsBillingContacts(ctx context.Context, usersIds []int64) ([]GetAgentsBillingContactsRow, error)
+	GetAgentsByOfficeID(ctx context.Context, officeID int64) ([]GetAgentsByOfficeIDRow, error)
+	GetAgentsByOrganizationID(ctx context.Context, organizationID int64) ([]GetAgentsByOrganizationIDRow, error)
+	GetOfficeBillingState(ctx context.Context, id int64) (GetOfficeBillingStateRow, error)
+	GetOfficeIcountClientID(ctx context.Context, id int64) (*int32, error)
+	GetOrganizationBillingState(ctx context.Context, id int64) (GetOrganizationBillingStateRow, error)
+	GetOrganizationIcountClientID(ctx context.Context, id int64) (*int32, error)
 	GetRefreshToken(ctx context.Context, jti string) (RefreshToken, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
-	GetUserById(ctx context.Context, id int32) (User, error)
+	GetUserById(ctx context.Context, id int64) (User, error)
 	GetUserByPhone(ctx context.Context, phoneNumber *string) (User, error)
 	ListAdminsEmails(ctx context.Context) ([]string, error)
 	ListAgents(ctx context.Context, arg ListAgentsParams) ([]ListAgentsRow, error)
@@ -46,7 +46,7 @@ type Querier interface {
 	SaveOTP(ctx context.Context, arg SaveOTPParams) error
 	SaveRefreshToken(ctx context.Context, arg SaveRefreshTokenParams) error
 	UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error)
-	UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (Office, error)
+	UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (UpdateOfficeRow, error)
 	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error)
 }

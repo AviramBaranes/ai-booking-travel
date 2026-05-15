@@ -28,7 +28,7 @@ func validCreateOfficeParams() CreateOfficeRequest {
 
 func validUpdateOfficeParams() UpdateOfficeRequest {
 	name := "Updated Office"
-	orgID := int32(1)
+	orgID := int64(1)
 	phone := "0529876543"
 	address := "456 Updated St"
 	return UpdateOfficeRequest{
@@ -46,7 +46,7 @@ func officeMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
 	return q, &Service{query: q}
 }
 
-func createTestOffice(t *testing.T, s *Service, orgID int32, name string) *OfficeResponse {
+func createTestOffice(t *testing.T, s *Service, orgID int64, name string) *OfficeResponse {
 	t.Helper()
 	p := validCreateOfficeParams()
 	p.Name = name
@@ -102,7 +102,7 @@ func TestListOffices(t *testing.T) {
 		}
 
 		// No overlap between pages
-		page1IDs := make(map[int32]bool)
+		page1IDs := make(map[int64]bool)
 		for _, o := range page1.Offices {
 			page1IDs[o.ID] = true
 		}
@@ -403,7 +403,7 @@ func TestCreateOffice(t *testing.T) {
 		q.EXPECT().GetOrganizationBillingState(gomock.Any(), gomock.Any()).Return(
 			db.GetOrganizationBillingStateRow{IsOrganic: true}, nil,
 		)
-		q.EXPECT().CreateOffice(gomock.Any(), gomock.Any()).Return(db.Office{}, errors.New("db error"))
+		q.EXPECT().CreateOffice(gomock.Any(), gomock.Any()).Return(db.CreateOfficeRow{}, errors.New("db error"))
 
 		_, err := s.CreateOffice(ctx, validCreateOfficeParams())
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
@@ -542,7 +542,7 @@ func TestUpdateOffice(t *testing.T) {
 	t.Run("returns error when db fails", func(t *testing.T) {
 		t.Parallel()
 		q, s := officeMockService(t)
-		q.EXPECT().UpdateOffice(gomock.Any(), gomock.Any()).Return(db.Office{}, errors.New("db error"))
+		q.EXPECT().UpdateOffice(gomock.Any(), gomock.Any()).Return(db.UpdateOfficeRow{}, errors.New("db error"))
 
 		_, err := s.UpdateOffice(ctx, 1, validUpdateOfficeParams())
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)

@@ -20,7 +20,7 @@ WHERE agent_id = $1
 `
 
 type CountPriceOffersByAgentParams struct {
-	AgentID    int32
+	AgentID    int64
 	Status     NullOfferStatus
 	NameSearch *string
 }
@@ -90,7 +90,7 @@ RETURNING id, reservation_id, token, agent_id, status, name, pickup_location_id,
 `
 
 type CreatePriceOfferParams struct {
-	AgentID             int32
+	AgentID             int64
 	Name                string
 	PickupLocationID    int64
 	DropoffLocationID   int64
@@ -201,14 +201,14 @@ WHERE price_offers.id = $1 AND price_offers.agent_id = $2
 
 type GetPriceOfferByIdParams struct {
 	ID      int64
-	AgentID int32
+	AgentID int64
 }
 
 type GetPriceOfferByIdRow struct {
 	ID                      int64
 	ReservationID           *int64
 	Token                   pgtype.UUID
-	AgentID                 int32
+	AgentID                 int64
 	Status                  OfferStatus
 	Name                    string
 	PickupLocationID        int64
@@ -301,7 +301,7 @@ type GetPriceOfferByTokenRow struct {
 	ID                  int64
 	ReservationID       *int64
 	Token               pgtype.UUID
-	AgentID             int32
+	AgentID             int64
 	Status              OfferStatus
 	Name                string
 	PickupLocationID    int64
@@ -394,7 +394,7 @@ OFFSET $4
 `
 
 type ListPriceOffersByAgentParams struct {
-	AgentID    int32
+	AgentID    int64
 	Status     NullOfferStatus
 	NameSearch *string
 	PageOffset int32
@@ -484,7 +484,7 @@ type RenewPriceOfferDetailsParams struct {
 	BtErpPrice       int32
 	TotalPrice       int32
 	ID               int64
-	AgentID          int32
+	AgentID          int64
 }
 
 func (q *Queries) RenewPriceOfferDetails(ctx context.Context, arg RenewPriceOfferDetailsParams) error {
@@ -513,7 +513,7 @@ WHERE id = $1 AND agent_id = $2 AND reservation_id IS NULL
 
 type RenewPriceOfferUnavailableParams struct {
 	ID      int64
-	AgentID int32
+	AgentID int64
 }
 
 func (q *Queries) RenewPriceOfferUnavailable(ctx context.Context, arg RenewPriceOfferUnavailableParams) error {
@@ -530,7 +530,7 @@ WHERE id = $2 AND agent_id = $3 AND reservation_id IS NULL
 type SetPriceOfferRenewedAtParams struct {
 	RenewedAt pgtype.Timestamptz
 	ID        int64
-	AgentID   int32
+	AgentID   int64
 }
 
 func (q *Queries) SetPriceOfferRenewedAt(ctx context.Context, arg SetPriceOfferRenewedAtParams) error {
@@ -556,7 +556,7 @@ type UpdatePriceOfferParams struct {
 	OfferedPrice        *int32
 	ReservationID       *int64
 	ID                  int64
-	AgentID             int32
+	AgentID             int64
 }
 
 func (q *Queries) UpdatePriceOffer(ctx context.Context, arg UpdatePriceOfferParams) error {

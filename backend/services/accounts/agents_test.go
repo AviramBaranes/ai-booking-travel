@@ -24,7 +24,7 @@ func agentMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
 
 // seedAgent creates an org, office, and agent for use in agent tests.
 // Returns the agent response, orgID, officeID.
-func seedAgent(t *testing.T, s *Service, email, phone string, officeID int32) *CreateAgentResponse {
+func seedAgent(t *testing.T, s *Service, email, phone string, officeID int64) *CreateAgentResponse {
 	t.Helper()
 	resp, err := s.CreateAgent(context.Background(), CreateAgentRequest{
 		FirstName:   "Test",
@@ -81,7 +81,7 @@ func TestListAgents(t *testing.T) {
 			t.Fatalf("expected total 18, got %d", page2.Total)
 		}
 
-		page1IDs := make(map[int32]bool)
+		page1IDs := make(map[int64]bool)
 		for _, a := range page1.Agents {
 			page1IDs[a.ID] = true
 		}
@@ -302,7 +302,7 @@ func TestCreateAgent(t *testing.T) {
 	t.Run("returns error when check exists db fails", func(t *testing.T) {
 		t.Parallel()
 		q, s := agentMockService(t)
-		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int32(0), errors.New("db error"))
+		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
 		_, err := s.CreateAgent(ctx, CreateAgentRequest{
 			FirstName:   "DB",
@@ -318,7 +318,7 @@ func TestCreateAgent(t *testing.T) {
 	t.Run("returns error when create db fails", func(t *testing.T) {
 		t.Parallel()
 		q, s := agentMockService(t)
-		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int32(0), db.ErrNoRows)
+		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), db.ErrNoRows)
 		q.EXPECT().CreateAgent(gomock.Any(), gomock.Any()).Return(db.CreateAgentRow{}, errors.New("db error"))
 
 		_, err := s.CreateAgent(ctx, CreateAgentRequest{
@@ -360,7 +360,7 @@ func TestGetAgentsByOfficeID(t *testing.T) {
 		if len(resp.IDs) != 3 {
 			t.Fatalf("expected 3 IDs, got %d", len(resp.IDs))
 		}
-		got := make(map[int32]bool, len(resp.IDs))
+		got := make(map[int64]bool, len(resp.IDs))
 		for _, id := range resp.IDs {
 			got[id] = true
 		}
@@ -385,7 +385,7 @@ func TestGetAgentsByOfficeID(t *testing.T) {
 	t.Run("returns internal error on db failure", func(t *testing.T) {
 		t.Parallel()
 		q, s := agentMockService(t)
-		q.EXPECT().GetAgentsByOfficeID(gomock.Any(), int32(10)).Return(nil, errors.New("db error"))
+		q.EXPECT().GetAgentsByOfficeID(gomock.Any(), int64(10)).Return(nil, errors.New("db error"))
 
 		_, err := s.GetAgentsByOfficeID(ctx, GetAgentsByOfficeIDRequest{OfficeID: 10})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
@@ -420,7 +420,7 @@ func TestGetAgentsByOrganizationID(t *testing.T) {
 		if len(resp.IDs) != 3 {
 			t.Fatalf("expected 3 IDs, got %d", len(resp.IDs))
 		}
-		got := make(map[int32]bool, len(resp.IDs))
+		got := make(map[int64]bool, len(resp.IDs))
 		for _, id := range resp.IDs {
 			got[id] = true
 		}
@@ -445,7 +445,7 @@ func TestGetAgentsByOrganizationID(t *testing.T) {
 	t.Run("returns internal error on db failure", func(t *testing.T) {
 		t.Parallel()
 		q, s := agentMockService(t)
-		q.EXPECT().GetAgentsByOrganizationID(gomock.Any(), int32(5)).Return(nil, errors.New("db error"))
+		q.EXPECT().GetAgentsByOrganizationID(gomock.Any(), int64(5)).Return(nil, errors.New("db error"))
 
 		_, err := s.GetAgentsByOrganizationID(ctx, GetAgentsByOrganizationIDRequest{OrgID: 5})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)

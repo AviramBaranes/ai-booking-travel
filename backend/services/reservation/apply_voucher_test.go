@@ -29,7 +29,7 @@ func TestApplyVoucher(t *testing.T) {
 	})
 
 	t.Run("it returns not found of id doesn't exists", func(t *testing.T) {
-		var userID int32 = 123
+		var userID int64 = 123
 		var reservationID int64 = 456
 		ctx := authContext(userID)
 		err := ApplyVoucher(ctx, reservationID, ApplyVoucherRequest{
@@ -43,7 +43,7 @@ func TestApplyVoucher(t *testing.T) {
 	})
 
 	t.Run("it returns not found if id exists but reservation doesn't belong to user", func(t *testing.T) {
-		var authenticatedUserID int32 = 123
+		var authenticatedUserID int64 = 123
 		ctx := authContext(authenticatedUserID)
 		res, err := CreateReservation(context.Background(), *validCreateReservationParams())
 
@@ -73,7 +73,7 @@ func TestApplyVoucher(t *testing.T) {
 	})
 
 	t.Run("it updates the reservation with the voucher and current timestamp", func(t *testing.T) {
-		var authenticatedUserID int32 = 123
+		var authenticatedUserID int64 = 123
 		ctx := authContext(authenticatedUserID)
 		reservation := validCreateReservationParams()
 		reservation.UserID = authenticatedUserID

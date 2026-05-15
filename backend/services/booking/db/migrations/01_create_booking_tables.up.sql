@@ -192,7 +192,7 @@ CREATE TABLE
         id BIGSERIAL PRIMARY KEY,
         reservation_id BIGINT,
         token UUID NOT NULL UNIQUE DEFAULT gen_random_uuid (), 
-        agent_id INT NOT NULL, 
+        agent_id BIGINT NOT NULL, 
         status offer_status NOT NULL DEFAULT 'open',
         name TEXT NOT NULL,
 

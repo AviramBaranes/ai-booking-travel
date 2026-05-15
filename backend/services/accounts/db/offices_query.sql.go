@@ -15,13 +15,13 @@ const countOffices = `-- name: CountOffices :one
 SELECT COUNT(*)::BIGINT AS total
 FROM offices o
 WHERE
-    ($1::VARCHAR IS NULL            OR o.name ILIKE '%' || $1::VARCHAR || '%')
-    AND ($2::INTEGER IS NULL OR o.organization_id = $2::INTEGER)
+    ($1::TEXT IS NULL            OR o.name ILIKE '%' || $1::TEXT || '%')
+    AND ($2::BIGINT IS NULL OR o.organization_id = $2::BIGINT)
 `
 
 type CountOfficesParams struct {
 	Name           *string
-	OrganizationID *int32
+	OrganizationID *int64
 }
 
 func (q *Queries) CountOffices(ctx context.Context, arg CountOfficesParams) (int64, error) {
@@ -47,13 +47,24 @@ RETURNING id, name, organization_id, icount_client_id, phone, address, created_a
 
 type CreateOfficeParams struct {
 	Name           string
-	OrganizationID int32
+	OrganizationID int64
 	IcountClientID *int32
 	Phone          *string
 	Address        *string
 }
 
-func (q *Queries) CreateOffice(ctx context.Context, arg CreateOfficeParams) (Office, error) {
+type CreateOfficeRow struct {
+	ID             int64
+	Name           string
+	OrganizationID int64
+	IcountClientID *int32
+	Phone          *string
+	Address        *string
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
+func (q *Queries) CreateOffice(ctx context.Context, arg CreateOfficeParams) (CreateOfficeRow, error) {
 	row := q.db.QueryRow(ctx, createOffice,
 		arg.Name,
 		arg.OrganizationID,
@@ -61,7 +72,7 @@ func (q *Queries) CreateOffice(ctx context.Context, arg CreateOfficeParams) (Off
 		arg.Phone,
 		arg.Address,
 	)
-	var i Office
+	var i CreateOfficeRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -79,16 +90,16 @@ const getOfficeBillingState = `-- name: GetOfficeBillingState :one
 SELECT o.icount_client_id, o.organization_id, org.is_organic
 FROM offices o
 JOIN organizations org ON org.id = o.organization_id
-WHERE o.id = $1::INTEGER
+WHERE o.id = $1::BIGINT
 `
 
 type GetOfficeBillingStateRow struct {
 	IcountClientID *int32
-	OrganizationID int32
+	OrganizationID int64
 	IsOrganic      bool
 }
 
-func (q *Queries) GetOfficeBillingState(ctx context.Context, id int32) (GetOfficeBillingStateRow, error) {
+func (q *Queries) GetOfficeBillingState(ctx context.Context, id int64) (GetOfficeBillingStateRow, error) {
 	row := q.db.QueryRow(ctx, getOfficeBillingState, id)
 	var i GetOfficeBillingStateRow
 	err := row.Scan(&i.IcountClientID, &i.OrganizationID, &i.IsOrganic)
@@ -98,10 +109,10 @@ func (q *Queries) GetOfficeBillingState(ctx context.Context, id int32) (GetOffic
 const getOfficeIcountClientID = `-- name: GetOfficeIcountClientID :one
 SELECT icount_client_id
 FROM offices
-WHERE id = $1::INTEGER
+WHERE id = $1::BIGINT
 `
 
-func (q *Queries) GetOfficeIcountClientID(ctx context.Context, id int32) (*int32, error) {
+func (q *Queries) GetOfficeIcountClientID(ctx context.Context, id int64) (*int32, error) {
 	row := q.db.QueryRow(ctx, getOfficeIcountClientID, id)
 	var icount_client_id *int32
 	err := row.Scan(&icount_client_id)
@@ -118,7 +129,7 @@ ORDER BY o.name
 `
 
 type ListInorganicOfficesRow struct {
-	ID   int32
+	ID   int64
 	Name string
 }
 
@@ -160,8 +171,8 @@ JOIN organizations org ON org.id = o.organization_id
 LEFT JOIN contacts c ON c.office_id = o.id
 LEFT JOIN users u ON (u.office_id = o.id AND u.role = 'agent')
 WHERE
-    ($1::VARCHAR IS NULL            OR o.name ILIKE '%' || $1::VARCHAR || '%')
-    AND ($2::INTEGER IS NULL OR o.organization_id = $2::INTEGER)
+    ($1::TEXT IS NULL            OR o.name ILIKE '%' || $1::TEXT || '%')
+    AND ($2::BIGINT IS NULL OR o.organization_id = $2::BIGINT)
 GROUP BY o.id, org.name
 ORDER BY o.name
 LIMIT  $4::BIGINT
@@ -170,15 +181,15 @@ OFFSET $3::BIGINT
 
 type ListOfficesParams struct {
 	Name           *string
-	OrganizationID *int32
+	OrganizationID *int64
 	PageOffset     int64
 	PageSize       int64
 }
 
 type ListOfficesRow struct {
-	ID               int32
+	ID               int64
 	Name             string
-	OrganizationID   int32
+	OrganizationID   int64
 	OrganizationName string
 	IcountClientID   *int32
 	Phone            *string
@@ -241,14 +252,25 @@ RETURNING id, name, organization_id, icount_client_id, phone, address, created_a
 
 type UpdateOfficeParams struct {
 	Name           *string
-	OrganizationID *int32
+	OrganizationID *int64
 	IcountClientID *int32
 	Phone          *string
 	Address        *string
-	ID             int32
+	ID             int64
 }
 
-func (q *Queries) UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (Office, error) {
+type UpdateOfficeRow struct {
+	ID             int64
+	Name           string
+	OrganizationID int64
+	IcountClientID *int32
+	Phone          *string
+	Address        *string
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (UpdateOfficeRow, error) {
 	row := q.db.QueryRow(ctx, updateOffice,
 		arg.Name,
 		arg.OrganizationID,
@@ -257,7 +279,7 @@ func (q *Queries) UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (Off
 		arg.Address,
 		arg.ID,
 	)
-	var i Office
+	var i UpdateOfficeRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,

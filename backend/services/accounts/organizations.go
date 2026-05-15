@@ -16,26 +16,26 @@ import (
 const orgPageSize = 15
 
 type OrganizationResponse struct {
-	ID             int32    `json:"id"`
-	Name           string   `json:"name"`
-	IsOrganic      bool     `json:"isOrganic"`
-	IcountClientID *int32   `json:"icountClientId"`
-	Phone          *string  `json:"phone"`
-	Address        *string  `json:"address"`
-	Obligo         *float64 `json:"obligo"`
+	ID             int64   `json:"id"`
+	Name           string  `json:"name"`
+	IsOrganic      bool    `json:"isOrganic"`
+	IcountClientID *int32  `json:"icountClientId"`
+	Phone          *string `json:"phone"`
+	Address        *string `json:"address"`
+	Obligo         *int32  `json:"obligo"`
 }
 
 type ListOrganizationsRow struct {
-	ID             int32    `json:"id"`
-	Name           string   `json:"name"`
-	IsOrganic      bool     `json:"isOrganic"`
-	IcountClientID *int32   `json:"icountClientId"`
-	Phone          *string  `json:"phone"`
-	Address        *string  `json:"address"`
-	Obligo         *float64 `json:"obligo"`
-	OfficeCount    int64    `json:"officeCount"`
-	ContactCount   int64    `json:"contactCount"`
-	AgentCount     int64    `json:"agentCount"`
+	ID             int64   `json:"id"`
+	Name           string  `json:"name"`
+	IsOrganic      bool    `json:"isOrganic"`
+	IcountClientID *int32  `json:"icountClientId"`
+	Phone          *string `json:"phone"`
+	Address        *string `json:"address"`
+	Obligo         *int32  `json:"obligo"`
+	OfficeCount    int64   `json:"officeCount"`
+	ContactCount   int64   `json:"contactCount"`
+	AgentCount     int64   `json:"agentCount"`
 }
 
 type ListOrganizationsResponse struct {
@@ -58,12 +58,12 @@ func (p ListOrganizationsRequest) Validate() error {
 }
 
 type CreateOrganizationRequest struct {
-	Name           string   `json:"name" validate:"required,notblank"`
-	IsOrganic      bool     `json:"isOrganic"`
-	IcountClientID *int32   `json:"icountClientId" validate:"omitempty,gt=0" encore:"optional"`
-	Phone          *string  `json:"phone" validate:"omitempty,notblank" encore:"optional"`
-	Address        *string  `json:"address" validate:"omitempty,notblank" encore:"optional"`
-	Obligo         *float64 `json:"obligo" validate:"omitempty,gt=0" encore:"optional"`
+	Name           string  `json:"name" validate:"required,notblank"`
+	IsOrganic      bool    `json:"isOrganic"`
+	IcountClientID *int32  `json:"icountClientId" validate:"omitempty,gt=0" encore:"optional"`
+	Phone          *string `json:"phone" validate:"omitempty,notblank" encore:"optional"`
+	Address        *string `json:"address" validate:"omitempty,notblank" encore:"optional"`
+	Obligo         *int32  `json:"obligo" validate:"omitempty,gt=0" encore:"optional"`
 }
 
 func (p CreateOrganizationRequest) Validate() error {
@@ -74,12 +74,12 @@ func (p CreateOrganizationRequest) Validate() error {
 }
 
 type UpdateOrganizationRequest struct {
-	Name           *string  `json:"name" validate:"omitempty,notblank" encore:"optional"`
-	IsOrganic      *bool    `json:"isOrganic" encore:"optional"`
-	IcountClientID *int32   `json:"icountClientId" validate:"omitempty,gt=0" encore:"optional"`
-	Phone          *string  `json:"phone" encore:"optional"`
-	Address        *string  `json:"address" encore:"optional"`
-	Obligo         *float64 `json:"obligo" validate:"omitempty,gt=0" encore:"optional"`
+	Name           *string `json:"name" validate:"omitempty,notblank" encore:"optional"`
+	IsOrganic      *bool   `json:"isOrganic" encore:"optional"`
+	IcountClientID *int32  `json:"icountClientId" validate:"omitempty,gt=0" encore:"optional"`
+	Phone          *string `json:"phone" encore:"optional"`
+	Address        *string `json:"address" encore:"optional"`
+	Obligo         *int32  `json:"obligo" validate:"omitempty,gt=0" encore:"optional"`
 }
 
 func (p UpdateOrganizationRequest) Validate() error {
@@ -109,7 +109,7 @@ func validateIcountClientIDConstraint(isOrganic bool, icountClientID *int32) err
 // validateUpdateIcountClientIDConstraint handles the case where only one of
 // isOrganic / icountClientId is being changed. It fetches the current values
 // from the DB, merges the incoming partial update, and re-validates.
-func (s *Service) validateUpdateIcountClientIDConstraint(ctx context.Context, id int32, params UpdateOrganizationRequest) error {
+func (s *Service) validateUpdateIcountClientIDConstraint(ctx context.Context, id int64, params UpdateOrganizationRequest) error {
 	current, err := s.query.GetOrganizationBillingState(ctx, id)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
@@ -140,7 +140,7 @@ func toOrganizationResponse(o db.Organization) OrganizationResponse {
 		IcountClientID: o.IcountClientID,
 		Phone:          o.Phone,
 		Address:        o.Address,
-		Obligo:         db.FloatFromNumeric(o.Obligo),
+		Obligo:         o.Obligo,
 	}
 }
 
@@ -152,7 +152,7 @@ func toListOrganizationsRow(o db.ListOrganizationsRow) ListOrganizationsRow {
 		IcountClientID: o.IcountClientID,
 		Phone:          o.Phone,
 		Address:        o.Address,
-		Obligo:         db.FloatFromNumeric(o.Obligo),
+		Obligo:         o.Obligo,
 		OfficeCount:    o.OfficeCount,
 		ContactCount:   o.ContactCount,
 		AgentCount:     o.AgentCount,
@@ -216,7 +216,7 @@ func (s *Service) CreateOrganization(ctx context.Context, params CreateOrganizat
 		IcountClientID: params.IcountClientID,
 		Phone:          params.Phone,
 		Address:        params.Address,
-		Obligo:         db.NumericParam(params.Obligo),
+		Obligo:         params.Obligo,
 	})
 	if err != nil {
 		if db.IsUniqueViolation(err) {
@@ -233,7 +233,7 @@ func (s *Service) CreateOrganization(ctx context.Context, params CreateOrganizat
 // UpdateOrganization updates an existing organization.
 //
 //encore:api auth method=PUT path=/organizations/:id tag:admin
-func (s *Service) UpdateOrganization(ctx context.Context, id int32, params UpdateOrganizationRequest) (*OrganizationResponse, error) {
+func (s *Service) UpdateOrganization(ctx context.Context, id int64, params UpdateOrganizationRequest) (*OrganizationResponse, error) {
 	// When only one of IsOrganic / IcountClientID is provided we need to
 	// resolve the effective pair from the DB before validating.
 	if (params.IsOrganic != nil) != (params.IcountClientID != nil) {
@@ -249,7 +249,7 @@ func (s *Service) UpdateOrganization(ctx context.Context, id int32, params Updat
 		IcountClientID: params.IcountClientID,
 		Phone:          params.Phone,
 		Address:        params.Address,
-		Obligo:         db.NumericParam(params.Obligo),
+		Obligo:         params.Obligo,
 	})
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
@@ -267,7 +267,7 @@ func (s *Service) UpdateOrganization(ctx context.Context, id int32, params Updat
 }
 
 type OrganicOrganization struct {
-	ID   int32  `json:"id"`
+	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 

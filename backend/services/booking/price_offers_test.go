@@ -27,8 +27,8 @@ func priceOfferInvalidValueErr(field string) error {
 	})
 }
 
-func priceOfferAuthContext(userID int32) context.Context {
-	uid := auth.UID(strconv.Itoa(int(userID)))
+func priceOfferAuthContext(userID int64) context.Context {
+	uid := auth.UID(strconv.FormatInt(userID, 10))
 	return auth.WithContext(context.Background(), uid, &authpkg.AuthData{
 		UserID: userID,
 		Role:   authpkg.UserRoleAgent,
@@ -165,7 +165,7 @@ func planNotFoundErr() error {
 
 func int32Ptr(v int32) *int32 { return &v }
 
-func makePriceOfferRenewable(t *testing.T, q *db.Queries, ctx context.Context, offerID int64, agentID int32) {
+func makePriceOfferRenewable(t *testing.T, q *db.Queries, ctx context.Context, offerID int64, agentID int64) {
 	t.Helper()
 	err := q.SetPriceOfferRenewedAt(ctx, db.SetPriceOfferRenewedAtParams{
 		ID:      offerID,
@@ -183,7 +183,7 @@ func makePriceOfferRenewable(t *testing.T, q *db.Queries, ctx context.Context, o
 // --- CreatePriceOffer ---
 
 func TestCreatePriceOffer(t *testing.T) {
-	const agentID int32 = 200001
+	const agentID int64 = 200001
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 
@@ -330,7 +330,7 @@ func TestCreatePriceOffer(t *testing.T) {
 // --- GetClientPriceOffer ---
 
 func TestGetClientPriceOffer(t *testing.T) {
-	const agentID int32 = 200002
+	const agentID int64 = 200002
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 
@@ -417,7 +417,7 @@ func TestGetClientPriceOffer(t *testing.T) {
 // --- GetAgentPriceOffer ---
 
 func TestGetAgentPriceOffer(t *testing.T) {
-	const agentID int32 = 200003
+	const agentID int64 = 200003
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 
@@ -543,7 +543,7 @@ func TestGetAgentPriceOffer(t *testing.T) {
 // --- RenewPriceOffer ---
 
 func TestRenewPriceOffer(t *testing.T) {
-	const agentID int32 = 200004
+	const agentID int64 = 200004
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 
@@ -765,7 +765,7 @@ func TestListPriceOffers(t *testing.T) {
 		})
 	})
 
-	const agentID int32 = 200006
+	const agentID int64 = 200006
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 
@@ -980,7 +980,7 @@ func TestUpdatePriceOffer(t *testing.T) {
 		})
 	})
 
-	const agentID int32 = 200007
+	const agentID int64 = 200007
 	ctx := priceOfferAuthContext(agentID)
 	q := testQuerier()
 

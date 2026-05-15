@@ -17,7 +17,7 @@ LEFT JOIN offices of ON of.organization_id = o.id
 LEFT JOIN contacts c ON (c.organization_id = o.id OR c.office_id = of.id)
 LEFT JOIN users u ON (u.office_id = of.id AND u.role = 'agent')
 WHERE
-    (sqlc.narg(name)::VARCHAR IS NULL       OR o.name ILIKE '%' || sqlc.narg(name)::VARCHAR || '%')
+    (sqlc.narg(name)::TEXT IS NULL       OR o.name ILIKE '%' || sqlc.narg(name)::TEXT || '%')
     AND (sqlc.narg(is_organic)::BOOLEAN IS NULL OR o.is_organic = sqlc.narg(is_organic)::BOOLEAN)
 GROUP BY o.id
 ORDER BY o.name
@@ -28,7 +28,7 @@ OFFSET sqlc.arg(page_offset)::BIGINT;
 SELECT COUNT(*)::BIGINT AS total
 FROM organizations o
 WHERE
-    (sqlc.narg(name)::VARCHAR IS NULL       OR o.name ILIKE '%' || sqlc.narg(name)::VARCHAR || '%')
+    (sqlc.narg(name)::TEXT IS NULL       OR o.name ILIKE '%' || sqlc.narg(name)::TEXT || '%')
     AND (sqlc.narg(is_organic)::BOOLEAN IS NULL OR o.is_organic = sqlc.narg(is_organic)::BOOLEAN);
 
 -- name: CreateOrganization :one
@@ -68,9 +68,9 @@ ORDER BY name;
 -- name: GetOrganizationIcountClientID :one
 SELECT icount_client_id
 FROM organizations
-WHERE id = sqlc.arg(id)::INTEGER;
+WHERE id = sqlc.arg(id)::BIGINT;
 
 -- name: GetOrganizationBillingState :one
 SELECT is_organic, icount_client_id
 FROM organizations
-WHERE id = sqlc.arg(id)::INTEGER;
+WHERE id = sqlc.arg(id)::BIGINT;

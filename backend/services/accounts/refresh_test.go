@@ -23,7 +23,7 @@ func (hq *refreshHybridQuerier) GetRefreshToken(ctx context.Context, id string) 
 	return query.GetRefreshToken(ctx, id)
 }
 
-func (hq *refreshHybridQuerier) GetUserById(ctx context.Context, id int32) (db.User, error) {
+func (hq *refreshHybridQuerier) GetUserById(ctx context.Context, id int64) (db.User, error) {
 	return query.GetUserById(ctx, id)
 }
 
@@ -167,7 +167,7 @@ func TestRefreshTokens(t *testing.T) {
 			Return(nil)
 
 		q.EXPECT().
-			GetUserById(gomock.Any(), int32(999999)).
+			GetUserById(gomock.Any(), int64(999999)).
 			Return(db.User{}, db.ErrNoRows)
 
 		s := &Service{query: q}
@@ -197,7 +197,7 @@ func TestRefreshTokens(t *testing.T) {
 		q.EXPECT().DeleteRefreshToken(gomock.Any(), jti).Return(nil)
 
 		q.EXPECT().
-			GetUserById(gomock.Any(), int32(123)).
+			GetUserById(gomock.Any(), int64(123)).
 			Return(db.User{}, errors.New("db error"))
 
 		s := &Service{query: q}
@@ -227,7 +227,7 @@ func TestRefreshTokens(t *testing.T) {
 		q.EXPECT().DeleteRefreshToken(gomock.Any(), jti).Return(nil)
 
 		q.EXPECT().
-			GetUserById(gomock.Any(), int32(123)).
+			GetUserById(gomock.Any(), int64(123)).
 			Return(db.User{ID: 123, Email: "test@example.com"}, nil)
 
 		// generateTokens calls SaveRefreshToken

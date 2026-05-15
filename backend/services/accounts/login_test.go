@@ -20,16 +20,16 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func adminAuthContext(adminID int32) context.Context {
-	uid := auth.UID(strconv.Itoa(int(adminID)))
+func adminAuthContext(adminID int64) context.Context {
+	uid := auth.UID(strconv.FormatInt(adminID, 10))
 	return auth.WithContext(context.Background(), uid, &AuthData{
 		UserID: adminID,
 		Role:   UserRoleAdmin,
 	})
 }
 
-func agentAuthContext(agentID int32, adminRefID *int32) context.Context {
-	uid := auth.UID(strconv.Itoa(int(agentID)))
+func agentAuthContext(agentID int64, adminRefID *int64) context.Context {
+	uid := auth.UID(strconv.FormatInt(agentID, 10))
 	return auth.WithContext(context.Background(), uid, &AuthData{
 		UserID:     agentID,
 		Role:       UserRoleAgent,
@@ -259,7 +259,7 @@ func TestLoginAsAgent(t *testing.T) {
 		t.Cleanup(ctrl.Finish)
 
 		q := mocks.NewMockQuerier(ctrl)
-		q.EXPECT().GetUserById(gomock.Any(), int32(12345)).
+		q.EXPECT().GetUserById(gomock.Any(), int64(12345)).
 			Return(db.User{}, errors.New("db error"))
 
 		et.MockService[Interface]("accounts", &Service{query: q})
@@ -273,7 +273,7 @@ func TestLoginAsAgent(t *testing.T) {
 		t.Cleanup(ctrl.Finish)
 
 		q := mocks.NewMockQuerier(ctrl)
-		q.EXPECT().GetUserById(gomock.Any(), int32(1)).
+		q.EXPECT().GetUserById(gomock.Any(), int64(1)).
 			Return(db.User{ID: 1, Role: db.UserRoleAgent}, nil)
 		q.EXPECT().SaveRefreshToken(gomock.Any(), gomock.Any()).
 			Return(errors.New("db error"))
@@ -365,14 +365,14 @@ func TestLoginBackToAdmin(t *testing.T) {
 	})
 
 	t.Run("Admin not found", func(t *testing.T) {
-		adminRefID := int32(99999)
+		adminRefID := int64(99999)
 		agentCtx := agentAuthContext(1, &adminRefID)
 		_, err := LoginBackToAdmin(agentCtx)
 		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
 	})
 
 	t.Run("DB error looking up admin", func(t *testing.T) {
-		adminRefID := int32(1)
+		adminRefID := int64(1)
 		agentCtx := agentAuthContext(2, &adminRefID)
 		ctrl := gomock.NewController(t)
 		t.Cleanup(ctrl.Finish)
@@ -387,7 +387,7 @@ func TestLoginBackToAdmin(t *testing.T) {
 	})
 
 	t.Run("Generate tokens fails", func(t *testing.T) {
-		adminRefID := int32(1)
+		adminRefID := int64(1)
 		agentCtx := agentAuthContext(2, &adminRefID)
 		ctrl := gomock.NewController(t)
 		t.Cleanup(ctrl.Finish)

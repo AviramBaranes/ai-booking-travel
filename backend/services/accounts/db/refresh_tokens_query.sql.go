@@ -24,7 +24,7 @@ const deleteRefreshTokensByUserId = `-- name: DeleteRefreshTokensByUserId :exec
 DELETE FROM refresh_tokens WHERE user_id = $1
 `
 
-func (q *Queries) DeleteRefreshTokensByUserId(ctx context.Context, userID int32) error {
+func (q *Queries) DeleteRefreshTokensByUserId(ctx context.Context, userID int64) error {
 	_, err := q.db.Exec(ctx, deleteRefreshTokensByUserId, userID)
 	return err
 }
@@ -52,8 +52,8 @@ VALUES ($1, $2, $3, $4)
 
 type SaveRefreshTokenParams struct {
 	Jti        string
-	UserID     int32
-	AdminRefID *int32
+	UserID     int64
+	AdminRefID *int64
 	ExpiresAt  pgtype.Timestamptz
 }
 

@@ -10,7 +10,7 @@ import (
 // --- Request / Response types ---
 
 type AccountantResponse struct {
-	ID        int32      `json:"id"`
+	ID        int64      `json:"id"`
 	FirstName string     `json:"firstName"`
 	LastName  string     `json:"lastName"`
 	Email     string     `json:"email"`
@@ -35,7 +35,7 @@ func (p CreateAccountantRequest) Validate() error {
 }
 
 type CreateAccountantResponse struct {
-	ID int32 `json:"id"`
+	ID int64 `json:"id"`
 }
 
 // --- Endpoints ---
@@ -66,4 +66,3 @@ func (s *Service) CreateAccountant(ctx context.Context, params CreateAccountantR
 	}
 	return &CreateAccountantResponse{ID: resp.ID}, nil
 }
-

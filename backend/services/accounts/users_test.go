@@ -108,7 +108,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Cleanup(cleanup)
 
 		resp, err := s.UpdateUser(ctx, agent.ID, UpdateUserRequest{
-			OfficeID: ptrInt32(officeB),
+			OfficeID: &officeB,
 		})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
@@ -128,9 +128,10 @@ func TestUpdateUser(t *testing.T) {
 		}
 		t.Cleanup(cleanup)
 
+		officeID := int64(999999)
 		// Use a non-existent office ID – FK constraint should reject this.
 		_, err = s.UpdateUser(ctx, admin.ID, UpdateUserRequest{
-			OfficeID: ptrInt32(999999),
+			OfficeID: &officeID,
 		})
 		if err == nil {
 			t.Fatal("expected error when setting invalid officeId on admin, got nil")
@@ -150,7 +151,7 @@ func TestUpdateUser(t *testing.T) {
 		_, validOffice := seedOrgAndOffice(t)
 
 		_, err = s.UpdateUser(ctx, admin.ID, UpdateUserRequest{
-			OfficeID: ptrInt32(validOffice),
+			OfficeID: &validOffice,
 		})
 		if err == nil {
 			t.Fatal("expected error when setting officeId on admin, got nil")
@@ -305,7 +306,8 @@ func TestUpdateUser(t *testing.T) {
 
 	t.Run("validation rejects officeId 0", func(t *testing.T) {
 		t.Parallel()
-		err := UpdateUserRequest{OfficeID: ptrInt32(0)}.Validate()
+		officeID := int64(0)
+		err := UpdateUserRequest{OfficeID: &officeID}.Validate()
 		api_errors.AssertApiError(t, invalidValueErr("officeId"), err)
 	})
 
@@ -323,7 +325,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Parallel()
 		q, ms := userMockService(t)
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).
-			Return(int32(0), errors.New("db error"))
+			Return(int64(0), errors.New("db error"))
 
 		_, err := ms.UpdateUser(ctx, 1, UpdateUserRequest{
 			Email: ptrStr("fail@test.com"),

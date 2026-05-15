@@ -24,8 +24,8 @@ type BillRequestParams struct {
 	IDs            []int64 `json:"ids" validate:"required,min=1"`
 	TotalPaid      float64 `json:"total_paid" validate:"required,gt=0"`
 	TransferDate   string  `json:"transfer_date" validate:"required,datetime=2006-01-02"`
-	OfficeID       *int32  `json:"office_id" encore:"optional"`
-	OrganizationID *int32  `json:"organization_id" encore:"optional"`
+	OfficeID       *int64  `json:"office_id" encore:"optional"`
+	OrganizationID *int64  `json:"organization_id" encore:"optional"`
 }
 
 func (r BillRequestParams) Validate() error {
@@ -56,8 +56,8 @@ func Bill(ctx context.Context, p BillRequestParams) (*BillResponse, error) {
 	}
 
 	openReservations, err := reservation.ListOpenReservationsByBillingEntity(ctx, &reservation.ListOpenReservationsByBillingEntityRequest{
-		OfficeID: derefInt32(p.OfficeID),
-		OrgID:    derefInt32(p.OrganizationID),
+		OfficeID: derefInt64(p.OfficeID),
+		OrgID:    derefInt64(p.OrganizationID),
 	})
 
 	if err != nil {
@@ -203,7 +203,7 @@ func parseBillingResponse(result *icount.ICountCreateDocResponse) (*BillResponse
 	}
 }
 
-func derefInt32(ptr *int32) int32 {
+func derefInt64(ptr *int64) int64 {
 	if ptr == nil {
 		return 0
 	}

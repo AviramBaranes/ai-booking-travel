@@ -15,8 +15,8 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func authContext(userID int32) context.Context {
-	uid := auth.UID(strconv.Itoa(int(userID)))
+func authContext(userID int64) context.Context {
+	uid := auth.UID(strconv.FormatInt(userID, 10))
 	return auth.WithContext(context.Background(), uid, &authpkg.AuthData{
 		UserID: userID,
 		Role:   authpkg.UserRoleAgent,
@@ -24,7 +24,7 @@ func authContext(userID int32) context.Context {
 }
 
 // seedReservation inserts a reservation for the given user and returns its ID.
-func seedReservation(t *testing.T, ctx context.Context, s *Service, userID int32, modify func(p *CreateReservationRequest)) int64 {
+func seedReservation(t *testing.T, ctx context.Context, s *Service, userID int64, modify func(p *CreateReservationRequest)) int64 {
 	t.Helper()
 	p := validCreateReservationParams()
 	p.UserID = userID
@@ -86,7 +86,7 @@ func TestListReservations_Validation(t *testing.T) {
 }
 
 func TestListReservations(t *testing.T) {
-	const userID int32 = 42
+	const userID int64 = 42
 	ctx := authContext(userID)
 	s := &Service{query: testQuerier()}
 
@@ -298,7 +298,7 @@ func TestListReservations(t *testing.T) {
 }
 
 func TestListReservations_EmptyUser(t *testing.T) {
-	const emptyUserID int32 = 9999
+	const emptyUserID int64 = 9999
 	ctx := authContext(emptyUserID)
 
 	t.Run("returns empty list when no reservations exist", func(t *testing.T) {

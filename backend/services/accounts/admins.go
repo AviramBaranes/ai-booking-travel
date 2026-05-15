@@ -28,7 +28,7 @@ var cfg = config.Load[*adminConfig]()
 // --- Request / Response types ---
 
 type AdminResponse struct {
-	ID        int32      `json:"id"`
+	ID        int64      `json:"id"`
 	FirstName string     `json:"firstName"`
 	LastName  string     `json:"lastName"`
 	Email     string     `json:"email"`
@@ -56,7 +56,7 @@ func (p CreateAdminRequest) Validate() error {
 }
 
 type CreateAdminResponse struct {
-	ID int32 `json:"id"`
+	ID int64 `json:"id"`
 }
 
 // --- Helpers ---

@@ -26,7 +26,7 @@ RETURNING id, user_id, broker_reservation_id, reservation_status, payment_status
 
 type ApplyVoucherParams struct {
 	ID            int64
-	UserID        int32
+	UserID        int64
 	VoucherNumber *string
 }
 
@@ -98,7 +98,7 @@ WHERE user_id = $1
 `
 
 type CountReservationsByUserParams struct {
-	UserID     int32
+	UserID     int64
 	Status     NullReservationStatus
 	Name       *string
 	PickupDate pgtype.Date
@@ -149,7 +149,7 @@ OR
 
 type GetPaymentPendingReservationsRow struct {
 	ID                  int64
-	UserID              int32
+	UserID              int64
 	PaymentStatus       PaymentStatus
 	DriverTitle         string
 	DriverFirstName     string
@@ -227,7 +227,7 @@ SELECT
     pickup_date
 FROM reservations
 WHERE
-    user_id = ANY($1::INT[])
+    user_id = ANY($1::BIGINT[])
 AND(
     (reservation_status = 'vouchered' AND payment_status = 'unpaid')
 OR
@@ -249,7 +249,7 @@ type GetPaymentPendingReservationsByAgentsIDsRow struct {
 	PickupDate          pgtype.Date
 }
 
-func (q *Queries) GetPaymentPendingReservationsByAgentsIDs(ctx context.Context, agentIds []int32) ([]GetPaymentPendingReservationsByAgentsIDsRow, error) {
+func (q *Queries) GetPaymentPendingReservationsByAgentsIDs(ctx context.Context, agentIds []int64) ([]GetPaymentPendingReservationsByAgentsIDsRow, error) {
 	rows, err := q.db.Query(ctx, getPaymentPendingReservationsByAgentsIDs, agentIds)
 	if err != nil {
 		return nil, err
@@ -323,7 +323,7 @@ WHERE id = $1
 
 type GetReservationByIDRow struct {
 	ID                  int64
-	UserID              int32
+	UserID              int64
 	BrokerReservationID string
 	ReservationStatus   ReservationStatus
 	PaymentStatus       PaymentStatus
@@ -459,7 +459,7 @@ INSERT INTO reservations (
 `
 
 type InsertReservationParams struct {
-	UserID              int32
+	UserID              int64
 	BrokerReservationID string
 	Broker              Broker
 	SupplierCode        string
@@ -550,7 +550,7 @@ OFFSET $7::BIGINT
 `
 
 type ListReservationsByUserParams struct {
-	UserID     int32
+	UserID     int64
 	Status     NullReservationStatus
 	Name       *string
 	PickupDate pgtype.Date

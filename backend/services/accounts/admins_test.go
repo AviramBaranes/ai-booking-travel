@@ -82,7 +82,7 @@ func TestCreateFirstAdmin(t *testing.T) {
 		expectedErr := errors.New("db error")
 		q.EXPECT().
 			CheckUserExists(gomock.Any(), secrets.FirstAdminEmail).
-			Return(int32(0), expectedErr)
+			Return(int64(0), expectedErr)
 
 		defer func() {
 			if r := recover(); r == nil {
@@ -232,7 +232,7 @@ func TestCreateAdmin(t *testing.T) {
 	t.Run("returns error when check exists db fails", func(t *testing.T) {
 		t.Parallel()
 		q, s := adminMockService(t)
-		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int32(0), errors.New("db error"))
+		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
 		_, err := s.CreateAdmin(ctx, CreateAdminRequest{
 			FirstName: "DB",
@@ -246,7 +246,7 @@ func TestCreateAdmin(t *testing.T) {
 	t.Run("returns error when create db fails", func(t *testing.T) {
 		t.Parallel()
 		q, s := adminMockService(t)
-		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int32(0), db.ErrNoRows)
+		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), db.ErrNoRows)
 		q.EXPECT().CreateStaffUser(gomock.Any(), gomock.Any()).Return(db.CreateStaffUserRow{}, errors.New("db error"))
 
 		_, err := s.CreateAdmin(ctx, CreateAdminRequest{

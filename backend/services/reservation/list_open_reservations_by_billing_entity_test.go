@@ -51,7 +51,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		t.Parallel()
 		s := &Service{query: testQuerier()}
 		et.MockEndpoint(accounts.GetAgentsByOfficeID, func(_ context.Context, _ accounts.GetAgentsByOfficeIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int32{1, 2}, IsOrganic: true}, nil
+			return &accounts.GetAgentsResponse{IDs: []int64{1, 2}, IsOrganic: true}, nil
 		})
 
 		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityRequest{OfficeID: 10})
@@ -62,7 +62,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		t.Parallel()
 		s := &Service{query: testQuerier()}
 		et.MockEndpoint(accounts.GetAgentsByOrganizationID, func(_ context.Context, _ accounts.GetAgentsByOrganizationIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int32{1, 2}, IsOrganic: false}, nil
+			return &accounts.GetAgentsResponse{IDs: []int64{1, 2}, IsOrganic: false}, nil
 		})
 
 		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityRequest{OrgID: 5})
@@ -71,7 +71,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 
 	t.Run("returns reservations for multiple agents in an office (inorganic)", func(t *testing.T) {
 		t.Parallel()
-		const agent1, agent2 int32 = 10001, 10002
+		const agent1, agent2 int64 = 10001, 10002
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
 
@@ -94,7 +94,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		}
 
 		et.MockEndpoint(accounts.GetAgentsByOfficeID, func(_ context.Context, _ accounts.GetAgentsByOfficeIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int32{agent1, agent2}, IsOrganic: false}, nil
+			return &accounts.GetAgentsResponse{IDs: []int64{agent1, agent2}, IsOrganic: false}, nil
 		})
 
 		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityRequest{OfficeID: 10})
@@ -106,7 +106,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 
 	t.Run("returns reservations for multiple agents in an organic org", func(t *testing.T) {
 		t.Parallel()
-		const agent1, agent2 int32 = 20001, 20002
+		const agent1, agent2 int64 = 20001, 20002
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
 
@@ -139,7 +139,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		}
 
 		et.MockEndpoint(accounts.GetAgentsByOrganizationID, func(_ context.Context, _ accounts.GetAgentsByOrganizationIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int32{agent1, agent2}, IsOrganic: true}, nil
+			return &accounts.GetAgentsResponse{IDs: []int64{agent1, agent2}, IsOrganic: true}, nil
 		})
 
 		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityRequest{OrgID: 5})
@@ -153,7 +153,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		t.Parallel()
 		q, s := mockService(t)
 		et.MockEndpoint(accounts.GetAgentsByOfficeID, func(_ context.Context, _ accounts.GetAgentsByOfficeIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int32{1}, IsOrganic: false}, nil
+			return &accounts.GetAgentsResponse{IDs: []int64{1}, IsOrganic: false}, nil
 		})
 		q.EXPECT().GetPaymentPendingReservationsByAgentsIDs(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
@@ -165,7 +165,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 
 	t.Run("returns empty list when no open reservations exist for the agents", func(t *testing.T) {
 		t.Parallel()
-		const agent1, agent2 int32 = 30001, 30002
+		const agent1, agent2 int64 = 30001, 30002
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
 
@@ -178,7 +178,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		})
 
 		et.MockEndpoint(accounts.GetAgentsByOfficeID, func(_ context.Context, _ accounts.GetAgentsByOfficeIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int32{agent1, agent2}, IsOrganic: false}, nil
+			return &accounts.GetAgentsResponse{IDs: []int64{agent1, agent2}, IsOrganic: false}, nil
 		})
 
 		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityRequest{OfficeID: 10})
@@ -195,7 +195,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		// PurchasePrice=100, BrokerErpPrice=15 → carPurchasePrice=115
 		// MarkupPercentage=45% → carSellingPrice=115*1.45=166.75, profit=51.75
 		// BtErpPrice=20 → erpSellingPrice=20
-		const agentID int32 = 40001
+		const agentID int64 = 40001
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
 
@@ -215,7 +215,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		}
 
 		et.MockEndpoint(accounts.GetAgentsByOrganizationID, func(_ context.Context, _ accounts.GetAgentsByOrganizationIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int32{agentID}, IsOrganic: true}, nil
+			return &accounts.GetAgentsResponse{IDs: []int64{agentID}, IsOrganic: true}, nil
 		})
 
 		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityRequest{OrgID: 5})

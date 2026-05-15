@@ -16,9 +16,9 @@ SELECT id FROM users
 WHERE email = $1
 `
 
-func (q *Queries) CheckUserExists(ctx context.Context, email string) (int32, error) {
+func (q *Queries) CheckUserExists(ctx context.Context, email string) (int64, error) {
 	row := q.db.QueryRow(ctx, checkUserExists, email)
-	var id int32
+	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
@@ -28,16 +28,16 @@ SELECT COUNT(*)
 FROM users
 WHERE role = 'agent'
   AND ($1::text IS NULL OR email ILIKE '%' || $1::text || '%' OR phone_number ILIKE '%' || $1::text || '%')
-  AND ($2::int IS NULL OR office_id = $2::int)
-  AND ($3::int IS NULL OR office_id IN (
-    SELECT id FROM offices WHERE organization_id = $3::int
+  AND ($2::bigint IS NULL OR office_id = $2::bigint)
+  AND ($3::bigint IS NULL OR office_id IN (
+    SELECT id FROM offices WHERE organization_id = $3::bigint
   ))
 `
 
 type CountAgentsParams struct {
 	Search         *string
-	OfficeID       *int32
-	OrganizationID *int32
+	OfficeID       *int64
+	OrganizationID *int64
 }
 
 func (q *Queries) CountAgents(ctx context.Context, arg CountAgentsParams) (int64, error) {
@@ -59,17 +59,17 @@ type CreateAgentParams struct {
 	Email        string
 	PhoneNumber  *string
 	PasswordHash string
-	OfficeID     *int32
+	OfficeID     *int64
 }
 
 type CreateAgentRow struct {
-	ID          int32
+	ID          int64
 	Role        UserRole
 	FirstName   string
 	LastName    string
 	Email       string
 	PhoneNumber *string
-	OfficeID    *int32
+	OfficeID    *int64
 	LastLogin   pgtype.Timestamptz
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
@@ -108,7 +108,7 @@ VALUES (
   $2,
   $3,
   $4,
-  $5::varchar,
+  $5::text,
   $6,
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP
@@ -126,14 +126,14 @@ type CreateCustomerParams struct {
 }
 
 type CreateCustomerRow struct {
-	ID          int32
+	ID          int64
 	Role        UserRole
 	FirstName   string
 	LastName    string
 	Email       string
 	PhoneNumber *string
 	Otp         *string
-	OfficeID    *int32
+	OfficeID    *int64
 	LastLogin   pgtype.Timestamptz
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
@@ -180,12 +180,12 @@ type CreateStaffUserParams struct {
 }
 
 type CreateStaffUserRow struct {
-	ID        int32
+	ID        int64
 	Role      UserRole
 	FirstName string
 	LastName  string
 	Email     string
-	OfficeID  *int32
+	OfficeID  *int64
 	LastLogin pgtype.Timestamptz
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
@@ -219,7 +219,7 @@ DELETE FROM users
 WHERE id = $1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
+func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteUser, id)
 	return err
 }
@@ -238,25 +238,25 @@ INNER JOIN contacts as c ON c.is_payment_responsible = TRUE AND (
     (c.office_id = office.id AND org.is_organic = FALSE)
 )
 WHERE u.role = 'agent'
-  AND u.id = ANY($1::int[])
+  AND u.id = ANY($1::bigint[])
 `
 
 type GetAgentsBillingContactsRow struct {
-	AgentID          int32
+	AgentID          int64
 	AgentFirstName   string
 	AgentLastName    string
-	ContactID        int32
+	ContactID        int64
 	Email            string
 	ContactFirstName string
 	ContactLastName  string
-	OrganizationID   int32
+	OrganizationID   int64
 	OrganizationName string
 	IsOrganic        bool
-	OfficeID         int32
+	OfficeID         int64
 	OfficeName       string
 }
 
-func (q *Queries) GetAgentsBillingContacts(ctx context.Context, usersIds []int32) ([]GetAgentsBillingContactsRow, error) {
+func (q *Queries) GetAgentsBillingContacts(ctx context.Context, usersIds []int64) ([]GetAgentsBillingContactsRow, error) {
 	rows, err := q.db.Query(ctx, getAgentsBillingContacts, usersIds)
 	if err != nil {
 		return nil, err
@@ -294,15 +294,15 @@ SELECT u.id, org.is_organic
 FROM users as u
 INNER JOIN offices as office ON office.id = u.office_id
 INNER JOIN organizations as org ON org.id = office.organization_id
-WHERE u.role = 'agent' AND u.office_id = $1::int
+WHERE u.role = 'agent' AND u.office_id = $1::bigint
 `
 
 type GetAgentsByOfficeIDRow struct {
-	ID        int32
+	ID        int64
 	IsOrganic bool
 }
 
-func (q *Queries) GetAgentsByOfficeID(ctx context.Context, officeID int32) ([]GetAgentsByOfficeIDRow, error) {
+func (q *Queries) GetAgentsByOfficeID(ctx context.Context, officeID int64) ([]GetAgentsByOfficeIDRow, error) {
 	rows, err := q.db.Query(ctx, getAgentsByOfficeID, officeID)
 	if err != nil {
 		return nil, err
@@ -327,15 +327,15 @@ SELECT u.id, org.is_organic
 FROM users as u
 INNER JOIN offices as office ON office.id = u.office_id
 INNER JOIN organizations as org ON org.id = office.organization_id
-WHERE u.role = 'agent' AND office.organization_id = $1::int
+WHERE u.role = 'agent' AND office.organization_id = $1::bigint
 `
 
 type GetAgentsByOrganizationIDRow struct {
-	ID        int32
+	ID        int64
 	IsOrganic bool
 }
 
-func (q *Queries) GetAgentsByOrganizationID(ctx context.Context, organizationID int32) ([]GetAgentsByOrganizationIDRow, error) {
+func (q *Queries) GetAgentsByOrganizationID(ctx context.Context, organizationID int64) ([]GetAgentsByOrganizationIDRow, error) {
 	rows, err := q.db.Query(ctx, getAgentsByOrganizationID, organizationID)
 	if err != nil {
 		return nil, err
@@ -387,7 +387,7 @@ FROM users
 WHERE id = $1
 `
 
-func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
+func (q *Queries) GetUserById(ctx context.Context, id int64) (User, error) {
 	row := q.db.QueryRow(ctx, getUserById, id)
 	var i User
 	err := row.Scan(
@@ -468,8 +468,8 @@ LEFT JOIN offices       o   ON o.id   = u.office_id
 LEFT JOIN organizations org ON org.id = o.organization_id
 WHERE u.role = 'agent'
   AND ($1::text IS NULL OR u.email ILIKE '%' || $1::text || '%' OR u.phone_number ILIKE '%' || $1::text || '%')
-  AND ($2::int IS NULL OR u.office_id = $2::int)
-  AND ($3::int IS NULL OR o.organization_id = $3::int)
+  AND ($2::bigint IS NULL OR u.office_id = $2::bigint)
+  AND ($3::bigint IS NULL OR o.organization_id = $3::bigint)
 ORDER BY u.created_at DESC
 LIMIT $5
 OFFSET $4
@@ -477,20 +477,20 @@ OFFSET $4
 
 type ListAgentsParams struct {
 	Search         *string
-	OfficeID       *int32
-	OrganizationID *int32
+	OfficeID       *int64
+	OrganizationID *int64
 	PageOffset     int32
 	PageSize       int32
 }
 
 type ListAgentsRow struct {
-	ID               int32
+	ID               int64
 	Role             UserRole
 	FirstName        string
 	LastName         string
 	Email            string
 	PhoneNumber      *string
-	OfficeID         *int32
+	OfficeID         *int64
 	LastLogin        pgtype.Timestamptz
 	CreatedAt        pgtype.Timestamptz
 	UpdatedAt        pgtype.Timestamptz
@@ -544,12 +544,12 @@ WHERE role = $1::user_role
 `
 
 type ListStaffByRoleRow struct {
-	ID        int32
+	ID        int64
 	Role      UserRole
 	FirstName string
 	LastName  string
 	Email     string
-	OfficeID  *int32
+	OfficeID  *int64
 	LastLogin pgtype.Timestamptz
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
@@ -594,7 +594,7 @@ WHERE
 `
 
 type SaveOTPParams struct {
-	ID  int32
+	ID  int64
 	Otp *string
 }
 
@@ -606,12 +606,12 @@ func (q *Queries) SaveOTP(ctx context.Context, arg SaveOTPParams) error {
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET
-  first_name = COALESCE($1::varchar, first_name),
-  last_name = COALESCE($2::varchar, last_name),
-  email = COALESCE($3::varchar, email),
-  phone_number = COALESCE($4::varchar, phone_number),
-  office_id = COALESCE($5::int, office_id),
-  password_hash = COALESCE($6::varchar, password_hash),
+  first_name = COALESCE($1::text, first_name),
+  last_name = COALESCE($2::text, last_name),
+  email = COALESCE($3::text, email),
+  phone_number = COALESCE($4::text, phone_number),
+  office_id = COALESCE($5::bigint, office_id),
+  password_hash = COALESCE($6::text, password_hash),
   updated_at = CURRENT_TIMESTAMP
 WHERE id = $7
 RETURNING id, role, first_name, last_name, email, phone_number, office_id, last_login, created_at, updated_at
@@ -622,19 +622,19 @@ type UpdateUserParams struct {
 	LastName     *string
 	Email        *string
 	PhoneNumber  *string
-	OfficeID     *int32
+	OfficeID     *int64
 	PasswordHash *string
-	ID           int32
+	ID           int64
 }
 
 type UpdateUserRow struct {
-	ID          int32
+	ID          int64
 	Role        UserRole
 	FirstName   string
 	LastName    string
 	Email       string
 	PhoneNumber *string
-	OfficeID    *int32
+	OfficeID    *int64
 	LastLogin   pgtype.Timestamptz
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz

@@ -16,7 +16,7 @@ import (
 
 // --- Helpers ---
 
-func validCreateContactParams(officeID *int32, orgID *int32) CreateContactRequest {
+func validCreateContactParams(officeID *int64, orgID *int64) CreateContactRequest {
 	return CreateContactRequest{
 		FirstName:      "John",
 		LastName:       "Doe",
@@ -51,7 +51,7 @@ func contactMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
 }
 
 // seedOrgAndOffice creates an org and office for use in contact tests.
-func seedOrgAndOffice(t *testing.T) (orgID int32, officeID int32) {
+func seedOrgAndOffice(t *testing.T) (orgID int64, officeID int64) {
 	t.Helper()
 	ctx := context.Background()
 	org, err := query.CreateOrganization(ctx, db.CreateOrganizationParams{
@@ -114,7 +114,7 @@ func TestListContacts(t *testing.T) {
 			t.Fatalf("expected total 18, got %d", page2.Total)
 		}
 
-		page1IDs := make(map[int32]bool)
+		page1IDs := make(map[int64]bool)
 		for _, c := range page1.Contacts {
 			page1IDs[c.ID] = true
 		}
@@ -435,8 +435,8 @@ func TestCreateContact(t *testing.T) {
 
 	t.Run("validation rejects both officeId and organizationId", func(t *testing.T) {
 		t.Parallel()
-		officeID := int32(1)
-		orgID := int32(1)
+		officeID := int64(1)
+		orgID := int64(1)
 		p := validCreateContactParams(&officeID, &orgID)
 
 		err := p.Validate()
@@ -463,7 +463,7 @@ func TestCreateContact(t *testing.T) {
 
 	t.Run("validation rejects blank firstName", func(t *testing.T) {
 		t.Parallel()
-		officeID := int32(1)
+		officeID := int64(1)
 		p := validCreateContactParams(&officeID, nil)
 		p.FirstName = ""
 		api_errors.AssertApiError(t, invalidValueErr("firstName"), p.Validate())
@@ -471,7 +471,7 @@ func TestCreateContact(t *testing.T) {
 
 	t.Run("validation rejects blank lastName", func(t *testing.T) {
 		t.Parallel()
-		officeID := int32(1)
+		officeID := int64(1)
 		p := validCreateContactParams(&officeID, nil)
 		p.LastName = ""
 		api_errors.AssertApiError(t, invalidValueErr("lastName"), p.Validate())
@@ -479,7 +479,7 @@ func TestCreateContact(t *testing.T) {
 
 	t.Run("validation rejects invalid email", func(t *testing.T) {
 		t.Parallel()
-		officeID := int32(1)
+		officeID := int64(1)
 		p := validCreateContactParams(&officeID, nil)
 		p.Email = "not-an-email"
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
@@ -490,7 +490,7 @@ func TestCreateContact(t *testing.T) {
 		q, s := contactMockService(t)
 		q.EXPECT().CreateContact(gomock.Any(), gomock.Any()).Return(db.Contact{}, errors.New("db error"))
 
-		officeID := int32(1)
+		officeID := int64(1)
 		_, err := s.CreateContact(ctx, validCreateContactParams(&officeID, nil))
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})

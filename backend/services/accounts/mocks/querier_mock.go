@@ -42,10 +42,10 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 }
 
 // CheckUserExists mocks base method.
-func (m *MockQuerier) CheckUserExists(ctx context.Context, email string) (int32, error) {
+func (m *MockQuerier) CheckUserExists(ctx context.Context, email string) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckUserExists", ctx, email)
-	ret0, _ := ret[0].(int32)
+	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -162,10 +162,10 @@ func (mr *MockQuerierMockRecorder) CreateCustomer(ctx, arg any) *gomock.Call {
 }
 
 // CreateOffice mocks base method.
-func (m *MockQuerier) CreateOffice(ctx context.Context, arg db.CreateOfficeParams) (db.Office, error) {
+func (m *MockQuerier) CreateOffice(ctx context.Context, arg db.CreateOfficeParams) (db.CreateOfficeRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateOffice", ctx, arg)
-	ret0, _ := ret[0].(db.Office)
+	ret0, _ := ret[0].(db.CreateOfficeRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -207,7 +207,7 @@ func (mr *MockQuerierMockRecorder) CreateStaffUser(ctx, arg any) *gomock.Call {
 }
 
 // DeleteContact mocks base method.
-func (m *MockQuerier) DeleteContact(ctx context.Context, id int32) error {
+func (m *MockQuerier) DeleteContact(ctx context.Context, id int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteContact", ctx, id)
 	ret0, _ := ret[0].(error)
@@ -235,7 +235,7 @@ func (mr *MockQuerierMockRecorder) DeleteRefreshToken(ctx, jti any) *gomock.Call
 }
 
 // DeleteRefreshTokensByUserId mocks base method.
-func (m *MockQuerier) DeleteRefreshTokensByUserId(ctx context.Context, userID int32) error {
+func (m *MockQuerier) DeleteRefreshTokensByUserId(ctx context.Context, userID int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteRefreshTokensByUserId", ctx, userID)
 	ret0, _ := ret[0].(error)
@@ -249,7 +249,7 @@ func (mr *MockQuerierMockRecorder) DeleteRefreshTokensByUserId(ctx, userID any) 
 }
 
 // DeleteUser mocks base method.
-func (m *MockQuerier) DeleteUser(ctx context.Context, id int32) error {
+func (m *MockQuerier) DeleteUser(ctx context.Context, id int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteUser", ctx, id)
 	ret0, _ := ret[0].(error)
@@ -263,7 +263,7 @@ func (mr *MockQuerierMockRecorder) DeleteUser(ctx, id any) *gomock.Call {
 }
 
 // GetAgentsBillingContacts mocks base method.
-func (m *MockQuerier) GetAgentsBillingContacts(ctx context.Context, usersIds []int32) ([]db.GetAgentsBillingContactsRow, error) {
+func (m *MockQuerier) GetAgentsBillingContacts(ctx context.Context, usersIds []int64) ([]db.GetAgentsBillingContactsRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAgentsBillingContacts", ctx, usersIds)
 	ret0, _ := ret[0].([]db.GetAgentsBillingContactsRow)
@@ -278,7 +278,7 @@ func (mr *MockQuerierMockRecorder) GetAgentsBillingContacts(ctx, usersIds any) *
 }
 
 // GetAgentsByOfficeID mocks base method.
-func (m *MockQuerier) GetAgentsByOfficeID(ctx context.Context, officeID int32) ([]db.GetAgentsByOfficeIDRow, error) {
+func (m *MockQuerier) GetAgentsByOfficeID(ctx context.Context, officeID int64) ([]db.GetAgentsByOfficeIDRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAgentsByOfficeID", ctx, officeID)
 	ret0, _ := ret[0].([]db.GetAgentsByOfficeIDRow)
@@ -293,7 +293,7 @@ func (mr *MockQuerierMockRecorder) GetAgentsByOfficeID(ctx, officeID any) *gomoc
 }
 
 // GetAgentsByOrganizationID mocks base method.
-func (m *MockQuerier) GetAgentsByOrganizationID(ctx context.Context, organizationID int32) ([]db.GetAgentsByOrganizationIDRow, error) {
+func (m *MockQuerier) GetAgentsByOrganizationID(ctx context.Context, organizationID int64) ([]db.GetAgentsByOrganizationIDRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAgentsByOrganizationID", ctx, organizationID)
 	ret0, _ := ret[0].([]db.GetAgentsByOrganizationIDRow)
@@ -308,7 +308,7 @@ func (mr *MockQuerierMockRecorder) GetAgentsByOrganizationID(ctx, organizationID
 }
 
 // GetOfficeBillingState mocks base method.
-func (m *MockQuerier) GetOfficeBillingState(ctx context.Context, id int32) (db.GetOfficeBillingStateRow, error) {
+func (m *MockQuerier) GetOfficeBillingState(ctx context.Context, id int64) (db.GetOfficeBillingStateRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOfficeBillingState", ctx, id)
 	ret0, _ := ret[0].(db.GetOfficeBillingStateRow)
@@ -323,7 +323,7 @@ func (mr *MockQuerierMockRecorder) GetOfficeBillingState(ctx, id any) *gomock.Ca
 }
 
 // GetOfficeIcountClientID mocks base method.
-func (m *MockQuerier) GetOfficeIcountClientID(ctx context.Context, id int32) (*int32, error) {
+func (m *MockQuerier) GetOfficeIcountClientID(ctx context.Context, id int64) (*int32, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOfficeIcountClientID", ctx, id)
 	ret0, _ := ret[0].(*int32)
@@ -338,7 +338,7 @@ func (mr *MockQuerierMockRecorder) GetOfficeIcountClientID(ctx, id any) *gomock.
 }
 
 // GetOrganizationBillingState mocks base method.
-func (m *MockQuerier) GetOrganizationBillingState(ctx context.Context, id int32) (db.GetOrganizationBillingStateRow, error) {
+func (m *MockQuerier) GetOrganizationBillingState(ctx context.Context, id int64) (db.GetOrganizationBillingStateRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrganizationBillingState", ctx, id)
 	ret0, _ := ret[0].(db.GetOrganizationBillingStateRow)
@@ -353,7 +353,7 @@ func (mr *MockQuerierMockRecorder) GetOrganizationBillingState(ctx, id any) *gom
 }
 
 // GetOrganizationIcountClientID mocks base method.
-func (m *MockQuerier) GetOrganizationIcountClientID(ctx context.Context, id int32) (*int32, error) {
+func (m *MockQuerier) GetOrganizationIcountClientID(ctx context.Context, id int64) (*int32, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrganizationIcountClientID", ctx, id)
 	ret0, _ := ret[0].(*int32)
@@ -398,7 +398,7 @@ func (mr *MockQuerierMockRecorder) GetUserByEmail(ctx, email any) *gomock.Call {
 }
 
 // GetUserById mocks base method.
-func (m *MockQuerier) GetUserById(ctx context.Context, id int32) (db.User, error) {
+func (m *MockQuerier) GetUserById(ctx context.Context, id int64) (db.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserById", ctx, id)
 	ret0, _ := ret[0].(db.User)
@@ -591,10 +591,10 @@ func (mr *MockQuerierMockRecorder) UpdateContact(ctx, arg any) *gomock.Call {
 }
 
 // UpdateOffice mocks base method.
-func (m *MockQuerier) UpdateOffice(ctx context.Context, arg db.UpdateOfficeParams) (db.Office, error) {
+func (m *MockQuerier) UpdateOffice(ctx context.Context, arg db.UpdateOfficeParams) (db.UpdateOfficeRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateOffice", ctx, arg)
-	ret0, _ := ret[0].(db.Office)
+	ret0, _ := ret[0].(db.UpdateOfficeRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

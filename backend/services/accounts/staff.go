@@ -29,12 +29,12 @@ func (p CreateStaffRequest) Validate() error {
 
 // CreateStaffResponse is the shared response type for creating admin and accountant users.
 type CreateStaffResponse struct {
-	ID int32 `json:"id"`
+	ID int64 `json:"id"`
 }
 
 // StaffResponse is the shared response type for listing admin and accountant users.
 type StaffResponse struct {
-	ID        int32      `json:"id"`
+	ID        int64      `json:"id"`
 	FirstName string     `json:"firstName"`
 	LastName  string     `json:"lastName"`
 	Email     string     `json:"email"`

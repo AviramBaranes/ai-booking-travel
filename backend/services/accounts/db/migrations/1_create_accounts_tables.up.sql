@@ -2,15 +2,15 @@ CREATE TYPE user_role AS ENUM ('customer', 'agent', 'admin', 'accountant');
 
 CREATE TABLE
     organizations (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL UNIQUE,
+        id BIGSERIAL PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
         is_organic BOOLEAN NOT NULL,
         icount_client_id INTEGER,
-        phone VARCHAR(20),
+        phone TEXT,
         address TEXT,
-        obligo DECIMAL,
-        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        obligo INTEGER,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         CONSTRAINT organizations_icount_client_id_organic CHECK (
             (is_organic = TRUE AND icount_client_id IS NOT NULL)
             OR (is_organic = FALSE AND icount_client_id IS NULL)
@@ -19,29 +19,30 @@ CREATE TABLE
 
 CREATE TABLE
     offices (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL UNIQUE,
-        organization_id INTEGER NOT NULL REFERENCES organizations (id),
+        id BIGSERIAL PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        organization_id BIGINT NOT NULL REFERENCES organizations (id) ON DELETE CASCADE,
         icount_client_id INTEGER,
-        phone VARCHAR(20),
+        phone TEXT,
         address TEXT,
-        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        obligo INTEGER,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
 
 CREATE TABLE
     contacts (
-        id SERIAL PRIMARY KEY,
-        first_name VARCHAR(255) NOT NULL,
-        last_name VARCHAR(255) NOT NULL,
+        id BIGSERIAL PRIMARY KEY,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
         role TEXT NOT NULL,
-        cellphone VARCHAR(20) NOT NULL,
-        email VARCHAR(255) NOT NULL,
-        office_id INTEGER REFERENCES offices (id),
-        organization_id INTEGER REFERENCES organizations (id),
+        cellphone TEXT NOT NULL,
+        email TEXT NOT NULL,
+        office_id BIGINT REFERENCES offices (id) ON DELETE CASCADE,
+        organization_id BIGINT REFERENCES organizations (id) ON DELETE CASCADE,
         is_payment_responsible BOOLEAN NOT NULL DEFAULT FALSE,
-        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         CONSTRAINT contact_belongs_to_one CHECK (
             (
                 office_id IS NOT NULL
@@ -56,25 +57,19 @@ CREATE TABLE
 
 CREATE TABLE
     users (
-        id SERIAL PRIMARY KEY,
-        first_name VARCHAR(255) NOT NULL,
-        last_name VARCHAR(255) NOT NULL,
+        id BIGSERIAL PRIMARY KEY,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
         role user_role NOT NULL,
-        email VARCHAR(255) NOT NULL UNIQUE,
-        phone_number VARCHAR(20) UNIQUE,
-        otp VARCHAR(6) UNIQUE,
-        office_id INTEGER REFERENCES offices (id),
-        password_hash VARCHAR(255) NOT NULL,
-        last_login TIMESTAMP
-        WITH
-            TIME ZONE,
-            created_at TIMESTAMP
-        WITH
-            TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP
-        WITH
-            TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT users_office_agent_only CHECK (
+        email TEXT NOT NULL UNIQUE,
+        phone_number TEXT UNIQUE,
+        otp TEXT,
+        office_id BIGINT REFERENCES offices (id),
+        password_hash TEXT NOT NULL,
+        last_login TIMESTAMPTZ,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        CONSTRAINT users_office_agent_only CHECK (
                 role = 'agent'
                 OR office_id IS NULL
             )
@@ -83,7 +78,7 @@ CREATE TABLE
 CREATE TABLE
     refresh_tokens (
         jti TEXT PRIMARY KEY,
-        user_id SERIAL NOT NULL REFERENCES users (id),
-        admin_ref_id INTEGER REFERENCES users (id),
+        user_id BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        admin_ref_id BIGINT REFERENCES users (id) ON DELETE CASCADE,
         expires_at TIMESTAMPTZ NOT NULL
     );

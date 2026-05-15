@@ -21,7 +21,7 @@ var secrets struct {
 }
 
 // SignAccessToken generates a signed JWT access token for the given user ID and role.
-func SignAccessToken(user db.User, adminRefID *int32) (string, error) {
+func SignAccessToken(user db.User, adminRefID *int64) (string, error) {
 	now := time.Now()
 
 	claims := AccessTokenClaims{
@@ -49,7 +49,7 @@ func SignAccessToken(user db.User, adminRefID *int32) (string, error) {
 }
 
 // SignRefreshToken generates a signed JWT refresh token for the given user ID.
-func SignRefreshToken(userID int32) (string, string, time.Time, error) {
+func SignRefreshToken(userID int64) (string, string, time.Time, error) {
 	now := time.Now()
 	exp := now.Add(refreshTokenTTL)
 	jti := uuid.NewString()

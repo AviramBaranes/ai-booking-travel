@@ -149,7 +149,7 @@ type Outbox struct {
 
 type Reservation struct {
 	ID                  int64
-	UserID              int32
+	UserID              int64
 	BrokerReservationID string
 	ReservationStatus   ReservationStatus
 	PaymentStatus       PaymentStatus

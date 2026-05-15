@@ -48,7 +48,7 @@ func TestCancelReservation(t *testing.T) {
 	})
 
 	t.Run("returns 404 when reservation belongs to another user", func(t *testing.T) {
-		const ownerID int32 = 1001
+		const ownerID int64 = 1001
 		params := validCreateReservationParams()
 		params.UserID = ownerID
 		params.PickupDate = futurePickup()
@@ -62,7 +62,7 @@ func TestCancelReservation(t *testing.T) {
 	})
 
 	t.Run("returns FailedPrecondition when past cancellation window", func(t *testing.T) {
-		const userID int32 = 1003
+		const userID int64 = 1003
 		// Pickup tomorrow at noon -> within the 48h cancellation window.
 		pickup := time.Now().Add(24 * time.Hour)
 		params := validCreateReservationParams()
@@ -80,7 +80,7 @@ func TestCancelReservation(t *testing.T) {
 	})
 
 	t.Run("does not enqueue a cancellation event when DB lookup fails", func(t *testing.T) {
-		const userID int32 = 1004
+		const userID int64 = 1004
 		q, s := mockService(t)
 		q.EXPECT().GetReservationByID(gomock.Any(), int64(42)).Return(db.GetReservationByIDRow{}, errors.New("db error"))
 		et.MockService[Interface]("reservation", s)
@@ -94,7 +94,7 @@ func TestCancelReservation(t *testing.T) {
 	})
 
 	t.Run("atomically cancels reservation and writes event to the outbox", func(t *testing.T) {
-		const userID int32 = 1005
+		const userID int64 = 1005
 		params := validCreateReservationParams()
 		params.UserID = userID
 		params.PickupDate = futurePickup()

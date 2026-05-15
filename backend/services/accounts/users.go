@@ -18,7 +18,7 @@ type UpdateUserRequest struct {
 	LastName    *string `json:"lastName" encore:"optional"`
 	Email       *string `json:"email" validate:"omitempty,email" encore:"optional"`
 	PhoneNumber *string `json:"phoneNumber" encore:"optional"`
-	OfficeID    *int32  `json:"officeId" validate:"omitempty,gte=1" encore:"optional"`
+	OfficeID    *int64  `json:"officeId" validate:"omitempty,gte=1" encore:"optional"`
 	Password    *string `json:"password" validate:"omitempty,min=8" encore:"sensitive,optional"`
 }
 
@@ -32,12 +32,12 @@ func (p UpdateUserRequest) Validate() error {
 }
 
 type UpdateUserResponse struct {
-	ID          int32   `json:"id"`
+	ID          int64   `json:"id"`
 	FirstName   string  `json:"firstName"`
 	LastName    string  `json:"lastName"`
 	Email       string  `json:"email"`
 	PhoneNumber *string `json:"phoneNumber"`
-	OfficeID    *int32  `json:"officeId"`
+	OfficeID    *int64  `json:"officeId"`
 }
 
 // --- Endpoints ---
@@ -45,7 +45,7 @@ type UpdateUserResponse struct {
 // UpdateUser updates an existing user.
 //
 //encore:api auth method=PUT path=/users/:id tag:admin
-func (s *Service) UpdateUser(ctx context.Context, id int32, params UpdateUserRequest) (*UpdateUserResponse, error) {
+func (s *Service) UpdateUser(ctx context.Context, id int64, params UpdateUserRequest) (*UpdateUserResponse, error) {
 	// Check email uniqueness
 	if params.Email != nil {
 		existingID, err := s.query.CheckUserExists(ctx, *params.Email)

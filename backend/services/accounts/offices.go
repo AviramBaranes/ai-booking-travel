@@ -25,7 +25,7 @@ func validateOfficeIcountClientIDConstraint(isOrganic bool, icountClientID *int3
 
 // validateCreateOfficeIcountClientIDConstraint always runs on create.
 // It fetches the parent organization's billing state to determine the constraint.
-func (s *Service) validateCreateOfficeIcountClientIDConstraint(ctx context.Context, orgID int32, icountClientID *int32) error {
+func (s *Service) validateCreateOfficeIcountClientIDConstraint(ctx context.Context, orgID int64, icountClientID *int32) error {
 	org, err := s.query.GetOrganizationBillingState(ctx, orgID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
@@ -40,7 +40,7 @@ func (s *Service) validateCreateOfficeIcountClientIDConstraint(ctx context.Conte
 // validateUpdateOfficeIcountClientIDConstraint runs only when IcountClientID is
 // present in the update payload. Fetches the office's current billing state and
 // resolves the final organization if it is being changed.
-func (s *Service) validateUpdateOfficeIcountClientIDConstraint(ctx context.Context, id int32, params UpdateOfficeRequest) error {
+func (s *Service) validateUpdateOfficeIcountClientIDConstraint(ctx context.Context, id int64, params UpdateOfficeRequest) error {
 	billing, err := s.query.GetOfficeBillingState(ctx, id)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
@@ -69,9 +69,9 @@ func (s *Service) validateUpdateOfficeIcountClientIDConstraint(ctx context.Conte
 // --- Request / Response types ---
 
 type OfficeResponse struct {
-	ID               int32   `json:"id"`
+	ID               int64   `json:"id"`
 	Name             string  `json:"name"`
-	OrganizationID   int32   `json:"organizationId"`
+	OrganizationID   int64   `json:"organizationId"`
 	OrganizationName string  `json:"organizationName"`
 	IcountClientID   *int32  `json:"icountClientId"`
 	Phone            *string `json:"phone"`
@@ -82,7 +82,7 @@ type OfficeResponse struct {
 
 type ListOfficesRequest struct {
 	Search string `query:"search"`
-	OrgID  int32  `query:"orgId"`
+	OrgID  int64  `query:"orgId"`
 	Page   int32  `query:"page" validate:"required,gte=1"`
 }
 
@@ -97,7 +97,7 @@ type ListOfficesResponse struct {
 
 type CreateOfficeRequest struct {
 	Name           string  `json:"name" validate:"required,notblank"`
-	OrganizationID int32   `json:"organizationId" validate:"required,gte=1"`
+	OrganizationID int64   `json:"organizationId" validate:"required,gte=1"`
 	IcountClientID *int32  `json:"icountClientId" validate:"omitempty,gte=0" encore:"optional"`
 	Phone          *string `json:"phone" encore:"optional"`
 	Address        *string `json:"address" encore:"optional"`
@@ -109,7 +109,7 @@ func (p CreateOfficeRequest) Validate() error {
 
 type UpdateOfficeRequest struct {
 	Name           *string `json:"name" validate:"omitempty,notblank" encore:"optional"`
-	OrganizationID *int32  `json:"organizationId" validate:"omitempty,gte=1" encore:"optional"`
+	OrganizationID *int64  `json:"organizationId" validate:"omitempty,gte=1" encore:"optional"`
 	IcountClientID *int32  `json:"icountClientId" validate:"omitempty,gte=0" encore:"optional"`
 	Phone          *string `json:"phone" encore:"optional"`
 	Address        *string `json:"address" encore:"optional"`
@@ -150,7 +150,7 @@ func (s *Service) ListOffices(ctx context.Context, params *ListOfficesRequest) (
 		searchPtr = &params.Search
 	}
 
-	var orgIDPtr *int32
+	var orgIDPtr *int64
 	if params.OrgID != 0 {
 		orgIDPtr = &params.OrgID
 	}
@@ -220,7 +220,7 @@ func (s *Service) CreateOffice(ctx context.Context, params CreateOfficeRequest) 
 // UpdateOffice updates an existing office.
 //
 //encore:api auth method=PUT path=/offices/:id tag:admin
-func (s *Service) UpdateOffice(ctx context.Context, id int32, params UpdateOfficeRequest) (*OfficeResponse, error) {
+func (s *Service) UpdateOffice(ctx context.Context, id int64, params UpdateOfficeRequest) (*OfficeResponse, error) {
 	if params.IcountClientID != nil {
 		if err := s.validateUpdateOfficeIcountClientIDConstraint(ctx, id, params); err != nil {
 			return nil, err
@@ -258,7 +258,7 @@ func (s *Service) UpdateOffice(ctx context.Context, id int32, params UpdateOffic
 }
 
 type InorganicOffice struct {
-	ID   int32  `json:"id"`
+	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 

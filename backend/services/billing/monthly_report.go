@@ -47,7 +47,7 @@ type Reservations struct {
 }
 
 type AgentInfo struct {
-	AgentID    int32
+	AgentID    int64
 	AgentName  string
 	OfficeName string
 }
@@ -60,12 +60,12 @@ func GenerateMonthlyReport(ctx context.Context) error {
 		return err
 	}
 
-	agentsSet := make(map[int32]struct{})
+	agentsSet := make(map[int64]struct{})
 	for _, r := range openReservations.Reservations {
 		agentsSet[r.AgentID] = struct{}{}
 	}
 
-	agentsIDs := make([]int32, 0, len(agentsSet))
+	agentsIDs := make([]int64, 0, len(agentsSet))
 	for id := range agentsSet {
 		agentsIDs = append(agentsIDs, id)
 	}
@@ -102,7 +102,7 @@ func generateReports(openReservations *reservation.GetOpenReservationsResponse, 
 }
 
 func generateTransactionGroups(openReservations *reservation.GetOpenReservationsResponse, contact accounts.BillingContact) []TransactionGroup {
-	relevantAgents := make(map[int32]AgentInfo)
+	relevantAgents := make(map[int64]AgentInfo)
 	for _, office := range contact.Offices {
 		for _, agent := range office.Agents {
 			relevantAgents[agent.ID] = AgentInfo{

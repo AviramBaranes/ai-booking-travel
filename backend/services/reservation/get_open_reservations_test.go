@@ -23,7 +23,7 @@ func TestGetOpenReservations(t *testing.T) {
 	})
 
 	t.Run("returns empty list when no open reservations exist", func(t *testing.T) {
-		const userID int32 = 8888
+		const userID int64 = 8888
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
 
@@ -49,7 +49,7 @@ func TestGetOpenReservations(t *testing.T) {
 	})
 
 	t.Run("returns only open reservations with correct field values", func(t *testing.T) {
-		const userID int32 = 7777
+		const userID int64 = 7777
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
 

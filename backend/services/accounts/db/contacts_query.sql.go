@@ -16,15 +16,15 @@ SELECT COUNT(*)::BIGINT AS total
 FROM contacts c
 LEFT JOIN offices o ON o.id = c.office_id
 WHERE
-    ($1::VARCHAR IS NULL OR c.first_name ILIKE '%' || $1::VARCHAR || '%' OR c.last_name ILIKE '%' || $1::VARCHAR || '%')
-    AND ($2::INTEGER IS NULL       OR c.office_id = $2::INTEGER)
-    AND ($3::INTEGER IS NULL OR c.organization_id = $3::INTEGER)
+    ($1::TEXT IS NULL OR c.first_name ILIKE '%' || $1::TEXT || '%' OR c.last_name ILIKE '%' || $1::TEXT || '%')
+    AND ($2::BIGINT IS NULL       OR c.office_id = $2::BIGINT)
+    AND ($3::BIGINT IS NULL OR c.organization_id = $3::BIGINT)
 `
 
 type CountContactsParams struct {
 	Name           *string
-	OfficeID       *int32
-	OrganizationID *int32
+	OfficeID       *int64
+	OrganizationID *int64
 }
 
 func (q *Queries) CountContacts(ctx context.Context, arg CountContactsParams) (int64, error) {
@@ -57,8 +57,8 @@ type CreateContactParams struct {
 	Role                 string
 	Cellphone            string
 	Email                string
-	OfficeID             *int32
-	OrganizationID       *int32
+	OfficeID             *int64
+	OrganizationID       *int64
 	IsPaymentResponsible bool
 }
 
@@ -95,7 +95,7 @@ DELETE FROM contacts
 WHERE id = $1
 `
 
-func (q *Queries) DeleteContact(ctx context.Context, id int32) error {
+func (q *Queries) DeleteContact(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteContact, id)
 	return err
 }
@@ -119,9 +119,9 @@ FROM contacts c
 LEFT JOIN offices       o   ON o.id   = c.office_id
 LEFT JOIN organizations org ON org.id = c.organization_id
 WHERE
-    ($1::VARCHAR IS NULL OR c.first_name ILIKE '%' || $1::VARCHAR || '%' OR c.last_name ILIKE '%' || $1::VARCHAR || '%')
-    AND ($2::INTEGER IS NULL       OR c.office_id = $2::INTEGER)
-    AND ($3::INTEGER IS NULL OR c.organization_id = $3::INTEGER)
+    ($1::TEXT IS NULL OR c.first_name ILIKE '%' || $1::TEXT || '%' OR c.last_name ILIKE '%' || $1::TEXT || '%')
+    AND ($2::BIGINT IS NULL       OR c.office_id = $2::BIGINT)
+    AND ($3::BIGINT IS NULL OR c.organization_id = $3::BIGINT)
 ORDER BY c.last_name, c.first_name
 LIMIT  $5::BIGINT
 OFFSET $4::BIGINT
@@ -129,21 +129,21 @@ OFFSET $4::BIGINT
 
 type ListContactsParams struct {
 	Name           *string
-	OfficeID       *int32
-	OrganizationID *int32
+	OfficeID       *int64
+	OrganizationID *int64
 	PageOffset     int64
 	PageSize       int64
 }
 
 type ListContactsRow struct {
-	ID                   int32
+	ID                   int64
 	FirstName            string
 	LastName             string
 	Role                 string
 	Cellphone            string
 	Email                string
-	OfficeID             *int32
-	OrganizationID       *int32
+	OfficeID             *int64
+	OrganizationID       *int64
 	IsPaymentResponsible bool
 	CreatedAt            pgtype.Timestamptz
 	UpdatedAt            pgtype.Timestamptz
@@ -213,10 +213,10 @@ type UpdateContactParams struct {
 	Role                 *string
 	Cellphone            *string
 	Email                *string
-	OfficeID             *int32
-	OrganizationID       *int32
+	OfficeID             *int64
+	OrganizationID       *int64
 	IsPaymentResponsible *bool
-	ID                   int32
+	ID                   int64
 }
 
 func (q *Queries) UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error) {
