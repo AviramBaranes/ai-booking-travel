@@ -18,7 +18,7 @@ export function ReservationSummary({
     <div className="flex flex-col gap-2 shadow-card rounded-xl p-6 bg-white border border-cars-border">
       <HeaderSection reservation={reservation} />
       <RentalSummary
-        dropoffDate={reservation.returnDate}
+        dropoffDate={reservation.dropoffDate}
         dropoffTime={reservation.dropoffTime}
         dropoffLocationName={reservation.dropoffLocationName}
         pickupDate={reservation.pickupDate}

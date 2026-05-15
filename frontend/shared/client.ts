@@ -1585,7 +1585,7 @@ export namespace reservation {
         pickupLocationName: string
         dropoffLocationName: string
         pickupDate: string
-        returnDate: string
+        dropoffDate: string
         pickupTime: string
         dropoffTime: string
         rentalDays: number
