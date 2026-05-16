@@ -1,6 +1,7 @@
-package db
+package dbadapters
 
 import (
+	"errors"
 	"math/big"
 	"time"
 
@@ -20,18 +21,6 @@ func NumericFromFloat64(f float64) pgtype.Numeric {
 func NumericToFloat64(n pgtype.Numeric) float64 {
 	f, _ := n.Float64Value()
 	return f.Float64
-}
-
-// NullBrokerTranslationStatusFromString converts a status string to a NullBrokerTranslationStatus.
-// Returns an invalid (null) value if the string is empty.
-func NullBrokerTranslationStatusFromString(s string) NullBrokerTranslationStatus {
-	if s == "" {
-		return NullBrokerTranslationStatus{}
-	}
-	return NullBrokerTranslationStatus{
-		BrokerTranslationStatus: BrokerTranslationStatus(s),
-		Valid:                   true,
-	}
 }
 
 // UuidToString converts a pgtype.UUID to its string representation, returning an empty string if the UUID is null.
@@ -78,4 +67,18 @@ func DateToString(d pgtype.Date) string {
 		return ""
 	}
 	return d.Time.Format("2006-01-02")
+}
+
+// CombineDateTime merges a pgtype.Date and a time string (e.g. "15:04") into a single time.Time.
+func CombineDateTime(d pgtype.Date, timeStr string) (time.Time, error) {
+	if !d.Valid {
+		return time.Time{}, errors.New("invalid date in pgtype.Date")
+	}
+	t, err := time.Parse("15:04", timeStr)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	date := d.Time
+	return time.Date(date.Year(), date.Month(), date.Day(), t.Hour(), t.Minute(), 0, 0, time.UTC), nil
 }

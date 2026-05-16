@@ -9,6 +9,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/pricing"
 	"encore.app/internal/validation"
 	auth "encore.app/services/accounts"
@@ -109,10 +110,10 @@ func (s *Service) CreatePriceOffer(ctx context.Context, params CreatePriceOfferP
 		CarDetails:          carDetailsJSON,
 		PlanInclusions:      plan.Inclusions,
 		CurrencyCode:        plan.CurrencyCode,
-		CurrencyRate:        db.NumericFromFloat64(plan.CurrencyRate),
-		PurchasePrice:       db.NumericFromFloat64(plan.CarPurchasePrice),
-		MarkupPercentage:    db.NumericFromFloat64(plan.MarkupPercentage),
-		BrokerErpPrice:      db.NumericFromFloat64(brokerErpPrice),
+		CurrencyRate:        dbadapters.NumericFromFloat64(plan.CurrencyRate),
+		PurchasePrice:       dbadapters.NumericFromFloat64(plan.CarPurchasePrice),
+		MarkupPercentage:    dbadapters.NumericFromFloat64(plan.MarkupPercentage),
+		BrokerErpPrice:      dbadapters.NumericFromFloat64(brokerErpPrice),
 		BtErpPrice:          int32(btErpPrice),
 		TotalPrice:          int32(totalPrice),
 		OfferedCurrencyCode: params.OfferedCurrencyCode,
@@ -125,7 +126,7 @@ func (s *Service) CreatePriceOffer(ctx context.Context, params CreatePriceOfferP
 
 	return &PriceOfferResponse{
 		ID:    priceOffer.ID,
-		Token: db.UuidToString(priceOffer.Token),
+		Token: dbadapters.UuidToString(priceOffer.Token),
 	}, nil
 }
 
@@ -191,8 +192,8 @@ func (s *Service) RenewPriceOffer(ctx context.Context, id int64) (*RenewPriceOff
 		DropoffLocationID: offer.DropoffLocationID,
 		PickupTime:        offer.PickupTime,
 		DropoffTime:       offer.DropoffTime,
-		PickupDate:        db.DateToString(offer.PickupDate),
-		DropoffDate:       db.DateToString(offer.DropoffDate),
+		PickupDate:        dbadapters.DateToString(offer.PickupDate),
+		DropoffDate:       dbadapters.DateToString(offer.DropoffDate),
 		DriverAge:         driverAge,
 	})
 	if err != nil {
@@ -282,9 +283,9 @@ func (s *Service) renewPriceOfferDetails(ctx context.Context, offer db.GetPriceO
 		CarDetails:       carDetailsJSON,
 		PlanInclusions:   plan.Inclusions,
 		CurrencyCode:     plan.CurrencyCode,
-		PurchasePrice:    db.NumericFromFloat64(plan.CarPurchasePrice),
-		MarkupPercentage: db.NumericFromFloat64(plan.MarkupPercentage),
-		BrokerErpPrice:   db.NumericFromFloat64(brokerErpPrice),
+		PurchasePrice:    dbadapters.NumericFromFloat64(plan.CarPurchasePrice),
+		MarkupPercentage: dbadapters.NumericFromFloat64(plan.MarkupPercentage),
+		BrokerErpPrice:   dbadapters.NumericFromFloat64(brokerErpPrice),
 		BtErpPrice:       int32(btErpPrice),
 		TotalPrice:       int32(totalPrice),
 	})
@@ -297,7 +298,7 @@ func (s *Service) renewPriceOfferDetails(ctx context.Context, offer db.GetPriceO
 }
 
 func isPriceOfferErpIncluded(offer db.GetPriceOfferByIdRow) bool {
-	return offer.BtErpPrice != 0 || db.NumericToFloat64(offer.BrokerErpPrice) != 0
+	return offer.BtErpPrice != 0 || dbadapters.NumericToFloat64(offer.BrokerErpPrice) != 0
 }
 
 // GetPriceOfferResponse represents the public-facing details of a price offer, exposing only the offered price (no internal pricing breakdown).
@@ -355,7 +356,7 @@ type GetAgentPriceOfferResponse struct {
 //
 // encore:api public method=GET path=/booking/price-offers/client/:token
 func (s *Service) GetClientPriceOffer(ctx context.Context, token string) (*GetPriceOfferResponse, error) {
-	uuid := db.StringToUuid(token)
+	uuid := dbadapters.StringToUuid(token)
 	if !uuid.Valid {
 		return nil, api_errors.ErrNotFound
 	}
@@ -375,7 +376,7 @@ func (s *Service) GetClientPriceOffer(ctx context.Context, token string) (*GetPr
 		return nil, api_errors.ErrInternalError
 	}
 
-	isErpIncluded := (float64(row.BtErpPrice) + db.NumericToFloat64(row.BrokerErpPrice)) > 0
+	isErpIncluded := (float64(row.BtErpPrice) + dbadapters.NumericToFloat64(row.BrokerErpPrice)) > 0
 
 	return &GetPriceOfferResponse{
 		ID:                  row.ID,
@@ -388,13 +389,13 @@ func (s *Service) GetClientPriceOffer(ctx context.Context, token string) (*GetPr
 		TotalPrice:          row.OfferedPrice,
 		PickupLocationName:  row.PickupLocation,
 		DropoffLocationName: row.DropoffLocation,
-		PickupDate:          db.DateToString(row.PickupDate),
-		DropoffDate:         db.DateToString(row.DropoffDate),
+		PickupDate:          dbadapters.DateToString(row.PickupDate),
+		DropoffDate:         dbadapters.DateToString(row.DropoffDate),
 		RentalDays:          row.RentalDays,
 		PickupTime:          row.PickupTime,
 		DropoffTime:         row.DropoffTime,
 		DriverAge:           row.DriverAge,
-		CreatedAt:           db.TimestamptzToString(row.CreatedAt),
+		CreatedAt:           dbadapters.TimestamptzToString(row.CreatedAt),
 	}, nil
 }
 
@@ -427,7 +428,7 @@ func (s *Service) GetAgentPriceOffer(ctx context.Context, id int64) (*GetAgentPr
 	return &GetAgentPriceOfferResponse{
 		ID:                  row.ID,
 		ReservationID:       row.ReservationID,
-		Token:               db.UuidToString(row.Token),
+		Token:               dbadapters.UuidToString(row.Token),
 		Status:              string(row.Status),
 		Name:                row.Name,
 		CarDetails:          carDetails,
@@ -443,14 +444,14 @@ func (s *Service) GetAgentPriceOffer(ctx context.Context, id int64) (*GetAgentPr
 		DropoffLocationName: row.DropoffLocation,
 		PickupLocationID:    row.PickupLocationID,
 		DropoffLocationID:   row.DropoffLocationID,
-		PickupDate:          db.DateToString(row.PickupDate),
-		DropoffDate:         db.DateToString(row.DropoffDate),
+		PickupDate:          dbadapters.DateToString(row.PickupDate),
+		DropoffDate:         dbadapters.DateToString(row.DropoffDate),
 		RentalDays:          row.RentalDays,
 		PickupTime:          row.PickupTime,
 		DropoffTime:         row.DropoffTime,
 		DriverAge:           row.DriverAge,
-		RenewedAt:           db.TimestamptzToString(row.RenewedAt),
-		CreatedAt:           db.TimestamptzToString(row.CreatedAt),
+		RenewedAt:           dbadapters.TimestamptzToString(row.RenewedAt),
+		CreatedAt:           dbadapters.TimestamptzToString(row.CreatedAt),
 	}, nil
 }
 
@@ -462,9 +463,9 @@ type priceOfferPriceDetails struct {
 
 // calculatePriceOfferDetails calculates the price details for a price offer based on the given parameters.
 func calculatePriceOfferDetails(offer db.GetPriceOfferByIdRow) priceOfferPriceDetails {
-	pp := db.NumericToFloat64(offer.PurchasePrice)
-	mp := db.NumericToFloat64(offer.MarkupPercentage)
-	bErp := db.NumericToFloat64(offer.BrokerErpPrice)
+	pp := dbadapters.NumericToFloat64(offer.PurchasePrice)
+	mp := dbadapters.NumericToFloat64(offer.MarkupPercentage)
+	bErp := dbadapters.NumericToFloat64(offer.BrokerErpPrice)
 	btErp := float64(offer.BtErpPrice)
 
 	carFullPrice := pricing.RoundToInt(pricing.ApplyMarkup(pp, mp))
@@ -583,15 +584,15 @@ func mapRowsToPriceOfferSummaries(rows []db.ListPriceOffersByAgentRow) []PriceOf
 			Name:                r.Name,
 			PickupLocationName:  r.PickupLocation,
 			DropoffLocationName: r.DropoffLocation,
-			PickupDate:          db.DateToString(r.PickupDate),
-			DropoffDate:         db.DateToString(r.DropoffDate),
+			PickupDate:          dbadapters.DateToString(r.PickupDate),
+			DropoffDate:         dbadapters.DateToString(r.DropoffDate),
 			PickupTime:          r.PickupTime,
 			DropoffTime:         r.DropoffTime,
 			CurrencyCode:        r.CurrencyCode,
 			TotalPrice:          r.TotalPrice,
 			OfferedCurrencyCode: r.OfferedCurrencyCode,
 			OfferedPrice:        r.OfferedPrice,
-			CreatedAt:           db.TimestamptzToString(r.CreatedAt),
+			CreatedAt:           dbadapters.TimestamptzToString(r.CreatedAt),
 		}
 	}
 	return summaries

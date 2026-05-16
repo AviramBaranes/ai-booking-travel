@@ -5,6 +5,7 @@ import (
 	"math"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/pricing"
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
@@ -159,8 +160,8 @@ func toCurrencyGroups(rows []db.GetPaymentPendingReservationsByAgentsIDsRow) []C
 			ProfitOnCar:         pd.carProfit,
 			TotalPrice:          pd.totalPrice,
 			CurrencyCode:        r.CurrencyCode,
-			CreatedAt:           db.TimestamptzToString(r.CreatedAt),
-			PickupDate:          db.DateToString(r.PickupDate),
+			CreatedAt:           dbadapters.TimestamptzToString(r.CreatedAt),
+			PickupDate:          dbadapters.DateToString(r.PickupDate),
 		})
 	}
 	return groups
@@ -182,8 +183,8 @@ func roundPrice(price float64) float64 {
 
 // getReservationPriceDetails computes purchase price, selling price, profit, and ERP price from a db row.
 func getReservationPriceDetails(row db.GetPaymentPendingReservationsByAgentsIDsRow) priceDetails {
-	carPurchasePrice := db.NumericToFloat64(row.PurchasePrice) + db.NumericToFloat64(row.BrokerErpPrice)
-	mp := db.NumericToFloat64(row.MarkupPercentage)
+	carPurchasePrice := dbadapters.NumericToFloat64(row.PurchasePrice) + dbadapters.NumericToFloat64(row.BrokerErpPrice)
+	mp := dbadapters.NumericToFloat64(row.MarkupPercentage)
 	carSellingPrice := pricing.ApplyMarkup(carPurchasePrice, mp)
 
 	return priceDetails{

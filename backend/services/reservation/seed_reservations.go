@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/reservation/db"
 	"encore.dev/rlog"
 )
@@ -118,8 +119,8 @@ func (s *Service) SeedReservations(ctx context.Context) (*SeedReservationsRespon
 			BtErpPrice:          src.BtErpPrice,
 			VatPercentage:       src.VatPercentage,
 			TotalPrice:          src.TotalPrice,
-			PickupDate:          db.DateFromString(pickupDate.Format("2006-01-02")),
-			DropoffDate:         db.DateFromString(dropoffDate.Format("2006-01-02")),
+			PickupDate:          dbadapters.DateFromString(pickupDate.Format("2006-01-02")),
+			DropoffDate:         dbadapters.DateFromString(dropoffDate.Format("2006-01-02")),
 			PickupTime:          src.PickupTime,
 			DropoffTime:         src.DropoffTime,
 			RentalDays:          int32(rentalDays),

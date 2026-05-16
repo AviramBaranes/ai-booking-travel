@@ -10,6 +10,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/validation"
 	authpkg "encore.app/services/accounts"
 	"encore.app/services/booking/db"
@@ -90,9 +91,9 @@ func seedSnapshot(t *testing.T, q *db.Queries, plans []planPriceDetails) int64 {
 	id, err := q.InsertAvailablePlansSnapshot(ctx, db.InsertAvailablePlansSnapshotParams{
 		Plans:       plansJSON,
 		DriverAge:   "30",
-		PickupDate:  db.DateFromString("2026-08-01"),
+		PickupDate:  dbadapters.DateFromString("2026-08-01"),
 		PickupTime:  "08:00",
-		DropoffDate: db.DateFromString("2026-08-05"),
+		DropoffDate: dbadapters.DateFromString("2026-08-05"),
 		DropoffTime: "10:00",
 		CountryCode: "US",
 	})
@@ -283,7 +284,7 @@ func TestCreatePriceOffer(t *testing.T) {
 		if row.BtErpPrice != int32(plan.ChargedERPPriceWithVat) {
 			t.Errorf("bt erp price: got %d, want %d", row.BtErpPrice, plan.ChargedERPPriceWithVat)
 		}
-		if db.NumericToFloat64(row.BrokerErpPrice) == 0 {
+		if dbadapters.NumericToFloat64(row.BrokerErpPrice) == 0 {
 			t.Error("broker erp price should be non-zero when IncludeERP=true")
 		}
 		// Total = round((100*1.5 + 10*1.5) * 0.9) + 15 = round(148.5)+15 = 149+15 = 164
@@ -317,8 +318,8 @@ func TestCreatePriceOffer(t *testing.T) {
 		if row.BtErpPrice != 0 {
 			t.Errorf("bt erp price: got %d, want 0", row.BtErpPrice)
 		}
-		if db.NumericToFloat64(row.BrokerErpPrice) != 0 {
-			t.Errorf("broker erp price: got %v, want 0", db.NumericToFloat64(row.BrokerErpPrice))
+		if dbadapters.NumericToFloat64(row.BrokerErpPrice) != 0 {
+			t.Errorf("broker erp price: got %v, want 0", dbadapters.NumericToFloat64(row.BrokerErpPrice))
 		}
 		// Total = round(100*1.5 * 0.9) = 135.
 		if row.TotalPrice != 135 {
@@ -647,14 +648,14 @@ func TestRenewPriceOffer(t *testing.T) {
 		if row.CurrencyCode != "EUR" {
 			t.Errorf("currency code: got %q, want EUR", row.CurrencyCode)
 		}
-		if db.NumericToFloat64(row.PurchasePrice) != 200 {
-			t.Errorf("purchase price: got %v, want 200", db.NumericToFloat64(row.PurchasePrice))
+		if dbadapters.NumericToFloat64(row.PurchasePrice) != 200 {
+			t.Errorf("purchase price: got %v, want 200", dbadapters.NumericToFloat64(row.PurchasePrice))
 		}
-		if db.NumericToFloat64(row.MarkupPercentage) != 25 {
-			t.Errorf("markup percentage: got %v, want 25", db.NumericToFloat64(row.MarkupPercentage))
+		if dbadapters.NumericToFloat64(row.MarkupPercentage) != 25 {
+			t.Errorf("markup percentage: got %v, want 25", dbadapters.NumericToFloat64(row.MarkupPercentage))
 		}
-		if db.NumericToFloat64(row.BrokerErpPrice) != 20 {
-			t.Errorf("broker erp price: got %v, want 20", db.NumericToFloat64(row.BrokerErpPrice))
+		if dbadapters.NumericToFloat64(row.BrokerErpPrice) != 20 {
+			t.Errorf("broker erp price: got %v, want 20", dbadapters.NumericToFloat64(row.BrokerErpPrice))
 		}
 		if row.BtErpPrice != 30 {
 			t.Errorf("bt erp price: got %d, want 30", row.BtErpPrice)
@@ -694,8 +695,8 @@ func TestRenewPriceOffer(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to fetch renewed offer: %v", err)
 		}
-		if db.NumericToFloat64(row.BrokerErpPrice) != 0 {
-			t.Errorf("broker erp price: got %v, want 0", db.NumericToFloat64(row.BrokerErpPrice))
+		if dbadapters.NumericToFloat64(row.BrokerErpPrice) != 0 {
+			t.Errorf("broker erp price: got %v, want 0", dbadapters.NumericToFloat64(row.BrokerErpPrice))
 		}
 		if row.BtErpPrice != 0 {
 			t.Errorf("bt erp price: got %d, want 0", row.BtErpPrice)

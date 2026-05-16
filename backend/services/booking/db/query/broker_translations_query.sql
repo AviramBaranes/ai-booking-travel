@@ -72,8 +72,8 @@ WHERE
         OR target_text ILIKE '%' || sqlc.narg (search) || '%'
     )
     AND (
-        sqlc.narg (status)::broker_translation_status IS NULL
-        OR status = sqlc.narg (status)::broker_translation_status
+        sqlc.narg (status)::text IS NULL
+        OR status::text = sqlc.narg (status)::text
     )
 ORDER BY
     CASE
@@ -100,8 +100,8 @@ WHERE
         OR target_text ILIKE '%' || sqlc.narg (search) || '%'
     )
     AND (
-        sqlc.narg (status)::broker_translation_status IS NULL
-        OR status = sqlc.narg (status)::broker_translation_status
+        sqlc.narg (status)::text IS NULL
+        OR status::text = sqlc.narg (status)::text
     );
 
 -- name: ListPendingTranslations :many

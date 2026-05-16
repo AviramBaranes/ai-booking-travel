@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/pricing"
 	"encore.app/services/reservation/db"
 	"encore.dev/rlog"
@@ -57,12 +58,12 @@ func mapRowsToOpenReservations(rows []db.GetPaymentPendingReservationsRow) []Ope
 			PaymentStatus:       string(row.PaymentStatus),
 			BrokerReservationID: row.BrokerReservationID,
 			AgentID:             row.UserID,
-			CreatedAt:           db.TimestamptzToString(row.CreatedAt),
-			VoucheredAt:         db.TimestamptzToString(row.VoucheredAt),
+			CreatedAt:           dbadapters.TimestamptzToString(row.CreatedAt),
+			VoucheredAt:         dbadapters.TimestamptzToString(row.VoucheredAt),
 			VoucherNumber:       ptrToString(row.VoucherNumber),
 			DriverName:          fmt.Sprintf("%s %s %s", row.DriverTitle, row.DriverFirstName, row.DriverLastName),
-			PickupDate:          db.DateToString(row.PickupDate),
-			DropoffDate:         db.DateToString(row.DropoffDate),
+			PickupDate:          dbadapters.DateToString(row.PickupDate),
+			DropoffDate:         dbadapters.DateToString(row.DropoffDate),
 			RentalDays:          int(row.RentalDays),
 			CountryCode:         row.CountryCode,
 			CurrencyCode:        row.CurrencyCode,
@@ -77,9 +78,9 @@ func mapRowsToOpenReservations(rows []db.GetPaymentPendingReservationsRow) []Ope
 
 // getReservationPrices calculates the car price, ERP price, and total price for a reservation based on the provided database row.
 func getReservationPrices(row db.GetPaymentPendingReservationsRow) (carPrice, erpPrice, totalPrice float64) {
-	pp := db.NumericToFloat64(row.PurchasePrice)
-	mp := db.NumericToFloat64(row.MarkupPercentage)
-	bErp := db.NumericToFloat64(row.BrokerErpPrice)
+	pp := dbadapters.NumericToFloat64(row.PurchasePrice)
+	mp := dbadapters.NumericToFloat64(row.MarkupPercentage)
+	bErp := dbadapters.NumericToFloat64(row.BrokerErpPrice)
 	btErp := float64(row.BtErpPrice)
 
 	carFullPrice := pricing.ApplyMarkup(pp, mp)

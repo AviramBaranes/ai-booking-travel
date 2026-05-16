@@ -39,14 +39,14 @@ WHERE
         OR target_text ILIKE '%' || $1 || '%'
     )
     AND (
-        $2::broker_translation_status IS NULL
-        OR status = $2::broker_translation_status
+        $2::text IS NULL
+        OR status::text = $2::text
     )
 `
 
 type CountAllTranslationsParams struct {
 	Search *string
-	Status NullBrokerTranslationStatus
+	Status *string
 }
 
 func (q *Queries) CountAllTranslations(ctx context.Context, arg CountAllTranslationsParams) (int64, error) {
@@ -183,8 +183,8 @@ WHERE
         OR target_text ILIKE '%' || $1 || '%'
     )
     AND (
-        $2::broker_translation_status IS NULL
-        OR status = $2::broker_translation_status
+        $2::text IS NULL
+        OR status::text = $2::text
     )
 ORDER BY
     CASE
@@ -202,7 +202,7 @@ OFFSET
 
 type ListAllTranslationsParams struct {
 	Search      *string
-	Status      NullBrokerTranslationStatus
+	Status      *string
 	SortDir     string
 	QueryOffset int32
 	QueryLimit  int32

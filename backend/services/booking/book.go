@@ -10,6 +10,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/validation"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
@@ -144,8 +145,8 @@ func (s *Service) buildCreateReservationRequest(
 		SupplierCode:        plan.SupplierCode,
 		CarDetails:          &plan.CarDetails,
 		PlanInclusions:      plan.Inclusions,
-		PickupDate:          db.DateToString(snapshot.PickupDate),
-		DropoffDate:         db.DateToString(snapshot.DropoffDate),
+		PickupDate:          dbadapters.DateToString(snapshot.PickupDate),
+		DropoffDate:         dbadapters.DateToString(snapshot.DropoffDate),
 		RentalDays:          rentalDays,
 		DriverTitle:         params.DriverTitle,
 		DriverFirstName:     params.DriverFirstName,
@@ -168,8 +169,8 @@ func (s *Service) buildCreateReservationRequest(
 
 func calculateSnapshotRentalDays(snapshot db.AvailablePlansSnapshot) (int, error) {
 	return broker.CalculateDaysCount(
-		db.DateToString(snapshot.PickupDate), snapshot.PickupTime,
-		db.DateToString(snapshot.DropoffDate), snapshot.DropoffTime,
+		dbadapters.DateToString(snapshot.PickupDate), snapshot.PickupTime,
+		dbadapters.DateToString(snapshot.DropoffDate), snapshot.DropoffTime,
 	)
 }
 
@@ -225,8 +226,8 @@ func bookCarAtBroker(snapshot db.AvailablePlansSnapshot, plan planPriceDetails, 
 		DriverLastName:  params.DriverLastName,
 		FlightNumber:    params.FlightNumber,
 		DriverAge:       snapshot.DriverAge,
-		PickupDate:      db.DateToString(snapshot.PickupDate),
-		DropoffDate:     db.DateToString(snapshot.DropoffDate),
+		PickupDate:      dbadapters.DateToString(snapshot.PickupDate),
+		DropoffDate:     dbadapters.DateToString(snapshot.DropoffDate),
 		PickupTime:      snapshot.PickupTime,
 		DropoffTime:     snapshot.DropoffTime,
 		CountryCode:     snapshot.CountryCode,
@@ -398,8 +399,8 @@ func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, params BookPric
 		DriverLastName:  params.DriverLastName,
 		FlightNumber:    params.FlightNumber,
 		DriverAge:       offer.DriverAge,
-		PickupDate:      db.DateToString(offer.PickupDate),
-		DropoffDate:     db.DateToString(offer.DropoffDate),
+		PickupDate:      dbadapters.DateToString(offer.PickupDate),
+		DropoffDate:     dbadapters.DateToString(offer.DropoffDate),
 		PickupTime:      offer.PickupTime,
 		DropoffTime:     offer.DropoffTime,
 		CountryCode:     offer.CurrencyCode,
@@ -426,8 +427,8 @@ func buildPriceOfferReservationRequest(
 		SupplierCode:        offer.SupplierCode,
 		CarDetails:          &offerCarDetails,
 		PlanInclusions:      offer.PlanInclusions,
-		PickupDate:          db.DateToString(offer.PickupDate),
-		DropoffDate:         db.DateToString(offer.DropoffDate),
+		PickupDate:          dbadapters.DateToString(offer.PickupDate),
+		DropoffDate:         dbadapters.DateToString(offer.DropoffDate),
 		RentalDays:          int(offer.RentalDays),
 		DriverTitle:         params.DriverTitle,
 		DriverFirstName:     params.DriverFirstName,
@@ -435,11 +436,11 @@ func buildPriceOfferReservationRequest(
 		DriverAge:           driverAge,
 		CountryCode:         offer.CountryCode,
 		CurrencyCode:        offer.CurrencyCode,
-		CurrencyRate:        db.NumericToFloat64(offer.CurrencyRate),
-		PurchasePrice:       db.NumericToFloat64(offer.PurchasePrice),
-		MarkupPercentage:    db.NumericToFloat64(offer.MarkupPercentage),
+		CurrencyRate:        dbadapters.NumericToFloat64(offer.CurrencyRate),
+		PurchasePrice:       dbadapters.NumericToFloat64(offer.PurchasePrice),
+		MarkupPercentage:    dbadapters.NumericToFloat64(offer.MarkupPercentage),
 		DiscountPercentage:  0,
-		BrokerErpPrice:      db.NumericToFloat64(offer.BrokerErpPrice),
+		BrokerErpPrice:      dbadapters.NumericToFloat64(offer.BrokerErpPrice),
 		BtErpPrice:          int(offer.BtErpPrice),
 		PickupTime:          offer.PickupTime,
 		DropoffTime:         offer.DropoffTime,

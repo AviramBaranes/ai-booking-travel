@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
@@ -72,7 +73,7 @@ func (s Service) listReservationsByUser(ctx context.Context, p ListReservationsR
 		Status:     nullStatusFromString(p.Status),
 		Name:       nilIfEmpty(p.Name),
 		BookingID:  nilIfEmpty(p.BookingID),
-		PickupDate: db.DateFromString(p.PickupDate),
+		PickupDate: dbadapters.DateFromString(p.PickupDate),
 		SortBy:     p.SortBy,
 		PageSize:   listReservationsLimit,
 		PageOffset: offset,
@@ -98,7 +99,7 @@ func (s Service) countReservationsByUser(ctx context.Context, p ListReservations
 		Status:     nullStatusFromString(p.Status),
 		Name:       nilIfEmpty(p.Name),
 		BookingID:  nilIfEmpty(p.BookingID),
-		PickupDate: db.DateFromString(p.PickupDate),
+		PickupDate: dbadapters.DateFromString(p.PickupDate),
 	})
 
 	if err != nil {
@@ -119,9 +120,9 @@ func mapRowsToSummaries(rows []db.ListReservationsByUserRow) []ReservationSummar
 		summaries[i] = ReservationSummary{
 			ID:                  r.ID,
 			BrokerReservationID: r.BrokerReservationID,
-			CreatedAt:           db.TimestamptzToString(r.CreatedAt),
+			CreatedAt:           dbadapters.TimestamptzToString(r.CreatedAt),
 			CountryCode:         r.CountryCode,
-			PickupDate:          db.DateToString(r.PickupDate),
+			PickupDate:          dbadapters.DateToString(r.PickupDate),
 			PickupLocationName:  r.PickupLocationName,
 			DriverTitle:         r.DriverTitle,
 			DriverFirstName:     r.DriverFirstName,

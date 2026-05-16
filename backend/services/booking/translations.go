@@ -111,7 +111,7 @@ type ListBrokerTranslationsResponse struct {
 //encore:api auth method=GET path=/broker-translations tag:admin
 func (s *Service) ListBrokerTranslations(ctx context.Context, p ListBrokerTranslationsRequest) (*ListBrokerTranslationsResponse, error) {
 	search := nilIfEmpty(p.Search)
-	status := db.NullBrokerTranslationStatusFromString(p.Status)
+	status := nilIfEmpty(p.Status)
 	sortDir := defaultSortDir(p.SortDir)
 
 	total, err := s.query.CountAllTranslations(ctx, db.CountAllTranslationsParams{

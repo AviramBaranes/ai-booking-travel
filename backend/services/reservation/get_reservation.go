@@ -7,6 +7,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/pricing"
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
@@ -66,7 +67,7 @@ func (s *Service) GetReservation(ctx context.Context, id int64) (*GetReservation
 
 	rpd := calculatePriceDetails(row)
 
-	voucheredAt := db.TimestamptzToString(row.VoucheredAt)
+	voucheredAt := dbadapters.TimestamptzToString(row.VoucheredAt)
 	return &GetReservationResponse{
 		ID:                  row.ID,
 		BrokerReservationID: row.BrokerReservationID,
@@ -75,13 +76,13 @@ func (s *Service) GetReservation(ctx context.Context, id int64) (*GetReservation
 		CarDetails:          carDetails,
 		PlanInclusions:      row.PlanInclusions,
 		CurrencyCode:        row.CurrencyCode,
-		CurrencyRate:        db.NumericToFloat64(row.CurrencyRate),
+		CurrencyRate:        dbadapters.NumericToFloat64(row.CurrencyRate),
 		CarFullPrice:        rpd.carFullPrice,
 		ErpPrice:            rpd.erpPrice,
 		DiscountAmount:      rpd.discountAmount,
 		TotalPrice:          row.TotalPrice,
-		PickupDate:          db.DateToString(row.PickupDate),
-		DropoffDate:         db.DateToString(row.DropoffDate),
+		PickupDate:          dbadapters.DateToString(row.PickupDate),
+		DropoffDate:         dbadapters.DateToString(row.DropoffDate),
 		PickupTime:          row.PickupTime,
 		DropoffTime:         row.DropoffTime,
 		RentalDays:          row.RentalDays,
@@ -89,7 +90,7 @@ func (s *Service) GetReservation(ctx context.Context, id int64) (*GetReservation
 		DriverFirstName:     row.DriverFirstName,
 		DriverLastName:      row.DriverLastName,
 		DriverAge:           row.DriverAge,
-		CreatedAt:           db.TimestamptzToString(row.CreatedAt),
+		CreatedAt:           dbadapters.TimestamptzToString(row.CreatedAt),
 		PickupLocationName:  row.PickupLocationName,
 		DropoffLocationName: row.DropoffLocationName,
 		Voucher:             row.VoucherNumber,
@@ -106,9 +107,9 @@ type reservationPriceDetails struct {
 
 // calculatePriceDetails calculates the price details for a reservation based on the given parameters.
 func calculatePriceDetails(reservation db.GetReservationByIDRow) reservationPriceDetails {
-	pp := db.NumericToFloat64(reservation.PurchasePrice)
-	mp := db.NumericToFloat64(reservation.MarkupPercentage)
-	bErp := db.NumericToFloat64(reservation.BrokerErpPrice)
+	pp := dbadapters.NumericToFloat64(reservation.PurchasePrice)
+	mp := dbadapters.NumericToFloat64(reservation.MarkupPercentage)
+	bErp := dbadapters.NumericToFloat64(reservation.BrokerErpPrice)
 	btErp := float64(reservation.BtErpPrice)
 
 	carFullPrice := pricing.RoundToInt(pricing.ApplyMarkup(pp, mp))

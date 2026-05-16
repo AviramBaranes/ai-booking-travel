@@ -8,10 +8,10 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/lang"
 	"encore.app/internal/pricing"
 	auth "encore.app/services/accounts"
-	"encore.app/services/booking/db"
 	"encore.dev/rlog"
 )
 
@@ -253,7 +253,7 @@ func (s *Service) buildCurrencyMap(ctx context.Context) (map[string]float64, err
 		return nil, err
 	}
 	for _, r := range rows {
-		currencyMap[r.CurrencyIsoName] = db.NumericToFloat64(r.Rate)
+		currencyMap[r.CurrencyIsoName] = dbadapters.NumericToFloat64(r.Rate)
 	}
 
 	return currencyMap, nil

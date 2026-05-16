@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
 	"encore.dev/beta/errs"
@@ -76,14 +77,14 @@ func (s *Service) CancelReservation(ctx context.Context, id int64) error {
 
 // canCancel checks if the reservation can be canceled based on the current time and the pickup time.
 func canCancel(reservation db.GetReservationByIDRow) bool {
-	now := time.Now()
-	pickupDateTime, err := db.CombineDateTime(reservation.PickupDate, reservation.PickupTime)
+	pickupDateTime, err := dbadapters.CombineDateTime(reservation.PickupDate, reservation.PickupTime)
 	if err != nil {
-		rlog.Error("failed to combine pickup date and time", "error", err, "reservationId", reservation.ID)
+		rlog.Error("failed to parse pickup date and time", "error", err, "reservationId", reservation.ID, "pickupTime", reservation.PickupTime)
 		return false
 	}
+
 	cancellationDeadline := pickupDateTime.Add(-cancellationWindowHours * time.Hour)
-	return now.Before(cancellationDeadline)
+	return time.Now().Before(cancellationDeadline)
 }
 
 // BookingCancellationEvent represents the details of a reservation cancellation event.

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/reservation/db"
 	"encore.dev/et"
 	"go.uber.org/mock/gomock"
@@ -134,8 +135,8 @@ func TestGetOpenReservations(t *testing.T) {
 			PaymentStatus:       "unpaid",
 			BrokerReservationID: "OPEN-VOUCH",
 			AgentID:             userID,
-			CreatedAt:           db.TimestamptzToString(vouchRow.CreatedAt),
-			VoucheredAt:         db.TimestamptzToString(vouchRow.VoucheredAt),
+			CreatedAt:           dbadapters.TimestamptzToString(vouchRow.CreatedAt),
+			VoucheredAt:         dbadapters.TimestamptzToString(vouchRow.VoucheredAt),
 			VoucherNumber:       voucherNumber,
 			DriverName:          "Mr Voucher Holder",
 			PickupDate:          "2026-07-01",
@@ -157,7 +158,7 @@ func TestGetOpenReservations(t *testing.T) {
 			PaymentStatus:       "refund_pending",
 			BrokerReservationID: "OPEN-CANC",
 			AgentID:             userID,
-			CreatedAt:           db.TimestamptzToString(cancRow.CreatedAt),
+			CreatedAt:           dbadapters.TimestamptzToString(cancRow.CreatedAt),
 			VoucheredAt:         "",
 			VoucherNumber:       "",
 			DriverName:          "Ms Cancel Person",

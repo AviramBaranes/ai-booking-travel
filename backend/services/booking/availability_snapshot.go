@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"encore.app/internal/broker"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/booking/db"
 )
 
@@ -39,9 +40,9 @@ func (s Service) storePlansDetails(ctx context.Context, plans []planPriceDetails
 	ID, err := s.query.InsertAvailablePlansSnapshot(ctx, db.InsertAvailablePlansSnapshotParams{
 		Plans:       plansJson,
 		DriverAge:   strconv.Itoa(reqParams.DriverAge),
-		PickupDate:  db.DateFromString(reqParams.PickupDate),
+		PickupDate:  dbadapters.DateFromString(reqParams.PickupDate),
 		PickupTime:  reqParams.PickupTime,
-		DropoffDate: db.DateFromString(reqParams.DropoffDate),
+		DropoffDate: dbadapters.DateFromString(reqParams.DropoffDate),
 		DropoffTime: reqParams.DropoffTime,
 		CountryCode: countryCode,
 	})

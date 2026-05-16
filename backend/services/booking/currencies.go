@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/icount"
 	"encore.app/internal/validation"
 	"encore.app/services/booking/db"
@@ -60,7 +61,7 @@ func toCurrencyResponse(c db.Currency) CurrencyResponse {
 		ID:              c.ID,
 		CurrencyCode:    c.CurrencyCode,
 		CurrencyISOName: c.CurrencyIsoName,
-		Rate:            db.NumericToFloat64(c.Rate),
+		Rate:            dbadapters.NumericToFloat64(c.Rate),
 	}
 }
 
@@ -91,7 +92,7 @@ func (s *Service) CreateCurrency(ctx context.Context, params CreateCurrencyReque
 	row, err := s.query.CreateCurrency(ctx, db.CreateCurrencyParams{
 		CurrencyCode:    params.CurrencyCode,
 		CurrencyIsoName: params.CurrencyISOName,
-		Rate:            db.NumericFromFloat64(params.Rate),
+		Rate:            dbadapters.NumericFromFloat64(params.Rate),
 	})
 	if err != nil {
 		rlog.Error("failed to create currency", "error", err)
@@ -112,7 +113,7 @@ func (s *Service) UpdateCurrency(ctx context.Context, id int64, params UpdateCur
 		CurrencyIsoName: params.CurrencyISOName,
 	}
 	if params.Rate != nil {
-		dbParams.Rate = db.NumericFromFloat64(*params.Rate)
+		dbParams.Rate = dbadapters.NumericFromFloat64(*params.Rate)
 	}
 
 	row, err := s.query.UpdateCurrency(ctx, dbParams)
@@ -163,12 +164,12 @@ func (s *Service) UpdateCurrenciesRates(ctx context.Context) error {
 func createUpsertParams(res *icount.GetCurrenciesRatesResponse) db.UpsertCurrenciesParams {
 	currencyCodes := make([]string, 0, len(res.Rates))
 	currencyIsoNames := make([]string, 0, len(res.Rates))
-	rates := make([]db.Numeric, 0, len(res.Rates))
+	rates := make([]dbadapters.Numeric, 0, len(res.Rates))
 
 	for isoName, rate := range res.Rates {
 		currencyCodes = append(currencyCodes, currencyIsoNameToCode(isoName))
 		currencyIsoNames = append(currencyIsoNames, isoName)
-		rates = append(rates, db.NumericFromFloat64(rate))
+		rates = append(rates, dbadapters.NumericFromFloat64(rate))
 	}
 
 	return db.UpsertCurrenciesParams{

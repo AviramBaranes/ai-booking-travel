@@ -6,6 +6,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/pricing"
 	"encore.app/internal/validation"
 	"encore.app/services/reservation/db"
@@ -77,16 +78,16 @@ func (s *Service) CreateReservation(ctx context.Context, p CreateReservationRequ
 		PlanInclusions:      p.PlanInclusions,
 		CountryCode:         p.CountryCode,
 		CurrencyCode:        p.CurrencyCode,
-		CurrencyRate:        db.NumericFromFloat64(p.CurrencyRate),
-		PurchasePrice:       db.NumericFromFloat64(p.PurchasePrice),
-		MarkupPercentage:    db.NumericFromFloat64(p.MarkupPercentage),
+		CurrencyRate:        dbadapters.NumericFromFloat64(p.CurrencyRate),
+		PurchasePrice:       dbadapters.NumericFromFloat64(p.PurchasePrice),
+		MarkupPercentage:    dbadapters.NumericFromFloat64(p.MarkupPercentage),
 		DiscountPercentage:  int32(p.DiscountPercentage),
-		BrokerErpPrice:      db.NumericFromFloat64(p.BrokerErpPrice),
+		BrokerErpPrice:      dbadapters.NumericFromFloat64(p.BrokerErpPrice),
 		BtErpPrice:          int32(p.BtErpPrice),
-		VatPercentage:       db.NumericFromFloat64(cfg.VAT()),
+		VatPercentage:       dbadapters.NumericFromFloat64(cfg.VAT()),
 		TotalPrice:          int32(totalPrice),
-		PickupDate:          db.DateFromString(p.PickupDate),
-		DropoffDate:         db.DateFromString(p.DropoffDate),
+		PickupDate:          dbadapters.DateFromString(p.PickupDate),
+		DropoffDate:         dbadapters.DateFromString(p.DropoffDate),
 		PickupTime:          p.PickupTime,
 		DropoffTime:         p.DropoffTime,
 		RentalDays:          int32(p.RentalDays),

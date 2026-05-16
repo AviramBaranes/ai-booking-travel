@@ -9,6 +9,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
 	"encore.app/services/notifications"
@@ -124,10 +125,10 @@ func toVoucherData(reservation db.Reservation) (*broker.VoucherData, error) {
 		CustomerName:       strings.TrimSpace(reservation.DriverTitle + " " + reservation.DriverFirstName + " " + reservation.DriverLastName),
 		Supplier:           reservation.SupplierCode,
 		PickupLoc:          reservation.PickupLocationName,
-		PickupDate:         db.DateToString(reservation.PickupDate),
+		PickupDate:         dbadapters.DateToString(reservation.PickupDate),
 		PickupTime:         reservation.PickupTime,
 		DropoffLoc:         reservation.DropoffLocationName,
-		DropoffDate:        db.DateToString(reservation.DropoffDate),
+		DropoffDate:        dbadapters.DateToString(reservation.DropoffDate),
 		DropoffTime:        reservation.DropoffTime,
 		CarGroupDesc:       carDetails.CarGroup,
 		LeadModel:          carDetails.Model,
