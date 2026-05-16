@@ -43,10 +43,10 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 }
 
 // CheckBrokerTranslationExists mocks base method.
-func (m *MockQuerier) CheckBrokerTranslationExists(ctx context.Context, sourceText string) (int32, error) {
+func (m *MockQuerier) CheckBrokerTranslationExists(ctx context.Context, sourceText string) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckBrokerTranslationExists", ctx, sourceText)
-	ret0, _ := ret[0].(int32)
+	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -178,7 +178,7 @@ func (mr *MockQuerierMockRecorder) CreatePriceOffer(ctx, arg any) *gomock.Call {
 }
 
 // DeleteBrokerTranslation mocks base method.
-func (m *MockQuerier) DeleteBrokerTranslation(ctx context.Context, id int32) error {
+func (m *MockQuerier) DeleteBrokerTranslation(ctx context.Context, id int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteBrokerTranslation", ctx, id)
 	ret0, _ := ret[0].(error)
@@ -192,7 +192,7 @@ func (mr *MockQuerierMockRecorder) DeleteBrokerTranslation(ctx, id any) *gomock.
 }
 
 // DeleteCoupon mocks base method.
-func (m *MockQuerier) DeleteCoupon(ctx context.Context, id int32) error {
+func (m *MockQuerier) DeleteCoupon(ctx context.Context, id int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteCoupon", ctx, id)
 	ret0, _ := ret[0].(error)
@@ -206,7 +206,7 @@ func (mr *MockQuerierMockRecorder) DeleteCoupon(ctx, id any) *gomock.Call {
 }
 
 // DeleteCurrency mocks base method.
-func (m *MockQuerier) DeleteCurrency(ctx context.Context, id int32) error {
+func (m *MockQuerier) DeleteCurrency(ctx context.Context, id int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteCurrency", ctx, id)
 	ret0, _ := ret[0].(error)
@@ -530,10 +530,10 @@ func (mr *MockQuerierMockRecorder) InsertAvailablePlansSnapshot(ctx, arg any) *g
 }
 
 // InsertBrokerTranslation mocks base method.
-func (m *MockQuerier) InsertBrokerTranslation(ctx context.Context, sourceText string) (int32, error) {
+func (m *MockQuerier) InsertBrokerTranslation(ctx context.Context, sourceText string) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InsertBrokerTranslation", ctx, sourceText)
-	ret0, _ := ret[0].(int32)
+	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -545,10 +545,10 @@ func (mr *MockQuerierMockRecorder) InsertBrokerTranslation(ctx, sourceText any) 
 }
 
 // InsertBrokerTranslationFull mocks base method.
-func (m *MockQuerier) InsertBrokerTranslationFull(ctx context.Context, arg db.InsertBrokerTranslationFullParams) (int32, error) {
+func (m *MockQuerier) InsertBrokerTranslationFull(ctx context.Context, arg db.InsertBrokerTranslationFullParams) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InsertBrokerTranslationFull", ctx, arg)
-	ret0, _ := ret[0].(int32)
+	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -913,7 +913,7 @@ func (mr *MockQuerierMockRecorder) UpsertLocationByIATA(ctx, arg any) *gomock.Ca
 }
 
 // VerifyBrokerTranslation mocks base method.
-func (m *MockQuerier) VerifyBrokerTranslation(ctx context.Context, id int32) error {
+func (m *MockQuerier) VerifyBrokerTranslation(ctx context.Context, id int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VerifyBrokerTranslation", ctx, id)
 	ret0, _ := ret[0].(error)

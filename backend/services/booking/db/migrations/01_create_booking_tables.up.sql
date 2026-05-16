@@ -97,20 +97,16 @@ CREATE INDEX idx_hertz_markup_rates_lookup ON hertz_markup_rates (
 -- 
 CREATE TABLE
     coupons (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        code VARCHAR(100) NOT NULL UNIQUE,
+        id BIGSERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        code TEXT NOT NULL UNIQUE,
         discount INTEGER NOT NULL CHECK (
             discount > 0
             AND discount <= 100
         ),
         is_enabled BOOLEAN NOT NULL DEFAULT TRUE,
-        created_at TIMESTAMP
-        WITH
-            TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP
-        WITH
-            TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
 
 CREATE INDEX idx_coupons_code ON coupons (code);
@@ -123,16 +119,12 @@ CREATE INDEX idx_coupons_code ON coupons (code);
 -- 
 CREATE TABLE
     currencies (
-        id SERIAL PRIMARY KEY,
-        currency_code VARCHAR(10) NOT NULL UNIQUE,
-        currency_iso_name VARCHAR(100) NOT NULL UNIQUE,
+        id BIGSERIAL PRIMARY KEY,
+        currency_code TEXT NOT NULL UNIQUE,
+        currency_iso_name TEXT NOT NULL UNIQUE,
         rate NUMERIC(12, 6) NOT NULL CHECK (rate > 0),
-        created_at TIMESTAMP
-        WITH
-            TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP
-        WITH
-            TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
 
 -- 
@@ -167,7 +159,7 @@ CREATE TYPE broker_translation_status AS ENUM ('pending', 'translated', 'verifie
 
 CREATE TABLE
     broker_translations (
-        id SERIAL PRIMARY KEY,
+        id BIGSERIAL PRIMARY KEY,
         source_text TEXT NOT NULL UNIQUE,
         target_text TEXT,
         status broker_translation_status NOT NULL DEFAULT 'pending',
@@ -175,8 +167,8 @@ CREATE TABLE
             confidence_score >= 0
             AND confidence_score <= 10
         ),
-        created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
 -- 
 -- 

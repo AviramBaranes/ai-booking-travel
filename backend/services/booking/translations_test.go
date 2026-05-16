@@ -62,7 +62,7 @@ func TestVerifyBrokerTranslationDBFailures(t *testing.T) {
 
 	t.Run("returns internal error when db fails", func(t *testing.T) {
 		q, s := mockService(t)
-		q.EXPECT().VerifyBrokerTranslation(gomock.Any(), int32(1)).
+		q.EXPECT().VerifyBrokerTranslation(gomock.Any(), int64(1)).
 			Return(errors.New("db error"))
 
 		err := s.VerifyBrokerTranslation(ctx, 1)
@@ -71,7 +71,7 @@ func TestVerifyBrokerTranslationDBFailures(t *testing.T) {
 
 	t.Run("returns not found when db returns ErrNoRows", func(t *testing.T) {
 		q, s := mockService(t)
-		q.EXPECT().VerifyBrokerTranslation(gomock.Any(), int32(1)).
+		q.EXPECT().VerifyBrokerTranslation(gomock.Any(), int64(1)).
 			Return(db.ErrNoRows)
 
 		err := s.VerifyBrokerTranslation(ctx, 1)
@@ -195,7 +195,7 @@ func strPtr(s string) *string { return &s }
 
 // seedTranslation inserts a broker_translation row via the typed query interface.
 // It registers a cleanup to delete the row when the test ends.
-func seedTranslation(t *testing.T, q *db.Queries, source string, status db.BrokerTranslationStatus, confidence int32, target *string) int32 {
+func seedTranslation(t *testing.T, q *db.Queries, source string, status db.BrokerTranslationStatus, confidence int32, target *string) int64 {
 	t.Helper()
 	ctx := context.Background()
 
@@ -530,7 +530,7 @@ func TestListBrokerTranslationsPagination(t *testing.T) {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		page1IDs := map[int32]bool{}
+		page1IDs := map[int64]bool{}
 		for _, r := range page1.Translations {
 			page1IDs[r.ID] = true
 		}
@@ -626,7 +626,7 @@ func TestDeleteBrokerTranslationDBFailures(t *testing.T) {
 
 	t.Run("returns internal error when db fails", func(t *testing.T) {
 		q, s := mockService(t)
-		q.EXPECT().DeleteBrokerTranslation(gomock.Any(), int32(1)).
+		q.EXPECT().DeleteBrokerTranslation(gomock.Any(), int64(1)).
 			Return(errors.New("db error"))
 
 		err := s.DeleteBrokerTranslation(ctx, 1)
@@ -635,7 +635,7 @@ func TestDeleteBrokerTranslationDBFailures(t *testing.T) {
 
 	t.Run("returns not found when db returns ErrNoRows", func(t *testing.T) {
 		q, s := mockService(t)
-		q.EXPECT().DeleteBrokerTranslation(gomock.Any(), int32(1)).
+		q.EXPECT().DeleteBrokerTranslation(gomock.Any(), int64(1)).
 			Return(db.ErrNoRows)
 
 		err := s.DeleteBrokerTranslation(ctx, 1)

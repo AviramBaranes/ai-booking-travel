@@ -70,7 +70,7 @@ func TestListCoupons(t *testing.T) {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		ids := make(map[int32]bool)
+		ids := make(map[int64]bool)
 		for _, c := range resp.Coupons {
 			ids[c.ID] = true
 		}
@@ -305,7 +305,7 @@ func TestDeleteCoupon(t *testing.T) {
 
 	t.Run("returns error when db fails", func(t *testing.T) {
 		q, s := mockService(t)
-		q.EXPECT().DeleteCoupon(gomock.Any(), int32(1)).Return(errors.New("db error"))
+		q.EXPECT().DeleteCoupon(gomock.Any(), int64(1)).Return(errors.New("db error"))
 
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, s.DeleteCoupon(ctx, 1))
 	})

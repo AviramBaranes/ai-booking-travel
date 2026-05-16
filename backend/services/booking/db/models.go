@@ -153,7 +153,7 @@ type AvailablePlansSnapshot struct {
 }
 
 type BrokerTranslation struct {
-	ID              int32
+	ID              int64
 	SourceText      string
 	TargetText      *string
 	Status          BrokerTranslationStatus
@@ -163,7 +163,7 @@ type BrokerTranslation struct {
 }
 
 type Coupon struct {
-	ID        int32
+	ID        int64
 	Name      string
 	Code      string
 	Discount  int32
@@ -173,7 +173,7 @@ type Coupon struct {
 }
 
 type Currency struct {
-	ID              int32
+	ID              int64
 	CurrencyCode    string
 	CurrencyIsoName string
 	Rate            pgtype.Numeric

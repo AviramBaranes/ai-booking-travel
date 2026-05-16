@@ -23,7 +23,7 @@ var icountCfg = config.Load[*icountConfig]()
 // --- Request / Response types ---
 
 type CurrencyResponse struct {
-	ID              int32   `json:"id"`
+	ID              int64   `json:"id"`
 	CurrencyCode    string  `json:"currencyCode"`
 	CurrencyISOName string  `json:"currencyISOName"`
 	Rate            float64 `json:"rate"`
@@ -105,7 +105,7 @@ func (s *Service) CreateCurrency(ctx context.Context, params CreateCurrencyReque
 // UpdateCurrency updates an existing currency.
 //
 //encore:api auth method=PUT path=/currencies/:id tag:admin
-func (s *Service) UpdateCurrency(ctx context.Context, id int32, params UpdateCurrencyRequest) (*CurrencyResponse, error) {
+func (s *Service) UpdateCurrency(ctx context.Context, id int64, params UpdateCurrencyRequest) (*CurrencyResponse, error) {
 	dbParams := db.UpdateCurrencyParams{
 		ID:              id,
 		CurrencyCode:    params.CurrencyCode,
@@ -131,7 +131,7 @@ func (s *Service) UpdateCurrency(ctx context.Context, id int32, params UpdateCur
 // DeleteCurrency deletes a currency by its ID.
 //
 //encore:api auth method=DELETE path=/currencies/:id tag:admin
-func (s *Service) DeleteCurrency(ctx context.Context, id int32) error {
+func (s *Service) DeleteCurrency(ctx context.Context, id int64) error {
 	err := s.query.DeleteCurrency(ctx, id)
 	if err != nil {
 		rlog.Error("failed to delete currency", "error", err, "id", id)

@@ -13,7 +13,7 @@ import (
 // --- Request / Response types ---
 
 type CouponResponse struct {
-	ID        int32  `json:"id"`
+	ID        int64  `json:"id"`
 	Name      string `json:"name"`
 	Code      string `json:"code"`
 	Discount  int32  `json:"discount"`
@@ -100,7 +100,7 @@ func (s *Service) CreateCoupon(ctx context.Context, params CreateCouponRequest) 
 // UpdateCoupon updates an existing coupon.
 //
 //encore:api auth method=PUT path=/coupons/:id tag:admin
-func (s *Service) UpdateCoupon(ctx context.Context, id int32, params UpdateCouponRequest) (*CouponResponse, error) {
+func (s *Service) UpdateCoupon(ctx context.Context, id int64, params UpdateCouponRequest) (*CouponResponse, error) {
 	row, err := s.query.UpdateCoupon(ctx, db.UpdateCouponParams{
 		ID:        id,
 		Name:      params.Name,
@@ -123,7 +123,7 @@ func (s *Service) UpdateCoupon(ctx context.Context, id int32, params UpdateCoupo
 // DeleteCoupon deletes a coupon by its ID.
 //
 //encore:api auth method=DELETE path=/coupons/:id tag:admin
-func (s *Service) DeleteCoupon(ctx context.Context, id int32) error {
+func (s *Service) DeleteCoupon(ctx context.Context, id int64) error {
 	err := s.query.DeleteCoupon(ctx, id)
 	if err != nil {
 		rlog.Error("failed to delete coupon", "error", err, "id", id)

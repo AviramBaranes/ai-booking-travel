@@ -11,7 +11,7 @@ import (
 )
 
 type Querier interface {
-	CheckBrokerTranslationExists(ctx context.Context, sourceText string) (int32, error)
+	CheckBrokerTranslationExists(ctx context.Context, sourceText string) (int64, error)
 	CountAllTranslations(ctx context.Context, arg CountAllTranslationsParams) (int64, error)
 	// Count total rows matching the same filters (for pagination).
 	CountHertzMarkupRates(ctx context.Context, arg CountHertzMarkupRatesParams) (int64, error)
@@ -21,9 +21,9 @@ type Querier interface {
 	CreateCoupon(ctx context.Context, arg CreateCouponParams) (Coupon, error)
 	CreateCurrency(ctx context.Context, arg CreateCurrencyParams) (Currency, error)
 	CreatePriceOffer(ctx context.Context, arg CreatePriceOfferParams) (PriceOffer, error)
-	DeleteBrokerTranslation(ctx context.Context, id int32) error
-	DeleteCoupon(ctx context.Context, id int32) error
-	DeleteCurrency(ctx context.Context, id int32) error
+	DeleteBrokerTranslation(ctx context.Context, id int64) error
+	DeleteCoupon(ctx context.Context, id int64) error
+	DeleteCurrency(ctx context.Context, id int64) error
 	DeleteHertzMarkupRate(ctx context.Context, id int64) (int64, error)
 	DeleteLocationBrokerCode(ctx context.Context, id int64) (int64, error)
 	DeleteLocationByID(ctx context.Context, id int64) error
@@ -46,8 +46,8 @@ type Querier interface {
 	GetPriceOfferByToken(ctx context.Context, token pgtype.UUID) (GetPriceOfferByTokenRow, error)
 	GetSnapshotByID(ctx context.Context, id int64) (AvailablePlansSnapshot, error)
 	InsertAvailablePlansSnapshot(ctx context.Context, arg InsertAvailablePlansSnapshotParams) (int64, error)
-	InsertBrokerTranslation(ctx context.Context, sourceText string) (int32, error)
-	InsertBrokerTranslationFull(ctx context.Context, arg InsertBrokerTranslationFullParams) (int32, error)
+	InsertBrokerTranslation(ctx context.Context, sourceText string) (int64, error)
+	InsertBrokerTranslationFull(ctx context.Context, arg InsertBrokerTranslationFullParams) (int64, error)
 	InsertHertzMarkupRate(ctx context.Context, arg InsertHertzMarkupRateParams) (HertzMarkupRate, error)
 	InsertLocation(ctx context.Context, arg InsertLocationParams) (Location, error)
 	InsertLocationBrokerCode(ctx context.Context, arg InsertLocationBrokerCodeParams) (LocationBrokerCode, error)
@@ -73,7 +73,7 @@ type Querier interface {
 	UpsertCurrencies(ctx context.Context, arg UpsertCurrenciesParams) error
 	UpsertLocationByCountryCodeName(ctx context.Context, arg UpsertLocationByCountryCodeNameParams) (int64, error)
 	UpsertLocationByIATA(ctx context.Context, arg UpsertLocationByIATAParams) (int64, error)
-	VerifyBrokerTranslation(ctx context.Context, id int32) error
+	VerifyBrokerTranslation(ctx context.Context, id int64) error
 }
 
 var _ Querier = (*Queries)(nil)

@@ -47,7 +47,7 @@ DELETE FROM coupons
 WHERE id = $1
 `
 
-func (q *Queries) DeleteCoupon(ctx context.Context, id int32) error {
+func (q *Queries) DeleteCoupon(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteCoupon, id)
 	return err
 }
@@ -123,7 +123,7 @@ type UpdateCouponParams struct {
 	Code      *string
 	Discount  *int32
 	IsEnabled *bool
-	ID        int32
+	ID        int64
 }
 
 func (q *Queries) UpdateCoupon(ctx context.Context, arg UpdateCouponParams) (Coupon, error) {

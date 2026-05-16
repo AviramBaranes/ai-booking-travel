@@ -42,7 +42,7 @@ DELETE FROM currencies
 WHERE id = $1
 `
 
-func (q *Queries) DeleteCurrency(ctx context.Context, id int32) error {
+func (q *Queries) DeleteCurrency(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteCurrency, id)
 	return err
 }
@@ -114,7 +114,7 @@ type UpdateCurrencyParams struct {
 	CurrencyCode    *string
 	CurrencyIsoName *string
 	Rate            pgtype.Numeric
-	ID              int32
+	ID              int64
 }
 
 func (q *Queries) UpdateCurrency(ctx context.Context, arg UpdateCurrencyParams) (Currency, error) {

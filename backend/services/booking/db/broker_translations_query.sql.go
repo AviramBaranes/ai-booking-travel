@@ -20,9 +20,9 @@ LIMIT
     1
 `
 
-func (q *Queries) CheckBrokerTranslationExists(ctx context.Context, sourceText string) (int32, error) {
+func (q *Queries) CheckBrokerTranslationExists(ctx context.Context, sourceText string) (int64, error) {
 	row := q.db.QueryRow(ctx, checkBrokerTranslationExists, sourceText)
-	var id int32
+	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
@@ -62,7 +62,7 @@ WHERE
     id = $1
 `
 
-func (q *Queries) DeleteBrokerTranslation(ctx context.Context, id int32) error {
+func (q *Queries) DeleteBrokerTranslation(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, deleteBrokerTranslation, id)
 	return err
 }
@@ -106,7 +106,7 @@ WHERE
 `
 
 type GetAllVerifiedTranslationsRow struct {
-	ID         int32
+	ID         int64
 	SourceText string
 	TargetText *string
 }
@@ -138,9 +138,9 @@ VALUES
     ($1) RETURNING id
 `
 
-func (q *Queries) InsertBrokerTranslation(ctx context.Context, sourceText string) (int32, error) {
+func (q *Queries) InsertBrokerTranslation(ctx context.Context, sourceText string) (int64, error) {
 	row := q.db.QueryRow(ctx, insertBrokerTranslation, sourceText)
-	var id int32
+	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
@@ -159,14 +159,14 @@ type InsertBrokerTranslationFullParams struct {
 	ConfidenceScore *int32
 }
 
-func (q *Queries) InsertBrokerTranslationFull(ctx context.Context, arg InsertBrokerTranslationFullParams) (int32, error) {
+func (q *Queries) InsertBrokerTranslationFull(ctx context.Context, arg InsertBrokerTranslationFullParams) (int64, error) {
 	row := q.db.QueryRow(ctx, insertBrokerTranslationFull,
 		arg.SourceText,
 		arg.TargetText,
 		arg.Status,
 		arg.ConfidenceScore,
 	)
-	var id int32
+	var id int64
 	err := row.Scan(&id)
 	return id, err
 }
@@ -295,7 +295,7 @@ WHERE
 type TranslatePendingTranslationParams struct {
 	TargetText      *string
 	ConfidenceScore *int32
-	ID              int32
+	ID              int64
 }
 
 func (q *Queries) TranslatePendingTranslation(ctx context.Context, arg TranslatePendingTranslationParams) error {
@@ -316,7 +316,7 @@ WHERE
 
 type UpdateBrokerTranslationParams struct {
 	TargetText *string
-	ID         int32
+	ID         int64
 }
 
 func (q *Queries) UpdateBrokerTranslation(ctx context.Context, arg UpdateBrokerTranslationParams) error {
@@ -334,7 +334,7 @@ WHERE
     id = $1
 `
 
-func (q *Queries) VerifyBrokerTranslation(ctx context.Context, id int32) error {
+func (q *Queries) VerifyBrokerTranslation(ctx context.Context, id int64) error {
 	_, err := q.db.Exec(ctx, verifyBrokerTranslation, id)
 	return err
 }

@@ -68,7 +68,7 @@ func TestListCurrencies(t *testing.T) {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		ids := make(map[int32]bool)
+		ids := make(map[int64]bool)
 		for _, c := range resp.Currencies {
 			ids[c.ID] = true
 		}
@@ -295,7 +295,7 @@ func TestDeleteCurrency(t *testing.T) {
 
 	t.Run("returns error when db fails", func(t *testing.T) {
 		q, s := mockService(t)
-		q.EXPECT().DeleteCurrency(gomock.Any(), int32(1)).Return(errors.New("db error"))
+		q.EXPECT().DeleteCurrency(gomock.Any(), int64(1)).Return(errors.New("db error"))
 
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, s.DeleteCurrency(ctx, 1))
 	})

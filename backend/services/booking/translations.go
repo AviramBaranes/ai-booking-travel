@@ -47,7 +47,7 @@ func (s *Service) GetPendingTranslations(ctx context.Context, p *GetPendingTrans
 // TranslateTranslationRequest is the request for TranslateTranslation endpoint
 type TranslateTranslationRequest struct {
 	Token      string `header:"X-Translation-Token" encore:"sensitive"`
-	ID         int32  `json:"id"`
+	ID         int64  `json:"id"`
 	TargetText string `json:"targetText"`
 	Confidence int32  `json:"confidence"`
 }
@@ -96,7 +96,7 @@ func (r ListBrokerTranslationsRequest) Validate() error {
 }
 
 type BrokerTranslationRow struct {
-	ID              int32   `json:"id"`
+	ID              int64   `json:"id"`
 	SourceText      string  `json:"source_text"`
 	TargetText      *string `json:"target_text"`
 	Status          string  `json:"status"`
@@ -176,7 +176,7 @@ func (p UpdateBrokerTranslationRequest) Validate() error {
 // UpdateBrokerTranslation updates a broker translation target text by ID.
 //
 //encore:api auth method=PUT path=/broker-translations/:id tag:admin
-func (s *Service) UpdateBrokerTranslation(ctx context.Context, id int32, params UpdateBrokerTranslationRequest) error {
+func (s *Service) UpdateBrokerTranslation(ctx context.Context, id int64, params UpdateBrokerTranslationRequest) error {
 	err := s.query.UpdateBrokerTranslation(ctx, db.UpdateBrokerTranslationParams{
 		ID:         id,
 		TargetText: &params.TargetText,
@@ -194,7 +194,7 @@ func (s *Service) UpdateBrokerTranslation(ctx context.Context, id int32, params 
 // VerifyBrokerTranslation marks a broker translation as verified by ID.
 //
 //encore:api auth method=PATCH path=/broker-translations/:id/verify tag:admin
-func (s *Service) VerifyBrokerTranslation(ctx context.Context, id int32) error {
+func (s *Service) VerifyBrokerTranslation(ctx context.Context, id int64) error {
 	err := s.query.VerifyBrokerTranslation(ctx, id)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
@@ -209,7 +209,7 @@ func (s *Service) VerifyBrokerTranslation(ctx context.Context, id int32) error {
 // DeleteBrokerTranslation deletes a broker translation by ID.
 //
 //encore:api auth method=DELETE path=/broker-translations/:id tag:admin
-func (s *Service) DeleteBrokerTranslation(ctx context.Context, id int32) error {
+func (s *Service) DeleteBrokerTranslation(ctx context.Context, id int64) error {
 	err := s.query.DeleteBrokerTranslation(ctx, id)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
