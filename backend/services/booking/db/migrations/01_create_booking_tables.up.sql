@@ -50,11 +50,6 @@ CREATE UNIQUE INDEX uniq_location_broker ON location_broker_codes (location_id, 
 -- Broker IDs are globally unique per broker
 CREATE UNIQUE INDEX uniq_broker_code ON location_broker_codes (broker, broker_location_id);
 
--- Query helpers
-CREATE INDEX idx_location_broker ON location_broker_codes (location_id, broker);
-
-CREATE INDEX idx_broker_lookup ON location_broker_codes (broker, broker_location_id);
-
 -- 
 -- 
 -- 
@@ -108,8 +103,6 @@ CREATE TABLE
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
-
-CREATE INDEX idx_coupons_code ON coupons (code);
 -- 
 -- 
 -- 
@@ -170,6 +163,11 @@ CREATE TABLE
         created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
+
+CREATE INDEX idx_broker_translations_verified 
+ON broker_translations (status) 
+WHERE status = 'verified';
+
 -- 
 -- 
 -- 
@@ -220,5 +218,3 @@ CREATE TABLE
     );
 
 CREATE INDEX idx_price_offers_agent_id ON price_offers (agent_id, created_at DESC);
-
-CREATE INDEX idx_price_offers_token ON price_offers (token);

@@ -48,6 +48,11 @@ CREATE INDEX idx_reservations_user_id_reservation_status_created_at ON reservati
 
 CREATE INDEX idx_reservations_user_id_pickup_date ON reservations (user_id, pickup_date);
 
+-- Partial index for fast lookup of pending payments and refunds
+CREATE INDEX idx_reservations_pending_payment 
+ON reservations (payment_status, reservation_status) 
+WHERE payment_status IN ('unpaid', 'refund_pending');
+
 CREATE TABLE outbox (
     id BIGSERIAL PRIMARY KEY,
     topic TEXT NOT NULL,

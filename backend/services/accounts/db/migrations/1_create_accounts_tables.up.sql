@@ -82,3 +82,17 @@ CREATE TABLE
         admin_ref_id BIGINT REFERENCES users (id) ON DELETE CASCADE,
         expires_at TIMESTAMPTZ NOT NULL
     );
+
+-- ---------------------------------------------------------
+-- Indexes
+-- ---------------------------------------------------------
+
+CREATE INDEX idx_offices_organization_id ON offices (organization_id);
+CREATE INDEX idx_contacts_office_id ON contacts (office_id);
+CREATE INDEX idx_contacts_organization_id ON contacts (organization_id);
+
+CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens (user_id);
+
+CREATE INDEX idx_users_office_id ON users (office_id) WHERE office_id IS NOT NULL;
+
+CREATE INDEX idx_users_role_agent ON users (created_at DESC) WHERE role = 'agent';
