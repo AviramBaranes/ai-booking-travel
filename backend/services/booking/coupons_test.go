@@ -7,6 +7,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/validation"
+	"encore.app/services/booking/coupon_handlers"
 	"encore.app/services/booking/db"
 	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
@@ -14,8 +15,8 @@ import (
 
 // --- Helpers ---
 
-func validCreateCouponParams() CreateCouponRequest {
-	return CreateCouponRequest{
+func validCreateCouponParams() coupon_handlers.CreateCouponParams {
+	return coupon_handlers.CreateCouponParams{
 		Name:      "Summer Sale",
 		Code:      "SUMMER2026",
 		Discount:  15,
@@ -23,12 +24,12 @@ func validCreateCouponParams() CreateCouponRequest {
 	}
 }
 
-func validUpdateCouponParams() UpdateCouponRequest {
+func validUpdateCouponParams() coupon_handlers.UpdateCouponParams {
 	name := "Winter Sale"
 	code := "WINTER2026"
 	discount := int32(25)
 	enabled := false
-	return UpdateCouponRequest{
+	return coupon_handlers.UpdateCouponParams{
 		Name:      &name,
 		Code:      &code,
 		Discount:  &discount,
@@ -43,7 +44,7 @@ func couponInvalidValueErr(field string) error {
 }
 
 // createTestCoupon is a shorthand to seed a coupon with a unique code.
-func createTestCoupon(t *testing.T, s *Service, code string) *CouponResponse {
+func createTestCoupon(t *testing.T, s *Service, code string) *coupon_handlers.CouponResponse {
 	t.Helper()
 	p := validCreateCouponParams()
 	p.Code = code
@@ -74,7 +75,7 @@ func TestListCoupons(t *testing.T) {
 		for _, c := range resp.Coupons {
 			ids[c.ID] = true
 		}
-		for _, want := range []*CouponResponse{c1, c2, c3} {
+		for _, want := range []*coupon_handlers.CouponResponse{c1, c2, c3} {
 			if !ids[want.ID] {
 				t.Fatalf("expected coupon %d (%s) in list", want.ID, want.Code)
 			}
@@ -151,7 +152,7 @@ func TestCreateCoupon(t *testing.T) {
 	})
 
 	t.Run("creates coupon successfully", func(t *testing.T) {
-		resp, err := s.CreateCoupon(ctx, CreateCouponRequest{
+		resp, err := s.CreateCoupon(ctx, coupon_handlers.CreateCouponParams{
 			Name:      "Test Coupon",
 			Code:      "CREATE-OK",
 			Discount:  20,
@@ -226,7 +227,7 @@ func TestUpdateCoupon(t *testing.T) {
 
 	t.Run("validation accepts partial update with only name", func(t *testing.T) {
 		name := "Partial"
-		p := UpdateCouponRequest{Name: &name}
+		p := coupon_handlers.UpdateCouponParams{Name: &name}
 		if err := p.Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -257,7 +258,7 @@ func TestUpdateCoupon(t *testing.T) {
 		created := createTestCoupon(t, s, "PARTIAL-UPD")
 
 		newName := "Updated Name"
-		resp, err := s.UpdateCoupon(ctx, created.ID, UpdateCouponRequest{Name: &newName})
+		resp, err := s.UpdateCoupon(ctx, created.ID, coupon_handlers.UpdateCouponParams{Name: &newName})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
