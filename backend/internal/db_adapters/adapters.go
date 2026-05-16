@@ -82,3 +82,19 @@ func CombineDateTime(d pgtype.Date, timeStr string) (time.Time, error) {
 	date := d.Time
 	return time.Date(date.Year(), date.Month(), date.Day(), t.Hour(), t.Minute(), 0, 0, time.UTC), nil
 }
+
+// DBTime converts a time.Time to a pgtype.Timestamptz.
+func DBTime(t time.Time) pgtype.Timestamptz {
+	return pgtype.Timestamptz{
+		Time:  t,
+		Valid: !t.IsZero(),
+	}
+}
+
+// TimeFromDB converts a pgtype.Timestamptz to a time.Time.
+func TimeFromDB(t pgtype.Timestamptz) time.Time {
+	if !t.Valid {
+		return time.Time{}
+	}
+	return t.Time
+}

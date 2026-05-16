@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/jwt"
 	"encore.app/internal/lang"
 	"encore.app/internal/password"
@@ -85,7 +86,7 @@ func (s *Service) generateTokens(ctx context.Context, user db.User, adminRefID *
 		Jti:        jti,
 		UserID:     user.ID,
 		AdminRefID: adminRefID,
-		ExpiresAt:  db.DBTime(exp),
+		ExpiresAt:  dbadapters.DBTime(exp),
 	})
 	if err != nil {
 		return "", "", errs.Wrap(err, "failed to save refresh token")

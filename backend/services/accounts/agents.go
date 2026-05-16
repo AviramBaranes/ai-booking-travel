@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/password"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
@@ -69,6 +70,7 @@ type CreateAgentResponse struct {
 const agentsPageSize int32 = 15
 
 func toAgentResponse(r db.ListAgentsRow) AgentResponse {
+	lastLogin := dbadapters.TimeFromDB(r.LastLogin)
 	return AgentResponse{
 		ID:               r.ID,
 		FirstName:        r.FirstName,
@@ -78,9 +80,9 @@ func toAgentResponse(r db.ListAgentsRow) AgentResponse {
 		OfficeID:         r.OfficeID,
 		OfficeName:       r.OfficeName,
 		OrganizationName: r.OrganizationName,
-		LastLogin:        db.TimePtrFromDB(r.LastLogin),
-		CreatedAt:        db.TimeFromDB(r.CreatedAt),
-		UpdatedAt:        db.TimeFromDB(r.UpdatedAt),
+		LastLogin:        &lastLogin,
+		CreatedAt:        dbadapters.TimeFromDB(r.CreatedAt),
+		UpdatedAt:        dbadapters.TimeFromDB(r.UpdatedAt),
 	}
 }
 

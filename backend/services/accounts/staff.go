@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/password"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
@@ -69,14 +70,15 @@ func hashPasswordForInsert(email, rawPassword string) (string, error) {
 
 // toStaffResponse maps a ListStaffByRoleRow to StaffResponse.
 func toStaffResponse(r db.ListStaffByRoleRow) StaffResponse {
+	lastLogin := dbadapters.TimeFromDB(r.LastLogin)
 	return StaffResponse{
 		ID:        r.ID,
 		FirstName: r.FirstName,
 		LastName:  r.LastName,
 		Email:     r.Email,
-		LastLogin: db.TimePtrFromDB(r.LastLogin),
-		CreatedAt: db.TimeFromDB(r.CreatedAt),
-		UpdatedAt: db.TimeFromDB(r.UpdatedAt),
+		LastLogin: &lastLogin,
+		CreatedAt: dbadapters.TimeFromDB(r.CreatedAt),
+		UpdatedAt: dbadapters.TimeFromDB(r.UpdatedAt),
 	}
 }
 

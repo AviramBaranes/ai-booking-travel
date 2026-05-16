@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/jwt"
 	"encore.app/services/accounts/db"
 	"encore.app/services/accounts/mocks"
@@ -85,7 +86,7 @@ func TestRefreshTokens(t *testing.T) {
 		p := db.SaveRefreshTokenParams{
 			Jti:       jti,
 			UserID:    admin.ID,
-			ExpiresAt: db.DBTime(exp),
+			ExpiresAt: dbadapters.DBTime(exp),
 		}
 		if err := query.SaveRefreshToken(ctx, p); err != nil {
 			t.Fatalf("failed to save expired token: %v", err)
@@ -158,7 +159,7 @@ func TestRefreshTokens(t *testing.T) {
 			Return(db.RefreshToken{
 				Jti:       jti,
 				UserID:    999999,
-				ExpiresAt: db.DBTime(time.Now().Add(time.Hour)),
+				ExpiresAt: dbadapters.DBTime(time.Now().Add(time.Hour)),
 			}, nil)
 
 		// DeleteRefreshToken is called before GetUserById
@@ -191,7 +192,7 @@ func TestRefreshTokens(t *testing.T) {
 			Return(db.RefreshToken{
 				Jti:       jti,
 				UserID:    123,
-				ExpiresAt: db.DBTime(time.Now().Add(time.Hour)),
+				ExpiresAt: dbadapters.DBTime(time.Now().Add(time.Hour)),
 			}, nil)
 
 		q.EXPECT().DeleteRefreshToken(gomock.Any(), jti).Return(nil)
@@ -221,7 +222,7 @@ func TestRefreshTokens(t *testing.T) {
 			Return(db.RefreshToken{
 				Jti:       jti,
 				UserID:    123,
-				ExpiresAt: db.DBTime(time.Now().Add(time.Hour)),
+				ExpiresAt: dbadapters.DBTime(time.Now().Add(time.Hour)),
 			}, nil)
 
 		q.EXPECT().DeleteRefreshToken(gomock.Any(), jti).Return(nil)
