@@ -7,8 +7,8 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/validation"
-	"encore.app/services/booking/coupon_handlers"
 	"encore.app/services/booking/db"
+	"encore.app/services/booking/handlers/coupon_handlers"
 	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
 )

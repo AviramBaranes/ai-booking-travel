@@ -3,7 +3,7 @@ package booking
 import (
 	"context"
 
-	"encore.app/services/booking/currency_handlers"
+	"encore.app/services/booking/handlers/currency_handlers"
 	"encore.dev/config"
 	"encore.dev/cron"
 )

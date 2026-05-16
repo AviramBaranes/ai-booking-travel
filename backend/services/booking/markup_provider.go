@@ -2,11 +2,17 @@ package booking
 
 import (
 	"context"
+	"time"
 
 	"encore.app/services/booking/db"
 	"encore.dev/rlog"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+func parseDate(s string) pgtype.Date {
+	t, _ := time.Parse("2006-01-02", s)
+	return pgtype.Date{Time: t, Valid: true}
+}
 
 // MarkupProvider calculates markup for a single vehicle.
 // Constructed per-search with all static params already resolved.

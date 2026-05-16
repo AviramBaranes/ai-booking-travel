@@ -3,7 +3,7 @@ package booking
 import (
 	"context"
 
-	"encore.app/services/booking/coupon_handlers"
+	"encore.app/services/booking/handlers/coupon_handlers"
 )
 
 // ListCoupons lists all coupons.
