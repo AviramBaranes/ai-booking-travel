@@ -2,16 +2,10 @@ package booking
 
 import (
 	"context"
-	"errors"
 
-	"encore.app/internal/api_errors"
-	dbadapters "encore.app/internal/db_adapters"
-	"encore.app/internal/icount"
-	"encore.app/internal/validation"
-	"encore.app/services/booking/db"
+	"encore.app/services/booking/currency_handlers"
 	"encore.dev/config"
 	"encore.dev/cron"
-	"encore.dev/rlog"
 )
 
 type icountConfig struct {
@@ -21,178 +15,44 @@ type icountConfig struct {
 
 var icountCfg = config.Load[*icountConfig]()
 
-// --- Request / Response types ---
-
-type CurrencyResponse struct {
-	ID              int64   `json:"id"`
-	CurrencyCode    string  `json:"currencyCode"`
-	CurrencyISOName string  `json:"currencyISOName"`
-	Rate            float64 `json:"rate"`
-}
-
-type ListCurrenciesResponse struct {
-	Currencies []CurrencyResponse `json:"currencies"`
-}
-
-type CreateCurrencyRequest struct {
-	CurrencyCode    string  `json:"currencyCode" validate:"required,notblank"`
-	CurrencyISOName string  `json:"currencyISOName" validate:"required,notblank"`
-	Rate            float64 `json:"rate" validate:"required,gt=0"`
-}
-
-func (p CreateCurrencyRequest) Validate() error {
-	return validation.ValidateStruct(p)
-}
-
-type UpdateCurrencyRequest struct {
-	CurrencyCode    *string  `json:"currencyCode" validate:"omitempty,notblank" encore:"optional"`
-	CurrencyISOName *string  `json:"currencyISOName" validate:"omitempty,notblank" encore:"optional"`
-	Rate            *float64 `json:"rate" validate:"omitempty,gt=0" encore:"optional"`
-}
-
-func (p UpdateCurrencyRequest) Validate() error {
-	return validation.ValidateStruct(p)
-}
-
-// --- Helpers ---
-
-func toCurrencyResponse(c db.Currency) CurrencyResponse {
-	return CurrencyResponse{
-		ID:              c.ID,
-		CurrencyCode:    c.CurrencyCode,
-		CurrencyISOName: c.CurrencyIsoName,
-		Rate:            dbadapters.NumericToFloat64(c.Rate),
-	}
-}
-
-// --- Endpoints ---
-
 // ListCurrencies lists all currencies.
 //
 //encore:api auth method=GET path=/currencies tag:admin
-func (s *Service) ListCurrencies(ctx context.Context) (*ListCurrenciesResponse, error) {
-	rows, err := s.query.ListCurrencies(ctx)
-	if err != nil {
-		rlog.Error("failed to list currencies", "error", err)
-		return nil, api_errors.ErrInternalError
-	}
-
-	currencies := make([]CurrencyResponse, 0, len(rows))
-	for _, r := range rows {
-		currencies = append(currencies, toCurrencyResponse(r))
-	}
-
-	return &ListCurrenciesResponse{Currencies: currencies}, nil
+func (s *Service) ListCurrencies(ctx context.Context) (*currency_handlers.ListCurrenciesResponse, error) {
+	cs := currency_handlers.NewCurrencyService(s.query)
+	return cs.ListCurrencies(ctx)
 }
 
 // CreateCurrency creates a new currency.
 //
 //encore:api auth method=POST path=/currencies tag:admin
-func (s *Service) CreateCurrency(ctx context.Context, params CreateCurrencyRequest) (*CurrencyResponse, error) {
-	row, err := s.query.CreateCurrency(ctx, db.CreateCurrencyParams{
-		CurrencyCode:    params.CurrencyCode,
-		CurrencyIsoName: params.CurrencyISOName,
-		Rate:            dbadapters.NumericFromFloat64(params.Rate),
-	})
-	if err != nil {
-		rlog.Error("failed to create currency", "error", err)
-		return nil, api_errors.ErrInternalError
-	}
-
-	resp := toCurrencyResponse(row)
-	return &resp, nil
+func (s *Service) CreateCurrency(ctx context.Context, params currency_handlers.CreateCurrencyParams) (*currency_handlers.CurrencyResponse, error) {
+	cs := currency_handlers.NewCurrencyService(s.query)
+	return cs.CreateCurrency(ctx, params)
 }
 
 // UpdateCurrency updates an existing currency.
 //
 //encore:api auth method=PUT path=/currencies/:id tag:admin
-func (s *Service) UpdateCurrency(ctx context.Context, id int64, params UpdateCurrencyRequest) (*CurrencyResponse, error) {
-	dbParams := db.UpdateCurrencyParams{
-		ID:              id,
-		CurrencyCode:    params.CurrencyCode,
-		CurrencyIsoName: params.CurrencyISOName,
-	}
-	if params.Rate != nil {
-		dbParams.Rate = dbadapters.NumericFromFloat64(*params.Rate)
-	}
-
-	row, err := s.query.UpdateCurrency(ctx, dbParams)
-	if err != nil {
-		if errors.Is(err, db.ErrNoRows) {
-			return nil, api_errors.ErrNotFound
-		}
-		rlog.Error("failed to update currency", "error", err)
-		return nil, api_errors.ErrInternalError
-	}
-
-	resp := toCurrencyResponse(row)
-	return &resp, nil
+func (s *Service) UpdateCurrency(ctx context.Context, id int64, params currency_handlers.UpdateCurrencyParams) (*currency_handlers.CurrencyResponse, error) {
+	cs := currency_handlers.NewCurrencyService(s.query)
+	return cs.UpdateCurrency(ctx, id, params)
 }
 
 // DeleteCurrency deletes a currency by its ID.
 //
 //encore:api auth method=DELETE path=/currencies/:id tag:admin
 func (s *Service) DeleteCurrency(ctx context.Context, id int64) error {
-	err := s.query.DeleteCurrency(ctx, id)
-	if err != nil {
-		rlog.Error("failed to delete currency", "error", err, "id", id)
-		return api_errors.ErrInternalError
-	}
-	return nil
+	cs := currency_handlers.NewCurrencyService(s.query)
+	return cs.DeleteCurrency(ctx, id)
 }
 
 // UpdateCurrenciesRates updates the exchange rates for all currencies from iCount, it runs via a cron job.
 //
 //encore:api private
 func (s *Service) UpdateCurrenciesRates(ctx context.Context) error {
-	i := icount.NewIcount(icountCfg.CID(), icountCfg.User())
-	res, err := i.FetchCurrencies()
-	if err != nil {
-		rlog.Error("failed to fetch currencies from iCount", "error", err)
-		return api_errors.ErrInternalError
-	}
-	err = s.query.UpsertCurrencies(ctx, createUpsertParams(res))
-	if err != nil {
-		rlog.Error("failed to upsert currencies", "error", err)
-		return api_errors.ErrInternalError
-	}
-
-	return nil
-}
-
-// createUpsertParams converts the iCount response to the parameters needed for the UpsertCurrencies query.
-func createUpsertParams(res *icount.GetCurrenciesRatesResponse) db.UpsertCurrenciesParams {
-	currencyCodes := make([]string, 0, len(res.Rates))
-	currencyIsoNames := make([]string, 0, len(res.Rates))
-	rates := make([]dbadapters.Numeric, 0, len(res.Rates))
-
-	for isoName, rate := range res.Rates {
-		currencyCodes = append(currencyCodes, currencyIsoNameToCode(isoName))
-		currencyIsoNames = append(currencyIsoNames, isoName)
-		rates = append(rates, dbadapters.NumericFromFloat64(rate))
-	}
-
-	return db.UpsertCurrenciesParams{
-		CurrencyCodes:    currencyCodes,
-		CurrencyIsoNames: currencyIsoNames,
-		Rates:            rates,
-	}
-}
-
-// currencyIsoNameToCode maps currency ISO names to their corresponding symbols. If the ISO name is not recognized, it returns the ISO name itself.
-func currencyIsoNameToCode(isoName string) string {
-	switch isoName {
-	case "EUR":
-		return "€"
-	case "USD":
-		return "$"
-	case "GBP":
-		return "£"
-	case "ILS":
-		return "₪"
-	default:
-		return isoName
-	}
+	cs := currency_handlers.NewCurrencyService(s.query)
+	return cs.UpdateCurrenciesRates(ctx, icountCfg.CID(), icountCfg.User())
 }
 
 var _ = cron.NewJob("currencies-sync", cron.JobConfig{
