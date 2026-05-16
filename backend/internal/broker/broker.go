@@ -142,15 +142,9 @@ type PriceDetails struct {
 	YoungDriverFeeCurrency string `json:"youngDriverFeeCurrency"`
 }
 
-// LocationDetails represents the details of a rental location, including delivery collection, pickup and return branch addresses and phone numbers, location type, and pickup notes.
+// LocationDetails holds the locationType of a rental location
 type LocationDetails struct {
-	DeliveryCollection  string `json:"deliveryCollection"`
-	PickupBranchAddress string `json:"pickupBranchAddress"`
-	ReturnBranchAddress string `json:"returnBranchAddress"`
-	PickupBranchPhone   string `json:"pickupBranchPhone"`
-	ReturnBranchPhone   string `json:"returnBranchPhone"`
-	PickupNotes         string `json:"pickupNotes"`
-	LocationType        string `json:"locationType"`
+	LocationType string `json:"locationType"`
 }
 
 // CarDetails represents the details of a car available for rent, including its ID, model, car group, image URL, supplier, car type, car size, ACRISS code, whether it has AC and auto gear, and the number of seats, bags, and doors.

@@ -100,11 +100,13 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 		ydFee, ydFeeCurrency := f.getYoungDriverFee(c.Information)
 
 		car := AvailableVehicle{
-			Broker:          BrokerFlex,
-			CarDetails:      carDetails,
-			Plans:           plans,
-			AddOns:          addOns,
-			LocationDetails: getLocationDetails(supplierDetails),
+			Broker:     BrokerFlex,
+			CarDetails: carDetails,
+			Plans:      plans,
+			AddOns:     addOns,
+			LocationDetails: LocationDetails{
+				LocationType: supplierDetails.PickUpDetails.LocationType,
+			},
 			PriceDetails: PriceDetails{
 				Currency:               c.Currency,
 				DropCharge:             pricing.RoundToInt(c.DropCharge),
@@ -276,28 +278,6 @@ func flexCarToBrokerCar(c flexCar, supplierName string) (CarDetails, error) {
 		Doors:        doors,
 		Bags:         bags,
 	}, nil
-}
-
-// getLocationDetails extracts location details from the supplier details
-func getLocationDetails(s flexSupplierDetails) LocationDetails {
-	var dc string
-	const DELIVERY_COLLECTION_HEADER = "DELIVERY AND COLLECTION"
-	for _, term := range s.Terms {
-		if strings.HasPrefix(term.Header, DELIVERY_COLLECTION_HEADER) {
-			dc = term.Paragraph
-			break
-		}
-	}
-
-	return LocationDetails{
-		DeliveryCollection:  dc,
-		PickupBranchAddress: s.PickUpDetails.Address1,
-		ReturnBranchAddress: s.DropOffDetails.Address1,
-		PickupBranchPhone:   s.PickUpDetails.Phone,
-		ReturnBranchPhone:   s.DropOffDetails.Phone,
-		LocationType:        s.PickUpDetails.LocationType,
-		PickupNotes:         s.PickUpDetails.LocationInformation,
-	}
 }
 
 // formatDate formats a date string from "2006-01-02" to "02/01/2006"
