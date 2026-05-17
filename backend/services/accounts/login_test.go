@@ -12,6 +12,7 @@ import (
 	"encore.app/internal/lang"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
+	auth_handler "encore.app/services/accounts/handlers/auth_handler"
 	user_handlers "encore.app/services/accounts/handlers/user_handlers"
 	"encore.app/services/accounts/mocks"
 	"encore.dev/beta/auth"
@@ -55,7 +56,7 @@ func TestLogin(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Invalid email", func(t *testing.T) {
-		cases := []LoginParams{
+		cases := []auth_handler.LoginParams{
 			{Email: "", Password: testPassword},
 			{Email: "ab", Password: testPassword},
 			{Email: "xsxs@@dd.com", Password: testPassword},
@@ -73,7 +74,7 @@ func TestLogin(t *testing.T) {
 	})
 
 	t.Run("Invalid password", func(t *testing.T) {
-		p := LoginParams{
+		p := auth_handler.LoginParams{
 			Email: testEmail,
 		}
 		err := p.Validate()
@@ -86,8 +87,8 @@ func TestLogin(t *testing.T) {
 	})
 
 	t.Run("User not found", func(t *testing.T) {
-		_, err := Login(ctx, LoginParams{Email: testEmail, Password: testPassword})
-		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
+		_, err := Login(ctx, auth_handler.LoginParams{Email: testEmail, Password: testPassword})
+		api_errors.AssertApiError(t, auth_handler.ErrInvalidCredentials, err)
 	})
 
 	t.Run("Search user by email fails", func(t *testing.T) {
@@ -100,7 +101,7 @@ func TestLogin(t *testing.T) {
 			Return(db.User{}, errors.New(("db error")))
 
 		s := &Service{query: q}
-		_, err := s.Login(ctx, LoginParams{Email: testEmail, Password: testPassword})
+		_, err := s.Login(ctx, auth_handler.LoginParams{Email: testEmail, Password: testPassword})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -116,8 +117,8 @@ func TestLogin(t *testing.T) {
 		}
 		defer query.DeleteUser(ctx, user.ID)
 
-		_, err = Login(ctx, LoginParams{Email: testEmail, Password: "WrongPass123!"})
-		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
+		_, err = Login(ctx, auth_handler.LoginParams{Email: testEmail, Password: "WrongPass123!"})
+		api_errors.AssertApiError(t, auth_handler.ErrInvalidCredentials, err)
 	})
 
 	t.Run("Store refresh token fails", func(t *testing.T) {
@@ -148,7 +149,7 @@ func TestLogin(t *testing.T) {
 			Return(errors.New("db error"))
 
 		s := &Service{query: &hq}
-		_, err = s.Login(ctx, LoginParams{Email: testEmail, Password: testPassword})
+		_, err = s.Login(ctx, auth_handler.LoginParams{Email: testEmail, Password: testPassword})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -187,7 +188,7 @@ func TestLogin(t *testing.T) {
 
 		for _, c := range cases {
 
-			resp, err := Login(ctx, LoginParams{Email: c.email, Password: testPassword})
+			resp, err := Login(ctx, auth_handler.LoginParams{Email: c.email, Password: testPassword})
 			if err != nil {
 				t.Fatalf("Expected no error, got %v", err)
 			}
@@ -243,15 +244,15 @@ func TestLoginAsAgent(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Validation: missing agent ID", func(t *testing.T) {
-		err := (LoginAsAgentParams{}).Validate()
+		err := (auth_handler.LoginAsAgentParams{}).Validate()
 		expectedErr := invalidValueErr("agentId")
 		api_errors.AssertApiError(t, expectedErr, err)
 	})
 
 	t.Run("Agent not found", func(t *testing.T) {
 		adminCtx := adminAuthContext(999)
-		_, err := LoginAsAgent(adminCtx, LoginAsAgentParams{AgentID: 99999})
-		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
+		_, err := LoginAsAgent(adminCtx, auth_handler.LoginAsAgentParams{AgentID: 99999})
+		api_errors.AssertApiError(t, auth_handler.ErrInvalidCredentials, err)
 	})
 
 	t.Run("DB error looking up agent", func(t *testing.T) {
@@ -264,7 +265,7 @@ func TestLoginAsAgent(t *testing.T) {
 			Return(db.User{}, errors.New("db error"))
 
 		et.MockService[Interface]("accounts", &Service{query: q})
-		_, err := LoginAsAgent(adminCtx, LoginAsAgentParams{AgentID: 12345})
+		_, err := LoginAsAgent(adminCtx, auth_handler.LoginAsAgentParams{AgentID: 12345})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -280,7 +281,7 @@ func TestLoginAsAgent(t *testing.T) {
 			Return(errors.New("db error"))
 
 		et.MockService[Interface]("accounts", &Service{query: q})
-		_, err := LoginAsAgent(adminCtx, LoginAsAgentParams{AgentID: 1})
+		_, err := LoginAsAgent(adminCtx, auth_handler.LoginAsAgentParams{AgentID: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -306,7 +307,7 @@ func TestLoginAsAgent(t *testing.T) {
 		defer delAgent()
 
 		adminCtx := adminAuthContext(admin.ID)
-		resp, err := LoginAsAgent(adminCtx, LoginAsAgentParams{AgentID: agent.ID})
+		resp, err := LoginAsAgent(adminCtx, auth_handler.LoginAsAgentParams{AgentID: agent.ID})
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
@@ -362,14 +363,14 @@ func TestLoginBackToAdmin(t *testing.T) {
 	t.Run("No admin ref in auth data", func(t *testing.T) {
 		agentCtx := agentAuthContext(1, nil)
 		_, err := LoginBackToAdmin(agentCtx)
-		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
+		api_errors.AssertApiError(t, auth_handler.ErrInvalidCredentials, err)
 	})
 
 	t.Run("Admin not found", func(t *testing.T) {
 		adminRefID := int64(99999)
 		agentCtx := agentAuthContext(1, &adminRefID)
 		_, err := LoginBackToAdmin(agentCtx)
-		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
+		api_errors.AssertApiError(t, auth_handler.ErrInvalidCredentials, err)
 	})
 
 	t.Run("DB error looking up admin", func(t *testing.T) {
@@ -464,13 +465,13 @@ func TestSendCustomerLoginOTP(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Validation: missing phone number", func(t *testing.T) {
-		err := (SendCustomerLoginOTPParams{}).Validate()
+		err := (auth_handler.SendCustomerLoginOTPParams{}).Validate()
 		api_errors.AssertApiError(t, invalidValueErr("phoneNumber"), err)
 	})
 
 	t.Run("User not found", func(t *testing.T) {
-		err := SendCustomerLoginOTP(ctx, SendCustomerLoginOTPParams{PhoneNumber: randomIsraeliPhoneNumber()})
-		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
+		err := SendCustomerLoginOTP(ctx, auth_handler.SendCustomerLoginOTPParams{PhoneNumber: randomIsraeliPhoneNumber()})
+		api_errors.AssertApiError(t, auth_handler.ErrInvalidCredentials, err)
 	})
 
 	t.Run("User found but role is not customer", func(t *testing.T) {
@@ -488,8 +489,8 @@ func TestSendCustomerLoginOTP(t *testing.T) {
 		}
 		defer delAgent()
 
-		err = SendCustomerLoginOTP(ctx, SendCustomerLoginOTPParams{PhoneNumber: agentPhone})
-		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
+		err = SendCustomerLoginOTP(ctx, auth_handler.SendCustomerLoginOTPParams{PhoneNumber: agentPhone})
+		api_errors.AssertApiError(t, auth_handler.ErrInvalidCredentials, err)
 	})
 
 	t.Run("Success: OTP saved and event published", func(t *testing.T) {
@@ -500,9 +501,9 @@ func TestSendCustomerLoginOTP(t *testing.T) {
 		}
 		defer cleanup()
 
-		publishedBefore := len(et.Topic(CustomerLoginOTPRequestedTopic).PublishedMessages())
+		publishedBefore := len(et.Topic(auth_handler.CustomerLoginOTPRequestedTopic).PublishedMessages())
 
-		err = SendCustomerLoginOTP(ctx, SendCustomerLoginOTPParams{PhoneNumber: phoneNumber})
+		err = SendCustomerLoginOTP(ctx, auth_handler.SendCustomerLoginOTPParams{PhoneNumber: phoneNumber})
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
@@ -521,12 +522,12 @@ func TestSendCustomerLoginOTP(t *testing.T) {
 			t.Fatalf("Expected OTP with length 6, got %q", *updatedUser.Otp)
 		}
 
-		publishedAfter := len(et.Topic(CustomerLoginOTPRequestedTopic).PublishedMessages())
+		publishedAfter := len(et.Topic(auth_handler.CustomerLoginOTPRequestedTopic).PublishedMessages())
 		if publishedAfter != publishedBefore+1 {
 			t.Fatalf("Expected one published OTP event, before=%d after=%d", publishedBefore, publishedAfter)
 		}
 
-		published := et.Topic(CustomerLoginOTPRequestedTopic).PublishedMessages()
+		published := et.Topic(auth_handler.CustomerLoginOTPRequestedTopic).PublishedMessages()
 		last := published[len(published)-1]
 		if last == nil {
 			t.Fatal("Expected published OTP event payload")
@@ -546,14 +547,14 @@ func TestSendCustomerLoginOTP(t *testing.T) {
 
 		ctxWithLang := context.WithValue(ctx, lang.ContextKey, "en")
 
-		publishedBefore := len(et.Topic(CustomerLoginOTPRequestedTopic).PublishedMessages())
+		publishedBefore := len(et.Topic(auth_handler.CustomerLoginOTPRequestedTopic).PublishedMessages())
 
-		err = SendCustomerLoginOTP(ctxWithLang, SendCustomerLoginOTPParams{PhoneNumber: phoneNumber})
+		err = SendCustomerLoginOTP(ctxWithLang, auth_handler.SendCustomerLoginOTPParams{PhoneNumber: phoneNumber})
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
 
-		published := et.Topic(CustomerLoginOTPRequestedTopic).PublishedMessages()
+		published := et.Topic(auth_handler.CustomerLoginOTPRequestedTopic).PublishedMessages()
 		if len(published) != publishedBefore+1 {
 			t.Fatalf("Expected one published OTP event, before=%d after=%d", publishedBefore, len(published))
 		}
@@ -572,16 +573,16 @@ func TestValidateCustomerLoginOTP(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Validation: missing otp", func(t *testing.T) {
-		err := (ValidateCustomerLoginOTPParams{PhoneNumber: randomIsraeliPhoneNumber()}).Validate()
+		err := (auth_handler.ValidateCustomerLoginOTPParams{PhoneNumber: randomIsraeliPhoneNumber()}).Validate()
 		api_errors.AssertApiError(t, invalidValueErr("otp"), err)
 	})
 
 	t.Run("User not found", func(t *testing.T) {
-		_, err := ValidateCustomerLoginOTP(ctx, ValidateCustomerLoginOTPParams{
+		_, err := ValidateCustomerLoginOTP(ctx, auth_handler.ValidateCustomerLoginOTPParams{
 			PhoneNumber: randomIsraeliPhoneNumber(),
 			OTP:         "123456",
 		})
-		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
+		api_errors.AssertApiError(t, auth_handler.ErrInvalidCredentials, err)
 	})
 
 	t.Run("Incorrect OTP", func(t *testing.T) {
@@ -593,11 +594,11 @@ func TestValidateCustomerLoginOTP(t *testing.T) {
 		}
 		defer cleanup()
 
-		_, err = ValidateCustomerLoginOTP(ctx, ValidateCustomerLoginOTPParams{
+		_, err = ValidateCustomerLoginOTP(ctx, auth_handler.ValidateCustomerLoginOTPParams{
 			PhoneNumber: phoneNumber,
 			OTP:         "654321",
 		})
-		api_errors.AssertApiError(t, ErrInvalidCredentials, err)
+		api_errors.AssertApiError(t, auth_handler.ErrInvalidCredentials, err)
 	})
 
 	t.Run("Success: valid response and OTP cleared", func(t *testing.T) {
@@ -609,7 +610,7 @@ func TestValidateCustomerLoginOTP(t *testing.T) {
 		}
 		defer cleanup()
 
-		resp, err := ValidateCustomerLoginOTP(ctx, ValidateCustomerLoginOTPParams{
+		resp, err := ValidateCustomerLoginOTP(ctx, auth_handler.ValidateCustomerLoginOTPParams{
 			PhoneNumber: phoneNumber,
 			OTP:         otp,
 		})

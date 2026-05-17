@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"encore.app/services/accounts"
+	"encore.app/services/accounts/handlers/auth_handler"
 )
 
 type fakeSMSSender struct {
@@ -27,7 +27,7 @@ func TestSendCustomerLoginOTPSMS(t *testing.T) {
 		fake := &fakeSMSSender{}
 		s := &Service{smsSender: fake}
 
-		event := &accounts.CustomerLoginOTPRequestedEvent{
+		event := &auth_handler.CustomerLoginOTPRequestedEvent{
 			PhoneNumber: "+972500000000",
 			OTP:         "123456",
 			LangCode:    "he",
@@ -50,7 +50,7 @@ func TestSendCustomerLoginOTPSMS(t *testing.T) {
 		fake := &fakeSMSSender{}
 		s := &Service{smsSender: fake}
 
-		event := &accounts.CustomerLoginOTPRequestedEvent{
+		event := &auth_handler.CustomerLoginOTPRequestedEvent{
 			PhoneNumber: "+15555555555",
 			OTP:         "987654",
 			LangCode:    "en",
@@ -71,7 +71,7 @@ func TestSendCustomerLoginOTPSMS(t *testing.T) {
 		fake := &fakeSMSSender{err: sendErr}
 		s := &Service{smsSender: fake}
 
-		event := &accounts.CustomerLoginOTPRequestedEvent{
+		event := &auth_handler.CustomerLoginOTPRequestedEvent{
 			PhoneNumber: "+15555555555",
 			OTP:         "111111",
 			LangCode:    "en",

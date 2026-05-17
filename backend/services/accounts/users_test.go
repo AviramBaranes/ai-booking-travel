@@ -193,7 +193,7 @@ func TestUpdateUser(t *testing.T) {
 		_, err = s.UpdateUser(ctx, agentB.ID, user_handlers.UpdateUserParams{
 			Email: ptrStr(emailA),
 		})
-		api_errors.AssertApiError(t, ErrEmailAlreadyExists, err)
+		api_errors.AssertApiError(t, user_handlers.ErrEmailAlreadyExists, err)
 	})
 
 	// ── Integration: same email for same user is fine ──
@@ -256,7 +256,7 @@ func TestUpdateUser(t *testing.T) {
 		_, err = s.UpdateUser(ctx, agentB.ID, user_handlers.UpdateUserParams{
 			PhoneNumber: ptrStr(phone),
 		})
-		api_errors.AssertApiError(t, ErrPhoneAlreadyExists, err)
+		api_errors.AssertApiError(t, user_handlers.ErrPhoneAlreadyExists, err)
 	})
 
 	// ── Integration: same phone for same user is fine ──
@@ -294,7 +294,7 @@ func TestUpdateUser(t *testing.T) {
 		_, err := s.UpdateUser(ctx, 999999, user_handlers.UpdateUserParams{
 			Email: ptrStr("nobody@test.com"),
 		})
-		api_errors.AssertApiError(t, ErrUserNotFound, err)
+		api_errors.AssertApiError(t, user_handlers.ErrUserNotFound, err)
 	})
 
 	// ── Validation ──

@@ -1,4 +1,4 @@
-package accounts
+package auth_handler
 
 import (
 	"context"
@@ -17,8 +17,7 @@ type RefreshTokensParams struct {
 	RefreshToken string `header:"Authorization"`
 }
 
-// encore:api public method=POST path=/refresh
-func (s *Service) RefreshTokens(ctx context.Context, p RefreshTokensParams) (*LoginResponse, error) {
+func (s *AuthService) RefreshTokens(ctx context.Context, p RefreshTokensParams) (*LoginResponse, error) {
 	tokenString := strings.TrimPrefix(p.RefreshToken, "Bearer ")
 	claims, err := jwt.ValidateRefreshToken(tokenString)
 	if err != nil {
@@ -59,13 +58,10 @@ func (s *Service) RefreshTokens(ctx context.Context, p RefreshTokensParams) (*Lo
 		return nil, api_errors.ErrInternalError
 	}
 
-	var phoneNumber string
-	if user.PhoneNumber != nil {
-		phoneNumber = *user.PhoneNumber
-	}
-
-	return &LoginResponse{AccessToken: accessToken, RefreshToken: refreshToken,
-		Email:       user.Email,
-		PhoneNumber: phoneNumber,
+	return &LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		Email:        user.Email,
+		PhoneNumber:  ptrToStr(user.PhoneNumber),
 	}, nil
 }

@@ -255,7 +255,7 @@ func TestCreateAgent(t *testing.T) {
 			PhoneNumber: randomIsraeliPhoneNumber(),
 			OfficeID:    officeID,
 		})
-		api_errors.AssertApiError(t, ErrEmailAlreadyExists, err)
+		api_errors.AssertApiError(t, user_handlers.ErrEmailAlreadyExists, err)
 	})
 
 	t.Run("validation rejects empty firstName", func(t *testing.T) {
@@ -297,7 +297,7 @@ func TestCreateAgent(t *testing.T) {
 	t.Run("validation rejects weak password", func(t *testing.T) {
 		t.Parallel()
 		p := user_handlers.CreateAgentParams{FirstName: "Test", LastName: "Agent", Email: "agent@test.com", Password: "short", PhoneNumber: "0521234567", OfficeID: 1}
-		api_errors.AssertApiError(t, ErrPasswordTooShort, p.Validate())
+		api_errors.AssertApiError(t, user_handlers.ErrPasswordTooShort, p.Validate())
 	})
 
 	t.Run("returns error when check exists db fails", func(t *testing.T) {

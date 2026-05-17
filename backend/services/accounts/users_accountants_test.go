@@ -108,7 +108,7 @@ func TestCreateAccountant(t *testing.T) {
 			Email:     "dup_accountant@test.com",
 			Password:  "ValidPass123!",
 		})
-		api_errors.AssertApiError(t, ErrEmailAlreadyExists, err)
+		api_errors.AssertApiError(t, user_handlers.ErrEmailAlreadyExists, err)
 	})
 
 	t.Run("validation rejects empty firstName", func(t *testing.T) {
@@ -132,13 +132,13 @@ func TestCreateAccountant(t *testing.T) {
 	t.Run("validation rejects weak password", func(t *testing.T) {
 		t.Parallel()
 		p := user_handlers.CreateAccountantParams{FirstName: "Test", LastName: "Accountant", Email: "acc@test.com", Password: "short"}
-		api_errors.AssertApiError(t, ErrPasswordTooShort, p.Validate())
+		api_errors.AssertApiError(t, user_handlers.ErrPasswordTooShort, p.Validate())
 	})
 
 	t.Run("validation rejects password without uppercase", func(t *testing.T) {
 		t.Parallel()
 		p := user_handlers.CreateAccountantParams{FirstName: "Test", LastName: "Accountant", Email: "acc@test.com", Password: "validpass123!"}
-		api_errors.AssertApiError(t, ErrPasswordNoUpper, p.Validate())
+		api_errors.AssertApiError(t, user_handlers.ErrPasswordNoUpper, p.Validate())
 	})
 
 	t.Run("returns error when check exists db fails", func(t *testing.T) {
