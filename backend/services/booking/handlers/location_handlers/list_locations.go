@@ -1,4 +1,4 @@
-package booking
+package location_handlers
 
 import (
 	"context"
@@ -10,6 +10,24 @@ import (
 	"encore.dev/beta/errs"
 	"encore.dev/rlog"
 )
+
+type ListLocationsParams struct {
+	CountryCode string `query:"country_code"`
+	Broker      string `query:"broker"`
+	Name        string `query:"name"`
+	Iata        string `query:"iata"`
+	Enabled     string `query:"enabled"`
+	Page        int    `query:"page" validate:"required,min=1"`
+}
+
+func (p ListLocationsParams) Validate() error {
+	if p.Enabled != "" && p.Enabled != "true" && p.Enabled != "false" {
+		return api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
+			Code: api_errors.CodeInvalidValue, Field: "enabled",
+		})
+	}
+	return validation.ValidateStruct(p)
+}
 
 type ListLocationsResponse struct {
 	Locations []LocationRow `json:"locations"`
@@ -27,28 +45,9 @@ type LocationRow struct {
 	BrokerLocationID string  `json:"broker_location_id"`
 }
 
-type ListLocationsRequest struct {
-	CountryCode string `query:"country_code"`
-	Broker      string `query:"broker"`
-	Name        string `query:"name"`
-	Iata        string `query:"iata"`
-	Enabled     string `query:"enabled"`
-	Page        int    `query:"page" validate:"required,min=1"`
-}
-
-func (l ListLocationsRequest) Validate() error {
-	if l.Enabled != "" && l.Enabled != "true" && l.Enabled != "false" {
-		return api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
-			Code: api_errors.CodeInvalidValue, Field: "enabled",
-		})
-	}
-	return validation.ValidateStruct(l)
-}
-
 const LocationsLimit = 15
 
-//encore:api auth method=GET path=/locations tag:admin
-func (s *Service) ListLocations(ctx context.Context, p ListLocationsRequest) (*ListLocationsResponse, error) {
+func (s *LocationService) ListLocations(ctx context.Context, p ListLocationsParams) (*ListLocationsResponse, error) {
 	var enabled *bool
 	if p.Enabled != "" {
 		v := p.Enabled == "true"

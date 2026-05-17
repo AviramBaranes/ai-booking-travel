@@ -1,4 +1,4 @@
-package booking
+package location_handlers
 
 import (
 	"context"
@@ -8,17 +8,16 @@ import (
 	"encore.dev/rlog"
 )
 
-type BulkToggleLocationsRequest struct {
+type BulkToggleLocationsParams struct {
 	IDs     []int64 `json:"ids" validate:"required,min=1,dive,min=1"`
 	Enabled bool    `json:"enabled"`
 }
 
-func (p BulkToggleLocationsRequest) Validate() error {
+func (p BulkToggleLocationsParams) Validate() error {
 	return validation.ValidateStruct(p)
 }
 
-//encore:api auth method=PATCH path=/location-bulk-toggle tag:admin
-func (s *Service) BulkToggleLocations(ctx context.Context, p *BulkToggleLocationsRequest) error {
+func (s *LocationService) BulkToggleLocations(ctx context.Context, p BulkToggleLocationsParams) error {
 	for _, id := range p.IDs {
 		var err error
 		if p.Enabled {

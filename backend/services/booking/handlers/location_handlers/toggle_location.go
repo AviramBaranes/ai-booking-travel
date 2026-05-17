@@ -1,4 +1,4 @@
-package booking
+package location_handlers
 
 import (
 	"context"
@@ -9,12 +9,11 @@ import (
 	"encore.dev/rlog"
 )
 
-type ToggleLocationRequest struct {
+type ToggleLocationParams struct {
 	Enabled bool `json:"enabled"`
 }
 
-//encore:api auth method=PATCH path=/locations/:id tag:admin
-func (s *Service) ToggleLocation(ctx context.Context, id int64, p *ToggleLocationRequest) error {
+func (s *LocationService) ToggleLocation(ctx context.Context, id int64, p ToggleLocationParams) error {
 	var err error
 	if p.Enabled {
 		err = s.query.EnableLocationBrokerCode(ctx, id)

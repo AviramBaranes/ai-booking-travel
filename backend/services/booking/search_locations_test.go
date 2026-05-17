@@ -11,6 +11,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/booking/db"
+	"encore.app/services/booking/handlers/location_handlers"
 	locations_mocks "encore.app/services/booking/mocks"
 	"go.uber.org/mock/gomock"
 )
@@ -21,12 +22,12 @@ func TestSearchLocations(t *testing.T) {
 	t.Run("validate the search query is not missing or too short", func(t *testing.T) {
 		cases := []struct {
 			name            string
-			params          SearchLocationParams
+			params          location_handlers.SearchLocationParams
 			isExpectedError bool
 		}{
-			{name: "missing search query", params: SearchLocationParams{}, isExpectedError: true},
-			{name: "search query too short", params: SearchLocationParams{Search: "ab"}, isExpectedError: true},
-			{name: "valid search query", params: SearchLocationParams{Search: "abc"}, isExpectedError: false},
+			{name: "missing search query", params: location_handlers.SearchLocationParams{}, isExpectedError: true},
+			{name: "search query too short", params: location_handlers.SearchLocationParams{Search: "ab"}, isExpectedError: true},
+			{name: "valid search query", params: location_handlers.SearchLocationParams{Search: "abc"}, isExpectedError: false},
 		}
 
 		for _, tc := range cases {
@@ -44,7 +45,7 @@ func TestSearchLocations(t *testing.T) {
 	})
 
 	t.Run("returns empty list when no locations match the search query", func(t *testing.T) {
-		res, err := SearchLocations(ctx, SearchLocationParams{Search: "nonexistent"})
+		res, err := SearchLocations(ctx, location_handlers.SearchLocationParams{Search: "nonexistent"})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -61,7 +62,7 @@ func TestSearchLocations(t *testing.T) {
 		q.EXPECT().SearchLocations(gomock.Any(), "error").Return(nil, errors.New("database error")).Times(1)
 
 		s := &Service{query: q}
-		_, err := s.SearchLocations(ctx, SearchLocationParams{Search: "error"})
+		_, err := s.SearchLocations(ctx, location_handlers.SearchLocationParams{Search: "error"})
 		if err == nil {
 			t.Fatalf("expected error, got nil")
 		}
@@ -113,7 +114,7 @@ func TestSearchLocations(t *testing.T) {
 		searchToken := search
 		// Change search case to prove search is case-insensitive.
 		search = strings.ToLower(search)
-		locs, err := SearchLocations(ctx, SearchLocationParams{Search: search})
+		locs, err := SearchLocations(ctx, location_handlers.SearchLocationParams{Search: search})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -128,7 +129,7 @@ func TestSearchLocations(t *testing.T) {
 			ids[2]: {name: searchToken, iata: "TLV"},
 		}
 
-		matched := map[int64]LocationResult{}
+		matched := map[int64]location_handlers.LocationResult{}
 		for _, loc := range locs.Locations {
 			if _, ok := expectedByID[loc.ID]; ok {
 				matched[loc.ID] = loc

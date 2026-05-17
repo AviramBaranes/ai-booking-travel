@@ -1,4 +1,4 @@
-package booking
+package location_handlers
 
 import (
 	"context"
@@ -15,11 +15,16 @@ import (
 	"encore.dev/rlog"
 )
 
-// InsertFlexLocations handles the HTTP request to insert Flex locations.
-// encore:api auth method=POST path=/locations/flex tag:admin
-func (s *Service) InsertFlexLocations(ctx context.Context) error {
+var (
+	ErrInvalidContentType = api_errors.NewValidationError("invalid content type: expected multipart/form-data")
+	ErrParseMultipartForm = api_errors.NewValidationError("failed to parse multipart form")
+	ErrGetFileFromForm    = api_errors.NewValidationError("failed to get file from form data")
+)
+
+// InsertFlexLocations fetches all Flex locations from the broker and upserts them into the database.
+func (s *LocationService) InsertFlexLocations(ctx context.Context) error {
 	flex := broker.NewFlex()
-	err := insertLocations(ctx, &flex, s.query)
+	err := s.InsertLocations(ctx, &flex)
 	if err != nil {
 		rlog.Error("failed to insert Flex locations", "error", err)
 		return api_errors.ErrInternalError
@@ -27,10 +32,9 @@ func (s *Service) InsertFlexLocations(ctx context.Context) error {
 	return nil
 }
 
-// InsertHertzLocations handles the HTTP request to insert Hertz locations.
-// encore:api auth method=POST path=/locations/hertz tag:admin raw
-func (s *Service) InsertHertzLocations(w http.ResponseWriter, req *http.Request) {
-	file, err := extractFile(req)
+// InsertHertzLocations reads a CSV file from the multipart request and upserts Hertz locations.
+func (s *LocationService) InsertHertzLocations(w http.ResponseWriter, req *http.Request) {
+	file, err := ExtractFile(req)
 	if err != nil {
 		errs.HTTPError(w, err)
 		return
@@ -40,7 +44,7 @@ func (s *Service) InsertHertzLocations(w http.ResponseWriter, req *http.Request)
 	hertz := broker.NewHertzWithReader(file)
 
 	ctx := req.Context()
-	err = insertLocations(ctx, hertz, s.query)
+	err = s.InsertLocations(ctx, hertz)
 	if err != nil {
 		rlog.Error("failed to insert locations", "error", err)
 		http.Error(w, "failed to insert locations", http.StatusInternalServerError)
@@ -50,33 +54,8 @@ func (s *Service) InsertHertzLocations(w http.ResponseWriter, req *http.Request)
 	w.WriteHeader(http.StatusNoContent)
 }
 
-var (
-	errInvalidContentType = api_errors.NewValidationError("invalid content type: expected multipart/form-data")
-	errParseMultipartForm = api_errors.NewValidationError("failed to parse multipart form")
-	errGetFileFromForm    = api_errors.NewValidationError("failed to get file from form data")
-)
-
-func extractFile(req *http.Request) (multipart.File, error) {
-	ct := req.Header.Get("Content-Type")
-	if !strings.HasPrefix(ct, "multipart/form-data") {
-		return nil, errInvalidContentType
-	}
-
-	err := req.ParseMultipartForm(2 << 20) // 2 MB max memory
-	if err != nil {
-		return nil, errParseMultipartForm
-	}
-
-	file, _, err := req.FormFile("file")
-	if err != nil {
-		return nil, errGetFileFromForm
-	}
-
-	return file, nil
-}
-
-// insertLocations fetches locations from the given broker and inserts them into the database using the provided querier.
-func insertLocations(ctx context.Context, b broker.LocationSearcher, q db.Querier) error {
+// InsertLocations fetches locations from the given broker and inserts them into the database.
+func (s *LocationService) InsertLocations(ctx context.Context, b broker.LocationSearcher) error {
 	var cursor string
 	skippedCursors := make([]string, 0)
 	for {
@@ -98,7 +77,7 @@ func insertLocations(ctx context.Context, b broker.LocationSearcher, q db.Querie
 		}
 
 		if len(page.Locations) > 0 {
-			err = insertBatch(ctx, q, page.Locations, b.Name())
+			err = insertBatch(ctx, s.query, page.Locations, b.Name())
 			if err != nil {
 				rlog.Error("failed to insert locations batch", "broker", b.Name(), "cursor", cursor, "error", err)
 				return api_errors.ErrInternalError
@@ -125,7 +104,26 @@ func insertLocations(ctx context.Context, b broker.LocationSearcher, q db.Querie
 	return nil
 }
 
-// normalizeIata normalizes an IATA code by trimming whitespace and converting to uppercase. If the resulting string is not exactly 3 characters long, it returns an empty string.
+// ExtractFile parses a multipart/form-data request and returns the uploaded file.
+func ExtractFile(req *http.Request) (multipart.File, error) {
+	ct := req.Header.Get("Content-Type")
+	if !strings.HasPrefix(ct, "multipart/form-data") {
+		return nil, ErrInvalidContentType
+	}
+
+	err := req.ParseMultipartForm(2 << 20) // 2 MB max memory
+	if err != nil {
+		return nil, ErrParseMultipartForm
+	}
+
+	file, _, err := req.FormFile("file")
+	if err != nil {
+		return nil, ErrGetFileFromForm
+	}
+
+	return file, nil
+}
+
 func normalizeIata(iata string) string {
 	s := strings.TrimSpace(strings.ToUpper(iata))
 	if len(s) != 3 {
@@ -134,7 +132,6 @@ func normalizeIata(iata string) string {
 	return s
 }
 
-// insertBatch inserts a batch of locations into the database, using the IATA code for upsert if available, and associating each location with the broker's location ID. It returns an error if any database operation fails.
 func insertBatch(ctx context.Context, q db.Querier, locs []broker.Location, brokerName broker.Name) error {
 	dbBroker, err := toDbBroker(brokerName)
 	if err != nil {
@@ -189,7 +186,6 @@ func insertBatch(ctx context.Context, q db.Querier, locs []broker.Location, brok
 	return nil
 }
 
-// toDbBroker converts a broker.Name to a db.Broker, returning an error if the broker is unknown.
 func toDbBroker(sn broker.Name) (db.Broker, error) {
 	switch sn {
 	case broker.BrokerFlex:

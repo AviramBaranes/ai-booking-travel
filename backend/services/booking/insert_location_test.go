@@ -8,6 +8,7 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	"encore.app/services/booking/db"
+	"encore.app/services/booking/handlers/location_handlers"
 	locations_mocks "encore.app/services/booking/mocks"
 	"go.uber.org/mock/gomock"
 )
@@ -18,12 +19,12 @@ func TestInsertLocation(t *testing.T) {
 	t.Run("validate the payload", func(t *testing.T) {
 		cases := []struct {
 			name            string
-			params          InsertLocationParams
+			params          location_handlers.InsertLocationParams
 			isExpectedError bool
 		}{
 			{
 				name: "valid payload",
-				params: InsertLocationParams{
+				params: location_handlers.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -36,7 +37,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "missing broker",
-				params: InsertLocationParams{
+				params: location_handlers.InsertLocationParams{
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
 					Country:     "Test Country",
@@ -46,7 +47,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "invalid broker",
-				params: InsertLocationParams{
+				params: location_handlers.InsertLocationParams{
 					Broker:      "invalid-broker",
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -57,7 +58,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "missing name",
-				params: InsertLocationParams{
+				params: location_handlers.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Country:     "Test Country",
@@ -67,7 +68,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "missing country",
-				params: InsertLocationParams{
+				params: location_handlers.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -77,7 +78,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "country code too short",
-				params: InsertLocationParams{
+				params: location_handlers.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -88,7 +89,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "country code too long",
-				params: InsertLocationParams{
+				params: location_handlers.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -99,7 +100,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "iata code too short",
-				params: InsertLocationParams{
+				params: location_handlers.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -111,7 +112,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "iata code too long",
-				params: InsertLocationParams{
+				params: location_handlers.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -145,7 +146,7 @@ func TestInsertLocation(t *testing.T) {
 		q.EXPECT().UpsertLocationByIATA(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("database error")).Times(1)
 
 		s := &Service{query: q}
-		err := s.InsertLocation(ctx, InsertLocationParams{
+		err := s.InsertLocation(ctx, location_handlers.InsertLocationParams{
 			Broker:      broker.BrokerFlex,
 			ID:          "flex-loc-err",
 			Name:        "Error Location",
@@ -162,7 +163,7 @@ func TestInsertLocation(t *testing.T) {
 	})
 
 	t.Run("inserts location successfully", func(t *testing.T) {
-		params := InsertLocationParams{
+		params := location_handlers.InsertLocationParams{
 			Broker:      broker.BrokerFlex,
 			ID:          "flex-loc-success",
 			Name:        "Success Location",

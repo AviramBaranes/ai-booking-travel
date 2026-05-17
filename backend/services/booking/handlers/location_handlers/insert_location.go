@@ -1,4 +1,4 @@
-package booking
+package location_handlers
 
 import (
 	"context"
@@ -10,7 +10,6 @@ import (
 	"encore.dev/rlog"
 )
 
-// InsertLocationParams defines the parameters for inserting a single location.
 type InsertLocationParams struct {
 	Broker      broker.Name `json:"broker"`
 	ID          string      `json:"id"`
@@ -21,14 +20,11 @@ type InsertLocationParams struct {
 	Iata        string      `json:"iata" validate:"omitempty,len=3"`
 }
 
-var (
-	ErrInvalidBroker = api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
-		Code:  api_errors.CodeInvalidValue,
-		Field: "broker",
-	})
-)
+var ErrInvalidBroker = api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
+	Code:  api_errors.CodeInvalidValue,
+	Field: "broker",
+})
 
-// Validate validates the InsertLocationParams struct.
 func (p InsertLocationParams) Validate() error {
 	_, err := toDbBroker(p.Broker)
 	if err != nil {
@@ -37,9 +33,7 @@ func (p InsertLocationParams) Validate() error {
 	return validation.ValidateStruct(p)
 }
 
-// InsertLocations handles the HTTP request to insert a single location
-// encore:api auth method=POST path=/locations tag:admin
-func (s *Service) InsertLocation(ctx context.Context, p InsertLocationParams) error {
+func (s *LocationService) InsertLocation(ctx context.Context, p InsertLocationParams) error {
 	loc := broker.Location{
 		ID:          p.ID,
 		Name:        p.Name,

@@ -1,4 +1,4 @@
-package booking
+package location_handlers
 
 import (
 	"context"
@@ -31,11 +31,9 @@ type LocationResult struct {
 	Iata        *string `json:"iata,omitempty"`
 }
 
-// SearchLocations searches for locations in the database that match the given search query
-// encore:api public method=GET path=/locations/search
-func (s *Service) SearchLocations(ctx context.Context, params SearchLocationParams) (*SearchLocationResponse, error) {
-	rlog.Info("searching for locations matching query", "search", params.Search)
-	locs, err := s.query.SearchLocations(ctx, params.Search)
+func (s *LocationService) SearchLocations(ctx context.Context, p SearchLocationParams) (*SearchLocationResponse, error) {
+	rlog.Info("searching for locations matching query", "search", p.Search)
+	locs, err := s.query.SearchLocations(ctx, p.Search)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
 			return &SearchLocationResponse{Locations: []LocationResult{}}, nil
@@ -45,7 +43,6 @@ func (s *Service) SearchLocations(ctx context.Context, params SearchLocationPara
 	}
 
 	results := make([]LocationResult, 0, len(locs))
-
 	for _, loc := range locs {
 		results = append(results, LocationResult{
 			ID:          loc.ID,

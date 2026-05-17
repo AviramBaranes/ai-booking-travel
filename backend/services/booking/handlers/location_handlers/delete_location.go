@@ -1,4 +1,4 @@
-package booking
+package location_handlers
 
 import (
 	"context"
@@ -9,11 +9,7 @@ import (
 	"encore.dev/rlog"
 )
 
-// DeleteLocation deletes a location broker code by its ID.
-// If no other broker codes reference the same location, the location is also deleted.
-//
-//encore:api auth method=DELETE path=/locations/:id tag:admin
-func (s *Service) DeleteLocation(ctx context.Context, id int64) error {
+func (s *LocationService) DeleteLocation(ctx context.Context, id int64) error {
 	locationID, err := s.query.DeleteLocationBrokerCode(ctx, id)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
