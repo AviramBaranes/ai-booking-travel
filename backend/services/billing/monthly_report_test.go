@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"encore.app/services/accounts"
+	contact_handlers "encore.app/services/accounts/handlers/contact_handlers"
 	"encore.app/services/notifications"
 	"encore.app/services/reservation"
 	"encore.dev/et"
@@ -24,7 +25,7 @@ func TestGenerateMonthlyReport(t *testing.T) {
 		et.MockEndpoint(reservation.GetOpenReservations, func(_ context.Context) (*reservation.GetOpenReservationsResponse, error) {
 			return nil, errors.New("reservations down")
 		})
-		et.MockEndpoint(accounts.GetBillingContacts, func(_ context.Context, _ *accounts.GetBillingContactsRequest) (*accounts.GetBillingContactsResponse, error) {
+		et.MockEndpoint(accounts.GetBillingContacts, func(_ context.Context, _ contact_handlers.GetBillingContactsParams) (*contact_handlers.GetBillingContactsResponse, error) {
 			t.Fatal("GetBillingContacts should not be called")
 			return nil, nil
 		})
@@ -44,7 +45,7 @@ func TestGenerateMonthlyReport(t *testing.T) {
 				Reservations: []reservation.OpenReservation{{ID: 1, AgentID: 1, CurrencyCode: "USD", TotalPrice: 10}},
 			}, nil
 		})
-		et.MockEndpoint(accounts.GetBillingContacts, func(_ context.Context, _ *accounts.GetBillingContactsRequest) (*accounts.GetBillingContactsResponse, error) {
+		et.MockEndpoint(accounts.GetBillingContacts, func(_ context.Context, _ contact_handlers.GetBillingContactsParams) (*contact_handlers.GetBillingContactsResponse, error) {
 			return nil, errors.New("contacts down")
 		})
 		et.MockEndpoint(notifications.SendMonthlyReport, func(_ context.Context, _ notifications.SendMonthlyReportRequest) error {
@@ -70,9 +71,9 @@ func TestGenerateMonthlyReport(t *testing.T) {
 		})
 
 		var gotIDs []int64
-		et.MockEndpoint(accounts.GetBillingContacts, func(_ context.Context, p *accounts.GetBillingContactsRequest) (*accounts.GetBillingContactsResponse, error) {
+		et.MockEndpoint(accounts.GetBillingContacts, func(_ context.Context, p contact_handlers.GetBillingContactsParams) (*contact_handlers.GetBillingContactsResponse, error) {
 			gotIDs = append([]int64(nil), p.AgentsIDs...)
-			return &accounts.GetBillingContactsResponse{Contacts: nil}, nil
+			return &contact_handlers.GetBillingContactsResponse{Contacts: nil}, nil
 		})
 		et.MockEndpoint(notifications.SendMonthlyReport, func(_ context.Context, _ notifications.SendMonthlyReportRequest) error {
 			t.Fatal("SendMonthlyReport should not be called when there are no contacts")
@@ -113,26 +114,26 @@ func TestGenerateMonthlyReport(t *testing.T) {
 			return &reservation.GetOpenReservationsResponse{Reservations: reservations}, nil
 		})
 
-		contacts := []accounts.BillingContact{
+		contacts := []contact_handlers.BillingContact{
 			{
 				ContactName: "Alice", ContactEmail: "alice@example.com",
 				OrganizationID: 1, OrganizationName: "OrgX", IsOrganic: true,
-				Offices: []accounts.Office{
-					{ID: 1, Name: "Office A", Agents: []accounts.Agent{{ID: 1, Name: "Agent1"}, {ID: 2, Name: "Agent2"}}},
-					{ID: 2, Name: "Office B", Agents: []accounts.Agent{{ID: 3, Name: "Agent3"}}},
+				Offices: []contact_handlers.Office{
+					{ID: 1, Name: "Office A", Agents: []contact_handlers.Agent{{ID: 1, Name: "Agent1"}, {ID: 2, Name: "Agent2"}}},
+					{ID: 2, Name: "Office B", Agents: []contact_handlers.Agent{{ID: 3, Name: "Agent3"}}},
 				},
 			},
 			{
 				ContactName: "Bob", ContactEmail: "bob@example.com",
 				OrganizationID: 2, OrganizationName: "OrgY", IsOrganic: true,
-				Offices: []accounts.Office{
-					{ID: 3, Name: "Office C", Agents: []accounts.Agent{{ID: 4, Name: "Agent4"}}},
-					{ID: 4, Name: "Office D", Agents: []accounts.Agent{{ID: 5, Name: "Agent5"}}},
+				Offices: []contact_handlers.Office{
+					{ID: 3, Name: "Office C", Agents: []contact_handlers.Agent{{ID: 4, Name: "Agent4"}}},
+					{ID: 4, Name: "Office D", Agents: []contact_handlers.Agent{{ID: 5, Name: "Agent5"}}},
 				},
 			},
 		}
-		et.MockEndpoint(accounts.GetBillingContacts, func(_ context.Context, _ *accounts.GetBillingContactsRequest) (*accounts.GetBillingContactsResponse, error) {
-			return &accounts.GetBillingContactsResponse{Contacts: contacts}, nil
+		et.MockEndpoint(accounts.GetBillingContacts, func(_ context.Context, _ contact_handlers.GetBillingContactsParams) (*contact_handlers.GetBillingContactsResponse, error) {
+			return &contact_handlers.GetBillingContactsResponse{Contacts: contacts}, nil
 		})
 
 		var mu sync.Mutex

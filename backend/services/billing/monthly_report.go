@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"encore.app/services/accounts"
+	contact_handlers "encore.app/services/accounts/handlers/contact_handlers"
 	"encore.app/services/notifications"
 	"encore.app/services/reservation"
 	"encore.dev/cron"
@@ -70,7 +71,7 @@ func GenerateMonthlyReport(ctx context.Context) error {
 		agentsIDs = append(agentsIDs, id)
 	}
 
-	billingContacts, err := accounts.GetBillingContacts(ctx, &accounts.GetBillingContactsRequest{
+	billingContacts, err := accounts.GetBillingContacts(ctx, contact_handlers.GetBillingContactsParams{
 		AgentsIDs: agentsIDs,
 	})
 	if err != nil {
@@ -84,7 +85,7 @@ func GenerateMonthlyReport(ctx context.Context) error {
 	return nil
 }
 
-func generateReports(openReservations *reservation.GetOpenReservationsResponse, billingContacts *accounts.GetBillingContactsResponse) []Report {
+func generateReports(openReservations *reservation.GetOpenReservationsResponse, billingContacts *contact_handlers.GetBillingContactsResponse) []Report {
 	reports := make([]Report, 0, len(billingContacts.Contacts))
 	for _, c := range billingContacts.Contacts {
 		report := Report{
@@ -101,7 +102,7 @@ func generateReports(openReservations *reservation.GetOpenReservationsResponse, 
 	return reports
 }
 
-func generateTransactionGroups(openReservations *reservation.GetOpenReservationsResponse, contact accounts.BillingContact) []TransactionGroup {
+func generateTransactionGroups(openReservations *reservation.GetOpenReservationsResponse, contact contact_handlers.BillingContact) []TransactionGroup {
 	relevantAgents := make(map[int64]AgentInfo)
 	for _, office := range contact.Offices {
 		for _, agent := range office.Agents {

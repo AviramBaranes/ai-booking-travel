@@ -9,6 +9,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
+	contact_handlers "encore.app/services/accounts/handlers/contact_handlers"
 	"encore.app/services/accounts/mocks"
 	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
@@ -16,8 +17,8 @@ import (
 
 // --- Helpers ---
 
-func validCreateContactParams(officeID *int64, orgID *int64) CreateContactRequest {
-	return CreateContactRequest{
+func validCreateContactParams(officeID *int64, orgID *int64) contact_handlers.CreateContactParams {
+	return contact_handlers.CreateContactParams{
 		FirstName:      "John",
 		LastName:       "Doe",
 		Role:           "manager",
@@ -28,13 +29,13 @@ func validCreateContactParams(officeID *int64, orgID *int64) CreateContactReques
 	}
 }
 
-func validUpdateContactParams() UpdateContactRequest {
+func validUpdateContactParams() contact_handlers.UpdateContactParams {
 	firstName := "Jane"
 	lastName := "Smith"
 	role := "director"
 	cellphone := "0529876543"
 	email := "jane.smith@test.com"
-	return UpdateContactRequest{
+	return contact_handlers.UpdateContactParams{
 		FirstName: &firstName,
 		LastName:  &lastName,
 		Role:      &role,
@@ -92,7 +93,7 @@ func TestListContacts(t *testing.T) {
 			_ = orgID
 		}
 
-		page1, err := s.ListContacts(ctx, &ListContactsRequest{Search: prefix, Page: 1})
+		page1, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: prefix, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -103,7 +104,7 @@ func TestListContacts(t *testing.T) {
 			t.Fatalf("expected total 18, got %d", page1.Total)
 		}
 
-		page2, err := s.ListContacts(ctx, &ListContactsRequest{Search: prefix, Page: 2})
+		page2, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: prefix, Page: 2})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -139,7 +140,7 @@ func TestListContacts(t *testing.T) {
 			}
 		}
 
-		resp, err := s.ListContacts(ctx, &ListContactsRequest{Search: prefix, Page: 3})
+		resp, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: prefix, Page: 3})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -163,7 +164,7 @@ func TestListContacts(t *testing.T) {
 			t.Fatalf("failed to create contact: %v", err)
 		}
 
-		resp, err := s.ListContacts(ctx, &ListContactsRequest{Search: unique, Page: 1})
+		resp, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: unique, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -195,7 +196,7 @@ func TestListContacts(t *testing.T) {
 			t.Fatalf("failed to create contact: %v", err)
 		}
 
-		resp, err := s.ListContacts(ctx, &ListContactsRequest{Search: unique, Page: 1})
+		resp, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: unique, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -266,7 +267,7 @@ func TestListContacts(t *testing.T) {
 			t.Fatalf("failed to create contact B: %v", err)
 		}
 
-		resp, err := s.ListContacts(ctx, &ListContactsRequest{Search: prefix, OfficeID: officeA, Page: 1})
+		resp, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: prefix, OfficeID: officeA, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -312,7 +313,7 @@ func TestListContacts(t *testing.T) {
 			t.Fatalf("failed to create org contact B: %v", err)
 		}
 
-		resp, err := s.ListContacts(ctx, &ListContactsRequest{Search: prefix, OrgID: orgA, Page: 1})
+		resp, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: prefix, OrgID: orgA, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -326,7 +327,7 @@ func TestListContacts(t *testing.T) {
 
 	t.Run("validation rejects page 0", func(t *testing.T) {
 		t.Parallel()
-		p := ListContactsRequest{Page: 0}
+		p := contact_handlers.ListContactsParams{Page: 0}
 		api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 	})
 
@@ -335,7 +336,7 @@ func TestListContacts(t *testing.T) {
 		q, s := contactMockService(t)
 		q.EXPECT().ListContacts(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
-		_, err := s.ListContacts(ctx, &ListContactsRequest{Page: 1})
+		_, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -345,7 +346,7 @@ func TestListContacts(t *testing.T) {
 		q.EXPECT().ListContacts(gomock.Any(), gomock.Any()).Return([]db.ListContactsRow{}, nil)
 		q.EXPECT().CountContacts(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
-		_, err := s.ListContacts(ctx, &ListContactsRequest{Page: 1})
+		_, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }
@@ -511,7 +512,7 @@ func TestUpdateContact(t *testing.T) {
 		}
 
 		newFirst := "UpdatedFirst"
-		resp, err := s.UpdateContact(ctx, created.ID, UpdateContactRequest{FirstName: &newFirst})
+		resp, err := s.UpdateContact(ctx, created.ID, contact_handlers.UpdateContactParams{FirstName: &newFirst})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -580,14 +581,14 @@ func TestUpdateContact(t *testing.T) {
 	t.Run("validation rejects blank firstName", func(t *testing.T) {
 		t.Parallel()
 		blank := "   "
-		p := UpdateContactRequest{FirstName: &blank}
+		p := contact_handlers.UpdateContactParams{FirstName: &blank}
 		api_errors.AssertApiError(t, invalidValueErr("firstName"), p.Validate())
 	})
 
 	t.Run("validation rejects invalid email", func(t *testing.T) {
 		t.Parallel()
 		bad := "not-an-email"
-		p := UpdateContactRequest{Email: &bad}
+		p := contact_handlers.UpdateContactParams{Email: &bad}
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
