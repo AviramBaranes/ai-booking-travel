@@ -13,7 +13,7 @@ import (
 	"encore.app/internal/validation"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
-	availability "encore.app/services/booking/handlers/availability_handlers"
+	availability "encore.app/services/booking/handlers/availability"
 	"encore.app/services/notifications"
 	"encore.app/services/reservation"
 	"encore.dev/rlog"

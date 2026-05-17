@@ -8,26 +8,26 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/validation"
 	"encore.app/services/booking/db"
-	"encore.app/services/booking/handlers/currency_handlers"
+	currency "encore.app/services/booking/handlers/currency"
 	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
 )
 
 // --- Helpers ---
 
-func validCreateCurrencyParams() currency_handlers.CreateCurrencyParams {
-	return currency_handlers.CreateCurrencyParams{
+func validCreateCurrencyParams() currency.CreateCurrencyParams {
+	return currency.CreateCurrencyParams{
 		CurrencyCode:    "USD",
 		CurrencyISOName: "US Dollar",
 		Rate:            3.65,
 	}
 }
 
-func validUpdateCurrencyParams() currency_handlers.UpdateCurrencyParams {
+func validUpdateCurrencyParams() currency.UpdateCurrencyParams {
 	code := "EUR"
 	name := "Euro"
 	rate := 4.12
-	return currency_handlers.UpdateCurrencyParams{
+	return currency.UpdateCurrencyParams{
 		CurrencyCode:    &code,
 		CurrencyISOName: &name,
 		Rate:            &rate,
@@ -41,7 +41,7 @@ func currencyInvalidValueErr(field string) error {
 }
 
 // createTestCurrency is a shorthand to seed a currency with a unique code and ISO name.
-func createTestCurrency(t *testing.T, s *Service, code, isoName string) *currency_handlers.CurrencyResponse {
+func createTestCurrency(t *testing.T, s *Service, code, isoName string) *currency.CurrencyResponse {
 	t.Helper()
 	p := validCreateCurrencyParams()
 	p.CurrencyCode = code
@@ -73,7 +73,7 @@ func TestListCurrencies(t *testing.T) {
 		for _, c := range resp.Currencies {
 			ids[c.ID] = true
 		}
-		for _, want := range []*currency_handlers.CurrencyResponse{c1, c2, c3} {
+		for _, want := range []*currency.CurrencyResponse{c1, c2, c3} {
 			if !ids[want.ID] {
 				t.Fatalf("expected currency %d (%s) in list", want.ID, want.CurrencyCode)
 			}
@@ -149,7 +149,7 @@ func TestCreateCurrency(t *testing.T) {
 	})
 
 	t.Run("creates currency successfully", func(t *testing.T) {
-		resp, err := s.CreateCurrency(ctx, currency_handlers.CreateCurrencyParams{
+		resp, err := s.CreateCurrency(ctx, currency.CreateCurrencyParams{
 			CurrencyCode:    "CREATE-OK",
 			CurrencyISOName: "Create OK Currency",
 			Rate:            3.75,
@@ -220,7 +220,7 @@ func TestUpdateCurrency(t *testing.T) {
 
 	t.Run("validation accepts partial update with only code", func(t *testing.T) {
 		code := "GBP"
-		p := currency_handlers.UpdateCurrencyParams{CurrencyCode: &code}
+		p := currency.UpdateCurrencyParams{CurrencyCode: &code}
 		if err := p.Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -248,7 +248,7 @@ func TestUpdateCurrency(t *testing.T) {
 		created := createTestCurrency(t, s, "PRTL", "Partial Currency")
 
 		newCode := "PRTL-NEW"
-		resp, err := s.UpdateCurrency(ctx, created.ID, currency_handlers.UpdateCurrencyParams{CurrencyCode: &newCode})
+		resp, err := s.UpdateCurrency(ctx, created.ID, currency.UpdateCurrencyParams{CurrencyCode: &newCode})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}

@@ -7,7 +7,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/booking/db"
-	"encore.app/services/booking/handlers/location_handlers"
+	"encore.app/services/booking/handlers/location"
 	"go.uber.org/mock/gomock"
 )
 
@@ -148,7 +148,7 @@ func TestToggleLocation(t *testing.T) {
 			t.Fatal("expected location to be enabled by default")
 		}
 
-		err := s.ToggleLocation(ctx, lbc.ID, location_handlers.ToggleLocationParams{Enabled: false})
+		err := s.ToggleLocation(ctx, lbc.ID, location.ToggleLocationParams{Enabled: false})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -174,7 +174,7 @@ func TestToggleLocation(t *testing.T) {
 			t.Fatal("expected location to be disabled")
 		}
 
-		err := s.ToggleLocation(ctx, lbc.ID, location_handlers.ToggleLocationParams{Enabled: true})
+		err := s.ToggleLocation(ctx, lbc.ID, location.ToggleLocationParams{Enabled: true})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -196,7 +196,7 @@ func TestToggleLocation(t *testing.T) {
 			t.Fatal("expected location to be enabled by default")
 		}
 
-		err := s.ToggleLocation(ctx, lbc.ID, location_handlers.ToggleLocationParams{Enabled: true})
+		err := s.ToggleLocation(ctx, lbc.ID, location.ToggleLocationParams{Enabled: true})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -218,7 +218,7 @@ func TestToggleLocation(t *testing.T) {
 			t.Fatalf("failed to disable: %v", err)
 		}
 
-		err := s.ToggleLocation(ctx, lbc.ID, location_handlers.ToggleLocationParams{Enabled: false})
+		err := s.ToggleLocation(ctx, lbc.ID, location.ToggleLocationParams{Enabled: false})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -233,7 +233,7 @@ func TestToggleLocation(t *testing.T) {
 		q.EXPECT().EnableLocationBrokerCode(gomock.Any(), int64(999)).
 			Return(errors.New("db error"))
 
-		err := s.ToggleLocation(ctx, 999, location_handlers.ToggleLocationParams{Enabled: true})
+		err := s.ToggleLocation(ctx, 999, location.ToggleLocationParams{Enabled: true})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -242,7 +242,7 @@ func TestToggleLocation(t *testing.T) {
 		q.EXPECT().DisableLocationBrokerCode(gomock.Any(), int64(999)).
 			Return(errors.New("db error"))
 
-		err := s.ToggleLocation(ctx, 999, location_handlers.ToggleLocationParams{Enabled: false})
+		err := s.ToggleLocation(ctx, 999, location.ToggleLocationParams{Enabled: false})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }

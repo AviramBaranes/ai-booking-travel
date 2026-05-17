@@ -12,7 +12,7 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	"encore.app/services/booking/db"
-	"encore.app/services/booking/handlers/location_handlers"
+	"encore.app/services/booking/handlers/location"
 	locations_mocks "encore.app/services/booking/mocks"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/mock/gomock"
@@ -70,7 +70,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location_handlers.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -112,7 +112,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location_handlers.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -151,7 +151,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location_handlers.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -183,7 +183,7 @@ func TestInsertLocations(t *testing.T) {
 		}
 
 		// Insert once
-		ls := location_handlers.NewLocationService(q)
+		ls := location.NewLocationService(q)
 		err := ls.InsertLocations(ctx, b)
 		if err != nil {
 			t.Fatalf("first insert failed: %v", err)
@@ -206,7 +206,7 @@ func TestInsertLocations(t *testing.T) {
 			errs: map[string]error{"": errors.New("broker down")},
 		}
 
-		err := location_handlers.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b)
 		if err == nil {
 			t.Fatal("expected error, got nil")
 		}
@@ -225,7 +225,7 @@ func TestInsertLocations(t *testing.T) {
 			errs: map[string]error{"": errors.New("temporary error")},
 		}
 
-		err := location_handlers.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -255,7 +255,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location_handlers.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b)
 		if err == nil {
 			t.Fatal("expected error, got nil")
 		}
@@ -280,7 +280,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location_handlers.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b)
 		if err == nil {
 			t.Fatal("expected error, got nil")
 		}
@@ -304,7 +304,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location_handlers.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b)
 		if err == nil {
 			t.Fatal("expected error, got nil")
 		}
@@ -319,7 +319,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location_handlers.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -336,7 +336,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location_handlers.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b)
 		if err == nil {
 			t.Fatal("expected error for same cursor, got nil")
 		}
@@ -353,7 +353,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location_handlers.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -377,7 +377,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location_handlers.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -401,7 +401,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location_handlers.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -430,11 +430,11 @@ func TestExtractFile(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/locations/hertz", nil)
 		req.Header.Set("Content-Type", "application/json")
 
-		_, err := location_handlers.ExtractFile(req)
+		_, err := location.ExtractFile(req)
 		if err == nil {
 			t.Fatal("expected error, got nil")
 		}
-		api_errors.AssertApiError(t, location_handlers.ErrInvalidContentType, err)
+		api_errors.AssertApiError(t, location.ErrInvalidContentType, err)
 	})
 
 	t.Run("returns error when no file field in form", func(t *testing.T) {
@@ -445,11 +445,11 @@ func TestExtractFile(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/locations/hertz", body)
 		req.Header.Set("Content-Type", writer.FormDataContentType())
 
-		_, err := location_handlers.ExtractFile(req)
+		_, err := location.ExtractFile(req)
 		if err == nil {
 			t.Fatal("expected error, got nil")
 		}
-		api_errors.AssertApiError(t, location_handlers.ErrGetFileFromForm, err)
+		api_errors.AssertApiError(t, location.ErrGetFileFromForm, err)
 	})
 
 	t.Run("extracts file successfully", func(t *testing.T) {
@@ -465,7 +465,7 @@ func TestExtractFile(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/locations/hertz", body)
 		req.Header.Set("Content-Type", writer.FormDataContentType())
 
-		file, err := location_handlers.ExtractFile(req)
+		file, err := location.ExtractFile(req)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -485,12 +485,12 @@ func TestInsertLocation(t *testing.T) {
 	t.Run("validate the payload", func(t *testing.T) {
 		cases := []struct {
 			name            string
-			params          location_handlers.InsertLocationParams
+			params          location.InsertLocationParams
 			isExpectedError bool
 		}{
 			{
 				name: "valid payload",
-				params: location_handlers.InsertLocationParams{
+				params: location.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -503,7 +503,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "missing broker",
-				params: location_handlers.InsertLocationParams{
+				params: location.InsertLocationParams{
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
 					Country:     "Test Country",
@@ -513,7 +513,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "invalid broker",
-				params: location_handlers.InsertLocationParams{
+				params: location.InsertLocationParams{
 					Broker:      "invalid-broker",
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -524,7 +524,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "missing name",
-				params: location_handlers.InsertLocationParams{
+				params: location.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Country:     "Test Country",
@@ -534,7 +534,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "missing country",
-				params: location_handlers.InsertLocationParams{
+				params: location.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -544,7 +544,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "country code too short",
-				params: location_handlers.InsertLocationParams{
+				params: location.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -555,7 +555,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "country code too long",
-				params: location_handlers.InsertLocationParams{
+				params: location.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -566,7 +566,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "iata code too short",
-				params: location_handlers.InsertLocationParams{
+				params: location.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -578,7 +578,7 @@ func TestInsertLocation(t *testing.T) {
 			},
 			{
 				name: "iata code too long",
-				params: location_handlers.InsertLocationParams{
+				params: location.InsertLocationParams{
 					Broker:      broker.BrokerFlex,
 					ID:          "flex-loc-1",
 					Name:        "Test Location",
@@ -612,7 +612,7 @@ func TestInsertLocation(t *testing.T) {
 		q.EXPECT().UpsertLocationByIATA(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("database error")).Times(1)
 
 		s := &Service{query: q}
-		err := s.InsertLocation(ctx, location_handlers.InsertLocationParams{
+		err := s.InsertLocation(ctx, location.InsertLocationParams{
 			Broker:      broker.BrokerFlex,
 			ID:          "flex-loc-err",
 			Name:        "Error Location",
@@ -629,7 +629,7 @@ func TestInsertLocation(t *testing.T) {
 	})
 
 	t.Run("inserts location successfully", func(t *testing.T) {
-		params := location_handlers.InsertLocationParams{
+		params := location.InsertLocationParams{
 			Broker:      broker.BrokerFlex,
 			ID:          "flex-loc-success",
 			Name:        "Success Location",

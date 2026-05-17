@@ -9,7 +9,7 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/validation"
 	"encore.app/services/booking/db"
-	"encore.app/services/booking/handlers/translation_handlers"
+	"encore.app/services/booking/handlers/translation"
 	locations_mocks "encore.app/services/booking/mocks"
 	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
@@ -30,7 +30,7 @@ func TestVerifyBrokerTranslation(t *testing.T) {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{
 			Page: 1, Search: "vfy-ok",
 		})
 		if err != nil {
@@ -86,17 +86,17 @@ func TestVerifyBrokerTranslationDBFailures(t *testing.T) {
 
 func TestUpdateBrokerTranslationValidation(t *testing.T) {
 	t.Run("rejects empty target_text", func(t *testing.T) {
-		p := translation_handlers.UpdateBrokerTranslationParams{TargetText: ""}
+		p := translation.UpdateBrokerTranslationParams{TargetText: ""}
 		api_errors.AssertApiError(t, translationInvalidValueErr("target_text"), p.Validate())
 	})
 
 	t.Run("rejects blank target_text", func(t *testing.T) {
-		p := translation_handlers.UpdateBrokerTranslationParams{TargetText: "   "}
+		p := translation.UpdateBrokerTranslationParams{TargetText: "   "}
 		api_errors.AssertApiError(t, translationInvalidValueErr("target_text"), p.Validate())
 	})
 
 	t.Run("accepts valid target_text", func(t *testing.T) {
-		p := translation_handlers.UpdateBrokerTranslationParams{TargetText: "hello world"}
+		p := translation.UpdateBrokerTranslationParams{TargetText: "hello world"}
 		if err := p.Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -113,7 +113,7 @@ func TestUpdateBrokerTranslation(t *testing.T) {
 	t.Run("updates target text successfully", func(t *testing.T) {
 		id := seedTranslation(t, q, "upd-ok", db.BrokerTranslationStatusPending, 1, nil)
 
-		err := s.UpdateBrokerTranslation(ctx, id, translation_handlers.UpdateBrokerTranslationParams{
+		err := s.UpdateBrokerTranslation(ctx, id, translation.UpdateBrokerTranslationParams{
 			TargetText: "new translation",
 		})
 		if err != nil {
@@ -121,7 +121,7 @@ func TestUpdateBrokerTranslation(t *testing.T) {
 		}
 
 		// Verify the row was actually updated by listing it back.
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{
 			Page: 1, Search: "upd-ok",
 		})
 		if err != nil {
@@ -143,7 +143,7 @@ func TestUpdateBrokerTranslation(t *testing.T) {
 	})
 
 	t.Run("no error for non-existent id", func(t *testing.T) {
-		err := s.UpdateBrokerTranslation(ctx, 999999, translation_handlers.UpdateBrokerTranslationParams{
+		err := s.UpdateBrokerTranslation(ctx, 999999, translation.UpdateBrokerTranslationParams{
 			TargetText: "does not matter",
 		})
 		// The :exec query won't trigger ErrNoRows (UPDATE affects 0 rows silently),
@@ -164,7 +164,7 @@ func TestUpdateBrokerTranslationDBFailures(t *testing.T) {
 		q.EXPECT().UpdateBrokerTranslation(gomock.Any(), gomock.Any()).
 			Return(errors.New("db error"))
 
-		err := s.UpdateBrokerTranslation(ctx, 1, translation_handlers.UpdateBrokerTranslationParams{
+		err := s.UpdateBrokerTranslation(ctx, 1, translation.UpdateBrokerTranslationParams{
 			TargetText: "fail",
 		})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
@@ -175,7 +175,7 @@ func TestUpdateBrokerTranslationDBFailures(t *testing.T) {
 		q.EXPECT().UpdateBrokerTranslation(gomock.Any(), gomock.Any()).
 			Return(db.ErrNoRows)
 
-		err := s.UpdateBrokerTranslation(ctx, 1, translation_handlers.UpdateBrokerTranslationParams{
+		err := s.UpdateBrokerTranslation(ctx, 1, translation.UpdateBrokerTranslationParams{
 			TargetText: "missing",
 		})
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
@@ -221,34 +221,34 @@ func seedTranslation(t *testing.T, q *db.Queries, source string, status db.Broke
 
 func TestListBrokerTranslationsValidation(t *testing.T) {
 	t.Run("rejects page 0", func(t *testing.T) {
-		p := translation_handlers.ListBrokerTranslationsParams{Page: 0}
+		p := translation.ListBrokerTranslationsParams{Page: 0}
 		api_errors.AssertApiError(t, translationInvalidValueErr("page"), p.Validate())
 	})
 
 	t.Run("rejects negative page", func(t *testing.T) {
-		p := translation_handlers.ListBrokerTranslationsParams{Page: -1}
+		p := translation.ListBrokerTranslationsParams{Page: -1}
 		api_errors.AssertApiError(t, translationInvalidValueErr("page"), p.Validate())
 	})
 
 	t.Run("rejects invalid status", func(t *testing.T) {
-		p := translation_handlers.ListBrokerTranslationsParams{Page: 1, Status: "bogus"}
+		p := translation.ListBrokerTranslationsParams{Page: 1, Status: "bogus"}
 		api_errors.AssertApiError(t, translationInvalidValueErr("status"), p.Validate())
 	})
 
 	t.Run("rejects invalid sort direction", func(t *testing.T) {
-		p := translation_handlers.ListBrokerTranslationsParams{Page: 1, SortDir: "up"}
+		p := translation.ListBrokerTranslationsParams{Page: 1, SortDir: "up"}
 		api_errors.AssertApiError(t, translationInvalidValueErr("sortDir"), p.Validate())
 	})
 
 	t.Run("accepts valid params", func(t *testing.T) {
-		p := translation_handlers.ListBrokerTranslationsParams{Page: 1, Status: "pending", SortDir: "asc", Search: "hello"}
+		p := translation.ListBrokerTranslationsParams{Page: 1, Status: "pending", SortDir: "asc", Search: "hello"}
 		if err := p.Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 	})
 
 	t.Run("accepts minimal params", func(t *testing.T) {
-		p := translation_handlers.ListBrokerTranslationsParams{Page: 1}
+		p := translation.ListBrokerTranslationsParams{Page: 1}
 		if err := p.Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -256,7 +256,7 @@ func TestListBrokerTranslationsValidation(t *testing.T) {
 
 	t.Run("accepts all valid statuses", func(t *testing.T) {
 		for _, status := range []string{"pending", "translated", "verified"} {
-			p := translation_handlers.ListBrokerTranslationsParams{Page: 1, Status: status}
+			p := translation.ListBrokerTranslationsParams{Page: 1, Status: status}
 			if err := p.Validate(); err != nil {
 				t.Fatalf("expected no error for status %q, got %v", status, err)
 			}
@@ -278,7 +278,7 @@ func TestListBrokerTranslations(t *testing.T) {
 	seedTranslation(t, q, "bt-CCC", db.BrokerTranslationStatusVerified, 10, strPtr("verified-ccc"))
 
 	t.Run("no filters returns all seeded translations", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{Page: 1})
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -300,7 +300,7 @@ func TestListBrokerTranslations(t *testing.T) {
 	})
 
 	t.Run("filter by status returns only matching translations", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{
 			Page: 1, Status: "verified",
 		})
 		if err != nil {
@@ -326,7 +326,7 @@ func TestListBrokerTranslations(t *testing.T) {
 	})
 
 	t.Run("search by source_text returns matching translation", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{
 			Page: 1, Search: "bt-AAA",
 		})
 		if err != nil {
@@ -342,7 +342,7 @@ func TestListBrokerTranslations(t *testing.T) {
 	})
 
 	t.Run("search by target_text returns matching translation", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{
 			Page: 1, Search: "translated-bbb",
 		})
 		if err != nil {
@@ -358,7 +358,7 @@ func TestListBrokerTranslations(t *testing.T) {
 	})
 
 	t.Run("search and status filter combine with AND", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{
 			Page: 1, Search: "bt-", Status: "pending",
 		})
 		if err != nil {
@@ -377,7 +377,7 @@ func TestListBrokerTranslations(t *testing.T) {
 	})
 
 	t.Run("non-matching search returns empty", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{
 			Page: 1, Search: "zzzznonexistent",
 		})
 		if err != nil {
@@ -392,7 +392,7 @@ func TestListBrokerTranslations(t *testing.T) {
 	})
 
 	t.Run("total reflects filtered count", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{
 			Page: 1, Status: "pending",
 		})
 		if err != nil {
@@ -417,7 +417,7 @@ func TestListBrokerTranslationsSorting(t *testing.T) {
 	seedTranslation(t, q, "st-HIGH", db.BrokerTranslationStatusVerified, 10, strPtr("high"))
 
 	t.Run("sort asc returns lowest confidence first", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{
 			Page: 1, Search: "st-", SortDir: "asc",
 		})
 		if err != nil {
@@ -437,7 +437,7 @@ func TestListBrokerTranslationsSorting(t *testing.T) {
 	})
 
 	t.Run("sort desc returns highest confidence first", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{
 			Page: 1, Search: "st-", SortDir: "desc",
 		})
 		if err != nil {
@@ -457,7 +457,7 @@ func TestListBrokerTranslationsSorting(t *testing.T) {
 	})
 
 	t.Run("default sort direction is asc", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{
 			Page: 1, Search: "st-",
 		})
 		if err != nil {
@@ -492,17 +492,17 @@ func TestListBrokerTranslationsPagination(t *testing.T) {
 	}
 
 	t.Run("page 1 returns exactly 15 results", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{Page: 1, Search: prefix})
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{Page: 1, Search: prefix})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if len(resp.Translations) != translation_handlers.TranslationsLimit {
-			t.Fatalf("expected %d translations on page 1, got %d", translation_handlers.TranslationsLimit, len(resp.Translations))
+		if len(resp.Translations) != translation.TranslationsLimit {
+			t.Fatalf("expected %d translations on page 1, got %d", translation.TranslationsLimit, len(resp.Translations))
 		}
 	})
 
 	t.Run("total reflects all matching rows across pages", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{Page: 1, Search: prefix})
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{Page: 1, Search: prefix})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -512,7 +512,7 @@ func TestListBrokerTranslationsPagination(t *testing.T) {
 	})
 
 	t.Run("page 2 returns the remaining result", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{Page: 2, Search: prefix})
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{Page: 2, Search: prefix})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -522,11 +522,11 @@ func TestListBrokerTranslationsPagination(t *testing.T) {
 	})
 
 	t.Run("page 2 does not repeat page 1 results", func(t *testing.T) {
-		page1, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{Page: 1, Search: prefix})
+		page1, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{Page: 1, Search: prefix})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		page2, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{Page: 2, Search: prefix})
+		page2, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{Page: 2, Search: prefix})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -543,7 +543,7 @@ func TestListBrokerTranslationsPagination(t *testing.T) {
 	})
 
 	t.Run("page 3 returns empty", func(t *testing.T) {
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{Page: 3, Search: prefix})
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{Page: 3, Search: prefix})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -566,7 +566,7 @@ func TestListBrokerTranslationsDBFailures(t *testing.T) {
 		q.EXPECT().CountAllTranslations(gomock.Any(), gomock.Any()).
 			Return(int64(0), errors.New("db error"))
 
-		_, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{Page: 1})
+		_, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -580,7 +580,7 @@ func TestListBrokerTranslationsDBFailures(t *testing.T) {
 		q.EXPECT().ListAllTranslations(gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("db error"))
 
-		_, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{Page: 1})
+		_, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }
@@ -601,7 +601,7 @@ func TestDeleteBrokerTranslation(t *testing.T) {
 		}
 
 		// Verify it's gone.
-		resp, err := s.ListBrokerTranslations(ctx, translation_handlers.ListBrokerTranslationsParams{
+		resp, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{
 			Page: 1, Search: "del-ok",
 		})
 		if err != nil {

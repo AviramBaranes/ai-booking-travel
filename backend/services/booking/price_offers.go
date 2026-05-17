@@ -5,8 +5,8 @@ import (
 
 	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/booking/db"
-	availability "encore.app/services/booking/handlers/availability_handlers"
-	poh "encore.app/services/booking/handlers/price_offer_handlers"
+	availability "encore.app/services/booking/handlers/availability"
+	poh "encore.app/services/booking/handlers/price_offer"
 )
 
 // CreatePriceOffer creates a new price offer based on the provided parameters.

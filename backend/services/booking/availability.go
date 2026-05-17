@@ -3,7 +3,7 @@ package booking
 import (
 	"context"
 
-	availability "encore.app/services/booking/handlers/availability_handlers"
+	availability "encore.app/services/booking/handlers/availability"
 	"encore.dev/config"
 )
 

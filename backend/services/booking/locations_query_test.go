@@ -12,7 +12,7 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/validation"
 	"encore.app/services/booking/db"
-	"encore.app/services/booking/handlers/location_handlers"
+	"encore.app/services/booking/handlers/location"
 	locations_mocks "encore.app/services/booking/mocks"
 	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
@@ -59,24 +59,24 @@ func seedLocationWithBrokerCode(t *testing.T, q *db.Queries, loc db.InsertLocati
 
 func TestListLocationsValidation(t *testing.T) {
 	t.Run("rejects page 0", func(t *testing.T) {
-		p := location_handlers.ListLocationsParams{Page: 0}
+		p := location.ListLocationsParams{Page: 0}
 		api_errors.AssertApiError(t, listLocationsInvalidValueErr("page"), p.Validate())
 	})
 
 	t.Run("rejects negative page", func(t *testing.T) {
-		p := location_handlers.ListLocationsParams{Page: -1}
+		p := location.ListLocationsParams{Page: -1}
 		api_errors.AssertApiError(t, listLocationsInvalidValueErr("page"), p.Validate())
 	})
 
 	t.Run("accepts valid params", func(t *testing.T) {
-		p := location_handlers.ListLocationsParams{Name: "test", Page: 1}
+		p := location.ListLocationsParams{Name: "test", Page: 1}
 		if err := p.Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 	})
 
 	t.Run("accepts no filters", func(t *testing.T) {
-		p := location_handlers.ListLocationsParams{Page: 1}
+		p := location.ListLocationsParams{Page: 1}
 		if err := p.Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -108,7 +108,7 @@ func TestListLocations(t *testing.T) {
 	)
 
 	t.Run("returns seeded location with correct fields", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Name: "Ben Gurion", Page: 1})
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{Name: "Ben Gurion", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -144,7 +144,7 @@ func TestListLocations(t *testing.T) {
 	})
 
 	t.Run("filter by country code returns only matching locations", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{CountryCode: "IL", Page: 1})
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{CountryCode: "IL", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -168,7 +168,7 @@ func TestListLocations(t *testing.T) {
 	})
 
 	t.Run("filter by IATA returns only matching location", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Iata: "LHR", Page: 1})
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{Iata: "LHR", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -192,7 +192,7 @@ func TestListLocations(t *testing.T) {
 	})
 
 	t.Run("filter by name returns only matching location", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Name: "Heathrow", Page: 1})
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{Name: "Heathrow", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -216,7 +216,7 @@ func TestListLocations(t *testing.T) {
 	})
 
 	t.Run("filter by enabled returns only matching locations", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Enabled: "true", Page: 1})
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{Enabled: "true", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -228,7 +228,7 @@ func TestListLocations(t *testing.T) {
 	})
 
 	t.Run("no filters returns all seeded locations", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Page: 1})
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -248,7 +248,7 @@ func TestListLocations(t *testing.T) {
 	})
 
 	t.Run("total reflects filtered count", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{CountryCode: "IL", Page: 1})
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{CountryCode: "IL", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -258,7 +258,7 @@ func TestListLocations(t *testing.T) {
 	})
 
 	t.Run("non-matching filter returns empty", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Name: "zzzznonexistent", Page: 1})
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{Name: "zzzznonexistent", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -281,7 +281,7 @@ func TestListLocations(t *testing.T) {
 			t.Fatalf("failed to insert second broker code: %v", err)
 		}
 
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Broker: "hertz", Page: 1})
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{Broker: "hertz", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -305,7 +305,7 @@ func TestListLocations(t *testing.T) {
 	})
 
 	t.Run("multiple filters combine with AND", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{
 			CountryCode: "IL",
 			Name:        "Ben Gurion",
 			Page:        1,
@@ -337,7 +337,7 @@ func TestListLocations(t *testing.T) {
 		q.EXPECT().CountLocationBrokerCodesWithLocation(gomock.Any(), gomock.Any()).
 			Return(int64(0), errors.New("db error"))
 
-		_, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Page: 1})
+		_, err := s.ListLocations(ctx, location.ListLocationsParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -348,7 +348,7 @@ func TestListLocations(t *testing.T) {
 		q.EXPECT().ListLocationBrokerCodesWithLocation(gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("db error"))
 
-		_, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Page: 1})
+		_, err := s.ListLocations(ctx, location.ListLocationsParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }
@@ -374,17 +374,17 @@ func TestListLocationsPagination(t *testing.T) {
 	}
 
 	t.Run("page 1 returns exactly 15 results", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Name: prefix, Page: 1})
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{Name: prefix, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if len(resp.Locations) != location_handlers.LocationsLimit {
-			t.Fatalf("expected %d locations on page 1, got %d", location_handlers.LocationsLimit, len(resp.Locations))
+		if len(resp.Locations) != location.LocationsLimit {
+			t.Fatalf("expected %d locations on page 1, got %d", location.LocationsLimit, len(resp.Locations))
 		}
 	})
 
 	t.Run("total reflects all matching rows across pages", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Name: prefix, Page: 1})
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{Name: prefix, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -394,7 +394,7 @@ func TestListLocationsPagination(t *testing.T) {
 	})
 
 	t.Run("page 2 returns the remaining result", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Name: prefix, Page: 2})
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{Name: prefix, Page: 2})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -404,11 +404,11 @@ func TestListLocationsPagination(t *testing.T) {
 	})
 
 	t.Run("page 2 does not repeat page 1 results", func(t *testing.T) {
-		page1, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Name: prefix, Page: 1})
+		page1, err := s.ListLocations(ctx, location.ListLocationsParams{Name: prefix, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		page2, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Name: prefix, Page: 2})
+		page2, err := s.ListLocations(ctx, location.ListLocationsParams{Name: prefix, Page: 2})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -425,7 +425,7 @@ func TestListLocationsPagination(t *testing.T) {
 	})
 
 	t.Run("page 3 returns empty", func(t *testing.T) {
-		resp, err := s.ListLocations(ctx, location_handlers.ListLocationsParams{Name: prefix, Page: 3})
+		resp, err := s.ListLocations(ctx, location.ListLocationsParams{Name: prefix, Page: 3})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -441,12 +441,12 @@ func TestSearchLocations(t *testing.T) {
 	t.Run("validate the search query is not missing or too short", func(t *testing.T) {
 		cases := []struct {
 			name            string
-			params          location_handlers.SearchLocationParams
+			params          location.SearchLocationParams
 			isExpectedError bool
 		}{
-			{name: "missing search query", params: location_handlers.SearchLocationParams{}, isExpectedError: true},
-			{name: "search query too short", params: location_handlers.SearchLocationParams{Search: "ab"}, isExpectedError: true},
-			{name: "valid search query", params: location_handlers.SearchLocationParams{Search: "abc"}, isExpectedError: false},
+			{name: "missing search query", params: location.SearchLocationParams{}, isExpectedError: true},
+			{name: "search query too short", params: location.SearchLocationParams{Search: "ab"}, isExpectedError: true},
+			{name: "valid search query", params: location.SearchLocationParams{Search: "abc"}, isExpectedError: false},
 		}
 
 		for _, tc := range cases {
@@ -464,7 +464,7 @@ func TestSearchLocations(t *testing.T) {
 	})
 
 	t.Run("returns empty list when no locations match the search query", func(t *testing.T) {
-		res, err := SearchLocations(ctx, location_handlers.SearchLocationParams{Search: "nonexistent"})
+		res, err := SearchLocations(ctx, location.SearchLocationParams{Search: "nonexistent"})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -481,7 +481,7 @@ func TestSearchLocations(t *testing.T) {
 		q.EXPECT().SearchLocations(gomock.Any(), "error").Return(nil, errors.New("database error")).Times(1)
 
 		s := &Service{query: q}
-		_, err := s.SearchLocations(ctx, location_handlers.SearchLocationParams{Search: "error"})
+		_, err := s.SearchLocations(ctx, location.SearchLocationParams{Search: "error"})
 		if err == nil {
 			t.Fatalf("expected error, got nil")
 		}
@@ -533,7 +533,7 @@ func TestSearchLocations(t *testing.T) {
 		searchToken := search
 		// Change search case to prove search is case-insensitive.
 		search = strings.ToLower(search)
-		locs, err := SearchLocations(ctx, location_handlers.SearchLocationParams{Search: search})
+		locs, err := SearchLocations(ctx, location.SearchLocationParams{Search: search})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -548,7 +548,7 @@ func TestSearchLocations(t *testing.T) {
 			ids[2]: {name: searchToken, iata: "TLV"},
 		}
 
-		matched := map[int64]location_handlers.LocationResult{}
+		matched := map[int64]location.LocationResult{}
 		for _, loc := range locs.Locations {
 			if _, ok := expectedByID[loc.ID]; ok {
 				matched[loc.ID] = loc
