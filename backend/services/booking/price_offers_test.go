@@ -14,6 +14,8 @@ import (
 	"encore.app/internal/validation"
 	authpkg "encore.app/services/accounts"
 	"encore.app/services/booking/db"
+	availability "encore.app/services/booking/handlers/availability_handlers"
+	poh "encore.app/services/booking/handlers/price_offer_handlers"
 	"encore.dev/beta/auth"
 	"encore.dev/beta/errs"
 	"encore.dev/et"
@@ -79,7 +81,7 @@ func seedPriceOfferLocation(t *testing.T, q *db.Queries, namePrefix string) (int
 
 // seedSnapshot inserts an available_plans_snapshots row with the given plans
 // and registers cleanup. Returns the snapshot ID.
-func seedSnapshot(t *testing.T, q *db.Queries, plans []planPriceDetails) int64 {
+func seedSnapshot(t *testing.T, q *db.Queries, plans []availability.PlanPriceDetails) int64 {
 	t.Helper()
 	ctx := context.Background()
 
@@ -105,8 +107,8 @@ func seedSnapshot(t *testing.T, q *db.Queries, plans []planPriceDetails) int64 {
 }
 
 // defaultPlan returns a fully populated plan that can be used to seed a snapshot.
-func defaultPlan(pickupLocCode, dropoffLocCode string) planPriceDetails {
-	return planPriceDetails{
+func defaultPlan(pickupLocCode, dropoffLocCode string) availability.PlanPriceDetails {
+	return availability.PlanPriceDetails{
 		PlanID:                 1,
 		RateQualifier:          "RQ1",
 		SupplierCode:           "SUP1",
@@ -140,8 +142,8 @@ func defaultPlan(pickupLocCode, dropoffLocCode string) planPriceDetails {
 
 // validCreatePriceOfferParams returns valid params for CreatePriceOffer pointing to the
 // supplied plan and snapshot ID.
-func validCreatePriceOfferParams(snapshotID int64, plan planPriceDetails) CreatePriceOfferParams {
-	return CreatePriceOfferParams{
+func validCreatePriceOfferParams(snapshotID int64, plan availability.PlanPriceDetails) poh.CreatePriceOfferParams {
+	return poh.CreatePriceOfferParams{
 		SnapshotID:          snapshotID,
 		RateQualifier:       plan.RateQualifier,
 		SupplierCode:        plan.SupplierCode,
@@ -191,7 +193,7 @@ func TestCreatePriceOffer(t *testing.T) {
 	pickupID, pickupCode, _ := seedPriceOfferLocation(t, q, "create-pickup")
 	dropoffID, dropoffCode, _ := seedPriceOfferLocation(t, q, "create-dropoff")
 	plan := defaultPlan(pickupCode, dropoffCode)
-	snapshotID := seedSnapshot(t, q, []planPriceDetails{plan})
+	snapshotID := seedSnapshot(t, q, []availability.PlanPriceDetails{plan})
 
 	t.Run("rejects missing snapshot id", func(t *testing.T) {
 		p := validCreatePriceOfferParams(snapshotID, plan)
@@ -338,7 +340,7 @@ func TestGetClientPriceOffer(t *testing.T) {
 	_, pickupCode, pickupName := seedPriceOfferLocation(t, q, "client-pickup")
 	_, dropoffCode, dropoffName := seedPriceOfferLocation(t, q, "client-dropoff")
 	plan := defaultPlan(pickupCode, dropoffCode)
-	snapshotID := seedSnapshot(t, q, []planPriceDetails{plan})
+	snapshotID := seedSnapshot(t, q, []availability.PlanPriceDetails{plan})
 
 	t.Run("returns 404 for invalid token", func(t *testing.T) {
 		_, err := GetClientPriceOffer(context.Background(), "not-a-uuid")
@@ -425,7 +427,7 @@ func TestGetAgentPriceOffer(t *testing.T) {
 	pickupID, pickupCode, pickupName := seedPriceOfferLocation(t, q, "agent-pickup")
 	dropoffID, dropoffCode, dropoffName := seedPriceOfferLocation(t, q, "agent-dropoff")
 	plan := defaultPlan(pickupCode, dropoffCode)
-	snapshotID := seedSnapshot(t, q, []planPriceDetails{plan})
+	snapshotID := seedSnapshot(t, q, []availability.PlanPriceDetails{plan})
 
 	t.Run("returns 404 for non-existent id", func(t *testing.T) {
 		_, err := GetAgentPriceOffer(ctx, 99999999)
@@ -551,9 +553,9 @@ func TestRenewPriceOffer(t *testing.T) {
 	pickupID, pickupCode, _ := seedPriceOfferLocation(t, q, "renew-pickup")
 	dropoffID, dropoffCode, _ := seedPriceOfferLocation(t, q, "renew-dropoff")
 	plan := defaultPlan(pickupCode, dropoffCode)
-	snapshotID := seedSnapshot(t, q, []planPriceDetails{plan})
+	snapshotID := seedSnapshot(t, q, []availability.PlanPriceDetails{plan})
 
-	createOffer := func(t *testing.T, name string, includeERP bool) *PriceOfferResponse {
+	createOffer := func(t *testing.T, name string, includeERP bool) *poh.PriceOfferResponse {
 		t.Helper()
 		p := validCreatePriceOfferParams(snapshotID, plan)
 		p.Name = name
@@ -566,7 +568,7 @@ func TestRenewPriceOffer(t *testing.T) {
 	}
 
 	t.Run("returns 404 for non-existent id", func(t *testing.T) {
-		et.MockEndpoint(SearchAvailability, func(context.Context, SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
+		et.MockEndpoint(SearchAvailability, func(context.Context, availability.SearchAvailabilityParams) (*availability.SearchAvailabilityResponse, error) {
 			t.Fatal("SearchAvailability should not be called for missing offers")
 			return nil, nil
 		})
@@ -577,13 +579,13 @@ func TestRenewPriceOffer(t *testing.T) {
 
 	t.Run("rejects renewal less than one hour after renewal", func(t *testing.T) {
 		offer := createOffer(t, "Too Fresh", true)
-		et.MockEndpoint(SearchAvailability, func(context.Context, SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
+		et.MockEndpoint(SearchAvailability, func(context.Context, availability.SearchAvailabilityParams) (*availability.SearchAvailabilityResponse, error) {
 			t.Fatal("SearchAvailability should not be called before the renewal window")
 			return nil, nil
 		})
 
 		_, err := RenewPriceOffer(ctx, offer.ID)
-		api_errors.AssertApiError(t, errOfferRenewalTooSoon, err)
+		api_errors.AssertApiError(t, poh.ErrOfferRenewalTooSoon, err)
 	})
 
 	t.Run("refreshes pricing details when original plan is still available", func(t *testing.T) {
@@ -599,9 +601,9 @@ func TestRenewPriceOffer(t *testing.T) {
 		renewedPlan.MarkupPercentage = 25
 		renewedPlan.ChargedERPPriceWithVat = 30
 		renewedPlan.DiscountPercentage = 0
-		renewedSnapshotID := seedSnapshot(t, q, []planPriceDetails{renewedPlan})
+		renewedSnapshotID := seedSnapshot(t, q, []availability.PlanPriceDetails{renewedPlan})
 
-		et.MockEndpoint(SearchAvailability, func(_ context.Context, req SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
+		et.MockEndpoint(SearchAvailability, func(_ context.Context, req availability.SearchAvailabilityParams) (*availability.SearchAvailabilityResponse, error) {
 			if req.PickupLocationID != pickupID {
 				t.Errorf("pickup location id: got %d, want %d", req.PickupLocationID, pickupID)
 			}
@@ -617,7 +619,7 @@ func TestRenewPriceOffer(t *testing.T) {
 			if req.DriverAge != 30 {
 				t.Errorf("driver age: got %d, want 30", req.DriverAge)
 			}
-			return &SearchAvailabilityResponse{SnapshotID: renewedSnapshotID}, nil
+			return &availability.SearchAvailabilityResponse{SnapshotID: renewedSnapshotID}, nil
 		})
 
 		resp, err := RenewPriceOffer(ctx, offer.ID)
@@ -677,10 +679,10 @@ func TestRenewPriceOffer(t *testing.T) {
 		renewedPlan.MarkupPercentage = 25
 		renewedPlan.ChargedERPPriceWithVat = 30
 		renewedPlan.DiscountPercentage = 0
-		renewedSnapshotID := seedSnapshot(t, q, []planPriceDetails{renewedPlan})
+		renewedSnapshotID := seedSnapshot(t, q, []availability.PlanPriceDetails{renewedPlan})
 
-		et.MockEndpoint(SearchAvailability, func(context.Context, SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
-			return &SearchAvailabilityResponse{SnapshotID: renewedSnapshotID}, nil
+		et.MockEndpoint(SearchAvailability, func(context.Context, availability.SearchAvailabilityParams) (*availability.SearchAvailabilityResponse, error) {
+			return &availability.SearchAvailabilityResponse{SnapshotID: renewedSnapshotID}, nil
 		})
 
 		resp, err := RenewPriceOffer(ctx, offer.ID)
@@ -712,15 +714,15 @@ func TestRenewPriceOffer(t *testing.T) {
 		unmatchedPlan := defaultPlan(pickupCode, dropoffCode)
 		unmatchedPlan.RateQualifier = "RQ-FRESH-SEARCH"
 		unmatchedPlan.CarDetails.Acriss = "IDMR"
-		unmatchedSnapshotID := seedSnapshot(t, q, []planPriceDetails{unmatchedPlan})
+		unmatchedSnapshotID := seedSnapshot(t, q, []availability.PlanPriceDetails{unmatchedPlan})
 
 		before, err := q.GetPriceOfferById(ctx, db.GetPriceOfferByIdParams{ID: offer.ID, AgentID: agentID})
 		if err != nil {
 			t.Fatalf("failed to fetch offer before renew: %v", err)
 		}
 
-		et.MockEndpoint(SearchAvailability, func(context.Context, SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
-			return &SearchAvailabilityResponse{SnapshotID: unmatchedSnapshotID}, nil
+		et.MockEndpoint(SearchAvailability, func(context.Context, availability.SearchAvailabilityParams) (*availability.SearchAvailabilityResponse, error) {
+			return &availability.SearchAvailabilityResponse{SnapshotID: unmatchedSnapshotID}, nil
 		})
 
 		resp, err := RenewPriceOffer(ctx, offer.ID)
@@ -749,17 +751,17 @@ func TestRenewPriceOffer(t *testing.T) {
 func TestListPriceOffers(t *testing.T) {
 	t.Run("validation", func(t *testing.T) {
 		t.Run("rejects page 0", func(t *testing.T) {
-			p := ListPriceOffersRequest{Page: 0}
+			p := poh.ListPriceOffersRequest{Page: 0}
 			api_errors.AssertApiError(t, priceOfferInvalidValueErr("page"), p.Validate())
 		})
 
 		t.Run("rejects negative page", func(t *testing.T) {
-			p := ListPriceOffersRequest{Page: -1}
+			p := poh.ListPriceOffersRequest{Page: -1}
 			api_errors.AssertApiError(t, priceOfferInvalidValueErr("page"), p.Validate())
 		})
 
 		t.Run("accepts valid params", func(t *testing.T) {
-			p := ListPriceOffersRequest{Page: 1}
+			p := poh.ListPriceOffersRequest{Page: 1}
 			if err := p.Validate(); err != nil {
 				t.Fatalf("expected no error, got %v", err)
 			}
@@ -773,9 +775,9 @@ func TestListPriceOffers(t *testing.T) {
 	_, pickupCode, _ := seedPriceOfferLocation(t, q, "list-pickup")
 	_, dropoffCode, _ := seedPriceOfferLocation(t, q, "list-dropoff")
 	plan := defaultPlan(pickupCode, dropoffCode)
-	snapshotID := seedSnapshot(t, q, []planPriceDetails{plan})
+	snapshotID := seedSnapshot(t, q, []availability.PlanPriceDetails{plan})
 
-	createOffer := func(t *testing.T, name string) *PriceOfferResponse {
+	createOffer := func(t *testing.T, name string) *poh.PriceOfferResponse {
 		t.Helper()
 		p := validCreatePriceOfferParams(snapshotID, plan)
 		p.Name = name
@@ -793,7 +795,7 @@ func TestListPriceOffers(t *testing.T) {
 	charlie := createOffer(t, "Charlie Offer")
 
 	t.Run("returns all offers for agent ordered by created_at DESC", func(t *testing.T) {
-		resp, err := ListPriceOffers(ctx, ListPriceOffersRequest{Page: 1})
+		resp, err := ListPriceOffers(ctx, poh.ListPriceOffersRequest{Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -815,7 +817,7 @@ func TestListPriceOffers(t *testing.T) {
 	})
 
 	t.Run("summary fields populated correctly", func(t *testing.T) {
-		resp, err := ListPriceOffers(ctx, ListPriceOffersRequest{Name: "Alice", Page: 1})
+		resp, err := ListPriceOffers(ctx, poh.ListPriceOffersRequest{Name: "Alice", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -850,7 +852,7 @@ func TestListPriceOffers(t *testing.T) {
 	})
 
 	t.Run("filters by name (case-insensitive ILIKE)", func(t *testing.T) {
-		resp, err := ListPriceOffers(ctx, ListPriceOffersRequest{Name: "bob", Page: 1})
+		resp, err := ListPriceOffers(ctx, poh.ListPriceOffersRequest{Name: "bob", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -864,13 +866,13 @@ func TestListPriceOffers(t *testing.T) {
 
 	t.Run("filters by status", func(t *testing.T) {
 		// Update Charlie to declined.
-		if err := UpdatePriceOffer(ctx, charlie.ID, UpdatePriceOfferParams{
+		if err := UpdatePriceOffer(ctx, charlie.ID, poh.UpdatePriceOfferParams{
 			Status: strPtr("declined"),
 		}); err != nil {
 			t.Fatalf("failed to update offer: %v", err)
 		}
 
-		resp, err := ListPriceOffers(ctx, ListPriceOffersRequest{Status: "declined", Page: 1})
+		resp, err := ListPriceOffers(ctx, poh.ListPriceOffersRequest{Status: "declined", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -885,7 +887,7 @@ func TestListPriceOffers(t *testing.T) {
 		}
 
 		// Open status filter excludes Charlie.
-		resp, err = ListPriceOffers(ctx, ListPriceOffersRequest{Status: "open", Page: 1})
+		resp, err = ListPriceOffers(ctx, poh.ListPriceOffersRequest{Status: "open", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -901,7 +903,7 @@ func TestListPriceOffers(t *testing.T) {
 
 	t.Run("paginates results", func(t *testing.T) {
 		// Limit is 8, so all offers fit on a single page; page=2 should be empty.
-		resp, err := ListPriceOffers(ctx, ListPriceOffersRequest{Page: 2})
+		resp, err := ListPriceOffers(ctx, poh.ListPriceOffersRequest{Page: 2})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -914,7 +916,7 @@ func TestListPriceOffers(t *testing.T) {
 	})
 
 	t.Run("non-matching filter returns empty with zero total", func(t *testing.T) {
-		resp, err := ListPriceOffers(ctx, ListPriceOffersRequest{Name: "zzznonexistent", Page: 1})
+		resp, err := ListPriceOffers(ctx, poh.ListPriceOffersRequest{Name: "zzznonexistent", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -928,7 +930,7 @@ func TestListPriceOffers(t *testing.T) {
 
 	t.Run("isolates offers by agent", func(t *testing.T) {
 		otherCtx := priceOfferAuthContext(agentID + 100)
-		resp, err := ListPriceOffers(otherCtx, ListPriceOffersRequest{Page: 1})
+		resp, err := ListPriceOffers(otherCtx, poh.ListPriceOffersRequest{Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -943,33 +945,33 @@ func TestListPriceOffers(t *testing.T) {
 func TestUpdatePriceOffer(t *testing.T) {
 	t.Run("validation", func(t *testing.T) {
 		t.Run("rejects invalid status", func(t *testing.T) {
-			p := UpdatePriceOfferParams{Status: strPtr("invalid")}
+			p := poh.UpdatePriceOfferParams{Status: strPtr("invalid")}
 			api_errors.AssertApiError(t, priceOfferInvalidValueErr("status"), p.Validate())
 		})
 
 		t.Run("rejects blank name", func(t *testing.T) {
-			p := UpdatePriceOfferParams{Name: strPtr("   ")}
+			p := poh.UpdatePriceOfferParams{Name: strPtr("   ")}
 			api_errors.AssertApiError(t, priceOfferInvalidValueErr("name"), p.Validate())
 		})
 
 		t.Run("rejects non-3-letter currency code", func(t *testing.T) {
-			p := UpdatePriceOfferParams{OfferedCurrencyCode: strPtr("US")}
+			p := poh.UpdatePriceOfferParams{OfferedCurrencyCode: strPtr("US")}
 			api_errors.AssertApiError(t, priceOfferInvalidValueErr("offeredCurrencyCode"), p.Validate())
 		})
 
 		t.Run("rejects lowercase currency code", func(t *testing.T) {
-			p := UpdatePriceOfferParams{OfferedCurrencyCode: strPtr("usd")}
+			p := poh.UpdatePriceOfferParams{OfferedCurrencyCode: strPtr("usd")}
 			api_errors.AssertApiError(t, priceOfferInvalidValueErr("offeredCurrencyCode"), p.Validate())
 		})
 
 		t.Run("accepts empty params (all nil)", func(t *testing.T) {
-			if err := (UpdatePriceOfferParams{}).Validate(); err != nil {
+			if err := (poh.UpdatePriceOfferParams{}).Validate(); err != nil {
 				t.Fatalf("expected no error, got %v", err)
 			}
 		})
 
 		t.Run("accepts all valid fields", func(t *testing.T) {
-			p := UpdatePriceOfferParams{
+			p := poh.UpdatePriceOfferParams{
 				Status:              strPtr("booked"),
 				Name:                strPtr("Updated"),
 				OfferedCurrencyCode: strPtr("EUR"),
@@ -988,9 +990,9 @@ func TestUpdatePriceOffer(t *testing.T) {
 	_, pickupCode, _ := seedPriceOfferLocation(t, q, "update-pickup")
 	_, dropoffCode, _ := seedPriceOfferLocation(t, q, "update-dropoff")
 	plan := defaultPlan(pickupCode, dropoffCode)
-	snapshotID := seedSnapshot(t, q, []planPriceDetails{plan})
+	snapshotID := seedSnapshot(t, q, []availability.PlanPriceDetails{plan})
 
-	createOffer := func(t *testing.T, name string) *PriceOfferResponse {
+	createOffer := func(t *testing.T, name string) *poh.PriceOfferResponse {
 		t.Helper()
 		p := validCreatePriceOfferParams(snapshotID, plan)
 		p.Name = name
@@ -1003,7 +1005,7 @@ func TestUpdatePriceOffer(t *testing.T) {
 
 	t.Run("succeeds for non-existent id (no-op)", func(t *testing.T) {
 		// :exec returns no error when zero rows are affected.
-		err := UpdatePriceOffer(ctx, 99999999, UpdatePriceOfferParams{Status: strPtr("booked")})
+		err := UpdatePriceOffer(ctx, 99999999, poh.UpdatePriceOfferParams{Status: strPtr("booked")})
 		if err != nil {
 			t.Fatalf("expected no error for non-existent id, got %v", err)
 		}
@@ -1012,7 +1014,7 @@ func TestUpdatePriceOffer(t *testing.T) {
 	t.Run("updates all provided fields", func(t *testing.T) {
 		offer := createOffer(t, "Original")
 
-		err := UpdatePriceOffer(ctx, offer.ID, UpdatePriceOfferParams{
+		err := UpdatePriceOffer(ctx, offer.ID, poh.UpdatePriceOfferParams{
 			Status:              strPtr("booked"),
 			Name:                strPtr("Updated Name"),
 			OfferedCurrencyCode: strPtr("EUR"),
@@ -1047,7 +1049,7 @@ func TestUpdatePriceOffer(t *testing.T) {
 		offer := createOffer(t, "Partial Original")
 
 		// Update only the status.
-		if err := UpdatePriceOffer(ctx, offer.ID, UpdatePriceOfferParams{
+		if err := UpdatePriceOffer(ctx, offer.ID, poh.UpdatePriceOfferParams{
 			Status: strPtr("declined"),
 		}); err != nil {
 			t.Fatalf("failed to update: %v", err)
@@ -1078,7 +1080,7 @@ func TestUpdatePriceOffer(t *testing.T) {
 		offer := createOffer(t, "Mine")
 
 		otherCtx := priceOfferAuthContext(agentID + 1)
-		if err := UpdatePriceOffer(otherCtx, offer.ID, UpdatePriceOfferParams{
+		if err := UpdatePriceOffer(otherCtx, offer.ID, poh.UpdatePriceOfferParams{
 			Name: strPtr("Hijacked"),
 		}); err != nil {
 			t.Fatalf("expected no error (no-op), got %v", err)

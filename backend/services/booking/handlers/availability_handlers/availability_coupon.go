@@ -1,4 +1,4 @@
-package booking
+package availability
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 // getCouponDiscount retrieves the discount percentage for a given coupon code. If the code is empty, it returns 0.
-func (s *Service) getCouponDiscount(ctx context.Context, code string) (int, error) {
+func (s *AvailabilityService) getCouponDiscount(ctx context.Context, code string) (int, error) {
 	if code == "" {
 		return 0, nil
 	}

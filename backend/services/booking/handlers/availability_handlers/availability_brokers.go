@@ -1,4 +1,4 @@
-package booking
+package availability
 
 import (
 	"sync"
@@ -8,7 +8,7 @@ import (
 	"encore.dev/rlog"
 )
 
-func searchAvailabilityAcrossBrokers(p SearchAvailabilityRequest, locs availabilityLocations) ([]broker.AvailableVehicle, error) {
+func searchAvailabilityAcrossBrokers(cfg *AvailableVehiclesConfig, p SearchAvailabilityParams, locs availabilityLocations) ([]broker.AvailableVehicle, error) {
 	vs := make([]broker.AvailableVehicle, 0)
 	var (
 		wg       sync.WaitGroup
@@ -21,7 +21,7 @@ func searchAvailabilityAcrossBrokers(p SearchAvailabilityRequest, locs availabil
 		go func(loc availabilityLocationQuery, bn broker.Name) {
 			defer wg.Done()
 
-			b, err := getBrokerByName(bn)
+			b, err := getBrokerByName(cfg, bn)
 			if err != nil {
 				rlog.Error("failed to get broker by name", "error", err, "broker", bn)
 				errOnce.Do(func() {
@@ -58,7 +58,7 @@ func searchAvailabilityAcrossBrokers(p SearchAvailabilityRequest, locs availabil
 }
 
 // searchCars calls the given broker to search for available vehicles with the supplied location and date parameters.
-func searchCars(b broker.AvailabilitySearcher, params SearchAvailabilityRequest, plID, dlID, countryCode string) ([]broker.AvailableVehicle, error) {
+func searchCars(b broker.AvailabilitySearcher, params SearchAvailabilityParams, plID, dlID, countryCode string) ([]broker.AvailableVehicle, error) {
 	vs, err := b.SearchAvailability(broker.SearchAvailabilityParams{
 		CountryCode:     countryCode,
 		PickupLocation:  plID,
@@ -78,12 +78,12 @@ func searchCars(b broker.AvailabilitySearcher, params SearchAvailabilityRequest,
 }
 
 // getBrokerByName returns an initialised Broker for the given broker name.
-func getBrokerByName(name broker.Name) (broker.AvailabilitySearcher, error) {
+func getBrokerByName(cfg *AvailableVehiclesConfig, name broker.Name) (broker.AvailabilitySearcher, error) {
 	switch name {
 	case broker.BrokerFlex:
-		return broker.NewFlexWithErpCfg(avCfg.FlexErpDayCharge()), nil
+		return broker.NewFlexWithErpCfg(cfg.FlexErpDayCharge()), nil
 	case broker.BrokerHertz:
-		return broker.NewHertzWithCharges(avCfg.HertzErpDayChargeUS(), avCfg.HertzErpDayChargeCA()), nil
+		return broker.NewHertzWithCharges(cfg.HertzErpDayChargeUS(), cfg.HertzErpDayChargeCA()), nil
 	default:
 		return nil, api_errors.ErrInternalError
 	}

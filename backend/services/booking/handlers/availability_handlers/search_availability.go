@@ -1,4 +1,4 @@
-package booking
+package availability
 
 import (
 	"context"
@@ -53,11 +53,8 @@ type AvailableVehiclesConfig struct {
 	MarkUpNet           config.Float64
 }
 
-// avCfg is the loaded AvailableVehiclesConfig for this service.
-var avCfg = config.Load[*AvailableVehiclesConfig]()
-
 // SearchAvailabilityRequest represents the request for searching availability of vehicles.
-type SearchAvailabilityRequest struct {
+type SearchAvailabilityParams struct {
 	PickupLocationID  int64  `query:"pickupLocationId" validate:"required"`
 	DropoffLocationID int64  `query:"dropoffLocationId" validate:"omitempty"`
 	PickupTime        string `query:"pickupTime" validate:"required,datetime=15:04"`
@@ -68,8 +65,8 @@ type SearchAvailabilityRequest struct {
 	CouponCode        string `query:"couponCode" validate:"omitempty"`
 }
 
-// Validate validates the fields of SearchAvailabilityRequest.
-func (p SearchAvailabilityRequest) Validate() error {
+// Validate validates the fields of SearchAvailabilityParams.
+func (p SearchAvailabilityParams) Validate() error {
 	return validation.ValidateStruct(p)
 }
 
@@ -83,8 +80,7 @@ type SearchAvailabilityResponse struct {
 }
 
 // SearchAvailability handles the http request for searching availability of vehicles.
-// encore:api public method=GET path=/booking/availability
-func (s *Service) SearchAvailability(ctx context.Context, p SearchAvailabilityRequest) (*SearchAvailabilityResponse, error) {
+func (s *AvailabilityService) SearchAvailability(ctx context.Context, p SearchAvailabilityParams) (*SearchAvailabilityResponse, error) {
 	locs, err := getLocations(ctx, s.query, p)
 	if err != nil {
 		return nil, err
@@ -106,7 +102,7 @@ func (s *Service) SearchAvailability(ctx context.Context, p SearchAvailabilityRe
 		}
 	}
 
-	rawVehicles, err := searchAvailabilityAcrossBrokers(p, locs)
+	rawVehicles, err := searchAvailabilityAcrossBrokers(s.cfg, p, locs)
 	if err != nil {
 		return nil, err
 	}

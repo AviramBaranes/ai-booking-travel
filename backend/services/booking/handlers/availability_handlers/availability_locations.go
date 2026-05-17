@@ -1,4 +1,4 @@
-package booking
+package availability
 
 import (
 	"context"
@@ -38,7 +38,7 @@ type availabilityLocationQuery struct {
 type availabilityLocations map[broker.Name]availabilityLocationQuery
 
 // getLocations resolves pickup and dropoff broker location IDs from the database and returns them grouped by broker.
-func getLocations(ctx context.Context, query db.Querier, params SearchAvailabilityRequest) (availabilityLocations, error) {
+func getLocations(ctx context.Context, query db.Querier, params SearchAvailabilityParams) (availabilityLocations, error) {
 	dropoffLocationRowID := params.DropoffLocationID
 	if dropoffLocationRowID == 0 {
 		dropoffLocationRowID = params.PickupLocationID
@@ -79,7 +79,7 @@ type brokerLocation struct {
 }
 
 // createBrokersMap splits location rows into pickup and dropoff maps keyed by broker.
-func createBrokersMap(locs []db.GetAllLocationBrokerCodesByLocationIDsRow, params SearchAvailabilityRequest, dropoffLocationRowID int64) (map[db.Broker]brokerLocation, map[db.Broker]brokerLocation) {
+func createBrokersMap(locs []db.GetAllLocationBrokerCodesByLocationIDsRow, params SearchAvailabilityParams, dropoffLocationRowID int64) (map[db.Broker]brokerLocation, map[db.Broker]brokerLocation) {
 	pickupsByBroker := make(map[db.Broker]brokerLocation)
 	dropoffsByBroker := make(map[db.Broker]brokerLocation)
 

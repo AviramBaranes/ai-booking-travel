@@ -1,4 +1,4 @@
-package booking
+package availability
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 	"encore.app/services/booking/db"
 )
 
-// planPriceDetails holds the full pricing breakdown for a single plan, stored as a snapshot for future reference.
-type planPriceDetails struct {
+// PlanPriceDetails holds the full pricing breakdown for a single plan, stored as a snapshot for future reference.
+type PlanPriceDetails struct {
 	PlanID                 int               `json:"planId"`
 	RateQualifier          string            `json:"rateQualifier"`
 	SupplierCode           string            `json:"supplierCode"`
@@ -31,7 +31,7 @@ type planPriceDetails struct {
 }
 
 // storePlansDetails stores the given plan details in the database and returns the ID of the inserted snapshot.
-func (s Service) storePlansDetails(ctx context.Context, plans []planPriceDetails, reqParams SearchAvailabilityRequest, countryCode string) (int64, error) {
+func (s *AvailabilityService) storePlansDetails(ctx context.Context, plans []PlanPriceDetails, reqParams SearchAvailabilityParams, countryCode string) (int64, error) {
 	plansJson, err := json.Marshal(plans)
 	if err != nil {
 		return 0, fmt.Errorf("marshaling plans details: %w", err)

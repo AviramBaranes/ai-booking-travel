@@ -1,4 +1,4 @@
-package booking
+package availability
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 // availabilityArtifacts groups the processed availability results: the API-facing vehicles and the stored plan details.
 type availabilityArtifacts struct {
 	availableCars []AvailableVehicle
-	plansDetails  []planPriceDetails
+	plansDetails  []PlanPriceDetails
 }
 
 const (
@@ -31,10 +31,10 @@ const (
 )
 
 // buildAvailabilityArtifacts applies markup, coupon discounts, and currency data to produce the final response vehicles and plan snapshots.
-func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvailabilityRequest, locs availabilityLocations, rawVehicles []broker.AvailableVehicle, couponDiscount int) (availabilityArtifacts, error) {
+func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p SearchAvailabilityParams, locs availabilityLocations, rawVehicles []broker.AvailableVehicle, couponDiscount int) (availabilityArtifacts, error) {
 	artifacts := availabilityArtifacts{
 		availableCars: make([]AvailableVehicle, 0, len(rawVehicles)),
-		plansDetails:  make([]planPriceDetails, 0, len(rawVehicles)*2), //most cars have 1-2 plans
+		plansDetails:  make([]PlanPriceDetails, 0, len(rawVehicles)*2), //most cars have 1-2 plans
 	}
 
 	daysCount, err := broker.CalculateDaysCount(p.PickupDate, p.PickupTime, p.DropoffDate, p.DropoffTime)
@@ -61,7 +61,7 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 		mp, ok := markupProviders[v.Broker]
 		if !ok {
 			rlog.Warn("no markup provider found for broker, skipping applying markup", "broker", v.Broker)
-			mp = NewFlexMarkupProvider(avCfg.MarkUpGross(), avCfg.MarkUpNet()) // default to flex markup provider with 0% markup
+			mp = NewFlexMarkupProvider(s.cfg.MarkUpGross(), s.cfg.MarkUpNet()) // default to flex markup provider with 0% markup
 		}
 
 		av := AvailableVehicle{
@@ -99,7 +99,7 @@ func (s *Service) buildAvailabilityArtifacts(ctx context.Context, p SearchAvaila
 				info = s.translatePlanDetails(ctx, info)
 			}
 
-			pd := planPriceDetails{
+			pd := PlanPriceDetails{
 				PlanID:                 p.PlanID,
 				RateQualifier:          p.RateQualifier,
 				SupplierCode:           p.SupplierCode,
@@ -201,13 +201,13 @@ func sortPlansByPrice(plans []Plan) {
 }
 
 // getMarkupProviderMap returns a MarkupProvider for each broker present in the availability locations.
-func (s *Service) getMarkupProviderMap(ctx context.Context, locs availabilityLocations, rentalDays int, pickupDate string, carGroups []string) (map[broker.Name]MarkupProvider, error) {
+func (s *AvailabilityService) getMarkupProviderMap(ctx context.Context, locs availabilityLocations, rentalDays int, pickupDate string, carGroups []string) (map[broker.Name]MarkupProvider, error) {
 	markupProviderMap := make(map[broker.Name]MarkupProvider)
 	for brokerName := range locs {
 		var provider MarkupProvider
 		switch brokerName {
 		case broker.BrokerFlex:
-			provider = NewFlexMarkupProvider(avCfg.MarkUpGross(), avCfg.MarkUpNet())
+			provider = NewFlexMarkupProvider(s.cfg.MarkUpGross(), s.cfg.MarkUpNet())
 		case broker.BrokerHertz:
 			hp, err := NewHertzMarkupProvider(ctx, s.query, locs[brokerName].pickupCountryCode, pickupDate, rentalDays, carGroups)
 			if err != nil {
@@ -246,7 +246,7 @@ func sortAvailableVehiclesByCheapestPlan(vs []AvailableVehicle) {
 }
 
 // buildCurrencyMap query all currencies and returns a map of currency code to currency rates
-func (s *Service) buildCurrencyMap(ctx context.Context) (map[string]float64, error) {
+func (s *AvailabilityService) buildCurrencyMap(ctx context.Context) (map[string]float64, error) {
 	currencyMap := make(map[string]float64)
 	rows, err := s.query.ListCurrencies(ctx)
 	if err != nil {
@@ -260,15 +260,15 @@ func (s *Service) buildCurrencyMap(ctx context.Context) (map[string]float64, err
 }
 
 // translatePlanDetails translates the plan details using the service's translator, returning the original detail if no translation is found after inserting it to db.
-func (s Service) translatePlanDetails(ctx context.Context, details []string) []string {
+func (s *AvailabilityService) translatePlanDetails(ctx context.Context, details []string) []string {
 	translatedDetails := make([]string, len(details))
 	for i, detail := range details {
-		template, values := normalizeSentence(detail)
-		if translated, exists := s.t.GetVerified(template); exists {
-			translatedDetails[i] = insertValuesToSentence(translated, values)
+		template, values := s.tc.NormalizeSentence(detail)
+		if translated, exists := s.tc.GetVerified(template); exists {
+			translatedDetails[i] = s.tc.InsertValuesToSentence(translated, values)
 		} else {
 			translatedDetails[i] = detail
-			if !s.t.Exists(template) {
+			if !s.tc.Exists(template) {
 				_, err := s.query.InsertBrokerTranslation(ctx, template)
 				if err != nil {
 					rlog.Error("failed to insert missing translation to db", "template", template, "error", err)

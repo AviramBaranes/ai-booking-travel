@@ -93,8 +93,8 @@ type numberMatch struct {
 var numberRegex = regexp.MustCompile(`\d+(?:\.\d+)?`)
 var placeholderRegex = regexp.MustCompile(`\{num\d+\}`)
 
-// normalizeSentence replaces numeric tokens with indexed placeholders like {num1}.
-func normalizeSentence(sentence string) (string, map[string]string) {
+// NormalizeSentence replaces numeric tokens with indexed placeholders like {num1}.
+func (c *TranslationCache) NormalizeSentence(sentence string) (string, map[string]string) {
 	indexes := numberRegex.FindAllStringIndex(sentence, -1)
 	if len(indexes) == 0 {
 		return sentence, nil
@@ -120,8 +120,8 @@ func normalizeSentence(sentence string) (string, map[string]string) {
 	return b.String(), values
 }
 
-// insertValuesToSentence inserts values back into a translated template.
-func insertValuesToSentence(template string, values map[string]string) string {
+// InsertValuesToSentence inserts values back into a translated template.
+func (c *TranslationCache) InsertValuesToSentence(template string, values map[string]string) string {
 	indexes := placeholderRegex.FindAllStringIndex(template, -1)
 	if len(indexes) == 0 || len(values) == 0 {
 		return template
