@@ -8,6 +8,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
+	"encore.app/services/accounts/handlers/organization_handlers"
 	"encore.app/services/accounts/mocks"
 	"encore.dev/et"
 	"go.uber.org/mock/gomock"
@@ -339,7 +340,7 @@ func TestCreateOffice(t *testing.T) {
 
 	t.Run("validation rejects missing icount_client_id under non-organic org", func(t *testing.T) {
 		t.Parallel()
-		org, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+		org, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
 			Name: "CreateOfficeNonOrganicNoIcount", IsOrganic: false,
 		})
 		if err != nil {
@@ -353,7 +354,7 @@ func TestCreateOffice(t *testing.T) {
 
 	t.Run("creates office with icount_client_id under non-organic org", func(t *testing.T) {
 		t.Parallel()
-		org, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+		org, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
 			Name: "CreateOfficeNonOrganicWithIcount", IsOrganic: false,
 		})
 		if err != nil {
@@ -425,7 +426,7 @@ func TestUpdateOffice(t *testing.T) {
 
 	t.Run("updates icount_client_id under non-organic org", func(t *testing.T) {
 		t.Parallel()
-		org, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+		org, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
 			Name: "UpdateOfficeNonOrganicIcountOrg", IsOrganic: false,
 		})
 		if err != nil {
@@ -450,7 +451,7 @@ func TestUpdateOffice(t *testing.T) {
 
 	t.Run("validation rejects icount when moving office to organic org", func(t *testing.T) {
 		t.Parallel()
-		nonOrg, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+		nonOrg, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
 			Name: "UpdateOfficeMoveToOrganicSrc", IsOrganic: false,
 		})
 		if err != nil {
@@ -559,7 +560,7 @@ func TestListInorganicOffices(t *testing.T) {
 		s := newService(newDb)
 
 		org1 := createTestOrg(t, s, randomName())
-		org2, err := s.CreateOrganization(ctx, CreateOrganizationRequest{Name: randomName(), IsOrganic: false})
+		org2, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{Name: randomName(), IsOrganic: false})
 		if err != nil {
 			t.Fatalf("create inorganic org: %v", err)
 		}

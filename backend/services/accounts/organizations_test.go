@@ -8,6 +8,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
+	"encore.app/services/accounts/handlers/organization_handlers"
 	"encore.app/services/accounts/mocks"
 	"encore.dev/et"
 	"go.uber.org/mock/gomock"
@@ -15,12 +16,12 @@ import (
 
 // --- Helpers ---
 
-func validCreateOrgParams() CreateOrganizationRequest {
+func validCreateOrgParams() organization_handlers.CreateOrganizationParams {
 	phone := "0521234567"
 	address := "123 Test St"
 	obligo := int32(1000)
 	icountClientID := int32(100)
-	return CreateOrganizationRequest{
+	return organization_handlers.CreateOrganizationParams{
 		Name:           "Test Organization",
 		IsOrganic:      true,
 		IcountClientID: &icountClientID,
@@ -30,14 +31,14 @@ func validCreateOrgParams() CreateOrganizationRequest {
 	}
 }
 
-func validUpdateOrgParams() UpdateOrganizationRequest {
+func validUpdateOrgParams() organization_handlers.UpdateOrganizationParams {
 	name := "Updated Organization"
 	isOrganic := true
 	icountClientID := int32(200)
 	phone := "0529876543"
 	address := "456 Updated St"
 	obligo := int32(2000)
-	return UpdateOrganizationRequest{
+	return organization_handlers.UpdateOrganizationParams{
 		Name:           &name,
 		IsOrganic:      &isOrganic,
 		IcountClientID: &icountClientID,
@@ -54,7 +55,7 @@ func orgMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
 	return q, &Service{query: q}
 }
 
-func createTestOrg(t *testing.T, s *Service, name string) *OrganizationResponse {
+func createTestOrg(t *testing.T, s *Service, name string) *organization_handlers.OrganizationResponse {
 	t.Helper()
 	p := validCreateOrgParams()
 	p.Name = name
@@ -77,7 +78,7 @@ func TestListOrganizations(t *testing.T) {
 			createTestOrg(t, s, fmt.Sprintf("PagOrg%02d Corp", i))
 		}
 
-		page1, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{
+		page1, err := s.ListOrganizations(ctx, organization_handlers.ListOrganizationsParams{
 			Search: "PagOrg",
 			Page:   1,
 		})
@@ -91,7 +92,7 @@ func TestListOrganizations(t *testing.T) {
 			t.Fatalf("expected total 18, got %d", page1.Total)
 		}
 
-		page2, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{
+		page2, err := s.ListOrganizations(ctx, organization_handlers.ListOrganizationsParams{
 			Search: "PagOrg",
 			Page:   2,
 		})
@@ -118,7 +119,7 @@ func TestListOrganizations(t *testing.T) {
 	})
 
 	t.Run("empty page returns no results", func(t *testing.T) {
-		resp, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{
+		resp, err := s.ListOrganizations(ctx, organization_handlers.ListOrganizationsParams{
 			Search: "PagOrg",
 			Page:   3,
 		})
@@ -136,7 +137,7 @@ func TestListOrganizations(t *testing.T) {
 	t.Run("filters by search", func(t *testing.T) {
 		createTestOrg(t, s, "Searchable UniqueXYZ Corp")
 
-		resp, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{
+		resp, err := s.ListOrganizations(ctx, organization_handlers.ListOrganizationsParams{
 			Search: "UniqueXYZ",
 			Page:   1,
 		})
@@ -156,13 +157,13 @@ func TestListOrganizations(t *testing.T) {
 
 	t.Run("lists icount_client_id when set", func(t *testing.T) {
 		icountID := int32(777)
-		_, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+		_, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
 			Name: "IcountListOrg UniqueXXX", IsOrganic: true, IcountClientID: &icountID,
 		})
 		if err != nil {
 			t.Fatalf("failed to create org: %v", err)
 		}
-		resp, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{Search: "IcountListOrg UniqueXXX", Page: 1})
+		resp, err := s.ListOrganizations(ctx, organization_handlers.ListOrganizationsParams{Search: "IcountListOrg UniqueXXX", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -176,7 +177,7 @@ func TestListOrganizations(t *testing.T) {
 	})
 
 	t.Run("search returns no results for non-matching query", func(t *testing.T) {
-		resp, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{
+		resp, err := s.ListOrganizations(ctx, organization_handlers.ListOrganizationsParams{
 			Search: "ZZZNoMatchHere999",
 			Page:   1,
 		})
@@ -210,7 +211,7 @@ func TestListOrganizations(t *testing.T) {
 			t.Fatalf("failed to create non-organic org: %v", err)
 		}
 
-		resp, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{
+		resp, err := s.ListOrganizations(ctx, organization_handlers.ListOrganizationsParams{
 			Search:    "OrganicFilterTest",
 			IsOrganic: "true",
 			Page:      1,
@@ -314,7 +315,7 @@ func TestListOrganizations(t *testing.T) {
 		}
 
 		// Query and find our target org
-		resp, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{
+		resp, err := s.ListOrganizations(ctx, organization_handlers.ListOrganizationsParams{
 			Search: "Counts Test Org",
 			Page:   1,
 		})
@@ -337,7 +338,7 @@ func TestListOrganizations(t *testing.T) {
 		}
 
 		// Verify unrelated org has its own counts
-		unResp, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{
+		unResp, err := s.ListOrganizations(ctx, organization_handlers.ListOrganizationsParams{
 			Search: "Counts Unrelated Org",
 			Page:   1,
 		})
@@ -360,12 +361,12 @@ func TestListOrganizations(t *testing.T) {
 	})
 
 	t.Run("validation rejects page 0", func(t *testing.T) {
-		p := ListOrganizationsRequest{Page: 0}
+		p := organization_handlers.ListOrganizationsParams{Page: 0}
 		api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 	})
 
 	t.Run("validation rejects negative page", func(t *testing.T) {
-		p := ListOrganizationsRequest{Page: -1}
+		p := organization_handlers.ListOrganizationsParams{Page: -1}
 		api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 	})
 
@@ -373,7 +374,7 @@ func TestListOrganizations(t *testing.T) {
 		q, s := orgMockService(t)
 		q.EXPECT().ListOrganizations(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
-		_, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{Page: 1})
+		_, err := s.ListOrganizations(ctx, organization_handlers.ListOrganizationsParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -382,7 +383,7 @@ func TestListOrganizations(t *testing.T) {
 		q.EXPECT().ListOrganizations(gomock.Any(), gomock.Any()).Return([]db.ListOrganizationsRow{}, nil)
 		q.EXPECT().CountOrganizations(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
-		_, err := s.ListOrganizations(ctx, &ListOrganizationsRequest{Page: 1})
+		_, err := s.ListOrganizations(ctx, organization_handlers.ListOrganizationsParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }
@@ -394,13 +395,13 @@ func TestCreateOrganization(t *testing.T) {
 	t.Run("validation rejects organic without icount_client_id", func(t *testing.T) {
 		p := validCreateOrgParams()
 		p.IcountClientID = nil
-		api_errors.AssertApiError(t, ErrOrganizationOrganicRequiresIcountClientID, p.Validate())
+		api_errors.AssertApiError(t, organization_handlers.ErrOrganizationOrganicRequiresIcountClientID, p.Validate())
 	})
 
 	t.Run("validation rejects non-organic with icount_client_id", func(t *testing.T) {
 		icountID := int32(99)
-		p := CreateOrganizationRequest{Name: "Foo", IsOrganic: false, IcountClientID: &icountID}
-		api_errors.AssertApiError(t, ErrOrganizationNonOrganicForbidsIcountClientID, p.Validate())
+		p := organization_handlers.CreateOrganizationParams{Name: "Foo", IsOrganic: false, IcountClientID: &icountID}
+		api_errors.AssertApiError(t, organization_handlers.ErrOrganizationNonOrganicForbidsIcountClientID, p.Validate())
 	})
 
 	t.Run("validation rejects missing name", func(t *testing.T) {
@@ -429,7 +430,7 @@ func TestCreateOrganization(t *testing.T) {
 	})
 
 	t.Run("validation accepts nil optional fields", func(t *testing.T) {
-		p := CreateOrganizationRequest{Name: "Minimal Org", IsOrganic: false}
+		p := organization_handlers.CreateOrganizationParams{Name: "Minimal Org", IsOrganic: false}
 		if err := p.Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -466,7 +467,7 @@ func TestCreateOrganization(t *testing.T) {
 	})
 
 	t.Run("creates organization with nil optional fields", func(t *testing.T) {
-		resp, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+		resp, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
 			Name:      "Minimal Create Org",
 			IsOrganic: false,
 		})
@@ -490,7 +491,7 @@ func TestCreateOrganization(t *testing.T) {
 		p := validCreateOrgParams()
 		p.Name = "Duplicate Name Org"
 		_, err := s.CreateOrganization(ctx, p)
-		api_errors.AssertApiError(t, ErrNameAlreadyExists, err)
+		api_errors.AssertApiError(t, organization_handlers.ErrNameAlreadyExists, err)
 	})
 
 	t.Run("returns error when db fails", func(t *testing.T) {
@@ -509,8 +510,8 @@ func TestUpdateOrganization(t *testing.T) {
 	t.Run("validation rejects non-organic with icount_client_id", func(t *testing.T) {
 		isOrganic := false
 		icountID := int32(50)
-		p := UpdateOrganizationRequest{IsOrganic: &isOrganic, IcountClientID: &icountID}
-		api_errors.AssertApiError(t, ErrOrganizationNonOrganicForbidsIcountClientID, p.Validate())
+		p := organization_handlers.UpdateOrganizationParams{IsOrganic: &isOrganic, IcountClientID: &icountID}
+		api_errors.AssertApiError(t, organization_handlers.ErrOrganizationNonOrganicForbidsIcountClientID, p.Validate())
 	})
 
 	t.Run("validation rejects blank name", func(t *testing.T) {
@@ -535,7 +536,7 @@ func TestUpdateOrganization(t *testing.T) {
 
 	t.Run("validation accepts partial update with only name", func(t *testing.T) {
 		name := "Partial"
-		p := UpdateOrganizationRequest{Name: &name}
+		p := organization_handlers.UpdateOrganizationParams{Name: &name}
 		if err := p.Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -570,34 +571,34 @@ func TestUpdateOrganization(t *testing.T) {
 	})
 
 	t.Run("returns error when adding icount to non-organic org", func(t *testing.T) {
-		org, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+		org, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
 			Name: "NonOrganic IcountAdd UniqueNOIA", IsOrganic: false,
 		})
 		if err != nil {
 			t.Fatalf("failed to create non-organic org: %v", err)
 		}
 		icountID := int32(50)
-		_, err = s.UpdateOrganization(ctx, org.ID, UpdateOrganizationRequest{IcountClientID: &icountID})
-		api_errors.AssertApiError(t, ErrOrganizationNonOrganicForbidsIcountClientID, err)
+		_, err = s.UpdateOrganization(ctx, org.ID, organization_handlers.UpdateOrganizationParams{IcountClientID: &icountID})
+		api_errors.AssertApiError(t, organization_handlers.ErrOrganizationNonOrganicForbidsIcountClientID, err)
 	})
 
 	t.Run("returns error when switching to organic without icount_client_id", func(t *testing.T) {
-		org, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+		org, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
 			Name: "NonOrganic ToOrganic UniqueNOTO", IsOrganic: false,
 		})
 		if err != nil {
 			t.Fatalf("failed to create non-organic org: %v", err)
 		}
 		isOrganic := true
-		_, err = s.UpdateOrganization(ctx, org.ID, UpdateOrganizationRequest{IsOrganic: &isOrganic})
-		api_errors.AssertApiError(t, ErrOrganizationOrganicRequiresIcountClientID, err)
+		_, err = s.UpdateOrganization(ctx, org.ID, organization_handlers.UpdateOrganizationParams{IsOrganic: &isOrganic})
+		api_errors.AssertApiError(t, organization_handlers.ErrOrganizationOrganicRequiresIcountClientID, err)
 	})
 
 	t.Run("partial update only changes provided fields", func(t *testing.T) {
 		created := createTestOrg(t, s, "Partial Update Org")
 
 		newName := "Partial Updated Name"
-		resp, err := s.UpdateOrganization(ctx, created.ID, UpdateOrganizationRequest{Name: &newName})
+		resp, err := s.UpdateOrganization(ctx, created.ID, organization_handlers.UpdateOrganizationParams{Name: &newName})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -622,8 +623,8 @@ func TestUpdateOrganization(t *testing.T) {
 		orgB := createTestOrg(t, s, "Dup Update Org B")
 
 		dupName := "Dup Update Org A"
-		_, err := s.UpdateOrganization(ctx, orgB.ID, UpdateOrganizationRequest{Name: &dupName})
-		api_errors.AssertApiError(t, ErrNameAlreadyExists, err)
+		_, err := s.UpdateOrganization(ctx, orgB.ID, organization_handlers.UpdateOrganizationParams{Name: &dupName})
+		api_errors.AssertApiError(t, organization_handlers.ErrNameAlreadyExists, err)
 	})
 
 	t.Run("returns error when db fails", func(t *testing.T) {
@@ -645,7 +646,7 @@ func TestListOrganicOrganizations(t *testing.T) {
 		s := newService(newDb)
 
 		icountID1, icountID2 := int32(10), int32(11)
-		org1, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+		org1, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
 			Name:           "organic_org_1",
 			IsOrganic:      true,
 			IcountClientID: &icountID1,
@@ -655,7 +656,7 @@ func TestListOrganicOrganizations(t *testing.T) {
 			t.Fatalf("failed to create org1: %v", err)
 		}
 
-		org2, err := s.CreateOrganization(ctx, CreateOrganizationRequest{
+		org2, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
 			Name:           "organic_org_2",
 			IsOrganic:      true,
 			IcountClientID: &icountID2,
@@ -665,7 +666,7 @@ func TestListOrganicOrganizations(t *testing.T) {
 			t.Fatalf("failed to create org2: %v", err)
 		}
 
-		_, err = s.CreateOrganization(ctx, CreateOrganizationRequest{
+		_, err = s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
 			Name:      "inorganic_org",
 			IsOrganic: false,
 		})
@@ -684,7 +685,7 @@ func TestListOrganicOrganizations(t *testing.T) {
 			t.Fatalf("expected 2 organic organizations, got %d", len(resp.Organizations))
 		}
 
-		expectedResults := []OrganicOrganization{
+		expectedResults := []organization_handlers.OrganicOrganization{
 			{ID: org1.ID, Name: org1.Name},
 			{ID: org2.ID, Name: org2.Name},
 		}
