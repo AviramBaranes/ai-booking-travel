@@ -10,7 +10,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
-	contact_handlers "encore.app/services/accounts/handlers/contact_handlers"
+	contact "encore.app/services/accounts/handlers/contact"
 	"encore.app/services/accounts/mocks"
 	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
@@ -18,8 +18,8 @@ import (
 
 // --- Helpers ---
 
-func validCreateContactParams(officeID *int64, orgID *int64) contact_handlers.CreateContactParams {
-	return contact_handlers.CreateContactParams{
+func validCreateContactParams(officeID *int64, orgID *int64) contact.CreateContactParams {
+	return contact.CreateContactParams{
 		FirstName:      "John",
 		LastName:       "Doe",
 		Role:           "manager",
@@ -30,13 +30,13 @@ func validCreateContactParams(officeID *int64, orgID *int64) contact_handlers.Cr
 	}
 }
 
-func validUpdateContactParams() contact_handlers.UpdateContactParams {
+func validUpdateContactParams() contact.UpdateContactParams {
 	firstName := "Jane"
 	lastName := "Smith"
 	role := "director"
 	cellphone := "0529876543"
 	email := "jane.smith@test.com"
-	return contact_handlers.UpdateContactParams{
+	return contact.UpdateContactParams{
 		FirstName: &firstName,
 		LastName:  &lastName,
 		Role:      &role,
@@ -94,7 +94,7 @@ func TestListContacts(t *testing.T) {
 			_ = orgID
 		}
 
-		page1, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: prefix, Page: 1})
+		page1, err := s.ListContacts(ctx, contact.ListContactsParams{Search: prefix, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -105,7 +105,7 @@ func TestListContacts(t *testing.T) {
 			t.Fatalf("expected total 18, got %d", page1.Total)
 		}
 
-		page2, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: prefix, Page: 2})
+		page2, err := s.ListContacts(ctx, contact.ListContactsParams{Search: prefix, Page: 2})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -141,7 +141,7 @@ func TestListContacts(t *testing.T) {
 			}
 		}
 
-		resp, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: prefix, Page: 3})
+		resp, err := s.ListContacts(ctx, contact.ListContactsParams{Search: prefix, Page: 3})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -165,7 +165,7 @@ func TestListContacts(t *testing.T) {
 			t.Fatalf("failed to create contact: %v", err)
 		}
 
-		resp, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: unique, Page: 1})
+		resp, err := s.ListContacts(ctx, contact.ListContactsParams{Search: unique, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -197,7 +197,7 @@ func TestListContacts(t *testing.T) {
 			t.Fatalf("failed to create contact: %v", err)
 		}
 
-		resp, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: unique, Page: 1})
+		resp, err := s.ListContacts(ctx, contact.ListContactsParams{Search: unique, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -268,7 +268,7 @@ func TestListContacts(t *testing.T) {
 			t.Fatalf("failed to create contact B: %v", err)
 		}
 
-		resp, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: prefix, OfficeID: officeA, Page: 1})
+		resp, err := s.ListContacts(ctx, contact.ListContactsParams{Search: prefix, OfficeID: officeA, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -314,7 +314,7 @@ func TestListContacts(t *testing.T) {
 			t.Fatalf("failed to create org contact B: %v", err)
 		}
 
-		resp, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Search: prefix, OrgID: orgA, Page: 1})
+		resp, err := s.ListContacts(ctx, contact.ListContactsParams{Search: prefix, OrgID: orgA, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -328,7 +328,7 @@ func TestListContacts(t *testing.T) {
 
 	t.Run("validation rejects page 0", func(t *testing.T) {
 		t.Parallel()
-		p := contact_handlers.ListContactsParams{Page: 0}
+		p := contact.ListContactsParams{Page: 0}
 		api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 	})
 
@@ -337,7 +337,7 @@ func TestListContacts(t *testing.T) {
 		q, s := contactMockService(t)
 		q.EXPECT().ListContacts(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
-		_, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Page: 1})
+		_, err := s.ListContacts(ctx, contact.ListContactsParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -347,7 +347,7 @@ func TestListContacts(t *testing.T) {
 		q.EXPECT().ListContacts(gomock.Any(), gomock.Any()).Return([]db.ListContactsRow{}, nil)
 		q.EXPECT().CountContacts(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
-		_, err := s.ListContacts(ctx, contact_handlers.ListContactsParams{Page: 1})
+		_, err := s.ListContacts(ctx, contact.ListContactsParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }
@@ -513,7 +513,7 @@ func TestUpdateContact(t *testing.T) {
 		}
 
 		newFirst := "UpdatedFirst"
-		resp, err := s.UpdateContact(ctx, created.ID, contact_handlers.UpdateContactParams{FirstName: &newFirst})
+		resp, err := s.UpdateContact(ctx, created.ID, contact.UpdateContactParams{FirstName: &newFirst})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -582,14 +582,14 @@ func TestUpdateContact(t *testing.T) {
 	t.Run("validation rejects blank firstName", func(t *testing.T) {
 		t.Parallel()
 		blank := "   "
-		p := contact_handlers.UpdateContactParams{FirstName: &blank}
+		p := contact.UpdateContactParams{FirstName: &blank}
 		api_errors.AssertApiError(t, invalidValueErr("firstName"), p.Validate())
 	})
 
 	t.Run("validation rejects invalid email", func(t *testing.T) {
 		t.Parallel()
 		bad := "not-an-email"
-		p := contact_handlers.UpdateContactParams{Email: &bad}
+		p := contact.UpdateContactParams{Email: &bad}
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
@@ -699,11 +699,11 @@ func seedContact(t *testing.T, officeID, orgID *int64, isPaymentResponsible bool
 
 // sortBillingContact returns a copy of c with Offices and their Agents sorted by ID,
 // allowing order-independent comparison of the EP's response.
-func sortBillingContact(c contact_handlers.BillingContact) contact_handlers.BillingContact {
-	offices := append([]contact_handlers.Office(nil), c.Offices...)
+func sortBillingContact(c contact.BillingContact) contact.BillingContact {
+	offices := append([]contact.Office(nil), c.Offices...)
 	sort.Slice(offices, func(i, j int) bool { return offices[i].ID < offices[j].ID })
 	for i := range offices {
-		agents := append([]contact_handlers.Agent(nil), offices[i].Agents...)
+		agents := append([]contact.Agent(nil), offices[i].Agents...)
 		sort.Slice(agents, func(a, b int) bool { return agents[a].ID < agents[b].ID })
 		offices[i].Agents = agents
 	}
@@ -723,14 +723,14 @@ func TestGetBillingContacts(t *testing.T) {
 		q.EXPECT().GetAgentsBillingContacts(gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("db error"))
 
-		_, err := ms.GetBillingContacts(ctx, contact_handlers.GetBillingContactsParams{AgentsIDs: []int64{1}})
+		_, err := ms.GetBillingContacts(ctx, contact.GetBillingContactsParams{AgentsIDs: []int64{1}})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
 	t.Run("returns empty when nil ids or agent has no payment-responsible contact", func(t *testing.T) {
 		t.Parallel()
 		// Nil ID slice short-circuits to an empty response.
-		resp, err := s.GetBillingContacts(ctx, contact_handlers.GetBillingContactsParams{AgentsIDs: nil})
+		resp, err := s.GetBillingContacts(ctx, contact.GetBillingContactsParams{AgentsIDs: nil})
 		if err != nil || len(resp.Contacts) != 0 {
 			t.Fatalf("nil ids: err=%v, contacts=%d", err, len(resp.Contacts))
 		}
@@ -741,7 +741,7 @@ func TestGetBillingContacts(t *testing.T) {
 		agent := seedAgent(t, s, randomName()+"@test.com", randomIsraeliPhoneNumber(), office.ID)
 		seedContact(t, &office.ID, nil, false)
 
-		resp, err = s.GetBillingContacts(ctx, contact_handlers.GetBillingContactsParams{AgentsIDs: []int64{agent.ID}})
+		resp, err = s.GetBillingContacts(ctx, contact.GetBillingContactsParams{AgentsIDs: []int64{agent.ID}})
 		if err != nil || len(resp.Contacts) != 0 {
 			t.Fatalf("no payresp: err=%v, contacts=%d", err, len(resp.Contacts))
 		}
@@ -813,7 +813,7 @@ func TestGetBillingContacts(t *testing.T) {
 			agentC.ID,
 			admin.ID, customer.ID,
 		}
-		resp, err := s.GetBillingContacts(ctx, contact_handlers.GetBillingContactsParams{AgentsIDs: ids})
+		resp, err := s.GetBillingContacts(ctx, contact.GetBillingContactsParams{AgentsIDs: ids})
 		if err != nil {
 			t.Fatalf("GetBillingContacts: %v", err)
 		}
@@ -821,36 +821,36 @@ func TestGetBillingContacts(t *testing.T) {
 		// seedAgent constructs every agent with the same first and last name,
 		// so all expected Agent.Name values resolve to this constant.
 		const agentName = "Test Agent"
-		want := map[string]contact_handlers.BillingContact{
+		want := map[string]contact.BillingContact{
 			contactA.Email: {
 				ContactName: contactA.FirstName + " " + contactA.LastName, ContactEmail: contactA.Email,
 				OrganizationID: orgA.ID, OrganizationName: orgA.Name, IsOrganic: true,
-				Offices: []contact_handlers.Office{
-					{ID: officeA1.ID, Name: officeA1.Name, Agents: []contact_handlers.Agent{{ID: agentA1.ID, Name: agentName}}},
-					{ID: officeA2.ID, Name: officeA2.Name, Agents: []contact_handlers.Agent{{ID: agentA2.ID, Name: agentName}}},
+				Offices: []contact.Office{
+					{ID: officeA1.ID, Name: officeA1.Name, Agents: []contact.Agent{{ID: agentA1.ID, Name: agentName}}},
+					{ID: officeA2.ID, Name: officeA2.Name, Agents: []contact.Agent{{ID: agentA2.ID, Name: agentName}}},
 				},
 			},
 			contactB1.Email: {
 				ContactName: contactB1.FirstName + " " + contactB1.LastName, ContactEmail: contactB1.Email,
 				OrganizationID: orgB.ID, OrganizationName: orgB.Name, IsOrganic: false,
-				Offices: []contact_handlers.Office{{ID: officeB1.ID, Name: officeB1.Name, Agents: []contact_handlers.Agent{
+				Offices: []contact.Office{{ID: officeB1.ID, Name: officeB1.Name, Agents: []contact.Agent{
 					{ID: agentB1a.ID, Name: agentName}, {ID: agentB1b.ID, Name: agentName},
 				}}},
 			},
 			contactB2.Email: {
 				ContactName: contactB2.FirstName + " " + contactB2.LastName, ContactEmail: contactB2.Email,
 				OrganizationID: orgB.ID, OrganizationName: orgB.Name, IsOrganic: false,
-				Offices: []contact_handlers.Office{{ID: officeB2.ID, Name: officeB2.Name, Agents: []contact_handlers.Agent{{ID: agentB2.ID, Name: agentName}}}},
+				Offices: []contact.Office{{ID: officeB2.ID, Name: officeB2.Name, Agents: []contact.Agent{{ID: agentB2.ID, Name: agentName}}}},
 			},
 			contactC1.Email: {
 				ContactName: contactC1.FirstName + " " + contactC1.LastName, ContactEmail: contactC1.Email,
 				OrganizationID: orgC.ID, OrganizationName: orgC.Name, IsOrganic: false,
-				Offices: []contact_handlers.Office{{ID: officeC.ID, Name: officeC.Name, Agents: []contact_handlers.Agent{{ID: agentC.ID, Name: agentName}}}},
+				Offices: []contact.Office{{ID: officeC.ID, Name: officeC.Name, Agents: []contact.Agent{{ID: agentC.ID, Name: agentName}}}},
 			},
 			contactC2.Email: {
 				ContactName: contactC2.FirstName + " " + contactC2.LastName, ContactEmail: contactC2.Email,
 				OrganizationID: orgC.ID, OrganizationName: orgC.Name, IsOrganic: false,
-				Offices: []contact_handlers.Office{{ID: officeC.ID, Name: officeC.Name, Agents: []contact_handlers.Agent{{ID: agentC.ID, Name: agentName}}}},
+				Offices: []contact.Office{{ID: officeC.ID, Name: officeC.Name, Agents: []contact.Agent{{ID: agentC.ID, Name: agentName}}}},
 			},
 		}
 
@@ -858,7 +858,7 @@ func TestGetBillingContacts(t *testing.T) {
 			t.Fatalf("got %d contacts, want %d", len(resp.Contacts), len(want))
 		}
 
-		got := make(map[string]contact_handlers.BillingContact, len(resp.Contacts))
+		got := make(map[string]contact.BillingContact, len(resp.Contacts))
 		for _, c := range resp.Contacts {
 			got[c.ContactEmail] = c
 			// Verify that excluded user IDs never appear under any contact.
@@ -886,7 +886,7 @@ func TestGetBillingContacts(t *testing.T) {
 
 // compareBillingContact reports the first field-level difference between want and got,
 // or returns an empty string if the two contacts are equal.
-func compareBillingContact(want, got contact_handlers.BillingContact) string {
+func compareBillingContact(want, got contact.BillingContact) string {
 	if want.ContactName != got.ContactName {
 		return "ContactName: want " + want.ContactName + ", got " + got.ContactName
 	}

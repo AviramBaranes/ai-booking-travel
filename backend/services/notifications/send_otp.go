@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	auth_handler "encore.app/services/accounts/handlers/auth_handler"
+	"encore.app/services/accounts/handlers/auth"
 	"encore.dev/pubsub"
 	"encore.dev/rlog"
 )
@@ -15,14 +15,14 @@ const (
 )
 
 var _ = pubsub.NewSubscription(
-	auth_handler.CustomerLoginOTPRequestedTopic,
+	auth.CustomerLoginOTPRequestedTopic,
 	"send-customer-login-otp-sms",
-	pubsub.SubscriptionConfig[*auth_handler.CustomerLoginOTPRequestedEvent]{
+	pubsub.SubscriptionConfig[*auth.CustomerLoginOTPRequestedEvent]{
 		Handler: pubsub.MethodHandler((*Service).SendCustomerLoginOTPSMS),
 	},
 )
 
-func (s *Service) SendCustomerLoginOTPSMS(ctx context.Context, event *auth_handler.CustomerLoginOTPRequestedEvent) error {
+func (s *Service) SendCustomerLoginOTPSMS(ctx context.Context, event *auth.CustomerLoginOTPRequestedEvent) error {
 	template := otpMessageEn
 	if event.LangCode == "he" {
 		template = otpMessageHe

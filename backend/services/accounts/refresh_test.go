@@ -11,8 +11,8 @@ import (
 	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/jwt"
 	"encore.app/services/accounts/db"
-	auth_handler "encore.app/services/accounts/handlers/auth_handler"
-	user_handlers "encore.app/services/accounts/handlers/user_handlers"
+	ah "encore.app/services/accounts/handlers/auth"
+	user "encore.app/services/accounts/handlers/user"
 	"encore.app/services/accounts/mocks"
 	"encore.dev/beta/auth"
 	"go.uber.org/mock/gomock"
@@ -36,8 +36,8 @@ func TestRefreshTokens(t *testing.T) {
 	t.Run("Invalid refresh token", func(t *testing.T) {
 		cases := []string{"", "invalid.token", "invalid"}
 		for _, tok := range cases {
-			_, err := RefreshTokens(ctx, auth_handler.RefreshTokensParams{RefreshToken: tok})
-			api_errors.AssertApiError(t, auth_handler.ErrInvalidRefreshToken, err)
+			_, err := RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: tok})
+			api_errors.AssertApiError(t, ah.ErrInvalidRefreshToken, err)
 		}
 	})
 
@@ -47,8 +47,8 @@ func TestRefreshTokens(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to sign refresh token: %v", err)
 		}
-		_, err = RefreshTokens(ctx, auth_handler.RefreshTokensParams{RefreshToken: token})
-		api_errors.AssertApiError(t, auth_handler.ErrInvalidRefreshToken, err)
+		_, err = RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
+		api_errors.AssertApiError(t, ah.ErrInvalidRefreshToken, err)
 	})
 
 	t.Run("Query refresh token failed", func(t *testing.T) {
@@ -66,7 +66,7 @@ func TestRefreshTokens(t *testing.T) {
 			Return(db.RefreshToken{}, errors.New("db error"))
 
 		s := &Service{query: q}
-		_, err = s.RefreshTokens(ctx, auth_handler.RefreshTokensParams{RefreshToken: token})
+		_, err = s.RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -96,8 +96,8 @@ func TestRefreshTokens(t *testing.T) {
 
 		defer query.DeleteRefreshToken(ctx, jti)
 
-		_, err = RefreshTokens(ctx, auth_handler.RefreshTokensParams{RefreshToken: token})
-		api_errors.AssertApiError(t, auth_handler.ErrExpiredRefreshToken, err)
+		_, err = RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
+		api_errors.AssertApiError(t, ah.ErrExpiredRefreshToken, err)
 	})
 
 	t.Run("Deleting refresh token failed", func(t *testing.T) {
@@ -107,7 +107,7 @@ func TestRefreshTokens(t *testing.T) {
 		}
 		defer del()
 
-		loginResp, err := Login(ctx, auth_handler.LoginParams{Email: "del_refresh_fail_user@example.com", Password: testPassword})
+		loginResp, err := Login(ctx, ah.LoginParams{Email: "del_refresh_fail_user@example.com", Password: testPassword})
 		if err != nil {
 			t.Fatalf("failed to login: %v", err)
 		}
@@ -129,7 +129,7 @@ func TestRefreshTokens(t *testing.T) {
 			Return(errors.New("db error"))
 
 		s := &Service{query: hq}
-		_, err = s.RefreshTokens(ctx, auth_handler.RefreshTokensParams{RefreshToken: loginResp.RefreshToken})
+		_, err = s.RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: loginResp.RefreshToken})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -139,7 +139,7 @@ func TestRefreshTokens(t *testing.T) {
 			t.Fatalf("failed to register user: %v", err)
 		}
 
-		_, err = Login(ctx, auth_handler.LoginParams{Email: "missing_user_refresh@example.com", Password: testPassword})
+		_, err = Login(ctx, ah.LoginParams{Email: "missing_user_refresh@example.com", Password: testPassword})
 		if err != nil {
 			del()
 			t.Fatalf("failed to login: %v", err)
@@ -174,9 +174,9 @@ func TestRefreshTokens(t *testing.T) {
 			Return(db.User{}, db.ErrNoRows)
 
 		s := &Service{query: q}
-		_, err = s.RefreshTokens(ctx, auth_handler.RefreshTokensParams{RefreshToken: token})
-		// The code returns auth_handler.ErrInvalidRefreshToken if user not found (ErrNoRows)
-		api_errors.AssertApiError(t, auth_handler.ErrInvalidRefreshToken, err)
+		_, err = s.RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
+		// The code returns ah.ErrInvalidRefreshToken if user not found (ErrNoRows)
+		api_errors.AssertApiError(t, ah.ErrInvalidRefreshToken, err)
 	})
 
 	t.Run("Query user failed", func(t *testing.T) {
@@ -204,7 +204,7 @@ func TestRefreshTokens(t *testing.T) {
 			Return(db.User{}, errors.New("db error"))
 
 		s := &Service{query: q}
-		_, err = s.RefreshTokens(ctx, auth_handler.RefreshTokensParams{RefreshToken: token})
+		_, err = s.RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -239,7 +239,7 @@ func TestRefreshTokens(t *testing.T) {
 			Return(errors.New("db error"))
 
 		s := &Service{query: q}
-		_, err = s.RefreshTokens(ctx, auth_handler.RefreshTokensParams{RefreshToken: token})
+		_, err = s.RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -250,7 +250,7 @@ func TestRefreshTokens(t *testing.T) {
 		}
 		defer del()
 
-		loginResp, err := Login(ctx, auth_handler.LoginParams{Email: "refresh_success_user@example.com", Password: testPassword})
+		loginResp, err := Login(ctx, ah.LoginParams{Email: "refresh_success_user@example.com", Password: testPassword})
 		if err != nil {
 			t.Fatalf("failed to login: %v", err)
 		}
@@ -260,7 +260,7 @@ func TestRefreshTokens(t *testing.T) {
 			t.Fatalf("failed to validate login refresh token: %v", err)
 		}
 
-		resp, err := RefreshTokens(ctx, auth_handler.RefreshTokensParams{RefreshToken: loginResp.RefreshToken})
+		resp, err := RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: loginResp.RefreshToken})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -325,7 +325,7 @@ func TestRefreshTokens(t *testing.T) {
 		defer delAdmin()
 
 		agentEmail := generateTestEmail()
-		agent, delAgent, err := createAgent(ctx, user_handlers.CreateAgentParams{
+		agent, delAgent, err := createAgent(ctx, user.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "Agent",
 			Email:       agentEmail,
@@ -342,13 +342,13 @@ func TestRefreshTokens(t *testing.T) {
 			UserID: admin.ID,
 			Role:   UserRoleAdmin,
 		})
-		loginResp, err := LoginAsAgent(adminCtx, auth_handler.LoginAsAgentParams{AgentID: agent.ID})
+		loginResp, err := LoginAsAgent(adminCtx, ah.LoginAsAgentParams{AgentID: agent.ID})
 		if err != nil {
 			t.Fatalf("failed to login as agent: %v", err)
 		}
 
 		// Refresh the tokens
-		refreshResp, err := RefreshTokens(ctx, auth_handler.RefreshTokensParams{RefreshToken: loginResp.RefreshToken})
+		refreshResp, err := RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: loginResp.RefreshToken})
 		if err != nil {
 			t.Fatalf("expected no error on refresh, got %v", err)
 		}

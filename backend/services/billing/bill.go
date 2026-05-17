@@ -8,7 +8,7 @@ import (
 	"encore.app/internal/icount"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
-	contact_handlers "encore.app/services/accounts/handlers/contact_handlers"
+	contact "encore.app/services/accounts/handlers/contact"
 	"encore.app/services/notifications"
 	"encore.app/services/reservation"
 	"encore.dev/beta/errs"
@@ -47,7 +47,7 @@ type BillResponse struct {
 
 // encore:api auth method=POST path=/bill tag:accountant
 func Bill(ctx context.Context, p BillRequestParams) (*BillResponse, error) {
-	icountClientRes, err := accounts.GetIcountClientID(ctx, contact_handlers.GetIcountClientIDParams{
+	icountClientRes, err := accounts.GetIcountClientID(ctx, contact.GetIcountClientIDParams{
 		OfficeID:       p.OfficeID,
 		OrganizationID: p.OrganizationID,
 	})

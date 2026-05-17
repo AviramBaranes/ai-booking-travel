@@ -8,8 +8,8 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
-	"encore.app/services/accounts/handlers/office_handlers"
-	"encore.app/services/accounts/handlers/organization_handlers"
+	oh "encore.app/services/accounts/handlers/office"
+	organization "encore.app/services/accounts/handlers/organization"
 	"encore.app/services/accounts/mocks"
 	"encore.dev/et"
 	"go.uber.org/mock/gomock"
@@ -17,10 +17,10 @@ import (
 
 // --- Helpers ---
 
-func validCreateOfficeParams() office_handlers.CreateOfficeParams {
+func validCreateOfficeParams() oh.CreateOfficeParams {
 	phone := "0521234567"
 	address := "123 Office St"
-	return office_handlers.CreateOfficeParams{
+	return oh.CreateOfficeParams{
 		Name:           "Test Office",
 		OrganizationID: 1, // will be overridden in tests with a real org ID
 		Phone:          &phone,
@@ -28,12 +28,12 @@ func validCreateOfficeParams() office_handlers.CreateOfficeParams {
 	}
 }
 
-func validUpdateOfficeParams() office_handlers.UpdateOfficeParams {
+func validUpdateOfficeParams() oh.UpdateOfficeParams {
 	name := "Updated Office"
 	orgID := int64(1)
 	phone := "0529876543"
 	address := "456 Updated St"
-	return office_handlers.UpdateOfficeParams{
+	return oh.UpdateOfficeParams{
 		Name:           &name,
 		OrganizationID: &orgID,
 		Phone:          &phone,
@@ -48,7 +48,7 @@ func officeMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
 	return q, &Service{query: q}
 }
 
-func createTestOffice(t *testing.T, s *Service, orgID int64, name string) *office_handlers.OfficeResponse {
+func createTestOffice(t *testing.T, s *Service, orgID int64, name string) *oh.OfficeResponse {
 	t.Helper()
 	p := validCreateOfficeParams()
 	p.Name = name
@@ -75,7 +75,7 @@ func TestListOffices(t *testing.T) {
 			createTestOffice(t, s, org.ID, fmt.Sprintf("PagOffice%02d Branch", i))
 		}
 
-		page1, err := s.ListOffices(ctx, office_handlers.ListOfficesParams{
+		page1, err := s.ListOffices(ctx, oh.ListOfficesParams{
 			Search: "PagOffice",
 			Page:   1,
 		})
@@ -89,7 +89,7 @@ func TestListOffices(t *testing.T) {
 			t.Fatalf("expected total 18, got %d", page1.Total)
 		}
 
-		page2, err := s.ListOffices(ctx, office_handlers.ListOfficesParams{
+		page2, err := s.ListOffices(ctx, oh.ListOfficesParams{
 			Search: "PagOffice",
 			Page:   2,
 		})
@@ -122,7 +122,7 @@ func TestListOffices(t *testing.T) {
 			createTestOffice(t, s, org.ID, fmt.Sprintf("EmptyPageOffice%02d", i))
 		}
 
-		resp, err := s.ListOffices(ctx, office_handlers.ListOfficesParams{
+		resp, err := s.ListOffices(ctx, oh.ListOfficesParams{
 			Search: "EmptyPageOffice",
 			Page:   3,
 		})
@@ -142,7 +142,7 @@ func TestListOffices(t *testing.T) {
 		org := createTestOrg(t, s, "SearchOfficeOrg")
 		createTestOffice(t, s, org.ID, "Searchable UniqueOFC123 Branch")
 
-		resp, err := s.ListOffices(ctx, office_handlers.ListOfficesParams{
+		resp, err := s.ListOffices(ctx, oh.ListOfficesParams{
 			Search: "UniqueOFC123",
 			Page:   1,
 		})
@@ -169,7 +169,7 @@ func TestListOffices(t *testing.T) {
 		createTestOffice(t, s, orgA.ID, "OrgFilterOffice A2")
 		createTestOffice(t, s, orgB.ID, "OrgFilterOffice B1")
 
-		resp, err := s.ListOffices(ctx, office_handlers.ListOfficesParams{
+		resp, err := s.ListOffices(ctx, oh.ListOfficesParams{
 			Search: "OrgFilterOffice",
 			OrgID:  orgA.ID,
 			Page:   1,
@@ -185,7 +185,7 @@ func TestListOffices(t *testing.T) {
 		}
 
 		// Org B should only see its own office
-		resp, err = s.ListOffices(ctx, office_handlers.ListOfficesParams{
+		resp, err = s.ListOffices(ctx, oh.ListOfficesParams{
 			Search: "OrgFilterOffice",
 			OrgID:  orgB.ID,
 			Page:   1,
@@ -233,7 +233,7 @@ func TestListOffices(t *testing.T) {
 			t.Fatalf("failed to create agent: %v", err)
 		}
 
-		resp, err := s.ListOffices(ctx, office_handlers.ListOfficesParams{
+		resp, err := s.ListOffices(ctx, oh.ListOfficesParams{
 			Search: "OfficeCountsTarget",
 			Page:   1,
 		})
@@ -254,7 +254,7 @@ func TestListOffices(t *testing.T) {
 
 	t.Run("validation rejects page 0", func(t *testing.T) {
 		t.Parallel()
-		p := office_handlers.ListOfficesParams{Page: 0}
+		p := oh.ListOfficesParams{Page: 0}
 		api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 	})
 
@@ -263,7 +263,7 @@ func TestListOffices(t *testing.T) {
 		q, s := officeMockService(t)
 		q.EXPECT().ListOffices(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
-		_, err := s.ListOffices(ctx, office_handlers.ListOfficesParams{Page: 1})
+		_, err := s.ListOffices(ctx, oh.ListOfficesParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -273,7 +273,7 @@ func TestListOffices(t *testing.T) {
 		q.EXPECT().ListOffices(gomock.Any(), gomock.Any()).Return([]db.ListOfficesRow{}, nil)
 		q.EXPECT().CountOffices(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
-		_, err := s.ListOffices(ctx, office_handlers.ListOfficesParams{Page: 1})
+		_, err := s.ListOffices(ctx, oh.ListOfficesParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }
@@ -314,7 +314,7 @@ func TestCreateOffice(t *testing.T) {
 		t.Parallel()
 		org := createTestOrg(t, s, "CreateOfficeMinOrg")
 
-		resp, err := s.CreateOffice(ctx, office_handlers.CreateOfficeParams{
+		resp, err := s.CreateOffice(ctx, oh.CreateOfficeParams{
 			Name:           "Minimal Office",
 			OrganizationID: org.ID,
 		})
@@ -333,36 +333,36 @@ func TestCreateOffice(t *testing.T) {
 		t.Parallel()
 		org := createTestOrg(t, s, "CreateOfficeOrganicIcountOrg")
 		icountID := int32(55)
-		_, err := s.CreateOffice(ctx, office_handlers.CreateOfficeParams{
+		_, err := s.CreateOffice(ctx, oh.CreateOfficeParams{
 			Name: "Should Fail Office", OrganizationID: org.ID, IcountClientID: &icountID,
 		})
-		api_errors.AssertApiError(t, office_handlers.ErrOfficeOrganicForbidsIcountClientID, err)
+		api_errors.AssertApiError(t, oh.ErrOfficeOrganicForbidsIcountClientID, err)
 	})
 
 	t.Run("validation rejects missing icount_client_id under non-organic org", func(t *testing.T) {
 		t.Parallel()
-		org, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
+		org, err := s.CreateOrganization(ctx, organization.CreateOrganizationParams{
 			Name: "CreateOfficeNonOrganicNoIcount", IsOrganic: false,
 		})
 		if err != nil {
 			t.Fatalf("failed to create org: %v", err)
 		}
-		_, err = s.CreateOffice(ctx, office_handlers.CreateOfficeParams{
+		_, err = s.CreateOffice(ctx, oh.CreateOfficeParams{
 			Name: "Should Fail Office", OrganizationID: org.ID,
 		})
-		api_errors.AssertApiError(t, office_handlers.ErrOfficeNonOrganicRequiresIcountClientID, err)
+		api_errors.AssertApiError(t, oh.ErrOfficeNonOrganicRequiresIcountClientID, err)
 	})
 
 	t.Run("creates office with icount_client_id under non-organic org", func(t *testing.T) {
 		t.Parallel()
-		org, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
+		org, err := s.CreateOrganization(ctx, organization.CreateOrganizationParams{
 			Name: "CreateOfficeNonOrganicWithIcount", IsOrganic: false,
 		})
 		if err != nil {
 			t.Fatalf("failed to create org: %v", err)
 		}
 		icountID := int32(77)
-		resp, err := s.CreateOffice(ctx, office_handlers.CreateOfficeParams{
+		resp, err := s.CreateOffice(ctx, oh.CreateOfficeParams{
 			Name: "NonOrganic Office With Icount", OrganizationID: org.ID, IcountClientID: &icountID,
 		})
 		if err != nil {
@@ -396,7 +396,7 @@ func TestCreateOffice(t *testing.T) {
 		p.Name = "Duplicate Office Name"
 		p.OrganizationID = org.ID
 		_, err := s.CreateOffice(ctx, p)
-		api_errors.AssertApiError(t, office_handlers.ErrNameAlreadyExists, err)
+		api_errors.AssertApiError(t, oh.ErrNameAlreadyExists, err)
 	})
 
 	t.Run("returns error when db fails", func(t *testing.T) {
@@ -421,27 +421,27 @@ func TestUpdateOffice(t *testing.T) {
 		org := createTestOrg(t, s, "UpdateOfficeOrganicIcountOrg")
 		office := createTestOffice(t, s, org.ID, "UpdateOfficeOrganicIcountTarget")
 		icountID := int32(55)
-		_, err := s.UpdateOffice(ctx, office.ID, office_handlers.UpdateOfficeParams{IcountClientID: &icountID})
-		api_errors.AssertApiError(t, office_handlers.ErrOfficeOrganicForbidsIcountClientID, err)
+		_, err := s.UpdateOffice(ctx, office.ID, oh.UpdateOfficeParams{IcountClientID: &icountID})
+		api_errors.AssertApiError(t, oh.ErrOfficeOrganicForbidsIcountClientID, err)
 	})
 
 	t.Run("updates icount_client_id under non-organic org", func(t *testing.T) {
 		t.Parallel()
-		org, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
+		org, err := s.CreateOrganization(ctx, organization.CreateOrganizationParams{
 			Name: "UpdateOfficeNonOrganicIcountOrg", IsOrganic: false,
 		})
 		if err != nil {
 			t.Fatalf("failed to create org: %v", err)
 		}
 		icountID := int32(42)
-		office, err := s.CreateOffice(ctx, office_handlers.CreateOfficeParams{
+		office, err := s.CreateOffice(ctx, oh.CreateOfficeParams{
 			Name: "UpdateOfficeNonOrganicTarget", OrganizationID: org.ID, IcountClientID: &icountID,
 		})
 		if err != nil {
 			t.Fatalf("failed to create office: %v", err)
 		}
 		newIcount := int32(99)
-		resp, err := s.UpdateOffice(ctx, office.ID, office_handlers.UpdateOfficeParams{IcountClientID: &newIcount})
+		resp, err := s.UpdateOffice(ctx, office.ID, oh.UpdateOfficeParams{IcountClientID: &newIcount})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -452,14 +452,14 @@ func TestUpdateOffice(t *testing.T) {
 
 	t.Run("validation rejects icount when moving office to organic org", func(t *testing.T) {
 		t.Parallel()
-		nonOrg, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{
+		nonOrg, err := s.CreateOrganization(ctx, organization.CreateOrganizationParams{
 			Name: "UpdateOfficeMoveToOrganicSrc", IsOrganic: false,
 		})
 		if err != nil {
 			t.Fatalf("failed to create non-organic org: %v", err)
 		}
 		icountID := int32(42)
-		office, err := s.CreateOffice(ctx, office_handlers.CreateOfficeParams{
+		office, err := s.CreateOffice(ctx, oh.CreateOfficeParams{
 			Name: "UpdateOfficeMoveToOrganicTarget", OrganizationID: nonOrg.ID, IcountClientID: &icountID,
 		})
 		if err != nil {
@@ -467,10 +467,10 @@ func TestUpdateOffice(t *testing.T) {
 		}
 		orgOrg := createTestOrg(t, s, "UpdateOfficeMoveToOrganicDst")
 		newIcount := int32(55)
-		_, err = s.UpdateOffice(ctx, office.ID, office_handlers.UpdateOfficeParams{
+		_, err = s.UpdateOffice(ctx, office.ID, oh.UpdateOfficeParams{
 			OrganizationID: &orgOrg.ID, IcountClientID: &newIcount,
 		})
-		api_errors.AssertApiError(t, office_handlers.ErrOfficeOrganicForbidsIcountClientID, err)
+		api_errors.AssertApiError(t, oh.ErrOfficeOrganicForbidsIcountClientID, err)
 	})
 
 	t.Run("updates all fields", func(t *testing.T) {
@@ -501,7 +501,7 @@ func TestUpdateOffice(t *testing.T) {
 		created := createTestOffice(t, s, org.ID, "Partial Update Office")
 
 		newName := "Partial Updated Name"
-		resp, err := s.UpdateOffice(ctx, created.ID, office_handlers.UpdateOfficeParams{Name: &newName})
+		resp, err := s.UpdateOffice(ctx, created.ID, oh.UpdateOfficeParams{Name: &newName})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -529,8 +529,8 @@ func TestUpdateOffice(t *testing.T) {
 		officeB := createTestOffice(t, s, org.ID, "Dup Update Office B")
 
 		dupName := "Dup Update Office A"
-		_, err := s.UpdateOffice(ctx, officeB.ID, office_handlers.UpdateOfficeParams{Name: &dupName})
-		api_errors.AssertApiError(t, office_handlers.ErrNameAlreadyExists, err)
+		_, err := s.UpdateOffice(ctx, officeB.ID, oh.UpdateOfficeParams{Name: &dupName})
+		api_errors.AssertApiError(t, oh.ErrNameAlreadyExists, err)
 	})
 
 	t.Run("validation rejects blank name", func(t *testing.T) {
@@ -561,7 +561,7 @@ func TestListInorganicOffices(t *testing.T) {
 		s := newService(newDb)
 
 		org1 := createTestOrg(t, s, randomName())
-		org2, err := s.CreateOrganization(ctx, organization_handlers.CreateOrganizationParams{Name: randomName(), IsOrganic: false})
+		org2, err := s.CreateOrganization(ctx, organization.CreateOrganizationParams{Name: randomName(), IsOrganic: false})
 		if err != nil {
 			t.Fatalf("create inorganic org: %v", err)
 		}
@@ -570,13 +570,13 @@ func TestListInorganicOffices(t *testing.T) {
 		createTestOffice(t, s, org1.ID, randomName())
 
 		icountID1, icountID2 := int32(42), int32(43)
-		inorganicOffice1, err := s.CreateOffice(ctx, office_handlers.CreateOfficeParams{
+		inorganicOffice1, err := s.CreateOffice(ctx, oh.CreateOfficeParams{
 			Name: randomName(), OrganizationID: org2.ID, IcountClientID: &icountID1,
 		})
 		if err != nil {
 			t.Fatalf("create inorganic office 1: %v", err)
 		}
-		inorganicOffice2, err := s.CreateOffice(ctx, office_handlers.CreateOfficeParams{
+		inorganicOffice2, err := s.CreateOffice(ctx, oh.CreateOfficeParams{
 			Name: randomName(), OrganizationID: org2.ID, IcountClientID: &icountID2,
 		})
 		if err != nil {
@@ -593,7 +593,7 @@ func TestListInorganicOffices(t *testing.T) {
 			t.Fatalf("expected 2 inorganic offices, got %d", len(resp.Offices))
 		}
 
-		expectedResults := []office_handlers.InorganicOffice{
+		expectedResults := []oh.InorganicOffice{
 			{ID: inorganicOffice1.ID, Name: inorganicOffice1.Name},
 			{ID: inorganicOffice2.ID, Name: inorganicOffice2.Name},
 		}

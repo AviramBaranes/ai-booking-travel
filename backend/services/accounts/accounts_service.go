@@ -2,7 +2,7 @@ package accounts
 
 import (
 	"encore.app/services/accounts/db"
-	user_handlers "encore.app/services/accounts/handlers/user_handlers"
+	user "encore.app/services/accounts/handlers/user"
 	"encore.dev/storage/sqldb"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -27,8 +27,8 @@ func initService() (*Service, error) {
 	}, nil
 }
 
-type GetUserEmailParams = user_handlers.GetUserEmailParams
-type GetAgentsByOfficeIDRequest = user_handlers.GetAgentsByOfficeIDParams
-type GetAgentsByOrganizationIDRequest = user_handlers.GetAgentsByOrganizationIDParams
-type ListAdminsEmailsResponse = user_handlers.ListAdminsEmailsResponse
-type GetAgentsResponse = user_handlers.GetAgentsResponse
+type GetUserEmailParams = user.GetUserEmailParams
+type GetAgentsByOfficeIDRequest = user.GetAgentsByOfficeIDParams
+type GetAgentsByOrganizationIDRequest = user.GetAgentsByOrganizationIDParams
+type ListAdminsEmailsResponse = user.ListAdminsEmailsResponse
+type GetAgentsResponse = user.GetAgentsResponse
