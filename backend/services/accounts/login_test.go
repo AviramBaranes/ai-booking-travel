@@ -12,6 +12,7 @@ import (
 	"encore.app/internal/lang"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
+	user_handlers "encore.app/services/accounts/handlers/user_handlers"
 	"encore.app/services/accounts/mocks"
 	"encore.dev/beta/auth"
 	"encore.dev/beta/errs"
@@ -104,7 +105,7 @@ func TestLogin(t *testing.T) {
 	})
 
 	t.Run("Incorrect password", func(t *testing.T) {
-		user, err := CreateAdmin(ctx, CreateAdminRequest{
+		user, err := CreateAdmin(ctx, user_handlers.CreateAdminParams{
 			FirstName: "Test",
 			LastName:  "Admin",
 			Email:     testEmail,
@@ -120,7 +121,7 @@ func TestLogin(t *testing.T) {
 	})
 
 	t.Run("Store refresh token fails", func(t *testing.T) {
-		user, err := CreateAdmin(ctx, CreateAdminRequest{
+		user, err := CreateAdmin(ctx, user_handlers.CreateAdminParams{
 			FirstName: "Test",
 			LastName:  "Admin",
 			Email:     testEmail,
@@ -162,7 +163,7 @@ func TestLogin(t *testing.T) {
 		defer delAdmin()
 
 		agentEmail := "agent_" + testEmail
-		_, delAgent, err := createAgent(ctx, CreateAgentRequest{
+		_, delAgent, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "Agent",
 			Email:       agentEmail,
@@ -292,7 +293,7 @@ func TestLoginAsAgent(t *testing.T) {
 		defer delAdmin()
 
 		agentEmail := generateTestEmail()
-		agent, delAgent, err := createAgent(ctx, CreateAgentRequest{
+		agent, delAgent, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "Agent",
 			Email:       agentEmail,
@@ -412,7 +413,7 @@ func TestLoginBackToAdmin(t *testing.T) {
 		defer delAdmin()
 
 		agentEmail := generateTestEmail()
-		agent, delAgent, err := createAgent(ctx, CreateAgentRequest{
+		agent, delAgent, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "Agent",
 			Email:       agentEmail,
@@ -475,7 +476,7 @@ func TestSendCustomerLoginOTP(t *testing.T) {
 	t.Run("User found but role is not customer", func(t *testing.T) {
 		agentPhone := randomIsraeliPhoneNumber()
 		agentEmail := generateTestEmail()
-		_, delAgent, err := createAgent(ctx, CreateAgentRequest{
+		_, delAgent, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "Agent",
 			Email:       agentEmail,

@@ -9,6 +9,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
+	user_handlers "encore.app/services/accounts/handlers/user_handlers"
 	"encore.app/services/accounts/mocks"
 	"go.uber.org/mock/gomock"
 )
@@ -35,7 +36,7 @@ func TestUpdateUser(t *testing.T) {
 
 	t.Run("updates email successfully", func(t *testing.T) {
 		t.Parallel()
-		agent, cleanup, err := createAgent(ctx, CreateAgentRequest{
+		agent, cleanup, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "Agent",
 			Email:       generateTestEmail(),
@@ -48,7 +49,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Cleanup(cleanup)
 
 		newEmail := fmt.Sprintf("updated_%d@test.com", time.Now().UnixNano())
-		resp, err := s.UpdateUser(ctx, agent.ID, UpdateUserRequest{
+		resp, err := s.UpdateUser(ctx, agent.ID, user_handlers.UpdateUserParams{
 			Email: ptrStr(newEmail),
 		})
 		if err != nil {
@@ -63,7 +64,7 @@ func TestUpdateUser(t *testing.T) {
 
 	t.Run("updates phone successfully", func(t *testing.T) {
 		t.Parallel()
-		agent, cleanup, err := createAgent(ctx, CreateAgentRequest{
+		agent, cleanup, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "Agent",
 			Email:       generateTestEmail(),
@@ -76,7 +77,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Cleanup(cleanup)
 
 		newPhone := randomIsraeliPhoneNumber()
-		resp, err := s.UpdateUser(ctx, agent.ID, UpdateUserRequest{
+		resp, err := s.UpdateUser(ctx, agent.ID, user_handlers.UpdateUserParams{
 			PhoneNumber: ptrStr(newPhone),
 		})
 		if err != nil {
@@ -94,7 +95,7 @@ func TestUpdateUser(t *testing.T) {
 		_, officeA := seedOrgAndOffice(t)
 		_, officeB := seedOrgAndOffice(t)
 
-		agent, cleanup, err := createAgent(ctx, CreateAgentRequest{
+		agent, cleanup, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "Agent",
 			Email:       generateTestEmail(),
@@ -107,7 +108,7 @@ func TestUpdateUser(t *testing.T) {
 		}
 		t.Cleanup(cleanup)
 
-		resp, err := s.UpdateUser(ctx, agent.ID, UpdateUserRequest{
+		resp, err := s.UpdateUser(ctx, agent.ID, user_handlers.UpdateUserParams{
 			OfficeID: &officeB,
 		})
 		if err != nil {
@@ -130,7 +131,7 @@ func TestUpdateUser(t *testing.T) {
 
 		officeID := int64(999999)
 		// Use a non-existent office ID – FK constraint should reject this.
-		_, err = s.UpdateUser(ctx, admin.ID, UpdateUserRequest{
+		_, err = s.UpdateUser(ctx, admin.ID, user_handlers.UpdateUserParams{
 			OfficeID: &officeID,
 		})
 		if err == nil {
@@ -150,7 +151,7 @@ func TestUpdateUser(t *testing.T) {
 
 		_, validOffice := seedOrgAndOffice(t)
 
-		_, err = s.UpdateUser(ctx, admin.ID, UpdateUserRequest{
+		_, err = s.UpdateUser(ctx, admin.ID, user_handlers.UpdateUserParams{
 			OfficeID: &validOffice,
 		})
 		if err == nil {
@@ -163,7 +164,7 @@ func TestUpdateUser(t *testing.T) {
 	t.Run("returns error on duplicate email", func(t *testing.T) {
 		t.Parallel()
 		emailA := generateTestEmail()
-		agentA, cleanupA, err := createAgent(ctx, CreateAgentRequest{
+		agentA, cleanupA, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "AgentA",
 			Email:       emailA,
@@ -176,7 +177,7 @@ func TestUpdateUser(t *testing.T) {
 		_ = agentA
 		t.Cleanup(cleanupA)
 
-		agentB, cleanupB, err := createAgent(ctx, CreateAgentRequest{
+		agentB, cleanupB, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "AgentB",
 			Email:       generateTestEmail(),
@@ -189,7 +190,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Cleanup(cleanupB)
 
 		// Try to set agentB's email to agentA's email
-		_, err = s.UpdateUser(ctx, agentB.ID, UpdateUserRequest{
+		_, err = s.UpdateUser(ctx, agentB.ID, user_handlers.UpdateUserParams{
 			Email: ptrStr(emailA),
 		})
 		api_errors.AssertApiError(t, ErrEmailAlreadyExists, err)
@@ -200,7 +201,7 @@ func TestUpdateUser(t *testing.T) {
 	t.Run("allows setting same email on same user", func(t *testing.T) {
 		t.Parallel()
 		email := generateTestEmail()
-		agent, cleanup, err := createAgent(ctx, CreateAgentRequest{
+		agent, cleanup, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "Agent",
 			Email:       email,
@@ -212,7 +213,7 @@ func TestUpdateUser(t *testing.T) {
 		}
 		t.Cleanup(cleanup)
 
-		resp, err := s.UpdateUser(ctx, agent.ID, UpdateUserRequest{
+		resp, err := s.UpdateUser(ctx, agent.ID, user_handlers.UpdateUserParams{
 			Email: ptrStr(email),
 		})
 		if err != nil {
@@ -228,7 +229,7 @@ func TestUpdateUser(t *testing.T) {
 	t.Run("returns error on duplicate phone", func(t *testing.T) {
 		t.Parallel()
 		phone := randomIsraeliPhoneNumber()
-		_, cleanupA, err := createAgent(ctx, CreateAgentRequest{
+		_, cleanupA, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "AgentA",
 			Email:       generateTestEmail(),
@@ -240,7 +241,7 @@ func TestUpdateUser(t *testing.T) {
 		}
 		t.Cleanup(cleanupA)
 
-		agentB, cleanupB, err := createAgent(ctx, CreateAgentRequest{
+		agentB, cleanupB, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "AgentB",
 			Email:       generateTestEmail(),
@@ -252,7 +253,7 @@ func TestUpdateUser(t *testing.T) {
 		}
 		t.Cleanup(cleanupB)
 
-		_, err = s.UpdateUser(ctx, agentB.ID, UpdateUserRequest{
+		_, err = s.UpdateUser(ctx, agentB.ID, user_handlers.UpdateUserParams{
 			PhoneNumber: ptrStr(phone),
 		})
 		api_errors.AssertApiError(t, ErrPhoneAlreadyExists, err)
@@ -263,7 +264,7 @@ func TestUpdateUser(t *testing.T) {
 	t.Run("allows setting same phone on same user", func(t *testing.T) {
 		t.Parallel()
 		phone := randomIsraeliPhoneNumber()
-		agent, cleanup, err := createAgent(ctx, CreateAgentRequest{
+		agent, cleanup, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "Agent",
 			Email:       generateTestEmail(),
@@ -275,7 +276,7 @@ func TestUpdateUser(t *testing.T) {
 		}
 		t.Cleanup(cleanup)
 
-		resp, err := s.UpdateUser(ctx, agent.ID, UpdateUserRequest{
+		resp, err := s.UpdateUser(ctx, agent.ID, user_handlers.UpdateUserParams{
 			PhoneNumber: ptrStr(phone),
 		})
 		if err != nil {
@@ -290,7 +291,7 @@ func TestUpdateUser(t *testing.T) {
 
 	t.Run("returns not found for nonexistent user", func(t *testing.T) {
 		t.Parallel()
-		_, err := s.UpdateUser(ctx, 999999, UpdateUserRequest{
+		_, err := s.UpdateUser(ctx, 999999, user_handlers.UpdateUserParams{
 			Email: ptrStr("nobody@test.com"),
 		})
 		api_errors.AssertApiError(t, ErrUserNotFound, err)
@@ -300,20 +301,20 @@ func TestUpdateUser(t *testing.T) {
 
 	t.Run("validation rejects invalid email", func(t *testing.T) {
 		t.Parallel()
-		err := UpdateUserRequest{Email: ptrStr("not-an-email")}.Validate()
+		err := user_handlers.UpdateUserParams{Email: ptrStr("not-an-email")}.Validate()
 		api_errors.AssertApiError(t, invalidValueErr("email"), err)
 	})
 
 	t.Run("validation rejects officeId 0", func(t *testing.T) {
 		t.Parallel()
 		officeID := int64(0)
-		err := UpdateUserRequest{OfficeID: &officeID}.Validate()
+		err := user_handlers.UpdateUserParams{OfficeID: &officeID}.Validate()
 		api_errors.AssertApiError(t, invalidValueErr("officeId"), err)
 	})
 
 	t.Run("validation rejects weak password", func(t *testing.T) {
 		t.Parallel()
-		err := UpdateUserRequest{Password: ptrStr("weak")}.Validate()
+		err := user_handlers.UpdateUserParams{Password: ptrStr("weak")}.Validate()
 		if err == nil {
 			t.Fatal("expected validation error for weak password, got nil")
 		}
@@ -327,7 +328,7 @@ func TestUpdateUser(t *testing.T) {
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).
 			Return(int64(0), errors.New("db error"))
 
-		_, err := ms.UpdateUser(ctx, 1, UpdateUserRequest{
+		_, err := ms.UpdateUser(ctx, 1, user_handlers.UpdateUserParams{
 			Email: ptrStr("fail@test.com"),
 		})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
@@ -341,7 +342,7 @@ func TestUpdateUser(t *testing.T) {
 		q.EXPECT().GetUserByPhone(gomock.Any(), gomock.Any()).
 			Return(db.User{}, errors.New("db error"))
 
-		_, err := ms.UpdateUser(ctx, 1, UpdateUserRequest{
+		_, err := ms.UpdateUser(ctx, 1, user_handlers.UpdateUserParams{
 			PhoneNumber: ptrStr("0501234567"),
 		})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
@@ -355,7 +356,7 @@ func TestUpdateUser(t *testing.T) {
 		q.EXPECT().UpdateUser(gomock.Any(), gomock.Any()).
 			Return(db.UpdateUserRow{}, errors.New("db error"))
 
-		_, err := ms.UpdateUser(ctx, 1, UpdateUserRequest{})
+		_, err := ms.UpdateUser(ctx, 1, user_handlers.UpdateUserParams{})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }

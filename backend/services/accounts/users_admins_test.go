@@ -7,6 +7,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
+	user_handlers "encore.app/services/accounts/handlers/user_handlers"
 	"encore.app/services/accounts/mocks"
 	"go.uber.org/mock/gomock"
 )
@@ -103,9 +104,9 @@ func adminMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
 	return q, &Service{query: q}
 }
 
-func createTestAdmin(t *testing.T, s *Service, email string) *CreateAdminResponse {
+func createTestAdmin(t *testing.T, s *Service, email string) *user_handlers.CreateAdminResponse {
 	t.Helper()
-	resp, err := s.CreateAdmin(context.Background(), CreateAdminRequest{
+	resp, err := s.CreateAdmin(context.Background(), user_handlers.CreateAdminParams{
 		FirstName: "Test",
 		LastName:  "Admin",
 		Email:     email,
@@ -163,7 +164,7 @@ func TestCreateAdmin(t *testing.T) {
 
 	t.Run("creates admin successfully", func(t *testing.T) {
 		t.Parallel()
-		resp, err := s.CreateAdmin(ctx, CreateAdminRequest{
+		resp, err := s.CreateAdmin(ctx, user_handlers.CreateAdminParams{
 			FirstName: "Create",
 			LastName:  "Ok",
 			Email:     "create_admin_ok@test.com",
@@ -184,7 +185,7 @@ func TestCreateAdmin(t *testing.T) {
 		admin := createTestAdmin(t, s, "dup_admin@test.com")
 		defer query.DeleteUser(ctx, admin.ID)
 
-		_, err := s.CreateAdmin(ctx, CreateAdminRequest{
+		_, err := s.CreateAdmin(ctx, user_handlers.CreateAdminParams{
 			FirstName: "Dup",
 			LastName:  "Admin",
 			Email:     "dup_admin@test.com",
@@ -195,37 +196,37 @@ func TestCreateAdmin(t *testing.T) {
 
 	t.Run("validation rejects empty firstName", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAdminRequest{FirstName: "", LastName: "Admin", Email: "admin@test.com", Password: "ValidPass123!"}
+		p := user_handlers.CreateAdminParams{FirstName: "", LastName: "Admin", Email: "admin@test.com", Password: "ValidPass123!"}
 		api_errors.AssertApiError(t, invalidValueErr("firstName"), p.Validate())
 	})
 
 	t.Run("validation rejects empty lastName", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAdminRequest{FirstName: "Test", LastName: "", Email: "admin@test.com", Password: "ValidPass123!"}
+		p := user_handlers.CreateAdminParams{FirstName: "Test", LastName: "", Email: "admin@test.com", Password: "ValidPass123!"}
 		api_errors.AssertApiError(t, invalidValueErr("lastName"), p.Validate())
 	})
 
 	t.Run("validation rejects invalid email", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAdminRequest{FirstName: "Test", LastName: "Admin", Email: "not-an-email", Password: "ValidPass123!"}
+		p := user_handlers.CreateAdminParams{FirstName: "Test", LastName: "Admin", Email: "not-an-email", Password: "ValidPass123!"}
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
 	t.Run("validation rejects empty email", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAdminRequest{FirstName: "Test", LastName: "Admin", Email: "", Password: "ValidPass123!"}
+		p := user_handlers.CreateAdminParams{FirstName: "Test", LastName: "Admin", Email: "", Password: "ValidPass123!"}
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
 	t.Run("validation rejects weak password", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAdminRequest{FirstName: "Test", LastName: "Admin", Email: "weak_pw@test.com", Password: "short"}
+		p := user_handlers.CreateAdminParams{FirstName: "Test", LastName: "Admin", Email: "weak_pw@test.com", Password: "short"}
 		api_errors.AssertApiError(t, ErrPasswordTooShort, p.Validate())
 	})
 
 	t.Run("validation rejects password without uppercase", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAdminRequest{FirstName: "Test", LastName: "Admin", Email: "no_upper@test.com", Password: "validpass123!"}
+		p := user_handlers.CreateAdminParams{FirstName: "Test", LastName: "Admin", Email: "no_upper@test.com", Password: "validpass123!"}
 		api_errors.AssertApiError(t, ErrPasswordNoUpper, p.Validate())
 	})
 
@@ -234,7 +235,7 @@ func TestCreateAdmin(t *testing.T) {
 		q, s := adminMockService(t)
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
-		_, err := s.CreateAdmin(ctx, CreateAdminRequest{
+		_, err := s.CreateAdmin(ctx, user_handlers.CreateAdminParams{
 			FirstName: "DB",
 			LastName:  "Fail",
 			Email:     "db_fail@test.com",
@@ -249,7 +250,7 @@ func TestCreateAdmin(t *testing.T) {
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), db.ErrNoRows)
 		q.EXPECT().CreateStaffUser(gomock.Any(), gomock.Any()).Return(db.CreateStaffUserRow{}, errors.New("db error"))
 
-		_, err := s.CreateAdmin(ctx, CreateAdminRequest{
+		_, err := s.CreateAdmin(ctx, user_handlers.CreateAdminParams{
 			FirstName: "DB",
 			LastName:  "CreateFail",
 			Email:     "db_create_fail@test.com",

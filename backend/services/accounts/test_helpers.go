@@ -12,6 +12,7 @@ import (
 	"encore.app/internal/jwt"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
+	user_handlers "encore.app/services/accounts/handlers/user_handlers"
 	"encore.dev/beta/errs"
 	"encore.dev/storage/sqldb"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -90,8 +91,8 @@ func assertAccessClaims(t *testing.T, claims *jwt.AccessTokenClaims, user *db.Us
 	}
 }
 
-func registerAdmin(ctx context.Context, email, password string) (*CreateAdminResponse, func(), error) {
-	admin, err := CreateAdmin(ctx, CreateAdminRequest{
+func registerAdmin(ctx context.Context, email, password string) (*user_handlers.CreateAdminResponse, func(), error) {
+	admin, err := CreateAdmin(ctx, user_handlers.CreateAdminParams{
 		FirstName: "Test",
 		LastName:  "Admin",
 		Email:     email,
@@ -117,7 +118,7 @@ func randomIsraeliPhoneNumber() string {
 	return fmt.Sprintf("05%08d", time.Now().UnixNano()%100000000)
 }
 
-func createAgent(ctx context.Context, p CreateAgentRequest) (*CreateAgentResponse, func(), error) {
+func createAgent(ctx context.Context, p user_handlers.CreateAgentParams) (*user_handlers.CreateAgentResponse, func(), error) {
 	org, err := query.CreateOrganization(ctx, db.CreateOrganizationParams{
 		Name:      randomName(),
 		IsOrganic: false,

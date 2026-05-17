@@ -11,6 +11,7 @@ import (
 	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/jwt"
 	"encore.app/services/accounts/db"
+	user_handlers "encore.app/services/accounts/handlers/user_handlers"
 	"encore.app/services/accounts/mocks"
 	"encore.dev/beta/auth"
 	"go.uber.org/mock/gomock"
@@ -323,7 +324,7 @@ func TestRefreshTokens(t *testing.T) {
 		defer delAdmin()
 
 		agentEmail := generateTestEmail()
-		agent, delAgent, err := createAgent(ctx, CreateAgentRequest{
+		agent, delAgent, err := createAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Test",
 			LastName:    "Agent",
 			Email:       agentEmail,

@@ -7,6 +7,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
+	user_handlers "encore.app/services/accounts/handlers/user_handlers"
 	"encore.app/services/accounts/mocks"
 	"go.uber.org/mock/gomock"
 )
@@ -20,9 +21,9 @@ func accountantMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
 	return q, &Service{query: q}
 }
 
-func createTestAccountant(t *testing.T, s *Service, email string) *CreateAccountantResponse {
+func createTestAccountant(t *testing.T, s *Service, email string) *user_handlers.CreateAccountantResponse {
 	t.Helper()
-	resp, err := s.CreateAccountant(context.Background(), CreateAccountantRequest{
+	resp, err := s.CreateAccountant(context.Background(), user_handlers.CreateAccountantParams{
 		FirstName: "Test",
 		LastName:  "Accountant",
 		Email:     email,
@@ -80,7 +81,7 @@ func TestCreateAccountant(t *testing.T) {
 
 	t.Run("creates accountant successfully", func(t *testing.T) {
 		t.Parallel()
-		resp, err := s.CreateAccountant(ctx, CreateAccountantRequest{
+		resp, err := s.CreateAccountant(ctx, user_handlers.CreateAccountantParams{
 			FirstName: "Create",
 			LastName:  "Ok",
 			Email:     "create_accountant_ok@test.com",
@@ -101,7 +102,7 @@ func TestCreateAccountant(t *testing.T) {
 		acc := createTestAccountant(t, s, "dup_accountant@test.com")
 		defer query.DeleteUser(ctx, acc.ID)
 
-		_, err := s.CreateAccountant(ctx, CreateAccountantRequest{
+		_, err := s.CreateAccountant(ctx, user_handlers.CreateAccountantParams{
 			FirstName: "Dup",
 			LastName:  "Accountant",
 			Email:     "dup_accountant@test.com",
@@ -112,31 +113,31 @@ func TestCreateAccountant(t *testing.T) {
 
 	t.Run("validation rejects empty firstName", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAccountantRequest{FirstName: "", LastName: "Accountant", Email: "acc@test.com", Password: "ValidPass123!"}
+		p := user_handlers.CreateAccountantParams{FirstName: "", LastName: "Accountant", Email: "acc@test.com", Password: "ValidPass123!"}
 		api_errors.AssertApiError(t, invalidValueErr("firstName"), p.Validate())
 	})
 
 	t.Run("validation rejects empty lastName", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAccountantRequest{FirstName: "Test", LastName: "", Email: "acc@test.com", Password: "ValidPass123!"}
+		p := user_handlers.CreateAccountantParams{FirstName: "Test", LastName: "", Email: "acc@test.com", Password: "ValidPass123!"}
 		api_errors.AssertApiError(t, invalidValueErr("lastName"), p.Validate())
 	})
 
 	t.Run("validation rejects invalid email", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAccountantRequest{FirstName: "Test", LastName: "Accountant", Email: "not-an-email", Password: "ValidPass123!"}
+		p := user_handlers.CreateAccountantParams{FirstName: "Test", LastName: "Accountant", Email: "not-an-email", Password: "ValidPass123!"}
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
 	t.Run("validation rejects weak password", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAccountantRequest{FirstName: "Test", LastName: "Accountant", Email: "acc@test.com", Password: "short"}
+		p := user_handlers.CreateAccountantParams{FirstName: "Test", LastName: "Accountant", Email: "acc@test.com", Password: "short"}
 		api_errors.AssertApiError(t, ErrPasswordTooShort, p.Validate())
 	})
 
 	t.Run("validation rejects password without uppercase", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAccountantRequest{FirstName: "Test", LastName: "Accountant", Email: "acc@test.com", Password: "validpass123!"}
+		p := user_handlers.CreateAccountantParams{FirstName: "Test", LastName: "Accountant", Email: "acc@test.com", Password: "validpass123!"}
 		api_errors.AssertApiError(t, ErrPasswordNoUpper, p.Validate())
 	})
 
@@ -145,7 +146,7 @@ func TestCreateAccountant(t *testing.T) {
 		q, s := accountantMockService(t)
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
-		_, err := s.CreateAccountant(ctx, CreateAccountantRequest{
+		_, err := s.CreateAccountant(ctx, user_handlers.CreateAccountantParams{
 			FirstName: "DB",
 			LastName:  "Fail",
 			Email:     "db_fail_acc@test.com",
@@ -160,7 +161,7 @@ func TestCreateAccountant(t *testing.T) {
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), db.ErrNoRows)
 		q.EXPECT().CreateStaffUser(gomock.Any(), gomock.Any()).Return(db.CreateStaffUserRow{}, errors.New("db error"))
 
-		_, err := s.CreateAccountant(ctx, CreateAccountantRequest{
+		_, err := s.CreateAccountant(ctx, user_handlers.CreateAccountantParams{
 			FirstName: "DB",
 			LastName:  "CreateFail",
 			Email:     "db_create_fail_acc@test.com",

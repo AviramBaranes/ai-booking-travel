@@ -1,4 +1,4 @@
-package accounts
+package user_handlers
 
 import (
 	"context"
@@ -13,15 +13,15 @@ import (
 	"encore.dev/rlog"
 )
 
-// CreateStaffRequest is the shared request type for creating admin and accountant users.
-type CreateStaffRequest struct {
+// CreateStaffParams is the shared params type for creating admin and accountant users.
+type CreateStaffParams struct {
 	FirstName string `json:"firstName" validate:"required"`
 	LastName  string `json:"lastName" validate:"required"`
 	Email     string `json:"email" validate:"required,email"`
 	Password  string `json:"password" validate:"required,min=8" encore:"sensitive"`
 }
 
-func (p CreateStaffRequest) Validate() error {
+func (p CreateStaffParams) Validate() error {
 	if err := validatePasswordForAPI(p.Password); err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ type StaffResponse struct {
 
 // checkEmailAvailable returns ErrEmailAlreadyExists if the email is taken,
 // or ErrInternalError on a database failure.
-func (s *Service) checkEmailAvailable(ctx context.Context, email string) error {
+func (s *UserService) checkEmailAvailable(ctx context.Context, email string) error {
 	userID, err := s.query.CheckUserExists(ctx, email)
 	if err != nil && !errors.Is(err, db.ErrNoRows) {
 		rlog.Error("failed to check if user exists", "email", email, "error", err)
@@ -83,7 +83,7 @@ func toStaffResponse(r db.ListStaffByRoleRow) StaffResponse {
 }
 
 // createStaffUser checks email availability, hashes the password, and inserts the user.
-func (s *Service) createStaffUser(ctx context.Context, role db.UserRole, params CreateStaffRequest) (*CreateStaffResponse, error) {
+func (s *UserService) createStaffUser(ctx context.Context, role db.UserRole, params CreateStaffParams) (*CreateStaffResponse, error) {
 	if err := s.checkEmailAvailable(ctx, params.Email); err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (s *Service) createStaffUser(ctx context.Context, role db.UserRole, params 
 }
 
 // listStaffByRole fetches all users with the given role.
-func (s *Service) listStaffByRole(ctx context.Context, role db.UserRole) ([]StaffResponse, error) {
+func (s *UserService) listStaffByRole(ctx context.Context, role db.UserRole) ([]StaffResponse, error) {
 	rows, err := s.query.ListStaffByRole(ctx, role)
 	if err != nil {
 		rlog.Error("failed to list staff by role", "role", role, "error", err)

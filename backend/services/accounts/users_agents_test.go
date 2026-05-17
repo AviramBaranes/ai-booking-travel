@@ -9,6 +9,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
+	user_handlers "encore.app/services/accounts/handlers/user_handlers"
 	"encore.app/services/accounts/mocks"
 	"go.uber.org/mock/gomock"
 )
@@ -24,9 +25,9 @@ func agentMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
 
 // seedAgent creates an org, office, and agent for use in agent tests.
 // Returns the agent response, orgID, officeID.
-func seedAgent(t *testing.T, s *Service, email, phone string, officeID int64) *CreateAgentResponse {
+func seedAgent(t *testing.T, s *Service, email, phone string, officeID int64) *user_handlers.CreateAgentResponse {
 	t.Helper()
-	resp, err := s.CreateAgent(context.Background(), CreateAgentRequest{
+	resp, err := s.CreateAgent(context.Background(), user_handlers.CreateAgentParams{
 		FirstName:   "Test",
 		LastName:    "Agent",
 		Email:       email,
@@ -59,7 +60,7 @@ func TestListAgents(t *testing.T) {
 			)
 		}
 
-		page1, err := s.ListAgents(ctx, &ListAgentsRequest{Search: prefix, Page: 1})
+		page1, err := s.ListAgents(ctx, &user_handlers.ListAgentsParams{Search: prefix, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -70,7 +71,7 @@ func TestListAgents(t *testing.T) {
 			t.Fatalf("expected total 18, got %d", page1.Total)
 		}
 
-		page2, err := s.ListAgents(ctx, &ListAgentsRequest{Search: prefix, Page: 2})
+		page2, err := s.ListAgents(ctx, &user_handlers.ListAgentsParams{Search: prefix, Page: 2})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -105,7 +106,7 @@ func TestListAgents(t *testing.T) {
 			)
 		}
 
-		resp, err := s.ListAgents(ctx, &ListAgentsRequest{Search: prefix, Page: 3})
+		resp, err := s.ListAgents(ctx, &user_handlers.ListAgentsParams{Search: prefix, Page: 3})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -128,7 +129,7 @@ func TestListAgents(t *testing.T) {
 			officeID,
 		)
 
-		resp, err := s.ListAgents(ctx, &ListAgentsRequest{Search: unique, Page: 1})
+		resp, err := s.ListAgents(ctx, &user_handlers.ListAgentsParams{Search: unique, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -158,7 +159,7 @@ func TestListAgents(t *testing.T) {
 		seedAgent(t, s, fmt.Sprintf("%s_a@test.com", prefix), randomIsraeliPhoneNumber(), officeA)
 		seedAgent(t, s, fmt.Sprintf("%s_b@test.com", prefix), randomIsraeliPhoneNumber(), officeB.ID)
 
-		resp, err := s.ListAgents(ctx, &ListAgentsRequest{Search: prefix, OfficeID: officeA, Page: 1})
+		resp, err := s.ListAgents(ctx, &user_handlers.ListAgentsParams{Search: prefix, OfficeID: officeA, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -179,7 +180,7 @@ func TestListAgents(t *testing.T) {
 		seedAgent(t, s, fmt.Sprintf("%s_a@test.com", prefix), randomIsraeliPhoneNumber(), officeA)
 		seedAgent(t, s, fmt.Sprintf("%s_b@test.com", prefix), randomIsraeliPhoneNumber(), officeB)
 
-		resp, err := s.ListAgents(ctx, &ListAgentsRequest{Search: prefix, OrgID: orgA, Page: 1})
+		resp, err := s.ListAgents(ctx, &user_handlers.ListAgentsParams{Search: prefix, OrgID: orgA, Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -193,7 +194,7 @@ func TestListAgents(t *testing.T) {
 
 	t.Run("validation rejects page 0", func(t *testing.T) {
 		t.Parallel()
-		p := ListAgentsRequest{Page: 0}
+		p := user_handlers.ListAgentsParams{Page: 0}
 		api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 	})
 
@@ -202,7 +203,7 @@ func TestListAgents(t *testing.T) {
 		q, s := agentMockService(t)
 		q.EXPECT().ListAgents(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
-		_, err := s.ListAgents(ctx, &ListAgentsRequest{Page: 1})
+		_, err := s.ListAgents(ctx, &user_handlers.ListAgentsParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -212,7 +213,7 @@ func TestListAgents(t *testing.T) {
 		q.EXPECT().ListAgents(gomock.Any(), gomock.Any()).Return([]db.ListAgentsRow{}, nil)
 		q.EXPECT().CountAgents(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
-		_, err := s.ListAgents(ctx, &ListAgentsRequest{Page: 1})
+		_, err := s.ListAgents(ctx, &user_handlers.ListAgentsParams{Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }
@@ -224,7 +225,7 @@ func TestCreateAgent(t *testing.T) {
 	t.Run("creates agent successfully", func(t *testing.T) {
 		t.Parallel()
 		_, officeID := seedOrgAndOffice(t)
-		resp, err := s.CreateAgent(ctx, CreateAgentRequest{
+		resp, err := s.CreateAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Create",
 			LastName:    "Ok",
 			Email:       fmt.Sprintf("create_agent_ok_%d@test.com", time.Now().UnixNano()),
@@ -246,7 +247,7 @@ func TestCreateAgent(t *testing.T) {
 		email := fmt.Sprintf("dup_agent_%d@test.com", time.Now().UnixNano())
 		seedAgent(t, s, email, randomIsraeliPhoneNumber(), officeID)
 
-		_, err := s.CreateAgent(ctx, CreateAgentRequest{
+		_, err := s.CreateAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "Dup",
 			LastName:    "Agent",
 			Email:       email,
@@ -259,43 +260,43 @@ func TestCreateAgent(t *testing.T) {
 
 	t.Run("validation rejects empty firstName", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAgentRequest{FirstName: "", LastName: "Agent", Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
+		p := user_handlers.CreateAgentParams{FirstName: "", LastName: "Agent", Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
 		api_errors.AssertApiError(t, invalidValueErr("firstName"), p.Validate())
 	})
 
 	t.Run("validation rejects empty lastName", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAgentRequest{FirstName: "Test", LastName: "", Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
+		p := user_handlers.CreateAgentParams{FirstName: "Test", LastName: "", Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
 		api_errors.AssertApiError(t, invalidValueErr("lastName"), p.Validate())
 	})
 
 	t.Run("validation rejects invalid email", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAgentRequest{FirstName: "Test", LastName: "Agent", Email: "not-an-email", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
+		p := user_handlers.CreateAgentParams{FirstName: "Test", LastName: "Agent", Email: "not-an-email", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
 	t.Run("validation rejects empty email", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAgentRequest{FirstName: "Test", LastName: "Agent", Email: "", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
+		p := user_handlers.CreateAgentParams{FirstName: "Test", LastName: "Agent", Email: "", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 1}
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
 	t.Run("validation rejects empty phoneNumber", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAgentRequest{FirstName: "Test", LastName: "Agent", Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "", OfficeID: 1}
+		p := user_handlers.CreateAgentParams{FirstName: "Test", LastName: "Agent", Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "", OfficeID: 1}
 		api_errors.AssertApiError(t, invalidValueErr("phoneNumber"), p.Validate())
 	})
 
 	t.Run("validation rejects officeId 0", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAgentRequest{FirstName: "Test", LastName: "Agent", Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 0}
+		p := user_handlers.CreateAgentParams{FirstName: "Test", LastName: "Agent", Email: "agent@test.com", Password: "ValidPass123!", PhoneNumber: "0521234567", OfficeID: 0}
 		api_errors.AssertApiError(t, invalidValueErr("officeId"), p.Validate())
 	})
 
 	t.Run("validation rejects weak password", func(t *testing.T) {
 		t.Parallel()
-		p := CreateAgentRequest{FirstName: "Test", LastName: "Agent", Email: "agent@test.com", Password: "short", PhoneNumber: "0521234567", OfficeID: 1}
+		p := user_handlers.CreateAgentParams{FirstName: "Test", LastName: "Agent", Email: "agent@test.com", Password: "short", PhoneNumber: "0521234567", OfficeID: 1}
 		api_errors.AssertApiError(t, ErrPasswordTooShort, p.Validate())
 	})
 
@@ -304,7 +305,7 @@ func TestCreateAgent(t *testing.T) {
 		q, s := agentMockService(t)
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
-		_, err := s.CreateAgent(ctx, CreateAgentRequest{
+		_, err := s.CreateAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "DB",
 			LastName:    "Fail",
 			Email:       "db_fail@test.com",
@@ -321,7 +322,7 @@ func TestCreateAgent(t *testing.T) {
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), db.ErrNoRows)
 		q.EXPECT().CreateAgent(gomock.Any(), gomock.Any()).Return(db.CreateAgentRow{}, errors.New("db error"))
 
-		_, err := s.CreateAgent(ctx, CreateAgentRequest{
+		_, err := s.CreateAgent(ctx, user_handlers.CreateAgentParams{
 			FirstName:   "DB",
 			LastName:    "CreateFail",
 			Email:       "db_create_fail@test.com",
@@ -353,7 +354,7 @@ func TestGetAgentsByOfficeID(t *testing.T) {
 		}
 		a4 := seedAgent(t, s, "office-filter-agent-other@test.com", randomIsraeliPhoneNumber(), officeOther.ID)
 
-		resp, err := s.GetAgentsByOfficeID(ctx, GetAgentsByOfficeIDRequest{OfficeID: officeID})
+		resp, err := s.GetAgentsByOfficeID(ctx, user_handlers.GetAgentsByOfficeIDParams{OfficeID: officeID})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -364,7 +365,7 @@ func TestGetAgentsByOfficeID(t *testing.T) {
 		for _, id := range resp.IDs {
 			got[id] = true
 		}
-		for _, agent := range []*CreateAgentResponse{a1, a2, a3} {
+		for _, agent := range []*user_handlers.CreateAgentResponse{a1, a2, a3} {
 			if !got[agent.ID] {
 				t.Fatalf("expected agent ID %d in response", agent.ID)
 			}
@@ -378,7 +379,7 @@ func TestGetAgentsByOfficeID(t *testing.T) {
 		t.Parallel()
 		_, officeID := seedOrgAndOffice(t)
 
-		_, err := s.GetAgentsByOfficeID(ctx, GetAgentsByOfficeIDRequest{OfficeID: officeID})
+		_, err := s.GetAgentsByOfficeID(ctx, user_handlers.GetAgentsByOfficeIDParams{OfficeID: officeID})
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
@@ -387,7 +388,7 @@ func TestGetAgentsByOfficeID(t *testing.T) {
 		q, s := agentMockService(t)
 		q.EXPECT().GetAgentsByOfficeID(gomock.Any(), int64(10)).Return(nil, errors.New("db error"))
 
-		_, err := s.GetAgentsByOfficeID(ctx, GetAgentsByOfficeIDRequest{OfficeID: 10})
+		_, err := s.GetAgentsByOfficeID(ctx, user_handlers.GetAgentsByOfficeIDParams{OfficeID: 10})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }
@@ -413,7 +414,7 @@ func TestGetAgentsByOrganizationID(t *testing.T) {
 		_, officeOtherOrg := seedOrgAndOffice(t)
 		a4 := seedAgent(t, s, "org-filter-agent-other@test.com", randomIsraeliPhoneNumber(), officeOtherOrg)
 
-		resp, err := s.GetAgentsByOrganizationID(ctx, GetAgentsByOrganizationIDRequest{OrgID: orgID})
+		resp, err := s.GetAgentsByOrganizationID(ctx, user_handlers.GetAgentsByOrganizationIDParams{OrgID: orgID})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -424,7 +425,7 @@ func TestGetAgentsByOrganizationID(t *testing.T) {
 		for _, id := range resp.IDs {
 			got[id] = true
 		}
-		for _, agent := range []*CreateAgentResponse{a1, a2, a3} {
+		for _, agent := range []*user_handlers.CreateAgentResponse{a1, a2, a3} {
 			if !got[agent.ID] {
 				t.Fatalf("expected agent ID %d in response", agent.ID)
 			}
@@ -438,7 +439,7 @@ func TestGetAgentsByOrganizationID(t *testing.T) {
 		t.Parallel()
 		orgID, _ := seedOrgAndOffice(t)
 
-		_, err := s.GetAgentsByOrganizationID(ctx, GetAgentsByOrganizationIDRequest{OrgID: orgID})
+		_, err := s.GetAgentsByOrganizationID(ctx, user_handlers.GetAgentsByOrganizationIDParams{OrgID: orgID})
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
@@ -447,7 +448,7 @@ func TestGetAgentsByOrganizationID(t *testing.T) {
 		q, s := agentMockService(t)
 		q.EXPECT().GetAgentsByOrganizationID(gomock.Any(), int64(5)).Return(nil, errors.New("db error"))
 
-		_, err := s.GetAgentsByOrganizationID(ctx, GetAgentsByOrganizationIDRequest{OrgID: 5})
+		_, err := s.GetAgentsByOrganizationID(ctx, user_handlers.GetAgentsByOrganizationIDParams{OrgID: 5})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }
