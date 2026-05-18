@@ -13,7 +13,7 @@ const (
 )
 
 // Book creates a vehicle reservation with the Hertz API and returns the confirmation number.
-func (h Hertz) Book(p BookingParams) (BookingResponse, error) {
+func (h *Hertz) Book(p BookingParams) (BookingResponse, error) {
 	xmlReq, err := h.buildBookingRequest(p)
 	if err != nil {
 		return BookingResponse{}, fmt.Errorf("building hertz booking request: %w", err)
@@ -43,7 +43,7 @@ func (h Hertz) Book(p BookingParams) (BookingResponse, error) {
 }
 
 // buildBookingRequest constructs the XML request string for a Hertz vehicle reservation.
-func (h Hertz) buildBookingRequest(p BookingParams) (string, error) {
+func (h *Hertz) buildBookingRequest(p BookingParams) (string, error) {
 	req := hertzBookingReq{
 		XmlnsXsi:     hertzXMLNSXSI,
 		SchemaLoc:    hertzBookingSchemaLocation,

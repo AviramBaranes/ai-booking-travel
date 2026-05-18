@@ -18,8 +18,8 @@ type Hertz struct {
 }
 
 // NewHertzWithCharges creates a new instance of the Hertz broker with the provided ERP day charges.
-func NewHertzWithCharges(usErpDayCharge, caErpDayCharge int) Hertz {
-	return Hertz{
+func NewHertzWithCharges(usErpDayCharge, caErpDayCharge int) *Hertz {
+	return &Hertz{
 		usErpDayCharge: usErpDayCharge,
 		caErpDayCharge: caErpDayCharge,
 		httpClient:     &http.Client{Timeout: 10 * time.Second},
@@ -27,24 +27,24 @@ func NewHertzWithCharges(usErpDayCharge, caErpDayCharge int) Hertz {
 }
 
 // NewHertz creates a new instance of the Hertz broker with the provided HTTP client, which can be used to customize the HTTP requests made to the Hertz API.
-func NewHertz() Hertz {
-	return Hertz{
+func NewHertz() *Hertz {
+	return &Hertz{
 		httpClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
 // NewHertzWithReader creates a new instance of the Hertz broker with the provided reader, which is used to read the CSV data for locations.
-func NewHertzWithReader(r io.Reader) Hertz {
-	return Hertz{r: r}
+func NewHertzWithReader(r io.Reader) *Hertz {
+	return &Hertz{r: r}
 }
 
 // Name returns the name of the broker
-func (h Hertz) Name() Name {
+func (h *Hertz) Name() Name {
 	return BrokerHertz
 }
 
 // sendXMLRequest is a helper function that sends an XML request to the Hertz API.
-func (h Hertz) sendXMLRequest(requestBody string) ([]byte, error) {
+func (h *Hertz) sendXMLRequest(requestBody string) ([]byte, error) {
 
 	req, err := http.NewRequest("POST", hertzBaseURL, bytes.NewBuffer([]byte(requestBody)))
 	if err != nil {
@@ -73,7 +73,7 @@ func (h Hertz) sendXMLRequest(requestBody string) ([]byte, error) {
 }
 
 // parseErrors is a helper function that extracts error messages from the Hertz API response and formats them into a single error.
-func (h Hertz) parseErrors(errors []hertzResError) error {
+func (h *Hertz) parseErrors(errors []hertzResError) error {
 	if len(errors) == 0 {
 		return nil
 	}
@@ -86,7 +86,7 @@ func (h Hertz) parseErrors(errors []hertzResError) error {
 }
 
 // parseWarnings is a helper function that extracts warning messages from the Hertz API response and formats them into a single string.
-func (h Hertz) parseWarnings(warnings []hertzResWarning) string {
+func (h *Hertz) parseWarnings(warnings []hertzResWarning) string {
 	if len(warnings) == 0 {
 		return ""
 	}

@@ -17,7 +17,7 @@ const flightNumberRequiredErrorMessage = "Flight number required for this office
 var ErrFlightNumberRequired = fmt.Errorf("booking failed: flight number is required for this office")
 
 // Book books a rental using the provided booking parameters and returns a BookingResponse or an error if the booking fails.
-func (f Flex) Book(p BookingParams) (BookingResponse, error) {
+func (f *Flex) Book(p BookingParams) (BookingResponse, error) {
 	form := url.Values{}
 	form.Set("RateQualifier", p.RateQualifier)
 	form.Set("ProductID", p.PlanID)

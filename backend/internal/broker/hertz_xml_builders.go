@@ -20,7 +20,7 @@ const (
 	hertzCancelSchemaLocation = "http://www.opentravel.org/OTA/2003/05 OTA_VehCancelRQ.xsd"
 )
 
-func (h Hertz) buildSearchAvailabilityRequest(p SearchAvailabilityParams, brandID hertzBrand, planCode string, dayCount int) (string, error) {
+func (h *Hertz) buildSearchAvailabilityRequest(p SearchAvailabilityParams, brandID hertzBrand, planCode string, dayCount int) (string, error) {
 	req := hertzSearchAvailabilityReq{
 		XMLName:        xml.Name{Space: hertzXMLNS, Local: "OTA_VehAvailRateRQ"},
 		XmlnsXsi:       hertzXMLNSXSI,
@@ -47,12 +47,12 @@ func (h Hertz) buildSearchAvailabilityRequest(p SearchAvailabilityParams, brandI
 }
 
 // formatDateTime formats the given date and time strings into the format required by the Hertz API, which is "YYYY-MM-DDTHH:MM:SS"
-func (h Hertz) formatDateTime(date string, time string) string {
+func (h *Hertz) formatDateTime(date string, time string) string {
 	return fmt.Sprintf("%sT%s:00", date, time)
 }
 
 // buildPOSReqItem creates a POS request item for the given brand ID and plan code, which is used in the search availability request to identify the brand and plan being requested.
-func (h Hertz) buildPOSReqItem(brandID hertzBrand, addSecondSource ...bool) hertzPOS {
+func (h *Hertz) buildPOSReqItem(brandID hertzBrand, addSecondSource ...bool) hertzPOS {
 	addSecond := true
 	if len(addSecondSource) > 0 {
 		addSecond = addSecondSource[0]
@@ -89,7 +89,7 @@ func (h Hertz) buildPOSReqItem(brandID hertzBrand, addSecondSource ...bool) hert
 }
 
 // buildRentalCoreReqItem creates a VehRentalCore request item
-func (h Hertz) buildRentalCoreReqItem(p SearchAvailabilityParams, dayCount int) hertzVehRentalCore {
+func (h *Hertz) buildRentalCoreReqItem(p SearchAvailabilityParams, dayCount int) hertzVehRentalCore {
 	return hertzVehRentalCore{
 		PickUpDateTime:       h.formatDateTime(p.PickupDate, p.PickupTime),
 		ReturnDateTime:       h.formatDateTime(p.DropoffDate, p.DropoffTime),

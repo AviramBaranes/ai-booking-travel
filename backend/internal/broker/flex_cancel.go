@@ -6,7 +6,7 @@ import (
 	"net/url"
 )
 
-func (f Flex) Cancel(bookingID, _, _1 string) error {
+func (f *Flex) Cancel(bookingID, _, _1 string) error {
 	form := url.Values{}
 	form.Set("FCHReference", bookingID)
 	form.Set("Language", "UK")

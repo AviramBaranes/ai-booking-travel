@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (i icount) FetchCurrencies() (*GetCurrenciesRatesResponse, error) {
+func (i *icount) FetchCurrencies() (*GetCurrenciesRatesResponse, error) {
 	reqBody := GetCurrenciesRatesRequest{
 		CID:  i.cid,
 		User: i.user,

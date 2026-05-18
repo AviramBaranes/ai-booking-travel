@@ -19,27 +19,27 @@ type Flex struct {
 const defaultTimeout = 5 * time.Minute
 
 // NewFlexWithErpCfg creates a new instance of the Flex broker with a default HTTP client and timeout, and allows setting the ERP day charge configuration.
-func NewFlexWithErpCfg(erpDayCharge int) Flex {
-	return Flex{
+func NewFlexWithErpCfg(erpDayCharge int) *Flex {
+	return &Flex{
 		erpDayCharge: erpDayCharge,
 		httpClient:   &http.Client{Timeout: defaultTimeout},
 	}
 }
 
 // NewFlex creates a new instance of the Flex broker with a default HTTP client and timeout.
-func NewFlex() Flex {
-	return Flex{
+func NewFlex() *Flex {
+	return &Flex{
 		httpClient: &http.Client{Timeout: defaultTimeout},
 	}
 }
 
 // Name returns the name of the broker
-func (f Flex) Name() Name {
+func (f *Flex) Name() Name {
 	return BrokerFlex
 }
 
 // postForm sends a POST request to the specified endpoint of the Flex broker with the given form data.
-func (f Flex) postForm(ep string, form url.Values) ([]byte, error) {
+func (f *Flex) postForm(ep string, form url.Values) ([]byte, error) {
 	form.Set("AgentCode", secrets.flexAgentCode)
 	form.Set("Password", secrets.flexPassword)
 

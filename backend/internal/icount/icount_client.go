@@ -21,8 +21,8 @@ type icount struct {
 
 // NewIcount initializes and returns an icount client with the provided credentials.
 // The password is read from the shared IcountPassword secret.
-func NewIcount(cid, user string) icount {
-	return icount{
+func NewIcount(cid, user string) *icount {
+	return &icount{
 		httpClient: &http.Client{Timeout: 10 * time.Second},
 		cid:        cid,
 		user:       user,
@@ -36,7 +36,7 @@ const (
 	fetchCurrenciesEndpoint icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/currency/get_rates"
 )
 
-func (i icount) DoRequest(endpoint icountAPIEndPoint, requestBody any) ([]byte, error) {
+func (i *icount) DoRequest(endpoint icountAPIEndPoint, requestBody any) ([]byte, error) {
 	jsonString, err := json.Marshal(requestBody)
 	if err != nil {
 		return nil, fmt.Errorf("creating json: %w", err)

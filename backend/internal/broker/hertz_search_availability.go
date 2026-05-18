@@ -18,7 +18,7 @@ type hertzRequestParams struct {
 }
 
 // SearchAvailability fetches and merges Hertz vehicle availability results.
-func (h Hertz) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle, error) {
+func (h *Hertz) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle, error) {
 	dayCount, err := CalculateDaysCount(p.PickupDate, p.PickupTime, p.DropoffDate, p.DropoffTime)
 	if err != nil {
 		return nil, fmt.Errorf("calculate days count %w", err)
@@ -118,7 +118,7 @@ const (
 )
 
 // mapHertzResponseToAvailableVehicles converts a Hertz response into available vehicles.
-func (h Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, resp hertzCarAvailabilityResponse, brandID hertzBrand, planName string, dayCount int) []AvailableVehicle {
+func (h *Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, resp hertzCarAvailabilityResponse, brandID hertzBrand, planName string, dayCount int) []AvailableVehicle {
 	availableVehicles := make([]AvailableVehicle, 0, len(resp.Cars))
 
 	inclusions := getPlanInclusions(p.CountryCode, planName)
@@ -199,7 +199,7 @@ func (h Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, r
 }
 
 // getERPPrice returns the ERP surcharge for the market and rental length.
-func (h Hertz) getERPPrice(dayCount int, countryCode string) int {
+func (h *Hertz) getERPPrice(dayCount int, countryCode string) int {
 	if countryCode == "US" {
 		return h.usErpDayCharge * dayCount
 	}
@@ -225,7 +225,7 @@ func getPlanInclusions(countryCode, planName string) []string {
 }
 
 // getInfo builds plan notes for the driver, market, and rental length.
-func (h Hertz) getInfo(driverAge, dayCount int, countryCode, planName string) []string {
+func (h *Hertz) getInfo(driverAge, dayCount int, countryCode, planName string) []string {
 	info, _ := hertzTermsMap[planName]
 	infoCopy := make([]string, len(info))
 	copy(infoCopy, info)
@@ -239,7 +239,7 @@ func (h Hertz) getInfo(driverAge, dayCount int, countryCode, planName string) []
 }
 
 // getYoungDriverFee returns the young driver fee and its currency for the given driver age, rental length, and market.
-func (h Hertz) getYoungDriverFee(driverAge, dayCount int, countryCode string) (int, string) {
+func (h *Hertz) getYoungDriverFee(driverAge, dayCount int, countryCode string) (int, string) {
 	if driverAge >= 25 {
 		return 0, ""
 	}

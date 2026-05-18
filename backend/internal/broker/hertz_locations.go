@@ -18,7 +18,7 @@ var (
 )
 
 // GetLocationsPage retrieves a page of locations from the Hertz broker based on the provided cursor, which is not used in this implementation since all locations are returned in a single page.
-func (h Hertz) GetLocationsPage(cursor string) (LocationPage, error) {
+func (h *Hertz) GetLocationsPage(cursor string) (LocationPage, error) {
 	if h.r == nil {
 		return LocationPage{}, ErrHertzReaderNotInitialized
 	}

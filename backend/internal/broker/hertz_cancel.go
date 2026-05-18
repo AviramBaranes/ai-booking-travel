@@ -7,7 +7,7 @@ import (
 	"encore.dev/rlog"
 )
 
-func (h Hertz) Cancel(bookingID, lastName, supplierCode string) error {
+func (h *Hertz) Cancel(bookingID, lastName, supplierCode string) error {
 	xmlReq, err := h.buildCancelRequest(bookingID, lastName, supplierCode)
 	if err != nil {
 		return fmt.Errorf("building hertz cancel request: %w", err)
@@ -37,7 +37,7 @@ func (h Hertz) Cancel(bookingID, lastName, supplierCode string) error {
 }
 
 // buildCancelRequest constructs the XML request string for a Hertz vehicle cancellation.
-func (h Hertz) buildCancelRequest(bookingID, lastName, supplierCode string) (string, error) {
+func (h *Hertz) buildCancelRequest(bookingID, lastName, supplierCode string) (string, error) {
 	req := hertzCancelReq{
 		XMLName:   xml.Name{Space: hertzXMLNS, Local: "OTA_VehCancelRQ"},
 		XmlnsXsi:  hertzXMLNSXSI,

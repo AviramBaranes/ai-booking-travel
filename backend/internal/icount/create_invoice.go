@@ -16,7 +16,7 @@ type CreateInvoiceParams struct {
 }
 
 // CreateInvoice creates an invoice in iCount using the provided parameters and returns the response from iCount, the response might contain error details if the creation was not successful.
-func (i icount) CreateInvoice(params CreateInvoiceParams) (*ICountCreateDocResponse, error) {
+func (i *icount) CreateInvoice(params CreateInvoiceParams) (*ICountCreateDocResponse, error) {
 	icountReq := i.createInvoiceDocRequest(params)
 
 	body, err := i.DoRequest(createDocEndpoint, icountReq)
@@ -33,7 +33,7 @@ func (i icount) CreateInvoice(params CreateInvoiceParams) (*ICountCreateDocRespo
 }
 
 // createInvoiceDocRequest constructs the ICountCreateDocRequest from the provided CreateInvoiceParams and the icount struct
-func (i icount) createInvoiceDocRequest(params CreateInvoiceParams) ICountCreateDocRequest {
+func (i *icount) createInvoiceDocRequest(params CreateInvoiceParams) ICountCreateDocRequest {
 	return ICountCreateDocRequest{
 		CID:        i.cid,
 		User:       i.user,

@@ -24,7 +24,7 @@ var (
 // InsertFlexLocations fetches all Flex locations from the broker and upserts them into the database.
 func (s *LocationService) InsertFlexLocations(ctx context.Context) error {
 	flex := broker.NewFlex()
-	err := s.InsertLocations(ctx, &flex)
+	err := s.InsertLocations(ctx, flex)
 	if err != nil {
 		rlog.Error("failed to insert Flex locations", "error", err)
 		return api_errors.ErrInternalError

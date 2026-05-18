@@ -12,7 +12,7 @@ import (
 )
 
 // SearchAvailability searches for available vehicles based on the provided search parameters. It returns a slice of AvailableVehicle structs containing details about the available vehicles, or an error if the search fails.
-func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle, error) {
+func (f *Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle, error) {
 	form := url.Values{}
 	form.Set("SIPP", "")
 	form.Set("SupplierCode", "")
@@ -136,7 +136,7 @@ func (f Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle
 //
 //	"YoungDriverFee:29:$"
 //	"MANDATORY CHARGES - OneWay:149.99:EUR,YoungDriverFee:150.00:EUR,moreinfo:10:$"
-func (f Flex) getYoungDriverFee(info []string) (int, string) {
+func (f *Flex) getYoungDriverFee(info []string) (int, string) {
 	const prefix = "YoungDriverFee:"
 	for _, item := range info {
 		if !strings.Contains(item, prefix) {
@@ -206,12 +206,12 @@ var flexProductMap = map[string]int{
 }
 
 // getInsuranceExtraCost calculates the extra insurance cost based on the number of rental days, using a fixed daily rate.
-func (f Flex) getInsuranceExtraCost(days int) int {
+func (f *Flex) getInsuranceExtraCost(days int) int {
 	return days * f.erpDayCharge
 }
 
 // getPlans returns the list of plans for a given car
-func (f Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDetails) []Plan {
+func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDetails) []Plan {
 	plans := make([]Plan, 0, len(c.Costs))
 	for _, p := range c.Costs {
 		planID, ok := flexProductMap[p.Product]
