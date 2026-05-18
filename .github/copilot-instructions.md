@@ -750,3 +750,41 @@ VPN:
 Build:
 - encore build docker [--base string] [--push] - Build Docker image
 </encore_cli_reference>
+
+<project_specific_context>
+<app_context>
+This is a Car Rental Brokerage Aggregation Application serving B2B (Agents) and B2C (Customers):
+- **Agents (B2B)** belong to offices inside organizations. Managed manually via an admin portal (onboarding is external). Agents enjoy lower markups, and their payments are deferred (invoices sent monthly to offices/organizations, billed and reconciled by accountants later). Organic organizations pay for all their offices, whereas Inorganic organizations' offices pay for themselves.
+- **Customers (B2C)** cannot book without paying upfront via credit card. No authentication is strictly required until booking, after which a user is created and login operates via Phone Number + OTP.
+- **Order Flow**: Locations search -> Car Search (locations & dates) -> Choose Car -> Book -> Create Reservation. (For agents, vouchering and invoice billing happen later).
+</app_context>
+
+<localization>
+The application supports Hebrew and English, implemented via the Next.js App Router `[lang]` segment using the `next-intl` library.
+</localization>
+
+<payload_cms>
+The app uses Payload CMS for managing content. It is located strictly inside the `frontend` application, utilizing the `collections`, `globals`, and `blocks` folders.
+</payload_cms>
+</project_specific_context>
+
+<project_conventions>
+<backend_conventions>
+1. **Endpoint Declarations**: Use pointer receivers on the service struct. Request parameters must end in `Params` and response objects in `Response`. Both should be passed and returned as pointers. Example: `func (s *Service) DoSomething(ctx context.Context, p *DoSomethingParams) (*DoSomethingResponse, error)`
+2. **Testing**: Run backend tests strictly via `encore test ./...`
+3. **Database & SQLC**: DB interactions use `sqlc` in the `db` subpackage per service. Use ONE query file per entity. Run `make gen` from `/backend` to generate SQLC bindings.
+4. **Handlers separation**: For services spanning multiple entities (e.g., booking, accounts), utilize a `handlers/` folder with per-entity subpackages separating business logic from EP declarations.
+5. **API Errors**: Return custom errors leveraging the `internal/api_errors` package. Errors should pass a `Details` struct containing a unique `Code`. This payload is extracted by the frontend wrapper to output localized messages.
+</backend_conventions>
+
+<frontend_conventions>
+1. **API Integration**: Frontend uses React Query combined with an auto-generated Encore client. Client access is funneled through a `_api.ts` wrapper and per-entity API modules housed in `frontend/shared/api`.
+2. **Component Structure**: Follow colocated component design. Put components in a `_components` folder at the closest routing segment (e.g., `frontend/app/(app)/[lang]/(withNavbar)/_components`). If the component is heavily reused, it lives in `frontend/shared/components`.
+3. **Error Handling**: Use custom translated errors via the `useTranslatedError` hook. Map the backend's `api_errors` Code parameter to translation keys inside `he.json` and `en.json`.
+4. **Styling**: Base theme and colors are established in `globals.css`. Standardize on Tailwind logic matching those definitions alongside Shadcn UI components.
+</frontend_conventions>
+
+<ai_workflow_behavior>
+Every time the user practically asks for or mentions a new architectural rule, convention, or repetitive pattern, the AI must explicitly identify it, call it out to the user, and proactively suggest adding it to the instructions file (`.github/copilot-instructions.md`).
+</ai_workflow_behavior>
+</project_conventions>
