@@ -10,21 +10,11 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
-	"encore.app/internal/validation"
 	"encore.app/services/booking/db"
 	"encore.app/services/booking/handlers/location"
 	locations_mocks "encore.app/services/booking/mocks"
-	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
 )
-
-// --- Helpers ---
-
-func listLocationsInvalidValueErr(field string) error {
-	return api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
-		Code: api_errors.CodeInvalidValue, Field: field,
-	})
-}
 
 // seedLocationWithBrokerCode inserts a location and a broker code pointing to it.
 // It registers a t.Cleanup to delete the broker code and location when the test ends.
@@ -60,12 +50,12 @@ func seedLocationWithBrokerCode(t *testing.T, q *db.Queries, loc db.InsertLocati
 func TestListLocationsValidation(t *testing.T) {
 	t.Run("rejects page 0", func(t *testing.T) {
 		p := location.ListLocationsParams{Page: 0}
-		api_errors.AssertApiError(t, listLocationsInvalidValueErr("page"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 	})
 
 	t.Run("rejects negative page", func(t *testing.T) {
 		p := location.ListLocationsParams{Page: -1}
-		api_errors.AssertApiError(t, listLocationsInvalidValueErr("page"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 	})
 
 	t.Run("accepts valid params", func(t *testing.T) {

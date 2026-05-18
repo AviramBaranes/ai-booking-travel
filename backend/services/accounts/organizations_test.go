@@ -9,7 +9,6 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
 	organization "encore.app/services/accounts/handlers/organization"
-	"encore.app/services/accounts/mocks"
 	"encore.dev/et"
 	"go.uber.org/mock/gomock"
 )
@@ -46,13 +45,6 @@ func validUpdateOrgParams() organization.UpdateOrganizationParams {
 		Address:        &address,
 		Obligo:         &obligo,
 	}
-}
-
-func orgMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
-	ctrl := gomock.NewController(t)
-	t.Cleanup(ctrl.Finish)
-	q := mocks.NewMockQuerier(ctrl)
-	return q, &Service{query: q}
 }
 
 func createTestOrg(t *testing.T, s *Service, name string) *organization.OrganizationResponse {
@@ -371,7 +363,7 @@ func TestListOrganizations(t *testing.T) {
 	})
 
 	t.Run("returns error when list db fails", func(t *testing.T) {
-		q, s := orgMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().ListOrganizations(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
 		_, err := s.ListOrganizations(ctx, organization.ListOrganizationsParams{Page: 1})
@@ -379,7 +371,7 @@ func TestListOrganizations(t *testing.T) {
 	})
 
 	t.Run("returns error when count db fails", func(t *testing.T) {
-		q, s := orgMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().ListOrganizations(gomock.Any(), gomock.Any()).Return([]db.ListOrganizationsRow{}, nil)
 		q.EXPECT().CountOrganizations(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
@@ -495,7 +487,7 @@ func TestCreateOrganization(t *testing.T) {
 	})
 
 	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := orgMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().CreateOrganization(gomock.Any(), gomock.Any()).Return(db.Organization{}, errors.New("db error"))
 
 		_, err := s.CreateOrganization(ctx, validCreateOrgParams())
@@ -628,7 +620,7 @@ func TestUpdateOrganization(t *testing.T) {
 	})
 
 	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := orgMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().UpdateOrganization(gomock.Any(), gomock.Any()).Return(db.Organization{}, errors.New("db error"))
 
 		_, err := s.UpdateOrganization(ctx, 1, validUpdateOrgParams())

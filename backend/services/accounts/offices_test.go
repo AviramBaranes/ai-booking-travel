@@ -10,7 +10,6 @@ import (
 	"encore.app/services/accounts/db"
 	oh "encore.app/services/accounts/handlers/office"
 	organization "encore.app/services/accounts/handlers/organization"
-	"encore.app/services/accounts/mocks"
 	"encore.dev/et"
 	"go.uber.org/mock/gomock"
 )
@@ -39,13 +38,6 @@ func validUpdateOfficeParams() oh.UpdateOfficeParams {
 		Phone:          &phone,
 		Address:        &address,
 	}
-}
-
-func officeMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
-	ctrl := gomock.NewController(t)
-	t.Cleanup(ctrl.Finish)
-	q := mocks.NewMockQuerier(ctrl)
-	return q, &Service{query: q}
 }
 
 func createTestOffice(t *testing.T, s *Service, orgID int64, name string) *oh.OfficeResponse {
@@ -260,7 +252,7 @@ func TestListOffices(t *testing.T) {
 
 	t.Run("returns error when list db fails", func(t *testing.T) {
 		t.Parallel()
-		q, s := officeMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().ListOffices(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
 		_, err := s.ListOffices(ctx, oh.ListOfficesParams{Page: 1})
@@ -269,7 +261,7 @@ func TestListOffices(t *testing.T) {
 
 	t.Run("returns error when count db fails", func(t *testing.T) {
 		t.Parallel()
-		q, s := officeMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().ListOffices(gomock.Any(), gomock.Any()).Return([]db.ListOfficesRow{}, nil)
 		q.EXPECT().CountOffices(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
@@ -401,7 +393,7 @@ func TestCreateOffice(t *testing.T) {
 
 	t.Run("returns error when db fails", func(t *testing.T) {
 		t.Parallel()
-		q, s := officeMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().GetOrganizationBillingState(gomock.Any(), gomock.Any()).Return(
 			db.GetOrganizationBillingStateRow{IsOrganic: true}, nil,
 		)
@@ -543,7 +535,7 @@ func TestUpdateOffice(t *testing.T) {
 
 	t.Run("returns error when db fails", func(t *testing.T) {
 		t.Parallel()
-		q, s := officeMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().UpdateOffice(gomock.Any(), gomock.Any()).Return(db.UpdateOfficeRow{}, errors.New("db error"))
 
 		_, err := s.UpdateOffice(ctx, 1, validUpdateOfficeParams())

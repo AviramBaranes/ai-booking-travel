@@ -6,10 +6,8 @@ import (
 	"testing"
 
 	"encore.app/internal/api_errors"
-	"encore.app/internal/validation"
 	"encore.app/services/booking/db"
 	coupon "encore.app/services/booking/handlers/coupon"
-	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
 )
 
@@ -35,12 +33,6 @@ func validUpdateCouponParams() coupon.UpdateCouponParams {
 		Discount:  &discount,
 		IsEnabled: &enabled,
 	}
-}
-
-func couponInvalidValueErr(field string) error {
-	return api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
-		Code: api_errors.CodeInvalidValue, Field: field,
-	})
 }
 
 // createTestCoupon is a shorthand to seed a coupon with a unique code.
@@ -112,37 +104,37 @@ func TestCreateCoupon(t *testing.T) {
 	t.Run("validation rejects missing name", func(t *testing.T) {
 		p := validCreateCouponParams()
 		p.Name = ""
-		api_errors.AssertApiError(t, couponInvalidValueErr("name"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("name"), p.Validate())
 	})
 
 	t.Run("validation rejects blank name", func(t *testing.T) {
 		p := validCreateCouponParams()
 		p.Name = "   "
-		api_errors.AssertApiError(t, couponInvalidValueErr("name"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("name"), p.Validate())
 	})
 
 	t.Run("validation rejects missing code", func(t *testing.T) {
 		p := validCreateCouponParams()
 		p.Code = ""
-		api_errors.AssertApiError(t, couponInvalidValueErr("code"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("code"), p.Validate())
 	})
 
 	t.Run("validation rejects blank code", func(t *testing.T) {
 		p := validCreateCouponParams()
 		p.Code = "   "
-		api_errors.AssertApiError(t, couponInvalidValueErr("code"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("code"), p.Validate())
 	})
 
 	t.Run("validation rejects discount below 1", func(t *testing.T) {
 		p := validCreateCouponParams()
 		p.Discount = 0
-		api_errors.AssertApiError(t, couponInvalidValueErr("discount"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("discount"), p.Validate())
 	})
 
 	t.Run("validation rejects discount above 100", func(t *testing.T) {
 		p := validCreateCouponParams()
 		p.Discount = 101
-		api_errors.AssertApiError(t, couponInvalidValueErr("discount"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("discount"), p.Validate())
 	})
 
 	t.Run("validation accepts valid params", func(t *testing.T) {
@@ -195,28 +187,28 @@ func TestUpdateCoupon(t *testing.T) {
 		p := validUpdateCouponParams()
 		blank := "   "
 		p.Name = &blank
-		api_errors.AssertApiError(t, couponInvalidValueErr("name"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("name"), p.Validate())
 	})
 
 	t.Run("validation rejects blank code", func(t *testing.T) {
 		p := validUpdateCouponParams()
 		blank := "   "
 		p.Code = &blank
-		api_errors.AssertApiError(t, couponInvalidValueErr("code"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("code"), p.Validate())
 	})
 
 	t.Run("validation rejects discount below 1", func(t *testing.T) {
 		p := validUpdateCouponParams()
 		d := int32(0)
 		p.Discount = &d
-		api_errors.AssertApiError(t, couponInvalidValueErr("discount"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("discount"), p.Validate())
 	})
 
 	t.Run("validation rejects discount above 100", func(t *testing.T) {
 		p := validUpdateCouponParams()
 		d := int32(101)
 		p.Discount = &d
-		api_errors.AssertApiError(t, couponInvalidValueErr("discount"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("discount"), p.Validate())
 	})
 
 	t.Run("validation accepts valid params", func(t *testing.T) {

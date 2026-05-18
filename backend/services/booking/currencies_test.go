@@ -6,10 +6,8 @@ import (
 	"testing"
 
 	"encore.app/internal/api_errors"
-	"encore.app/internal/validation"
 	"encore.app/services/booking/db"
 	currency "encore.app/services/booking/handlers/currency"
-	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
 )
 
@@ -32,12 +30,6 @@ func validUpdateCurrencyParams() currency.UpdateCurrencyParams {
 		CurrencyISOName: &name,
 		Rate:            &rate,
 	}
-}
-
-func currencyInvalidValueErr(field string) error {
-	return api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
-		Code: api_errors.CodeInvalidValue, Field: field,
-	})
 }
 
 // createTestCurrency is a shorthand to seed a currency with a unique code and ISO name.
@@ -109,37 +101,37 @@ func TestCreateCurrency(t *testing.T) {
 	t.Run("validation rejects missing currency code", func(t *testing.T) {
 		p := validCreateCurrencyParams()
 		p.CurrencyCode = ""
-		api_errors.AssertApiError(t, currencyInvalidValueErr("currencyCode"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("currencyCode"), p.Validate())
 	})
 
 	t.Run("validation rejects blank currency code", func(t *testing.T) {
 		p := validCreateCurrencyParams()
 		p.CurrencyCode = "   "
-		api_errors.AssertApiError(t, currencyInvalidValueErr("currencyCode"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("currencyCode"), p.Validate())
 	})
 
 	t.Run("validation rejects missing currency ISO name", func(t *testing.T) {
 		p := validCreateCurrencyParams()
 		p.CurrencyISOName = ""
-		api_errors.AssertApiError(t, currencyInvalidValueErr("currencyISOName"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("currencyISOName"), p.Validate())
 	})
 
 	t.Run("validation rejects blank currency ISO name", func(t *testing.T) {
 		p := validCreateCurrencyParams()
 		p.CurrencyISOName = "   "
-		api_errors.AssertApiError(t, currencyInvalidValueErr("currencyISOName"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("currencyISOName"), p.Validate())
 	})
 
 	t.Run("validation rejects zero rate", func(t *testing.T) {
 		p := validCreateCurrencyParams()
 		p.Rate = 0
-		api_errors.AssertApiError(t, currencyInvalidValueErr("rate"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("rate"), p.Validate())
 	})
 
 	t.Run("validation rejects negative rate", func(t *testing.T) {
 		p := validCreateCurrencyParams()
 		p.Rate = -1.5
-		api_errors.AssertApiError(t, currencyInvalidValueErr("rate"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("rate"), p.Validate())
 	})
 
 	t.Run("validation accepts valid params", func(t *testing.T) {
@@ -188,28 +180,28 @@ func TestUpdateCurrency(t *testing.T) {
 		p := validUpdateCurrencyParams()
 		blank := "   "
 		p.CurrencyCode = &blank
-		api_errors.AssertApiError(t, currencyInvalidValueErr("currencyCode"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("currencyCode"), p.Validate())
 	})
 
 	t.Run("validation rejects blank currency ISO name", func(t *testing.T) {
 		p := validUpdateCurrencyParams()
 		blank := "   "
 		p.CurrencyISOName = &blank
-		api_errors.AssertApiError(t, currencyInvalidValueErr("currencyISOName"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("currencyISOName"), p.Validate())
 	})
 
 	t.Run("validation rejects zero rate", func(t *testing.T) {
 		p := validUpdateCurrencyParams()
 		zero := 0.0
 		p.Rate = &zero
-		api_errors.AssertApiError(t, currencyInvalidValueErr("rate"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("rate"), p.Validate())
 	})
 
 	t.Run("validation rejects negative rate", func(t *testing.T) {
 		p := validUpdateCurrencyParams()
 		neg := -2.5
 		p.Rate = &neg
-		api_errors.AssertApiError(t, currencyInvalidValueErr("rate"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("rate"), p.Validate())
 	})
 
 	t.Run("validation accepts valid params", func(t *testing.T) {

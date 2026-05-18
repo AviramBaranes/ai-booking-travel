@@ -11,7 +11,6 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
 	contact "encore.app/services/accounts/handlers/contact"
-	"encore.app/services/accounts/mocks"
 	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
 )
@@ -43,13 +42,6 @@ func validUpdateContactParams() contact.UpdateContactParams {
 		Cellphone: &cellphone,
 		Email:     &email,
 	}
-}
-
-func contactMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
-	ctrl := gomock.NewController(t)
-	t.Cleanup(ctrl.Finish)
-	q := mocks.NewMockQuerier(ctrl)
-	return q, &Service{query: q}
 }
 
 // seedOrgAndOffice creates an org and office for use in contact tests.
@@ -334,7 +326,7 @@ func TestListContacts(t *testing.T) {
 
 	t.Run("returns error when list db fails", func(t *testing.T) {
 		t.Parallel()
-		q, s := contactMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().ListContacts(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
 		_, err := s.ListContacts(ctx, contact.ListContactsParams{Page: 1})
@@ -343,7 +335,7 @@ func TestListContacts(t *testing.T) {
 
 	t.Run("returns error when count db fails", func(t *testing.T) {
 		t.Parallel()
-		q, s := contactMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().ListContacts(gomock.Any(), gomock.Any()).Return([]db.ListContactsRow{}, nil)
 		q.EXPECT().CountContacts(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
@@ -489,7 +481,7 @@ func TestCreateContact(t *testing.T) {
 
 	t.Run("returns error when db fails", func(t *testing.T) {
 		t.Parallel()
-		q, s := contactMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().CreateContact(gomock.Any(), gomock.Any()).Return(db.Contact{}, errors.New("db error"))
 
 		officeID := int64(1)
@@ -595,7 +587,7 @@ func TestUpdateContact(t *testing.T) {
 
 	t.Run("returns error when db fails", func(t *testing.T) {
 		t.Parallel()
-		q, s := contactMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().UpdateContact(gomock.Any(), gomock.Any()).Return(db.Contact{}, errors.New("db error"))
 
 		_, err := s.UpdateContact(ctx, 1, validUpdateContactParams())
@@ -629,7 +621,7 @@ func TestDeleteContact(t *testing.T) {
 
 	t.Run("returns error when db fails", func(t *testing.T) {
 		t.Parallel()
-		q, s := contactMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().DeleteContact(gomock.Any(), gomock.Any()).Return(errors.New("db error"))
 
 		err := s.DeleteContact(ctx, 1)
@@ -642,13 +634,6 @@ func ptrStr(s string) *string {
 }
 
 // --- Helpers ---
-
-func billingMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
-	ctrl := gomock.NewController(t)
-	t.Cleanup(ctrl.Finish)
-	q := mocks.NewMockQuerier(ctrl)
-	return q, &Service{query: q}
-}
 
 func seedOrg(t *testing.T, isOrganic bool) db.Organization {
 	t.Helper()
@@ -719,7 +704,7 @@ func TestGetBillingContacts(t *testing.T) {
 
 	t.Run("returns internal error when db fails", func(t *testing.T) {
 		t.Parallel()
-		q, ms := billingMockService(t)
+		q, ms := mockService(t)
 		q.EXPECT().GetAgentsBillingContacts(gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("db error"))
 

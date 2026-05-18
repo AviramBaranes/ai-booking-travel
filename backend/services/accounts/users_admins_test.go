@@ -95,15 +95,6 @@ func TestCreateFirstAdmin(t *testing.T) {
 	})
 }
 
-// --- Helpers ---
-
-func adminMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
-	ctrl := gomock.NewController(t)
-	t.Cleanup(ctrl.Finish)
-	q := mocks.NewMockQuerier(ctrl)
-	return q, &Service{query: q}
-}
-
 func createTestAdmin(t *testing.T, s *Service, email string) *user.CreateAdminResponse {
 	t.Helper()
 	resp, err := s.CreateAdmin(context.Background(), user.CreateAdminParams{
@@ -150,7 +141,7 @@ func TestListAdmins(t *testing.T) {
 
 	t.Run("returns error when db fails", func(t *testing.T) {
 		t.Parallel()
-		q, s := adminMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().ListStaffByRole(gomock.Any(), db.UserRoleAdmin).Return(nil, errors.New("db error"))
 
 		_, err := s.ListAdmins(ctx)
@@ -232,7 +223,7 @@ func TestCreateAdmin(t *testing.T) {
 
 	t.Run("returns error when check exists db fails", func(t *testing.T) {
 		t.Parallel()
-		q, s := adminMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
 
 		_, err := s.CreateAdmin(ctx, user.CreateAdminParams{
@@ -246,7 +237,7 @@ func TestCreateAdmin(t *testing.T) {
 
 	t.Run("returns error when create db fails", func(t *testing.T) {
 		t.Parallel()
-		q, s := adminMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), db.ErrNoRows)
 		q.EXPECT().CreateStaffUser(gomock.Any(), gomock.Any()).Return(db.CreateStaffUserRow{}, errors.New("db error"))
 
@@ -312,7 +303,7 @@ func TestListAdminsEmails(t *testing.T) {
 	})
 
 	t.Run("returns internal error when db fails", func(t *testing.T) {
-		q, s := adminMockService(t)
+		q, s := mockService(t)
 		q.EXPECT().ListAdminsEmails(gomock.Any()).Return(nil, errors.New("db error"))
 
 		_, err := s.ListAdminsEmails(ctx)

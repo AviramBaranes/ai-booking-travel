@@ -10,18 +10,10 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
 	user "encore.app/services/accounts/handlers/user"
-	"encore.app/services/accounts/mocks"
 	"go.uber.org/mock/gomock"
 )
 
 // --- Helpers ---
-
-func userMockService(t *testing.T) (*mocks.MockQuerier, *Service) {
-	ctrl := gomock.NewController(t)
-	t.Cleanup(ctrl.Finish)
-	q := mocks.NewMockQuerier(ctrl)
-	return q, &Service{query: q}
-}
 
 func ptrInt32(v int32) *int32 { return &v }
 
@@ -324,7 +316,7 @@ func TestUpdateUser(t *testing.T) {
 
 	t.Run("returns error when check email db fails", func(t *testing.T) {
 		t.Parallel()
-		q, ms := userMockService(t)
+		q, ms := mockService(t)
 		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).
 			Return(int64(0), errors.New("db error"))
 
@@ -338,7 +330,7 @@ func TestUpdateUser(t *testing.T) {
 
 	t.Run("returns error when check phone db fails", func(t *testing.T) {
 		t.Parallel()
-		q, ms := userMockService(t)
+		q, ms := mockService(t)
 		q.EXPECT().GetUserByPhone(gomock.Any(), gomock.Any()).
 			Return(db.User{}, errors.New("db error"))
 
@@ -352,7 +344,7 @@ func TestUpdateUser(t *testing.T) {
 
 	t.Run("returns error when update db fails", func(t *testing.T) {
 		t.Parallel()
-		q, ms := userMockService(t)
+		q, ms := mockService(t)
 		q.EXPECT().UpdateUser(gomock.Any(), gomock.Any()).
 			Return(db.UpdateUserRow{}, errors.New("db error"))
 

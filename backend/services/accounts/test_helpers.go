@@ -13,9 +13,11 @@ import (
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
 	user "encore.app/services/accounts/handlers/user"
+	"encore.app/services/accounts/mocks"
 	"encore.dev/beta/errs"
 	"encore.dev/storage/sqldb"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/mock/gomock"
 )
 
 func invalidValueErr(field string) error {
@@ -38,6 +40,14 @@ func newService(newDb *sqldb.Database) *Service {
 	return &Service{
 		query: db.New(sqldb.Driver[*pgxpool.Pool](newDb)),
 	}
+}
+
+func mockService(t *testing.T) (*mocks.MockQuerier, *Service) {
+	t.Helper()
+	ctrl := gomock.NewController(t)
+	t.Cleanup(ctrl.Finish)
+	q := mocks.NewMockQuerier(ctrl)
+	return q, &Service{query: q}
 }
 
 // assertTimeAlmostEqual checks if two time.Time values are within an acceptable delta.

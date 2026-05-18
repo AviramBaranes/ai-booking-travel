@@ -7,11 +7,9 @@ import (
 	"testing"
 
 	"encore.app/internal/api_errors"
-	"encore.app/internal/validation"
 	"encore.app/services/booking/db"
 	"encore.app/services/booking/handlers/translation"
 	locations_mocks "encore.app/services/booking/mocks"
-	"encore.dev/beta/errs"
 	"go.uber.org/mock/gomock"
 )
 
@@ -87,12 +85,12 @@ func TestVerifyBrokerTranslationDBFailures(t *testing.T) {
 func TestUpdateBrokerTranslationValidation(t *testing.T) {
 	t.Run("rejects empty target_text", func(t *testing.T) {
 		p := translation.UpdateBrokerTranslationParams{TargetText: ""}
-		api_errors.AssertApiError(t, translationInvalidValueErr("target_text"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("target_text"), p.Validate())
 	})
 
 	t.Run("rejects blank target_text", func(t *testing.T) {
 		p := translation.UpdateBrokerTranslationParams{TargetText: "   "}
-		api_errors.AssertApiError(t, translationInvalidValueErr("target_text"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("target_text"), p.Validate())
 	})
 
 	t.Run("accepts valid target_text", func(t *testing.T) {
@@ -186,14 +184,6 @@ func TestUpdateBrokerTranslationDBFailures(t *testing.T) {
 
 // --- Helpers ---
 
-func translationInvalidValueErr(field string) error {
-	return api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
-		Code: api_errors.CodeInvalidValue, Field: field,
-	})
-}
-
-func strPtr(s string) *string { return &s }
-
 // seedTranslation inserts a broker_translation row via the typed query interface.
 // It registers a cleanup to delete the row when the test ends.
 func seedTranslation(t *testing.T, q *db.Queries, source string, status db.BrokerTranslationStatus, confidence int32, target *string) int64 {
@@ -222,22 +212,22 @@ func seedTranslation(t *testing.T, q *db.Queries, source string, status db.Broke
 func TestListBrokerTranslationsValidation(t *testing.T) {
 	t.Run("rejects page 0", func(t *testing.T) {
 		p := translation.ListBrokerTranslationsParams{Page: 0}
-		api_errors.AssertApiError(t, translationInvalidValueErr("page"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 	})
 
 	t.Run("rejects negative page", func(t *testing.T) {
 		p := translation.ListBrokerTranslationsParams{Page: -1}
-		api_errors.AssertApiError(t, translationInvalidValueErr("page"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 	})
 
 	t.Run("rejects invalid status", func(t *testing.T) {
 		p := translation.ListBrokerTranslationsParams{Page: 1, Status: "bogus"}
-		api_errors.AssertApiError(t, translationInvalidValueErr("status"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("status"), p.Validate())
 	})
 
 	t.Run("rejects invalid sort direction", func(t *testing.T) {
 		p := translation.ListBrokerTranslationsParams{Page: 1, SortDir: "up"}
-		api_errors.AssertApiError(t, translationInvalidValueErr("sortDir"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("sortDir"), p.Validate())
 	})
 
 	t.Run("accepts valid params", func(t *testing.T) {

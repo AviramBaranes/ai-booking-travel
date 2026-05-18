@@ -14,17 +14,8 @@ import (
 	"encore.app/services/booking/db"
 	"encore.app/services/booking/handlers/location"
 	locations_mocks "encore.app/services/booking/mocks"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/mock/gomock"
-
-	"encore.dev/storage/sqldb"
 )
-
-// testQuerier returns a real db.Querier backed by the Encore test database.
-func testQuerier() *db.Queries {
-	pool := sqldb.Driver[*pgxpool.Pool](bookingsDB)
-	return db.New(pool)
-}
 
 // mockBroker implements broker.Broker for testing insertLocations without HTTP.
 type mockBroker struct {

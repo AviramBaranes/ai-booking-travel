@@ -11,7 +11,6 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	dbadapters "encore.app/internal/db_adapters"
-	"encore.app/internal/validation"
 	authpkg "encore.app/services/accounts"
 	"encore.app/services/booking/db"
 	availability "encore.app/services/booking/handlers/availability"
@@ -21,14 +20,6 @@ import (
 	"encore.dev/et"
 	"github.com/jackc/pgx/v5/pgtype"
 )
-
-// --- Helpers ---
-
-func priceOfferInvalidValueErr(field string) error {
-	return api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
-		Code: api_errors.CodeInvalidValue, Field: field,
-	})
-}
 
 func priceOfferAuthContext(userID int64) context.Context {
 	uid := auth.UID(strconv.FormatInt(userID, 10))
@@ -198,19 +189,19 @@ func TestCreatePriceOffer(t *testing.T) {
 	t.Run("rejects missing snapshot id", func(t *testing.T) {
 		p := validCreatePriceOfferParams(snapshotID, plan)
 		p.SnapshotID = 0
-		api_errors.AssertApiError(t, priceOfferInvalidValueErr("snapshotId"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("snapshotId"), p.Validate())
 	})
 
 	t.Run("rejects missing rate qualifier", func(t *testing.T) {
 		p := validCreatePriceOfferParams(snapshotID, plan)
 		p.RateQualifier = ""
-		api_errors.AssertApiError(t, priceOfferInvalidValueErr("rateQualifier"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("rateQualifier"), p.Validate())
 	})
 
 	t.Run("rejects missing supplier code", func(t *testing.T) {
 		p := validCreatePriceOfferParams(snapshotID, plan)
 		p.SupplierCode = ""
-		api_errors.AssertApiError(t, priceOfferInvalidValueErr("supplierCode"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("supplierCode"), p.Validate())
 	})
 
 	t.Run("accepts valid params", func(t *testing.T) {
@@ -752,12 +743,12 @@ func TestListPriceOffers(t *testing.T) {
 	t.Run("validation", func(t *testing.T) {
 		t.Run("rejects page 0", func(t *testing.T) {
 			p := poh.ListPriceOffersRequest{Page: 0}
-			api_errors.AssertApiError(t, priceOfferInvalidValueErr("page"), p.Validate())
+			api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 		})
 
 		t.Run("rejects negative page", func(t *testing.T) {
 			p := poh.ListPriceOffersRequest{Page: -1}
-			api_errors.AssertApiError(t, priceOfferInvalidValueErr("page"), p.Validate())
+			api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 		})
 
 		t.Run("accepts valid params", func(t *testing.T) {
@@ -946,22 +937,22 @@ func TestUpdatePriceOffer(t *testing.T) {
 	t.Run("validation", func(t *testing.T) {
 		t.Run("rejects invalid status", func(t *testing.T) {
 			p := poh.UpdatePriceOfferParams{Status: strPtr("invalid")}
-			api_errors.AssertApiError(t, priceOfferInvalidValueErr("status"), p.Validate())
+			api_errors.AssertApiError(t, invalidValueErr("status"), p.Validate())
 		})
 
 		t.Run("rejects blank name", func(t *testing.T) {
 			p := poh.UpdatePriceOfferParams{Name: strPtr("   ")}
-			api_errors.AssertApiError(t, priceOfferInvalidValueErr("name"), p.Validate())
+			api_errors.AssertApiError(t, invalidValueErr("name"), p.Validate())
 		})
 
 		t.Run("rejects non-3-letter currency code", func(t *testing.T) {
 			p := poh.UpdatePriceOfferParams{OfferedCurrencyCode: strPtr("US")}
-			api_errors.AssertApiError(t, priceOfferInvalidValueErr("offeredCurrencyCode"), p.Validate())
+			api_errors.AssertApiError(t, invalidValueErr("offeredCurrencyCode"), p.Validate())
 		})
 
 		t.Run("rejects lowercase currency code", func(t *testing.T) {
 			p := poh.UpdatePriceOfferParams{OfferedCurrencyCode: strPtr("usd")}
-			api_errors.AssertApiError(t, priceOfferInvalidValueErr("offeredCurrencyCode"), p.Validate())
+			api_errors.AssertApiError(t, invalidValueErr("offeredCurrencyCode"), p.Validate())
 		})
 
 		t.Run("accepts empty params (all nil)", func(t *testing.T) {
