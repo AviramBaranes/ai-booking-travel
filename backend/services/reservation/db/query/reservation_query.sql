@@ -210,3 +210,18 @@ END,
 updated_at = CURRENT_TIMESTAMP
 WHERE id = ANY(@ids::BIGINT[])
 AND payment_status IN ('unpaid', 'refund_pending');
+
+-- name: GetOpenReservationsPickingUpWithinWeek :many
+SELECT
+    id,
+    user_id,
+    broker_reservation_id,
+    driver_title,
+    driver_first_name,
+    driver_last_name,
+    pickup_date,
+    pickup_time
+FROM reservations
+WHERE
+    reservation_status = 'booked'
+    AND pickup_date <= CURRENT_DATE + INTERVAL '7 days';

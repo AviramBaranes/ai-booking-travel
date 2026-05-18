@@ -118,6 +118,62 @@ func (q *Queries) CountReservationsByUser(ctx context.Context, arg CountReservat
 	return total, err
 }
 
+const getOpenReservationsPickingUpWithinWeek = `-- name: GetOpenReservationsPickingUpWithinWeek :many
+SELECT
+    id,
+    user_id,
+    broker_reservation_id,
+    driver_title,
+    driver_first_name,
+    driver_last_name,
+    pickup_date,
+    pickup_time
+FROM reservations
+WHERE
+    reservation_status = 'booked'
+    AND pickup_date <= CURRENT_DATE + INTERVAL '7 days'
+`
+
+type GetOpenReservationsPickingUpWithinWeekRow struct {
+	ID                  int64
+	UserID              int64
+	BrokerReservationID string
+	DriverTitle         string
+	DriverFirstName     string
+	DriverLastName      string
+	PickupDate          pgtype.Date
+	PickupTime          string
+}
+
+func (q *Queries) GetOpenReservationsPickingUpWithinWeek(ctx context.Context) ([]GetOpenReservationsPickingUpWithinWeekRow, error) {
+	rows, err := q.db.Query(ctx, getOpenReservationsPickingUpWithinWeek)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetOpenReservationsPickingUpWithinWeekRow
+	for rows.Next() {
+		var i GetOpenReservationsPickingUpWithinWeekRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.BrokerReservationID,
+			&i.DriverTitle,
+			&i.DriverFirstName,
+			&i.DriverLastName,
+			&i.PickupDate,
+			&i.PickupTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getPaymentPendingReservations = `-- name: GetPaymentPendingReservations :many
 SELECT
     id,
