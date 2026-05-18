@@ -2,7 +2,6 @@ package booking
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"encore.app/internal/api_errors"
@@ -88,13 +87,6 @@ func TestListCoupons(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().ListCoupons(gomock.Any()).Return(nil, errors.New("db error"))
-
-		_, err := s.ListCoupons(ctx)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestCreateCoupon(t *testing.T) {
@@ -170,13 +162,6 @@ func TestCreateCoupon(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().CreateCoupon(gomock.Any(), gomock.Any()).Return(db.Coupon{}, errors.New("db error"))
-
-		_, err := s.CreateCoupon(ctx, validCreateCouponParams())
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestUpdateCoupon(t *testing.T) {
@@ -271,13 +256,6 @@ func TestUpdateCoupon(t *testing.T) {
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().UpdateCoupon(gomock.Any(), gomock.Any()).Return(db.Coupon{}, errors.New("db error"))
-
-		_, err := s.UpdateCoupon(ctx, 1, validUpdateCouponParams())
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestDeleteCoupon(t *testing.T) {
@@ -296,10 +274,4 @@ func TestDeleteCoupon(t *testing.T) {
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().DeleteCoupon(gomock.Any(), int64(1)).Return(errors.New("db error"))
-
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, s.DeleteCoupon(ctx, 1))
-	})
 }

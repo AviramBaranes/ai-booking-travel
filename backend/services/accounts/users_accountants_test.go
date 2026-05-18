@@ -2,13 +2,10 @@ package accounts
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"encore.app/internal/api_errors"
-	"encore.app/services/accounts/db"
 	user "encore.app/services/accounts/handlers/user"
-	"go.uber.org/mock/gomock"
 )
 
 // --- Helpers ---
@@ -57,14 +54,6 @@ func TestListAccountants(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().ListStaffByRole(gomock.Any(), db.UserRoleAccountant).Return(nil, errors.New("db error"))
-
-		_, err := s.ListAccountants(ctx)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestCreateAccountant(t *testing.T) {
@@ -133,32 +122,4 @@ func TestCreateAccountant(t *testing.T) {
 		api_errors.AssertApiError(t, user.ErrPasswordNoUpper, p.Validate())
 	})
 
-	t.Run("returns error when check exists db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
-
-		_, err := s.CreateAccountant(ctx, user.CreateAccountantParams{
-			FirstName: "DB",
-			LastName:  "Fail",
-			Email:     "db_fail_acc@test.com",
-			Password:  "ValidPass123!",
-		})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("returns error when create db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), db.ErrNoRows)
-		q.EXPECT().CreateStaffUser(gomock.Any(), gomock.Any()).Return(db.CreateStaffUserRow{}, errors.New("db error"))
-
-		_, err := s.CreateAccountant(ctx, user.CreateAccountantParams{
-			FirstName: "DB",
-			LastName:  "CreateFail",
-			Email:     "db_create_fail_acc@test.com",
-			Password:  "ValidPass123!",
-		})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }

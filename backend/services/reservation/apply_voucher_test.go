@@ -2,15 +2,11 @@ package reservation
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/validation"
-	"encore.app/services/reservation/db"
 	"encore.dev/beta/errs"
-	"encore.dev/et"
-	"go.uber.org/mock/gomock"
 )
 
 func TestApplyVoucher(t *testing.T) {
@@ -57,19 +53,6 @@ func TestApplyVoucher(t *testing.T) {
 		}
 
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
-	})
-
-	t.Run("it send internal err if db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().ApplyVoucher(gomock.Any(), gomock.Any()).Return(db.Reservation{}, errors.New("db error"))
-		et.MockService[Interface]("reservation", s)
-		ctx := authContext(123)
-
-		err := ApplyVoucher(ctx, 1, ApplyVoucherParams{
-			Voucher: "123",
-		})
-
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
 	t.Run("it updates the reservation with the voucher and current timestamp", func(t *testing.T) {

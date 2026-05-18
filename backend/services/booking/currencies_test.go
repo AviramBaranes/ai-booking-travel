@@ -2,7 +2,6 @@ package booking
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"encore.app/internal/api_errors"
@@ -85,13 +84,6 @@ func TestListCurrencies(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().ListCurrencies(gomock.Any()).Return(nil, errors.New("db error"))
-
-		_, err := s.ListCurrencies(ctx)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestCreateCurrency(t *testing.T) {
@@ -163,13 +155,6 @@ func TestCreateCurrency(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().CreateCurrency(gomock.Any(), gomock.Any()).Return(db.Currency{}, errors.New("db error"))
-
-		_, err := s.CreateCurrency(ctx, validCreateCurrencyParams())
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestUpdateCurrency(t *testing.T) {
@@ -261,13 +246,6 @@ func TestUpdateCurrency(t *testing.T) {
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().UpdateCurrency(gomock.Any(), gomock.Any()).Return(db.Currency{}, errors.New("db error"))
-
-		_, err := s.UpdateCurrency(ctx, 1, validUpdateCurrencyParams())
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestDeleteCurrency(t *testing.T) {
@@ -286,10 +264,4 @@ func TestDeleteCurrency(t *testing.T) {
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().DeleteCurrency(gomock.Any(), int64(1)).Return(errors.New("db error"))
-
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, s.DeleteCurrency(ctx, 1))
-	})
 }

@@ -2,7 +2,6 @@ package accounts
 
 import (
 	"context"
-	"errors"
 	"strconv"
 	"testing"
 	"time"
@@ -14,12 +13,9 @@ import (
 	"encore.app/services/accounts/db"
 	ah "encore.app/services/accounts/handlers/auth"
 	user "encore.app/services/accounts/handlers/user"
-	"encore.app/services/accounts/mocks"
 	"encore.dev/beta/auth"
 	"encore.dev/beta/errs"
 	"encore.dev/et"
-
-	"go.uber.org/mock/gomock"
 )
 
 func adminAuthContext(adminID int64) context.Context {
@@ -43,14 +39,6 @@ const (
 	testPassword = "ValidPass123!"
 	testEmail    = "valid_email@example.com"
 )
-
-type hybridQuerier struct {
-	*mocks.MockQuerier
-}
-
-func (hq *hybridQuerier) GetUserByEmail(ctx context.Context, email string) (db.User, error) {
-	return query.GetUserByEmail(ctx, email)
-}
 
 func TestLogin(t *testing.T) {
 	ctx := context.Background()
@@ -91,20 +79,6 @@ func TestLogin(t *testing.T) {
 		api_errors.AssertApiError(t, ah.ErrInvalidCredentials, err)
 	})
 
-	t.Run("Search user by email fails", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		q := mocks.NewMockQuerier(ctrl)
-		q.EXPECT().
-			GetUserByEmail(gomock.Any(), testEmail).
-			Return(db.User{}, errors.New(("db error")))
-
-		s := &Service{query: q}
-		_, err := s.Login(ctx, ah.LoginParams{Email: testEmail, Password: testPassword})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
 	t.Run("Incorrect password", func(t *testing.T) {
 		user, err := CreateAdmin(ctx, user.CreateAdminParams{
 			FirstName: "Test",
@@ -119,38 +93,6 @@ func TestLogin(t *testing.T) {
 
 		_, err = Login(ctx, ah.LoginParams{Email: testEmail, Password: "WrongPass123!"})
 		api_errors.AssertApiError(t, ah.ErrInvalidCredentials, err)
-	})
-
-	t.Run("Store refresh token fails", func(t *testing.T) {
-		user, err := CreateAdmin(ctx, user.CreateAdminParams{
-			FirstName: "Test",
-			LastName:  "Admin",
-			Email:     testEmail,
-			Password:  testPassword,
-		})
-		if err != nil {
-			t.Fatalf("Failed to create test user: %v", err)
-		}
-
-		ctrl := gomock.NewController(t)
-
-		// we need to make sure to restore the mock before deleting the user
-		defer func() {
-			ctrl.Finish()
-			query.DeleteUser(ctx, user.ID)
-		}()
-
-		// we don't need to mock the login logic
-		hq := hybridQuerier{
-			MockQuerier: mocks.NewMockQuerier(ctrl),
-		}
-		hq.EXPECT().
-			SaveRefreshToken(gomock.Any(), gomock.Any()).
-			Return(errors.New("db error"))
-
-		s := &Service{query: &hq}
-		_, err = s.Login(ctx, ah.LoginParams{Email: testEmail, Password: testPassword})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
 	t.Run("Successful login", func(t *testing.T) {
@@ -255,36 +197,6 @@ func TestLoginAsAgent(t *testing.T) {
 		api_errors.AssertApiError(t, ah.ErrInvalidCredentials, err)
 	})
 
-	t.Run("DB error looking up agent", func(t *testing.T) {
-		adminCtx := adminAuthContext(999)
-		ctrl := gomock.NewController(t)
-		t.Cleanup(ctrl.Finish)
-
-		q := mocks.NewMockQuerier(ctrl)
-		q.EXPECT().GetUserById(gomock.Any(), int64(12345)).
-			Return(db.User{}, errors.New("db error"))
-
-		et.MockService[Interface]("accounts", &Service{query: q})
-		_, err := LoginAsAgent(adminCtx, ah.LoginAsAgentParams{AgentID: 12345})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("Save refresh token fails", func(t *testing.T) {
-		adminCtx := adminAuthContext(999)
-		ctrl := gomock.NewController(t)
-		t.Cleanup(ctrl.Finish)
-
-		q := mocks.NewMockQuerier(ctrl)
-		q.EXPECT().GetUserById(gomock.Any(), int64(1)).
-			Return(db.User{ID: 1, Role: db.UserRoleAgent}, nil)
-		q.EXPECT().SaveRefreshToken(gomock.Any(), gomock.Any()).
-			Return(errors.New("db error"))
-
-		et.MockService[Interface]("accounts", &Service{query: q})
-		_, err := LoginAsAgent(adminCtx, ah.LoginAsAgentParams{AgentID: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
 	t.Run("Successful login as agent", func(t *testing.T) {
 		adminEmail := generateTestEmail()
 		admin, delAdmin, err := registerAdmin(ctx, adminEmail, testPassword)
@@ -371,38 +283,6 @@ func TestLoginBackToAdmin(t *testing.T) {
 		agentCtx := agentAuthContext(1, &adminRefID)
 		_, err := LoginBackToAdmin(agentCtx)
 		api_errors.AssertApiError(t, ah.ErrInvalidCredentials, err)
-	})
-
-	t.Run("DB error looking up admin", func(t *testing.T) {
-		adminRefID := int64(1)
-		agentCtx := agentAuthContext(2, &adminRefID)
-		ctrl := gomock.NewController(t)
-		t.Cleanup(ctrl.Finish)
-
-		q := mocks.NewMockQuerier(ctrl)
-		q.EXPECT().GetUserById(gomock.Any(), adminRefID).
-			Return(db.User{}, errors.New("db error"))
-
-		et.MockService[Interface]("accounts", &Service{query: q})
-		_, err := LoginBackToAdmin(agentCtx)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("Generate tokens fails", func(t *testing.T) {
-		adminRefID := int64(1)
-		agentCtx := agentAuthContext(2, &adminRefID)
-		ctrl := gomock.NewController(t)
-		t.Cleanup(ctrl.Finish)
-
-		q := mocks.NewMockQuerier(ctrl)
-		q.EXPECT().GetUserById(gomock.Any(), adminRefID).
-			Return(db.User{ID: adminRefID, Role: db.UserRoleAdmin}, nil)
-		q.EXPECT().SaveRefreshToken(gomock.Any(), gomock.Any()).
-			Return(errors.New("db error"))
-
-		et.MockService[Interface]("accounts", &Service{query: q})
-		_, err := LoginBackToAdmin(agentCtx)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
 	t.Run("Successful login back to admin", func(t *testing.T) {

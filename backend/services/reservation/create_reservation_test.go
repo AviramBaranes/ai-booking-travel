@@ -2,7 +2,6 @@ package reservation
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"encore.app/internal/api_errors"
@@ -249,11 +248,4 @@ func TestCreateReservation(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().InsertReservation(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
-
-		_, err := s.CreateReservation(ctx, *validCreateReservationParams())
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }

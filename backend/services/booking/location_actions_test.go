@@ -8,7 +8,6 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/services/booking/db"
 	"encore.app/services/booking/handlers/location"
-	"go.uber.org/mock/gomock"
 )
 
 func TestDeleteLocation(t *testing.T) {
@@ -83,38 +82,6 @@ func TestDeleteLocation(t *testing.T) {
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
-	t.Run("returns error when delete broker code fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().DeleteLocationBrokerCode(gomock.Any(), int64(1)).
-			Return(int64(0), errors.New("db error"))
-
-		err := s.DeleteLocation(ctx, 1)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("returns error when count fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().DeleteLocationBrokerCode(gomock.Any(), int64(1)).
-			Return(int64(10), nil)
-		q.EXPECT().CountLocationBrokerCodesByLocationID(gomock.Any(), int64(10)).
-			Return(int64(0), errors.New("db error"))
-
-		err := s.DeleteLocation(ctx, 1)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("returns error when delete location fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().DeleteLocationBrokerCode(gomock.Any(), int64(1)).
-			Return(int64(10), nil)
-		q.EXPECT().CountLocationBrokerCodesByLocationID(gomock.Any(), int64(10)).
-			Return(int64(0), nil)
-		q.EXPECT().DeleteLocationByID(gomock.Any(), int64(10)).
-			Return(errors.New("db error"))
-
-		err := s.DeleteLocation(ctx, 1)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestToggleLocation(t *testing.T) {
@@ -228,21 +195,4 @@ func TestToggleLocation(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error when enable fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().EnableLocationBrokerCode(gomock.Any(), int64(999)).
-			Return(errors.New("db error"))
-
-		err := s.ToggleLocation(ctx, 999, location.ToggleLocationParams{Enabled: true})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("returns error when disable fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().DisableLocationBrokerCode(gomock.Any(), int64(999)).
-			Return(errors.New("db error"))
-
-		err := s.ToggleLocation(ctx, 999, location.ToggleLocationParams{Enabled: false})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }

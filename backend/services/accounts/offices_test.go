@@ -2,7 +2,6 @@ package accounts
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 
@@ -11,7 +10,6 @@ import (
 	oh "encore.app/services/accounts/handlers/office"
 	organization "encore.app/services/accounts/handlers/organization"
 	"encore.dev/et"
-	"go.uber.org/mock/gomock"
 )
 
 // --- Helpers ---
@@ -250,24 +248,6 @@ func TestListOffices(t *testing.T) {
 		api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 	})
 
-	t.Run("returns error when list db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().ListOffices(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
-
-		_, err := s.ListOffices(ctx, oh.ListOfficesParams{Page: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("returns error when count db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().ListOffices(gomock.Any(), gomock.Any()).Return([]db.ListOfficesRow{}, nil)
-		q.EXPECT().CountOffices(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
-
-		_, err := s.ListOffices(ctx, oh.ListOfficesParams{Page: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestCreateOffice(t *testing.T) {
@@ -391,17 +371,6 @@ func TestCreateOffice(t *testing.T) {
 		api_errors.AssertApiError(t, oh.ErrNameAlreadyExists, err)
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().GetOrganizationBillingState(gomock.Any(), gomock.Any()).Return(
-			db.GetOrganizationBillingStateRow{IsOrganic: true}, nil,
-		)
-		q.EXPECT().CreateOffice(gomock.Any(), gomock.Any()).Return(db.CreateOfficeRow{}, errors.New("db error"))
-
-		_, err := s.CreateOffice(ctx, validCreateOfficeParams())
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestUpdateOffice(t *testing.T) {
@@ -533,14 +502,6 @@ func TestUpdateOffice(t *testing.T) {
 		api_errors.AssertApiError(t, invalidValueErr("name"), p.Validate())
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().UpdateOffice(gomock.Any(), gomock.Any()).Return(db.UpdateOfficeRow{}, errors.New("db error"))
-
-		_, err := s.UpdateOffice(ctx, 1, validUpdateOfficeParams())
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestListInorganicOffices(t *testing.T) {

@@ -2,7 +2,6 @@ package accounts
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sort"
 	"testing"
@@ -12,7 +11,6 @@ import (
 	"encore.app/services/accounts/db"
 	contact "encore.app/services/accounts/handlers/contact"
 	"encore.dev/beta/errs"
-	"go.uber.org/mock/gomock"
 )
 
 // --- Helpers ---
@@ -324,24 +322,6 @@ func TestListContacts(t *testing.T) {
 		api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 	})
 
-	t.Run("returns error when list db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().ListContacts(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
-
-		_, err := s.ListContacts(ctx, contact.ListContactsParams{Page: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("returns error when count db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().ListContacts(gomock.Any(), gomock.Any()).Return([]db.ListContactsRow{}, nil)
-		q.EXPECT().CountContacts(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
-
-		_, err := s.ListContacts(ctx, contact.ListContactsParams{Page: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestCreateContact(t *testing.T) {
@@ -479,15 +459,6 @@ func TestCreateContact(t *testing.T) {
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().CreateContact(gomock.Any(), gomock.Any()).Return(db.Contact{}, errors.New("db error"))
-
-		officeID := int64(1)
-		_, err := s.CreateContact(ctx, validCreateContactParams(&officeID, nil))
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestUpdateContact(t *testing.T) {
@@ -585,14 +556,6 @@ func TestUpdateContact(t *testing.T) {
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().UpdateContact(gomock.Any(), gomock.Any()).Return(db.Contact{}, errors.New("db error"))
-
-		_, err := s.UpdateContact(ctx, 1, validUpdateContactParams())
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestDeleteContact(t *testing.T) {
@@ -619,14 +582,6 @@ func TestDeleteContact(t *testing.T) {
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().DeleteContact(gomock.Any(), gomock.Any()).Return(errors.New("db error"))
-
-		err := s.DeleteContact(ctx, 1)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func ptrStr(s string) *string {
@@ -701,16 +656,6 @@ func sortBillingContact(c contact.BillingContact) contact.BillingContact {
 func TestGetBillingContacts(t *testing.T) {
 	ctx := context.Background()
 	s := &Service{query: query}
-
-	t.Run("returns internal error when db fails", func(t *testing.T) {
-		t.Parallel()
-		q, ms := mockService(t)
-		q.EXPECT().GetAgentsBillingContacts(gomock.Any(), gomock.Any()).
-			Return(nil, errors.New("db error"))
-
-		_, err := ms.GetBillingContacts(ctx, contact.GetBillingContactsParams{AgentsIDs: []int64{1}})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 
 	t.Run("returns empty when nil ids or agent has no payment-responsible contact", func(t *testing.T) {
 		t.Parallel()

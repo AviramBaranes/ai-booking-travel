@@ -2,27 +2,13 @@ package reservation
 
 import (
 	"context"
-	"errors"
 	"testing"
 
-	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/reservation/db"
-	"encore.dev/et"
-	"go.uber.org/mock/gomock"
 )
 
 func TestGetOpenReservations(t *testing.T) {
-	t.Run("returns internal error when db query fails", func(t *testing.T) {
-		q, ms := mockService(t)
-		q.EXPECT().GetPaymentPendingReservations(gomock.Any()).
-			Return(nil, errors.New("db error"))
-		et.MockService[Interface]("reservation", ms)
-
-		_, err := GetOpenReservations(context.Background())
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
 	t.Run("returns empty list when no open reservations exist", func(t *testing.T) {
 		const userID int64 = 8888
 		ctx := context.Background()

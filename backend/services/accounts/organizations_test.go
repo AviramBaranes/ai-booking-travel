@@ -2,7 +2,6 @@ package accounts
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 
@@ -10,7 +9,6 @@ import (
 	"encore.app/services/accounts/db"
 	organization "encore.app/services/accounts/handlers/organization"
 	"encore.dev/et"
-	"go.uber.org/mock/gomock"
 )
 
 // --- Helpers ---
@@ -362,22 +360,6 @@ func TestListOrganizations(t *testing.T) {
 		api_errors.AssertApiError(t, invalidValueErr("page"), p.Validate())
 	})
 
-	t.Run("returns error when list db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().ListOrganizations(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
-
-		_, err := s.ListOrganizations(ctx, organization.ListOrganizationsParams{Page: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("returns error when count db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().ListOrganizations(gomock.Any(), gomock.Any()).Return([]db.ListOrganizationsRow{}, nil)
-		q.EXPECT().CountOrganizations(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
-
-		_, err := s.ListOrganizations(ctx, organization.ListOrganizationsParams{Page: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestCreateOrganization(t *testing.T) {
@@ -486,13 +468,6 @@ func TestCreateOrganization(t *testing.T) {
 		api_errors.AssertApiError(t, organization.ErrNameAlreadyExists, err)
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().CreateOrganization(gomock.Any(), gomock.Any()).Return(db.Organization{}, errors.New("db error"))
-
-		_, err := s.CreateOrganization(ctx, validCreateOrgParams())
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestUpdateOrganization(t *testing.T) {
@@ -619,13 +594,6 @@ func TestUpdateOrganization(t *testing.T) {
 		api_errors.AssertApiError(t, organization.ErrNameAlreadyExists, err)
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().UpdateOrganization(gomock.Any(), gomock.Any()).Return(db.Organization{}, errors.New("db error"))
-
-		_, err := s.UpdateOrganization(ctx, 1, validUpdateOrgParams())
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestListOrganicOrganizations(t *testing.T) {

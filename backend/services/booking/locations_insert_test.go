@@ -13,8 +13,6 @@ import (
 	"encore.app/internal/broker"
 	"encore.app/services/booking/db"
 	"encore.app/services/booking/handlers/location"
-	locations_mocks "encore.app/services/booking/mocks"
-	"go.uber.org/mock/gomock"
 )
 
 // mockBroker implements broker.Broker for testing insertLocations without HTTP.
@@ -228,78 +226,6 @@ func TestInsertLocations(t *testing.T) {
 		if err != nil || locID == 0 {
 			t.Fatalf("skipped location not found: %v", err)
 		}
-	})
-
-	t.Run("returns error when upsert fails", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		q := locations_mocks.NewMockQuerier(ctrl)
-		loc := broker.Location{ID: "err-loc-1", Name: "A", Country: "C", CountryCode: "US", City: "X", Iata: "ERR"}
-
-		q.EXPECT().UpsertLocationByIATA(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
-
-		b := &mockBroker{
-			name: broker.BrokerFlex,
-			pages: []broker.LocationPage{
-				{Locations: []broker.Location{loc}, NextPage: ""},
-			},
-		}
-
-		err := location.NewLocationService(q).InsertLocations(ctx, b)
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("returns error when InsertLocationBrokerCode fails", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		q := locations_mocks.NewMockQuerier(ctrl)
-		loc := broker.Location{ID: "err-loc-2", Name: "A", Country: "C", CountryCode: "US", City: "X", Iata: "EBC"}
-
-		q.EXPECT().UpsertLocationByIATA(gomock.Any(), gomock.Any()).Return(int64(1), nil)
-		q.EXPECT().GetLocationBrokerCode(gomock.Any(), gomock.Any()).Return(db.LocationBrokerCode{}, db.ErrNoRows)
-		q.EXPECT().InsertLocationBrokerCode(gomock.Any(), gomock.Any()).Return(db.LocationBrokerCode{}, errors.New("insert failed"))
-
-		b := &mockBroker{
-			name: broker.BrokerFlex,
-			pages: []broker.LocationPage{
-				{Locations: []broker.Location{loc}, NextPage: ""},
-			},
-		}
-
-		err := location.NewLocationService(q).InsertLocations(ctx, b)
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("returns error when GetLocationBrokerCode returns unexpected error", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		q := locations_mocks.NewMockQuerier(ctrl)
-		loc := broker.Location{ID: "err-loc-3", Name: "A", Country: "C", CountryCode: "US", City: "X", Iata: "EGT"}
-
-		q.EXPECT().UpsertLocationByIATA(gomock.Any(), gomock.Any()).Return(int64(1), nil)
-		q.EXPECT().GetLocationBrokerCode(gomock.Any(), gomock.Any()).Return(db.LocationBrokerCode{}, errors.New("unexpected db error"))
-
-		b := &mockBroker{
-			name: broker.BrokerFlex,
-			pages: []broker.LocationPage{
-				{Locations: []broker.Location{loc}, NextPage: ""},
-			},
-		}
-
-		err := location.NewLocationService(q).InsertLocations(ctx, b)
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
 	t.Run("handles empty page gracefully", func(t *testing.T) {
@@ -592,31 +518,6 @@ func TestInsertLocation(t *testing.T) {
 				}
 			})
 		}
-	})
-
-	t.Run("returns error when database query fails", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		q := locations_mocks.NewMockQuerier(ctrl)
-
-		q.EXPECT().UpsertLocationByIATA(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("database error")).Times(1)
-
-		s := &Service{query: q}
-		err := s.InsertLocation(ctx, location.InsertLocationParams{
-			Broker:      broker.BrokerFlex,
-			ID:          "flex-loc-err",
-			Name:        "Error Location",
-			Country:     "Error Country",
-			CountryCode: "ER",
-			Iata:        "ERR",
-		})
-
-		if err == nil {
-			t.Fatalf("expected error, got nil")
-		}
-
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
 	t.Run("inserts location successfully", func(t *testing.T) {

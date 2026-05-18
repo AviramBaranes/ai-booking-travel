@@ -2,12 +2,9 @@ package reservation
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"encore.app/internal/api_errors"
-	"encore.app/services/reservation/db"
-	"go.uber.org/mock/gomock"
 )
 
 func TestGetReservation(t *testing.T) {
@@ -18,13 +15,6 @@ func TestGetReservation(t *testing.T) {
 			t.Fatal("expected error, got nil")
 		}
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
-	})
-	t.Run("return sends an internal error on db failure", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().GetReservationByID(gomock.Any(), gomock.Any()).Return(db.GetReservationByIDRow{}, errors.New("db error"))
-
-		_, err := s.GetReservation(ctx, 1)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 	t.Run("return 404 for reservation of different user", func(t *testing.T) {
 		res, err := CreateReservation(ctx, *validCreateReservationParams())

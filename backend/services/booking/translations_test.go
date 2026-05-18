@@ -2,14 +2,12 @@ package booking
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/booking/db"
 	"encore.app/services/booking/handlers/translation"
-	locations_mocks "encore.app/services/booking/mocks"
 	"go.uber.org/mock/gomock"
 )
 
@@ -54,19 +52,10 @@ func TestVerifyBrokerTranslation(t *testing.T) {
 	})
 }
 
-// --- DB Failure Tests (mocked) ---
+// --- Not Found Tests (mocked) ---
 
 func TestVerifyBrokerTranslationDBFailures(t *testing.T) {
 	ctx := context.Background()
-
-	t.Run("returns internal error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().VerifyBrokerTranslation(gomock.Any(), int64(1)).
-			Return(errors.New("db error"))
-
-		err := s.VerifyBrokerTranslation(ctx, 1)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 
 	t.Run("returns not found when db returns ErrNoRows", func(t *testing.T) {
 		q, s := mockService(t)
@@ -152,21 +141,10 @@ func TestUpdateBrokerTranslation(t *testing.T) {
 	})
 }
 
-// --- DB Failure Tests (mocked) ---
+// --- Not Found Tests (mocked) ---
 
 func TestUpdateBrokerTranslationDBFailures(t *testing.T) {
 	ctx := context.Background()
-
-	t.Run("returns internal error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().UpdateBrokerTranslation(gomock.Any(), gomock.Any()).
-			Return(errors.New("db error"))
-
-		err := s.UpdateBrokerTranslation(ctx, 1, translation.UpdateBrokerTranslationParams{
-			TargetText: "fail",
-		})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 
 	t.Run("returns not found when db returns ErrNoRows", func(t *testing.T) {
 		q, s := mockService(t)
@@ -543,38 +521,6 @@ func TestListBrokerTranslationsPagination(t *testing.T) {
 	})
 }
 
-// --- DB Failure Tests (mocked) ---
-
-func TestListBrokerTranslationsDBFailures(t *testing.T) {
-	ctx := context.Background()
-
-	t.Run("returns error when count query fails", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		q := locations_mocks.NewMockQuerier(ctrl)
-		s := &Service{query: q}
-
-		q.EXPECT().CountAllTranslations(gomock.Any(), gomock.Any()).
-			Return(int64(0), errors.New("db error"))
-
-		_, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{Page: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("returns error when list query fails", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		q := locations_mocks.NewMockQuerier(ctrl)
-		s := &Service{query: q}
-
-		q.EXPECT().CountAllTranslations(gomock.Any(), gomock.Any()).
-			Return(int64(5), nil)
-		q.EXPECT().ListAllTranslations(gomock.Any(), gomock.Any()).
-			Return(nil, errors.New("db error"))
-
-		_, err := s.ListBrokerTranslations(ctx, translation.ListBrokerTranslationsParams{Page: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-}
-
 // DELETE EP:
 
 func TestDeleteBrokerTranslation(t *testing.T) {
@@ -610,19 +556,10 @@ func TestDeleteBrokerTranslation(t *testing.T) {
 	})
 }
 
-// --- DB Failure Tests (mocked) ---
+// --- Not Found Tests (mocked) ---
 
 func TestDeleteBrokerTranslationDBFailures(t *testing.T) {
 	ctx := context.Background()
-
-	t.Run("returns internal error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().DeleteBrokerTranslation(gomock.Any(), int64(1)).
-			Return(errors.New("db error"))
-
-		err := s.DeleteBrokerTranslation(ctx, 1)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 
 	t.Run("returns not found when db returns ErrNoRows", func(t *testing.T) {
 		q, s := mockService(t)

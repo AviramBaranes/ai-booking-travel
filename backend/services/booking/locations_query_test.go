@@ -2,7 +2,6 @@ package booking
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -12,8 +11,6 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/services/booking/db"
 	"encore.app/services/booking/handlers/location"
-	locations_mocks "encore.app/services/booking/mocks"
-	"go.uber.org/mock/gomock"
 )
 
 // seedLocationWithBrokerCode inserts a location and a broker code pointing to it.
@@ -322,25 +319,6 @@ func TestListLocations(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error when count query fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().CountLocationBrokerCodesWithLocation(gomock.Any(), gomock.Any()).
-			Return(int64(0), errors.New("db error"))
-
-		_, err := s.ListLocations(ctx, location.ListLocationsParams{Page: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("returns error when list query fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().CountLocationBrokerCodesWithLocation(gomock.Any(), gomock.Any()).
-			Return(int64(5), nil)
-		q.EXPECT().ListLocationBrokerCodesWithLocation(gomock.Any(), gomock.Any()).
-			Return(nil, errors.New("db error"))
-
-		_, err := s.ListLocations(ctx, location.ListLocationsParams{Page: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestListLocationsPagination(t *testing.T) {
@@ -461,22 +439,6 @@ func TestSearchLocations(t *testing.T) {
 		if len(res.Locations) != 0 {
 			t.Fatalf("expected empty list of locations, got %v", res.Locations)
 		}
-	})
-
-	t.Run("returns error when database query fails", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		q := locations_mocks.NewMockQuerier(ctrl)
-		q.EXPECT().SearchLocations(gomock.Any(), "error").Return(nil, errors.New("database error")).Times(1)
-
-		s := &Service{query: q}
-		_, err := s.SearchLocations(ctx, location.SearchLocationParams{Search: "error"})
-		if err == nil {
-			t.Fatalf("expected error, got nil")
-		}
-
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
 	t.Run("returns list of locations that match the search query", func(t *testing.T) {

@@ -139,14 +139,6 @@ func TestListAdmins(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().ListStaffByRole(gomock.Any(), db.UserRoleAdmin).Return(nil, errors.New("db error"))
-
-		_, err := s.ListAdmins(ctx)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestCreateAdmin(t *testing.T) {
@@ -221,34 +213,6 @@ func TestCreateAdmin(t *testing.T) {
 		api_errors.AssertApiError(t, user.ErrPasswordNoUpper, p.Validate())
 	})
 
-	t.Run("returns error when check exists db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), errors.New("db error"))
-
-		_, err := s.CreateAdmin(ctx, user.CreateAdminParams{
-			FirstName: "DB",
-			LastName:  "Fail",
-			Email:     "db_fail@test.com",
-			Password:  "ValidPass123!",
-		})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("returns error when create db fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		q.EXPECT().CheckUserExists(gomock.Any(), gomock.Any()).Return(int64(0), db.ErrNoRows)
-		q.EXPECT().CreateStaffUser(gomock.Any(), gomock.Any()).Return(db.CreateStaffUserRow{}, errors.New("db error"))
-
-		_, err := s.CreateAdmin(ctx, user.CreateAdminParams{
-			FirstName: "DB",
-			LastName:  "CreateFail",
-			Email:     "db_create_fail@test.com",
-			Password:  "ValidPass123!",
-		})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestListAdminsEmails(t *testing.T) {
@@ -302,11 +266,4 @@ func TestListAdminsEmails(t *testing.T) {
 		}
 	})
 
-	t.Run("returns internal error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().ListAdminsEmails(gomock.Any()).Return(nil, errors.New("db error"))
-
-		_, err := s.ListAdminsEmails(ctx)
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }

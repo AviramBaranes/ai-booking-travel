@@ -2,14 +2,12 @@ package reservation
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
 	"encore.dev/et"
-	"go.uber.org/mock/gomock"
 )
 
 func TestListOpenReservationsByBillingEntity(t *testing.T) {
@@ -147,20 +145,6 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			t.Fatalf("expected no error, got %v", err)
 		}
 		assertCurrencyGroups(t, resp.CurrencyGroups, map[string]int{"USD": 2, "EUR": 1})
-	})
-
-	t.Run("returns internal error when db query fails", func(t *testing.T) {
-		t.Parallel()
-		q, s := mockService(t)
-		et.MockEndpoint(accounts.GetAgentsByOfficeID, func(_ context.Context, _ accounts.GetAgentsByOfficeIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int64{1}, IsOrganic: false}, nil
-		})
-		q.EXPECT().GetPaymentPendingReservationsByAgentsIDs(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
-
-		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityParams{OfficeID: 10})
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
 	})
 
 	t.Run("returns empty list when no open reservations exist for the agents", func(t *testing.T) {

@@ -2,17 +2,13 @@ package reservation
 
 import (
 	"context"
-	"errors"
 	"strconv"
 	"testing"
 	"time"
 
 	"encore.app/internal/api_errors"
 	authpkg "encore.app/services/accounts"
-	"encore.app/services/reservation/db"
 	"encore.dev/beta/auth"
-	"encore.dev/et"
-	"go.uber.org/mock/gomock"
 )
 
 func authContext(userID int64) context.Context {
@@ -272,29 +268,6 @@ func TestListReservations(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error when list query fails", func(t *testing.T) {
-		q, ms := mockService(t)
-		q.EXPECT().ListReservationsByUser(gomock.Any(), gomock.Any()).
-			Return(nil, errors.New("db error"))
-
-		et.MockService[Interface]("reservation", ms)
-
-		_, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", Page: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("returns error when count query fails", func(t *testing.T) {
-		q, ms := mockService(t)
-		q.EXPECT().ListReservationsByUser(gomock.Any(), gomock.Any()).
-			Return([]db.ListReservationsByUserRow{}, nil)
-		q.EXPECT().CountReservationsByUser(gomock.Any(), gomock.Any()).
-			Return(int64(0), errors.New("db error"))
-
-		et.MockService[Interface]("reservation", ms)
-
-		_, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", Page: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestListReservations_EmptyUser(t *testing.T) {

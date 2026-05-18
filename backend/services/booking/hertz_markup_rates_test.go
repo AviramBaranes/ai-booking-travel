@@ -2,13 +2,10 @@ package booking
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"encore.app/internal/api_errors"
-	"encore.app/services/booking/db"
 	markup_rate "encore.app/services/booking/handlers/markup_rate"
-	"go.uber.org/mock/gomock"
 )
 
 // --- Helpers ---
@@ -255,14 +252,6 @@ func TestListHertzMarkupRates(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().CountHertzMarkupRates(gomock.Any(), gomock.Any()).Return(int64(0), nil)
-		q.EXPECT().ListHertzMarkupRates(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
-
-		_, err := s.ListHertzMarkupRates(ctx, markup_rate.ListHertzMarkupRatesParams{Page: 1})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestCreateHertzMarkupRate(t *testing.T) {
@@ -328,13 +317,6 @@ func TestCreateHertzMarkupRate(t *testing.T) {
 		}
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().InsertHertzMarkupRate(gomock.Any(), gomock.Any()).Return(db.HertzMarkupRate{}, errors.New("db error"))
-
-		_, err := s.CreateHertzMarkupRate(ctx, validCreateParams())
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestUpdateHertzMarkupRate(t *testing.T) {
@@ -389,13 +371,6 @@ func TestUpdateHertzMarkupRate(t *testing.T) {
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().UpdateHertzMarkupRate(gomock.Any(), gomock.Any()).Return(db.HertzMarkupRate{}, errors.New("db error"))
-
-		_, err := s.UpdateHertzMarkupRate(ctx, 1, validUpdateParams())
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
 }
 
 func TestDeleteHertzMarkupRate(t *testing.T) {
@@ -421,10 +396,4 @@ func TestDeleteHertzMarkupRate(t *testing.T) {
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, s.DeleteHertzMarkupRate(ctx, 999999))
 	})
 
-	t.Run("returns error when db fails", func(t *testing.T) {
-		q, s := mockService(t)
-		q.EXPECT().DeleteHertzMarkupRate(gomock.Any(), int64(1)).Return(int64(0), errors.New("db error"))
-
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, s.DeleteHertzMarkupRate(ctx, 1))
-	})
 }

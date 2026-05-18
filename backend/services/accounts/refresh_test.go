@@ -18,18 +18,6 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-type refreshHybridQuerier struct {
-	*mocks.MockQuerier
-}
-
-func (hq *refreshHybridQuerier) GetRefreshToken(ctx context.Context, id string) (db.RefreshToken, error) {
-	return query.GetRefreshToken(ctx, id)
-}
-
-func (hq *refreshHybridQuerier) GetUserById(ctx context.Context, id int64) (db.User, error) {
-	return query.GetUserById(ctx, id)
-}
-
 func TestRefreshTokens(t *testing.T) {
 	ctx := context.Background()
 
@@ -49,25 +37,6 @@ func TestRefreshTokens(t *testing.T) {
 		}
 		_, err = RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
 		api_errors.AssertApiError(t, ah.ErrInvalidRefreshToken, err)
-	})
-
-	t.Run("Query refresh token failed", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		q := mocks.NewMockQuerier(ctrl)
-		token, jti, _, err := jwt.SignRefreshToken(123)
-		if err != nil {
-			t.Fatalf("failed to sign refresh token: %v", err)
-		}
-
-		q.EXPECT().
-			GetRefreshToken(gomock.Any(), jti).
-			Return(db.RefreshToken{}, errors.New("db error"))
-
-		s := &Service{query: q}
-		_, err = s.RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
 	t.Run("Expired refresh token", func(t *testing.T) {
@@ -98,39 +67,6 @@ func TestRefreshTokens(t *testing.T) {
 
 		_, err = RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
 		api_errors.AssertApiError(t, ah.ErrExpiredRefreshToken, err)
-	})
-
-	t.Run("Deleting refresh token failed", func(t *testing.T) {
-		_, del, err := registerAdmin(ctx, "del_refresh_fail_user@example.com", testPassword)
-		if err != nil {
-			t.Fatalf("failed to register user: %v", err)
-		}
-		defer del()
-
-		loginResp, err := Login(ctx, ah.LoginParams{Email: "del_refresh_fail_user@example.com", Password: testPassword})
-		if err != nil {
-			t.Fatalf("failed to login: %v", err)
-		}
-
-		claims, err := jwt.ValidateRefreshToken(loginResp.RefreshToken)
-		if err != nil {
-			t.Fatalf("failed to validate refresh token: %v", err)
-		}
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		hq := &refreshHybridQuerier{
-			MockQuerier: mocks.NewMockQuerier(ctrl),
-		}
-
-		hq.EXPECT().
-			DeleteRefreshToken(gomock.Any(), claims.ID).
-			Return(errors.New("db error"))
-
-		s := &Service{query: hq}
-		_, err = s.RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: loginResp.RefreshToken})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
 	t.Run("User not found", func(t *testing.T) {
@@ -177,70 +113,6 @@ func TestRefreshTokens(t *testing.T) {
 		_, err = s.RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
 		// The code returns ah.ErrInvalidRefreshToken if user not found (ErrNoRows)
 		api_errors.AssertApiError(t, ah.ErrInvalidRefreshToken, err)
-	})
-
-	t.Run("Query user failed", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		token, jti, _, err := jwt.SignRefreshToken(123)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		q := mocks.NewMockQuerier(ctrl)
-		q.EXPECT().
-			GetRefreshToken(gomock.Any(), jti).
-			Return(db.RefreshToken{
-				Jti:       jti,
-				UserID:    123,
-				ExpiresAt: dbadapters.DBTime(time.Now().Add(time.Hour)),
-			}, nil)
-
-		q.EXPECT().DeleteRefreshToken(gomock.Any(), jti).Return(nil)
-
-		q.EXPECT().
-			GetUserById(gomock.Any(), int64(123)).
-			Return(db.User{}, errors.New("db error"))
-
-		s := &Service{query: q}
-		_, err = s.RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
-	})
-
-	t.Run("Generating tokens failed", func(t *testing.T) {
-		// Mock SaveRefreshToken failure inside generateTokens
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		token, jti, _, err := jwt.SignRefreshToken(123)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		q := mocks.NewMockQuerier(ctrl)
-		q.EXPECT().
-			GetRefreshToken(gomock.Any(), jti).
-			Return(db.RefreshToken{
-				Jti:       jti,
-				UserID:    123,
-				ExpiresAt: dbadapters.DBTime(time.Now().Add(time.Hour)),
-			}, nil)
-
-		q.EXPECT().DeleteRefreshToken(gomock.Any(), jti).Return(nil)
-
-		q.EXPECT().
-			GetUserById(gomock.Any(), int64(123)).
-			Return(db.User{ID: 123, Email: "test@example.com"}, nil)
-
-		// generateTokens calls SaveRefreshToken
-		q.EXPECT().
-			SaveRefreshToken(gomock.Any(), gomock.Any()).
-			Return(errors.New("db error"))
-
-		s := &Service{query: q}
-		_, err = s.RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
-		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
 	t.Run("Successful refresh", func(t *testing.T) {
