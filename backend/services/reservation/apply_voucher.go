@@ -71,7 +71,7 @@ func (s *Service) ApplyVoucher(ctx context.Context, id int64, p ApplyVoucherPara
 
 // notifyVoucherError publishes a critical error notification when voucher generation or sending fails.
 func notifyVoucherError(ctx context.Context, subject string, id int64, b db.Broker, voucher string, err error) {
-	notifications.CriticalErrorEventTopic.Publish(ctx, &notifications.CriticalErrorEvent{
+	notifications.PublishEmailEvent(ctx, notifications.EmailEventTypeCriticalError, notifications.CriticalErrorEmailPayload{
 		Subject: subject,
 		Message: fmt.Sprintf("Reservation %d (broker: %s, voucher: %s): %v", id, b, voucher, err),
 	})

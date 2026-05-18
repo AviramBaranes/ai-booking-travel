@@ -102,7 +102,7 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 	})
 	if err != nil {
 		rlog.Error("failed to resolve reservations after successful billing", "error", err, "reservation_ids", p.IDs)
-		notifications.CriticalErrorEventTopic.Publish(ctx, &notifications.CriticalErrorEvent{
+		notifications.PublishEmailEvent(ctx, notifications.EmailEventTypeCriticalError, notifications.CriticalErrorEmailPayload{
 			Subject: "Failed to resolve reservations after billing",
 			Message: fmt.Sprintf("failed to resolve reservations after successful billing, reservation_ids: %v, error: %v", p.IDs, err),
 		})

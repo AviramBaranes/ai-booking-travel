@@ -27,3 +27,30 @@ type VoucherEmailData struct {
 var VoucherEmailTemplate = Template[VoucherEmailData]{
 	name: "send_voucher",
 }
+
+type CancellationEmailData struct {
+	BookingReferenceID string
+	DriverFullName     string
+}
+
+var CancellationEmailTemplate = Template[CancellationEmailData]{
+	name: "cancellation_email",
+}
+
+type NewOrderEmailData struct {
+	BookingReferenceID string
+	DriverFullName     string
+}
+
+var NewOrderEmailTemplate = Template[NewOrderEmailData]{
+	name: "new_order_email",
+}
+
+type OpenOrderAlertEmailData struct {
+	BookingReferenceID string
+	DriverFullName     string
+}
+
+var OpenOrderAlertEmailTemplate = Template[OpenOrderAlertEmailData]{
+	name: "open_order_alert_email",
+}
