@@ -18,19 +18,19 @@ import (
 	"encore.dev/rlog"
 )
 
-// ApplyVoucherRequest is the request payload type for the apply voucher EP
-type ApplyVoucherRequest struct {
+// ApplyVoucherParams is the request payload type for the apply voucher EP
+type ApplyVoucherParams struct {
 	Voucher string `json:"voucher" validate:"required,notblank"`
 }
 
-func (r ApplyVoucherRequest) Validate() error {
+func (r ApplyVoucherParams) Validate() error {
 	return validation.ValidateStruct(r)
 }
 
 // ApplyVoucher is the EP for applying a voucher on an agent order
 //
 // encore:api auth method=POST path=/reservations/:id/voucher tag:agent
-func (s *Service) ApplyVoucher(ctx context.Context, id int64, p ApplyVoucherRequest) error {
+func (s *Service) ApplyVoucher(ctx context.Context, id int64, p ApplyVoucherParams) error {
 	authData := auth.Data().(*accounts.AuthData)
 	reservation, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{
 		ID:            id,
@@ -101,7 +101,7 @@ func sendVoucher(ctx context.Context, b broker.VoucherProvider, reservation db.R
 		return fmt.Errorf("generating voucher: %w", err)
 	}
 
-	if err = notifications.SendVoucher(ctx, notifications.SendVoucherRequest{
+	if err = notifications.SendVoucher(ctx, notifications.SendVoucherParams{
 		RecipientEmail: recipientEmail,
 		VoucherNumber:  reservation.BrokerReservationID,
 		VoucherHTML:    htmlVoucher,

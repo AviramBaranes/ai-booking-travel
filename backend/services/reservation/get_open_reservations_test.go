@@ -29,10 +29,10 @@ func TestGetOpenReservations(t *testing.T) {
 		s := &Service{query: testQuerier()}
 
 		// Seed only non-open reservations (default status is "booked").
-		seedReservation(t, ctx, s, userID, func(p *CreateReservationRequest) {
+		seedReservation(t, ctx, s, userID, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "EMPTY-BOOKED-1"
 		})
-		seedReservation(t, ctx, s, userID, func(p *CreateReservationRequest) {
+		seedReservation(t, ctx, s, userID, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "EMPTY-BOOKED-2"
 		})
 
@@ -55,7 +55,7 @@ func TestGetOpenReservations(t *testing.T) {
 		s := &Service{query: testQuerier()}
 
 		// 1) "booked" reservation — should NOT appear in open reservations.
-		seedReservation(t, ctx, s, userID, func(p *CreateReservationRequest) {
+		seedReservation(t, ctx, s, userID, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "OPEN-BOOKED"
 			p.DriverTitle = "Mr"
 			p.DriverFirstName = "Booked"
@@ -63,7 +63,7 @@ func TestGetOpenReservations(t *testing.T) {
 		})
 
 		// 2) "vouchered" + "unpaid" — SHOULD appear.
-		vouchID := seedReservation(t, ctx, s, userID, func(p *CreateReservationRequest) {
+		vouchID := seedReservation(t, ctx, s, userID, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "OPEN-VOUCH"
 			p.DriverTitle = "Mr"
 			p.DriverFirstName = "Voucher"
@@ -80,7 +80,7 @@ func TestGetOpenReservations(t *testing.T) {
 		})
 
 		// 3) "canceled" + "refund_pending" — SHOULD appear.
-		cancID := seedReservation(t, ctx, s, userID, func(p *CreateReservationRequest) {
+		cancID := seedReservation(t, ctx, s, userID, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "OPEN-CANC"
 			p.DriverTitle = "Ms"
 			p.DriverFirstName = "Cancel"

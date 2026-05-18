@@ -59,7 +59,7 @@ func (s *BookingService) Book(ctx context.Context, p BookParams) (*BookResponse,
 		return nil, errBookingFailed
 	}
 
-	reservationReq := s.buildCreateReservationRequest(snapshot, plan, p, confID)
+	reservationReq := s.buildCreateReservationParams(snapshot, plan, p, confID)
 	res, err := reservation.CreateReservation(ctx, reservationReq)
 	if err != nil {
 		rlog.Error("failed to create reservation after successful booking",
@@ -79,12 +79,12 @@ func (s *BookingService) Book(ctx context.Context, p BookParams) (*BookResponse,
 	return &BookResponse{ReservationID: res.ID}, nil
 }
 
-func (s *BookingService) buildCreateReservationRequest(
+func (s *BookingService) buildCreateReservationParams(
 	snapshot db.AvailablePlansSnapshot,
 	plan availability.PlanPriceDetails,
 	p BookParams,
 	confirmationNumber string,
-) reservation.CreateReservationRequest {
+) reservation.CreateReservationParams {
 	authData := auth.GetAuthData()
 	rentalDays, _ := calculateSnapshotRentalDays(snapshot)
 	driverAge, _ := strconv.Atoi(snapshot.DriverAge)
@@ -101,7 +101,7 @@ func (s *BookingService) buildCreateReservationRequest(
 		rlog.Error("failed to get location names for reservation request", "error", err)
 	}
 
-	return reservation.CreateReservationRequest{
+	return reservation.CreateReservationParams{
 		UserID:              authData.UserID,
 		BrokerReservationID: confirmationNumber,
 		Broker:              string(plan.Broker),

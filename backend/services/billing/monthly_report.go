@@ -183,7 +183,7 @@ func sendReports(ctx context.Context, reports []Report) {
 
 		base64ExcelReport := base64.StdEncoding.EncodeToString(excelReport)
 
-		if err = notifications.SendMonthlyReport(ctx, notifications.SendMonthlyReportRequest{
+		if err = notifications.SendMonthlyReport(ctx, notifications.SendMonthlyReportParams{
 			ContactName:  r.ContactName,
 			ContactEmail: r.ContactEmail,
 			ExcelBase64:  base64ExcelReport,

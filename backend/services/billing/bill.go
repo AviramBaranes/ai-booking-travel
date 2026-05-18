@@ -21,7 +21,7 @@ var (
 	ErrMismatchedCurrencies                = api_errors.NewValidationError("all selected reservations must have the same currency")
 )
 
-type BillRequestParams struct {
+type BillParams struct {
 	IDs            []int64 `json:"ids" validate:"required,min=1"`
 	TotalPaid      float64 `json:"total_paid" validate:"required,gt=0"`
 	TransferDate   string  `json:"transfer_date" validate:"required,datetime=2006-01-02"`
@@ -29,7 +29,7 @@ type BillRequestParams struct {
 	OrganizationID *int64  `json:"organization_id" encore:"optional"`
 }
 
-func (r BillRequestParams) Validate() error {
+func (r BillParams) Validate() error {
 	if err := validation.ValidateStruct(r); err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ type BillResponse struct {
 }
 
 // encore:api auth method=POST path=/bill tag:accountant
-func Bill(ctx context.Context, p BillRequestParams) (*BillResponse, error) {
+func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 	icountClientRes, err := accounts.GetIcountClientID(ctx, contact.GetIcountClientIDParams{
 		OfficeID:       p.OfficeID,
 		OrganizationID: p.OrganizationID,
@@ -56,7 +56,7 @@ func Bill(ctx context.Context, p BillRequestParams) (*BillResponse, error) {
 		return nil, api_errors.ErrInternalError
 	}
 
-	openReservations, err := reservation.ListOpenReservationsByBillingEntity(ctx, &reservation.ListOpenReservationsByBillingEntityRequest{
+	openReservations, err := reservation.ListOpenReservationsByBillingEntity(ctx, &reservation.ListOpenReservationsByBillingEntityParams{
 		OfficeID: derefInt64(p.OfficeID),
 		OrgID:    derefInt64(p.OrganizationID),
 	})

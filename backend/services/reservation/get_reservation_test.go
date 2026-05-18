@@ -43,12 +43,12 @@ func TestGetReservation(t *testing.T) {
 	t.Run("returns reservation with the right calculations", func(t *testing.T) {
 		tests := []struct {
 			name   string
-			modify func(p *CreateReservationRequest)
+			modify func(p *CreateReservationParams)
 			want   GetReservationResponse
 		}{
 			{
 				name: "only car",
-				modify: func(p *CreateReservationRequest) {
+				modify: func(p *CreateReservationParams) {
 					p.PurchasePrice = 100
 					p.MarkupPercentage = 50
 					p.BrokerErpPrice = 0
@@ -64,7 +64,7 @@ func TestGetReservation(t *testing.T) {
 			},
 			{
 				name: "car with bt erp only",
-				modify: func(p *CreateReservationRequest) {
+				modify: func(p *CreateReservationParams) {
 					p.PurchasePrice = 100
 					p.MarkupPercentage = 50
 					p.BrokerErpPrice = 0
@@ -80,7 +80,7 @@ func TestGetReservation(t *testing.T) {
 			},
 			{
 				name: "car with both bt erp and broker erp",
-				modify: func(p *CreateReservationRequest) {
+				modify: func(p *CreateReservationParams) {
 					p.PurchasePrice = 100
 					p.MarkupPercentage = 50
 					p.DiscountPercentage = 0
@@ -96,7 +96,7 @@ func TestGetReservation(t *testing.T) {
 			},
 			{
 				name: "only car with discount",
-				modify: func(p *CreateReservationRequest) {
+				modify: func(p *CreateReservationParams) {
 					p.PurchasePrice = 100
 					p.MarkupPercentage = 50
 					p.DiscountPercentage = 10
@@ -112,7 +112,7 @@ func TestGetReservation(t *testing.T) {
 			},
 			{
 				name: "car with bt erp and discount",
-				modify: func(p *CreateReservationRequest) {
+				modify: func(p *CreateReservationParams) {
 					p.PurchasePrice = 102.5 // so round is up (make sure we not doing floor)
 					p.MarkupPercentage = 50
 					p.DiscountPercentage = 10
@@ -128,7 +128,7 @@ func TestGetReservation(t *testing.T) {
 			},
 			{
 				name: "car with both bt erp and broker erp and discount",
-				modify: func(p *CreateReservationRequest) {
+				modify: func(p *CreateReservationParams) {
 					p.PurchasePrice = 101.5 // so round is down
 					p.MarkupPercentage = 50
 					p.DiscountPercentage = 10

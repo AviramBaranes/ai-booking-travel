@@ -21,7 +21,7 @@ const (
 	VoucherBrokerHertz VoucherBroker = "hertz"
 )
 
-type SendVoucherRequest struct {
+type SendVoucherParams struct {
 	RecipientEmail string
 	VoucherNumber  string
 	VoucherHTML    string
@@ -29,7 +29,7 @@ type SendVoucherRequest struct {
 }
 
 // encore:api private
-func (s *Service) SendVoucher(ctx context.Context, p SendVoucherRequest) error {
+func (s *Service) SendVoucher(ctx context.Context, p SendVoucherParams) error {
 	pdfBytes, err := s.pdfConverter.ConvertHTMLToPDF(p.VoucherHTML)
 	if err != nil {
 		rlog.Error("converting voucher html to pdf", "error", err, "voucher", p.VoucherNumber)
@@ -83,4 +83,3 @@ func brokerAttachments(b VoucherBroker) ([]email.Attachment, error) {
 		return nil, fmt.Errorf("unknown broker: %s", b)
 	}
 }
-

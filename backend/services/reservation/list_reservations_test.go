@@ -24,7 +24,7 @@ func authContext(userID int64) context.Context {
 }
 
 // seedReservation inserts a reservation for the given user and returns its ID.
-func seedReservation(t *testing.T, ctx context.Context, s *Service, userID int64, modify func(p *CreateReservationRequest)) int64 {
+func seedReservation(t *testing.T, ctx context.Context, s *Service, userID int64, modify func(p *CreateReservationParams)) int64 {
 	t.Helper()
 	p := validCreateReservationParams()
 	p.UserID = userID
@@ -41,27 +41,27 @@ func seedReservation(t *testing.T, ctx context.Context, s *Service, userID int64
 func TestListReservations_Validation(t *testing.T) {
 	tests := []struct {
 		name    string
-		params  ListReservationsRequest
+		params  ListReservationsParams
 		wantErr error
 	}{
 		{
 			name:    "rejects zero page",
-			params:  ListReservationsRequest{SortBy: "created_at", Page: 0},
+			params:  ListReservationsParams{SortBy: "created_at", Page: 0},
 			wantErr: invalidValueErr("page"),
 		},
 		{
 			name:    "rejects negative page",
-			params:  ListReservationsRequest{SortBy: "created_at", Page: -1},
+			params:  ListReservationsParams{SortBy: "created_at", Page: -1},
 			wantErr: invalidValueErr("page"),
 		},
 		{
 			name:    "rejects missing sortBy",
-			params:  ListReservationsRequest{Page: 1},
+			params:  ListReservationsParams{Page: 1},
 			wantErr: invalidValueErr("sortBy"),
 		},
 		{
 			name:    "rejects invalid sortBy",
-			params:  ListReservationsRequest{SortBy: "invalid", Page: 1},
+			params:  ListReservationsParams{SortBy: "invalid", Page: 1},
 			wantErr: invalidValueErr("sortBy"),
 		},
 	}
@@ -73,13 +73,13 @@ func TestListReservations_Validation(t *testing.T) {
 	}
 
 	t.Run("accepts valid params", func(t *testing.T) {
-		if err := (ListReservationsRequest{SortBy: "created_at", Page: 1}).Validate(); err != nil {
+		if err := (ListReservationsParams{SortBy: "created_at", Page: 1}).Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 	})
 
 	t.Run("accepts pickup_date sortBy", func(t *testing.T) {
-		if err := (ListReservationsRequest{SortBy: "pickup_date", Page: 1}).Validate(); err != nil {
+		if err := (ListReservationsParams{SortBy: "pickup_date", Page: 1}).Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 	})
@@ -91,7 +91,7 @@ func TestListReservations(t *testing.T) {
 	s := &Service{query: testQuerier()}
 
 	// Seed reservations with distinct attributes for filtering tests.
-	seedReservation(t, ctx, s, userID, func(p *CreateReservationRequest) {
+	seedReservation(t, ctx, s, userID, func(p *CreateReservationParams) {
 		p.BrokerReservationID = "LIST-ALICE"
 		p.DriverFirstName = "Alice"
 		p.DriverLastName = "Smith"
@@ -99,7 +99,7 @@ func TestListReservations(t *testing.T) {
 	})
 	// Small delay so created_at differs.
 	time.Sleep(10 * time.Millisecond)
-	seedReservation(t, ctx, s, userID, func(p *CreateReservationRequest) {
+	seedReservation(t, ctx, s, userID, func(p *CreateReservationParams) {
 		p.BrokerReservationID = "LIST-BOB"
 		p.DriverFirstName = "Bob"
 		p.DriverLastName = "Jones"
@@ -107,7 +107,7 @@ func TestListReservations(t *testing.T) {
 	})
 
 	t.Run("returns all reservations without filters", func(t *testing.T) {
-		resp, err := ListReservations(ctx, ListReservationsRequest{SortBy: "created_at", Page: 1})
+		resp, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -117,7 +117,7 @@ func TestListReservations(t *testing.T) {
 	})
 
 	t.Run("total reflects result count", func(t *testing.T) {
-		resp, err := ListReservations(ctx, ListReservationsRequest{SortBy: "created_at", Page: 1})
+		resp, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -127,7 +127,7 @@ func TestListReservations(t *testing.T) {
 	})
 
 	t.Run("default sort by created_at DESC", func(t *testing.T) {
-		resp, err := ListReservations(ctx, ListReservationsRequest{SortBy: "created_at", Page: 1})
+		resp, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -141,7 +141,7 @@ func TestListReservations(t *testing.T) {
 	})
 
 	t.Run("sort by pickup_date", func(t *testing.T) {
-		resp, err := ListReservations(ctx, ListReservationsRequest{SortBy: "pickup_date", Page: 1})
+		resp, err := ListReservations(ctx, ListReservationsParams{SortBy: "pickup_date", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -156,7 +156,7 @@ func TestListReservations(t *testing.T) {
 	})
 
 	t.Run("filter by name matches first name", func(t *testing.T) {
-		resp, err := ListReservations(ctx, ListReservationsRequest{SortBy: "created_at", Name: "Alice", Page: 1})
+		resp, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", Name: "Alice", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -178,7 +178,7 @@ func TestListReservations(t *testing.T) {
 	})
 
 	t.Run("filter by name matches last name", func(t *testing.T) {
-		resp, err := ListReservations(ctx, ListReservationsRequest{SortBy: "created_at", Name: "Jones", Page: 1})
+		resp, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", Name: "Jones", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -200,7 +200,7 @@ func TestListReservations(t *testing.T) {
 	})
 
 	t.Run("filter by bookingId", func(t *testing.T) {
-		resp, err := ListReservations(ctx, ListReservationsRequest{SortBy: "created_at", BookingID: "LIST-ALICE", Page: 1})
+		resp, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", BookingID: "LIST-ALICE", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -213,7 +213,7 @@ func TestListReservations(t *testing.T) {
 	})
 
 	t.Run("filter by pickupDate", func(t *testing.T) {
-		resp, err := ListReservations(ctx, ListReservationsRequest{SortBy: "created_at", PickupDate: "2026-06-15", Page: 1})
+		resp, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", PickupDate: "2026-06-15", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -235,7 +235,7 @@ func TestListReservations(t *testing.T) {
 	})
 
 	t.Run("filter by status returns only matching", func(t *testing.T) {
-		resp, err := ListReservations(ctx, ListReservationsRequest{SortBy: "created_at", Status: "booked", Page: 1})
+		resp, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", Status: "booked", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -247,7 +247,7 @@ func TestListReservations(t *testing.T) {
 	})
 
 	t.Run("non-matching filter returns empty with zero total", func(t *testing.T) {
-		resp, err := ListReservations(ctx, ListReservationsRequest{SortBy: "created_at", Name: "zzzznonexistent", Page: 1})
+		resp, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", Name: "zzzznonexistent", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -260,7 +260,7 @@ func TestListReservations(t *testing.T) {
 	})
 
 	t.Run("total reflects filtered count", func(t *testing.T) {
-		resp, err := ListReservations(ctx, ListReservationsRequest{SortBy: "created_at", BookingID: "LIST-BOB", Page: 1})
+		resp, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", BookingID: "LIST-BOB", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -279,7 +279,7 @@ func TestListReservations(t *testing.T) {
 
 		et.MockService[Interface]("reservation", ms)
 
-		_, err := ListReservations(ctx, ListReservationsRequest{SortBy: "created_at", Page: 1})
+		_, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 
@@ -292,7 +292,7 @@ func TestListReservations(t *testing.T) {
 
 		et.MockService[Interface]("reservation", ms)
 
-		_, err := ListReservations(ctx, ListReservationsRequest{SortBy: "created_at", Page: 1})
+		_, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", Page: 1})
 		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }
@@ -302,7 +302,7 @@ func TestListReservations_EmptyUser(t *testing.T) {
 	ctx := authContext(emptyUserID)
 
 	t.Run("returns empty list when no reservations exist", func(t *testing.T) {
-		resp, err := ListReservations(ctx, ListReservationsRequest{SortBy: "created_at", Page: 1})
+		resp, err := ListReservations(ctx, ListReservationsParams{SortBy: "created_at", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}

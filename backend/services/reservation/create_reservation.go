@@ -20,8 +20,8 @@ type ReservationCfg struct {
 
 var cfg = config.Load[*ReservationCfg]()
 
-// CreateReservationRequest defines the parameters required to create a reservation.
-type CreateReservationRequest struct {
+// CreateReservationParams defines the parameters required to create a reservation.
+type CreateReservationParams struct {
 	UserID              int64              `json:"userId" validate:"required"`
 	BrokerReservationID string             `json:"brokerReservationId" validate:"required,notblank"`
 	Broker              string             `json:"broker" validate:"required,oneof=flex hertz"`
@@ -49,8 +49,8 @@ type CreateReservationRequest struct {
 	DropoffLocationName string             `json:"dropoffBrokerLocationId" validate:"required,notblank"`
 }
 
-// Validate validates the fields of CreateReservationRequest.
-func (p CreateReservationRequest) Validate() error {
+// Validate validates the fields of CreateReservationParams.
+func (p CreateReservationParams) Validate() error {
 	return validation.ValidateStruct(p)
 }
 
@@ -60,7 +60,7 @@ type CreateReservationResponse struct {
 }
 
 // encore:api private method=POST path=/reservations
-func (s *Service) CreateReservation(ctx context.Context, p CreateReservationRequest) (*CreateReservationResponse, error) {
+func (s *Service) CreateReservation(ctx context.Context, p CreateReservationParams) (*CreateReservationResponse, error) {
 	carDetailsJSON, err := json.Marshal(p.CarDetails)
 	if err != nil {
 		rlog.Error("failed to marshal reservation car details", "error", err)

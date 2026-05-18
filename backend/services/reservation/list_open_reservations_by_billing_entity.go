@@ -31,14 +31,14 @@ var (
 	)
 )
 
-// ListOpenReservationsByBillingEntityRequest filters open reservations by a billing unit.
+// ListOpenReservationsByBillingEntityParams filters open reservations by a billing unit.
 // Exactly one of OfficeID or OrgID must be provided.
-type ListOpenReservationsByBillingEntityRequest struct {
+type ListOpenReservationsByBillingEntityParams struct {
 	OfficeID int64 `query:"office_id" encore:"optional"`
 	OrgID    int64 `query:"org_id" encore:"optional"`
 }
 
-func (r *ListOpenReservationsByBillingEntityRequest) Validate() error {
+func (r *ListOpenReservationsByBillingEntityParams) Validate() error {
 	if (r.OfficeID == 0 && r.OrgID == 0) || (r.OfficeID != 0 && r.OrgID != 0) {
 		return ErrInvalidBillingEntity
 	}
@@ -78,8 +78,8 @@ type CurrencyGroup struct {
 // for a given billing unit (an organic organization or an office of an inorganic organization).
 //
 //encore:api auth method=GET path=/reservations-for-billing tag:accountant
-func (s *Service) ListOpenReservationsByBillingEntity(ctx context.Context, req *ListOpenReservationsByBillingEntityRequest) (*ListOpenReservationsByBillingEntityResponse, error) {
-	agentIDs, err := s.getAgentsByBillingEntity(ctx, req.OfficeID, req.OrgID)
+func (s *Service) ListOpenReservationsByBillingEntity(ctx context.Context, p *ListOpenReservationsByBillingEntityParams) (*ListOpenReservationsByBillingEntityResponse, error) {
+	agentIDs, err := s.getAgentsByBillingEntity(ctx, p.OfficeID, p.OrgID)
 	if err != nil {
 		return nil, err
 	}

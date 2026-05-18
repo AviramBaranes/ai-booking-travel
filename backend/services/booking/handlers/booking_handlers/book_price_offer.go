@@ -161,14 +161,14 @@ func buildPriceOfferReservationRequest(
 	p BookPriceOfferParams,
 	confirmationNumber string,
 	offerCarDetails broker.CarDetails,
-) (reservation.CreateReservationRequest, error) {
+) (reservation.CreateReservationParams, error) {
 	driverAge, err := strconv.Atoi(offer.DriverAge)
 	if err != nil {
 		rlog.Error("failed to convert driver age to int", "driverAge", offer.DriverAge, "error", err)
-		return reservation.CreateReservationRequest{}, api_errors.ErrInternalError
+		return reservation.CreateReservationParams{}, api_errors.ErrInternalError
 	}
 
-	return reservation.CreateReservationRequest{
+	return reservation.CreateReservationParams{
 		UserID:              userID,
 		BrokerReservationID: confirmationNumber,
 		Broker:              string(offer.Broker),

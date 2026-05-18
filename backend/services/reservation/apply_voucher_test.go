@@ -15,7 +15,7 @@ import (
 
 func TestApplyVoucher(t *testing.T) {
 	t.Run("it validates voucher id exists", func(t *testing.T) {
-		r := ApplyVoucherRequest{}
+		r := ApplyVoucherParams{}
 		err := r.Validate()
 		if err == nil {
 			t.Fatal("expected validation to fail")
@@ -32,7 +32,7 @@ func TestApplyVoucher(t *testing.T) {
 		var userID int64 = 123
 		var reservationID int64 = 456
 		ctx := authContext(userID)
-		err := ApplyVoucher(ctx, reservationID, ApplyVoucherRequest{
+		err := ApplyVoucher(ctx, reservationID, ApplyVoucherParams{
 			Voucher: "123",
 		})
 		if err == nil {
@@ -51,7 +51,7 @@ func TestApplyVoucher(t *testing.T) {
 			t.Fatalf("creating reservation failed: %v", err)
 		}
 
-		err = ApplyVoucher(ctx, res.ID, ApplyVoucherRequest{Voucher: "123"})
+		err = ApplyVoucher(ctx, res.ID, ApplyVoucherParams{Voucher: "123"})
 		if err == nil {
 			t.Fatal("expected applying voucher to fail")
 		}
@@ -65,7 +65,7 @@ func TestApplyVoucher(t *testing.T) {
 		et.MockService[Interface]("reservation", s)
 		ctx := authContext(123)
 
-		err := ApplyVoucher(ctx, 1, ApplyVoucherRequest{
+		err := ApplyVoucher(ctx, 1, ApplyVoucherParams{
 			Voucher: "123",
 		})
 
@@ -83,7 +83,7 @@ func TestApplyVoucher(t *testing.T) {
 			t.Fatalf("creating reservation failed: %v", err)
 		}
 
-		err = ApplyVoucher(ctx, res.ID, ApplyVoucherRequest{Voucher: "123"})
+		err = ApplyVoucher(ctx, res.ID, ApplyVoucherParams{Voucher: "123"})
 		if err != nil {
 			t.Fatalf("expected applying voucher to succeed, got error: %v", err)
 		}

@@ -12,7 +12,7 @@ import (
 	"encore.dev/rlog"
 )
 
-type ListReservationsRequest struct {
+type ListReservationsParams struct {
 	SortBy     string `query:"sortBy" validate:"required,oneof=created_at pickup_date" encore:"optional"`
 	Name       string `query:"name" encore:"optional"`
 	BookingID  string `query:"bookingId" encore:"optional"`
@@ -21,7 +21,7 @@ type ListReservationsRequest struct {
 	Page       int32  `query:"page" validate:"required,gte=1"`
 }
 
-func (p ListReservationsRequest) Validate() error {
+func (p ListReservationsParams) Validate() error {
 	return validation.ValidateStruct(p)
 }
 
@@ -47,15 +47,15 @@ type ListReservationsResponse struct {
 const listReservationsLimit int64 = 8
 
 // encore:api auth method=GET path=/reservations
-func (s Service) ListReservations(ctx context.Context, params ListReservationsRequest) (*ListReservationsResponse, error) {
-	rows, err := s.listReservationsByUser(ctx, params)
+func (s Service) ListReservations(ctx context.Context, p ListReservationsParams) (*ListReservationsResponse, error) {
+	rows, err := s.listReservationsByUser(ctx, p)
 	if err != nil {
 		return nil, err
 	}
 
 	reservations := mapRowsToSummaries(rows)
 
-	total, err := s.countReservationsByUser(ctx, params)
+	total, err := s.countReservationsByUser(ctx, p)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (s Service) ListReservations(ctx context.Context, params ListReservationsRe
 }
 
 // listReservationsByUser returns a paginated list of reservations for a given user, ordered by creation date descending.
-func (s Service) listReservationsByUser(ctx context.Context, p ListReservationsRequest) ([]db.ListReservationsByUserRow, error) {
+func (s Service) listReservationsByUser(ctx context.Context, p ListReservationsParams) ([]db.ListReservationsByUserRow, error) {
 	authData := accounts.GetAuthData()
 	offset := int64(p.Page-1) * listReservationsLimit
 
@@ -91,7 +91,7 @@ func (s Service) listReservationsByUser(ctx context.Context, p ListReservationsR
 }
 
 // countReservationsByUser returns the total number of reservations for a given user, optionally filtered by various criteria.
-func (s Service) countReservationsByUser(ctx context.Context, p ListReservationsRequest) (int64, error) {
+func (s Service) countReservationsByUser(ctx context.Context, p ListReservationsParams) (int64, error) {
 	authData := accounts.GetAuthData()
 
 	count, err := s.query.CountReservationsByUser(ctx, db.CountReservationsByUserParams{

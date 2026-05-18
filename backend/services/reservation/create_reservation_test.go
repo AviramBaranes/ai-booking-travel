@@ -24,8 +24,8 @@ func testQuerier() *db.Queries {
 	return db.New(pool)
 }
 
-func validCreateReservationParams() *CreateReservationRequest {
-	return &CreateReservationRequest{
+func validCreateReservationParams() *CreateReservationParams {
+	return &CreateReservationParams{
 		UserID:              1,
 		BrokerReservationID: "BRK-12345",
 		Broker:              "flex",
@@ -85,137 +85,137 @@ func invalidValueErr(field string) error {
 func TestCreateReservationValidation(t *testing.T) {
 	tests := []struct {
 		name    string
-		modify  func(p *CreateReservationRequest)
+		modify  func(p *CreateReservationParams)
 		wantErr error
 	}{
 		{
 			name:    "rejects missing broker reservation id",
-			modify:  func(p *CreateReservationRequest) { p.BrokerReservationID = "" },
+			modify:  func(p *CreateReservationParams) { p.BrokerReservationID = "" },
 			wantErr: invalidValueErr("brokerReservationId"),
 		},
 		{
 			name:    "rejects blank broker reservation id",
-			modify:  func(p *CreateReservationRequest) { p.BrokerReservationID = "   " },
+			modify:  func(p *CreateReservationParams) { p.BrokerReservationID = "   " },
 			wantErr: invalidValueErr("brokerReservationId"),
 		},
 		{
 			name:    "rejects invalid broker",
-			modify:  func(p *CreateReservationRequest) { p.Broker = "avis" },
+			modify:  func(p *CreateReservationParams) { p.Broker = "avis" },
 			wantErr: invalidValueErr("broker"),
 		},
 		{
 			name:    "rejects missing supplier code",
-			modify:  func(p *CreateReservationRequest) { p.SupplierCode = "" },
+			modify:  func(p *CreateReservationParams) { p.SupplierCode = "" },
 			wantErr: invalidValueErr("supplierCode"),
 		},
 		{
 			name:    "rejects missing car details",
-			modify:  func(p *CreateReservationRequest) { p.CarDetails = nil },
+			modify:  func(p *CreateReservationParams) { p.CarDetails = nil },
 			wantErr: invalidValueErr("carDetails"),
 		},
 		{
 			name:    "rejects missing plan inclusions",
-			modify:  func(p *CreateReservationRequest) { p.PlanInclusions = nil },
+			modify:  func(p *CreateReservationParams) { p.PlanInclusions = nil },
 			wantErr: invalidValueErr("planInclusions"),
 		},
 		{
 			name:    "rejects missing country code",
-			modify:  func(p *CreateReservationRequest) { p.CountryCode = "" },
+			modify:  func(p *CreateReservationParams) { p.CountryCode = "" },
 			wantErr: invalidValueErr("countryCode"),
 		},
 		{
 			name:    "rejects missing currency code",
-			modify:  func(p *CreateReservationRequest) { p.CurrencyCode = "" },
+			modify:  func(p *CreateReservationParams) { p.CurrencyCode = "" },
 			wantErr: invalidValueErr("currencyCode"),
 		},
 		{
 			name:    "rejects zero currency rate",
-			modify:  func(p *CreateReservationRequest) { p.CurrencyRate = 0 },
+			modify:  func(p *CreateReservationParams) { p.CurrencyRate = 0 },
 			wantErr: invalidValueErr("currencyRate"),
 		},
 		{
 			name:    "rejects negative currency rate",
-			modify:  func(p *CreateReservationRequest) { p.CurrencyRate = -1 },
+			modify:  func(p *CreateReservationParams) { p.CurrencyRate = -1 },
 			wantErr: invalidValueErr("currencyRate"),
 		},
 		{
 			name:    "rejects negative purchase price",
-			modify:  func(p *CreateReservationRequest) { p.PurchasePrice = -1 },
+			modify:  func(p *CreateReservationParams) { p.PurchasePrice = -1 },
 			wantErr: invalidValueErr("purchasePrice"),
 		},
 		{
 			name:    "rejects discount above 100",
-			modify:  func(p *CreateReservationRequest) { p.DiscountPercentage = 101 },
+			modify:  func(p *CreateReservationParams) { p.DiscountPercentage = 101 },
 			wantErr: invalidValueErr("discountPercentage"),
 		},
 		{
 			name:    "rejects negative discount",
-			modify:  func(p *CreateReservationRequest) { p.DiscountPercentage = -1 },
+			modify:  func(p *CreateReservationParams) { p.DiscountPercentage = -1 },
 			wantErr: invalidValueErr("discountPercentage"),
 		},
 		{
 			name:    "rejects invalid pickup date format",
-			modify:  func(p *CreateReservationRequest) { p.PickupDate = "01-04-2026" },
+			modify:  func(p *CreateReservationParams) { p.PickupDate = "01-04-2026" },
 			wantErr: invalidValueErr("pickupDate"),
 		},
 		{
 			name:    "rejects invalid dropoff date format",
-			modify:  func(p *CreateReservationRequest) { p.DropoffDate = "2026/04/05" },
+			modify:  func(p *CreateReservationParams) { p.DropoffDate = "2026/04/05" },
 			wantErr: invalidValueErr("dropoffDate"),
 		},
 		{
 			name:    "rejects missing pickup time",
-			modify:  func(p *CreateReservationRequest) { p.PickupTime = "" },
+			modify:  func(p *CreateReservationParams) { p.PickupTime = "" },
 			wantErr: invalidValueErr("pickupTime"),
 		},
 		{
 			name:    "rejects blank pickup time",
-			modify:  func(p *CreateReservationRequest) { p.PickupTime = "   " },
+			modify:  func(p *CreateReservationParams) { p.PickupTime = "   " },
 			wantErr: invalidValueErr("pickupTime"),
 		},
 		{
 			name:    "rejects missing dropoff time",
-			modify:  func(p *CreateReservationRequest) { p.DropoffTime = "" },
+			modify:  func(p *CreateReservationParams) { p.DropoffTime = "" },
 			wantErr: invalidValueErr("dropoffTime"),
 		},
 		{
 			name:    "rejects blank dropoff time",
-			modify:  func(p *CreateReservationRequest) { p.DropoffTime = "   " },
+			modify:  func(p *CreateReservationParams) { p.DropoffTime = "   " },
 			wantErr: invalidValueErr("dropoffTime"),
 		},
 		{
 			name:    "rejects zero rental days",
-			modify:  func(p *CreateReservationRequest) { p.RentalDays = 0 },
+			modify:  func(p *CreateReservationParams) { p.RentalDays = 0 },
 			wantErr: invalidValueErr("rentalDays"),
 		},
 		{
 			name:    "rejects missing driver title",
-			modify:  func(p *CreateReservationRequest) { p.DriverTitle = "" },
+			modify:  func(p *CreateReservationParams) { p.DriverTitle = "" },
 			wantErr: invalidValueErr("driverTitle"),
 		},
 		{
 			name:    "rejects invalid driver title",
-			modify:  func(p *CreateReservationRequest) { p.DriverTitle = "Professor" },
+			modify:  func(p *CreateReservationParams) { p.DriverTitle = "Professor" },
 			wantErr: invalidValueErr("driverTitle"),
 		},
 		{
 			name:    "rejects missing driver first name",
-			modify:  func(p *CreateReservationRequest) { p.DriverFirstName = "" },
+			modify:  func(p *CreateReservationParams) { p.DriverFirstName = "" },
 			wantErr: invalidValueErr("driverFirstName"),
 		},
 		{
 			name:    "rejects blank driver first name",
-			modify:  func(p *CreateReservationRequest) { p.DriverFirstName = "   " },
+			modify:  func(p *CreateReservationParams) { p.DriverFirstName = "   " },
 			wantErr: invalidValueErr("driverFirstName"),
 		},
 		{
 			name:    "rejects missing driver last name",
-			modify:  func(p *CreateReservationRequest) { p.DriverLastName = "" },
+			modify:  func(p *CreateReservationParams) { p.DriverLastName = "" },
 			wantErr: invalidValueErr("driverLastName"),
 		},
 		{
 			name:    "rejects driver age below 18",
-			modify:  func(p *CreateReservationRequest) { p.DriverAge = 17 },
+			modify:  func(p *CreateReservationParams) { p.DriverAge = 17 },
 			wantErr: invalidValueErr("driverAge"),
 		},
 	}

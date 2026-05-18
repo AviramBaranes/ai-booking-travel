@@ -15,13 +15,13 @@ import (
 func TestListOpenReservationsByBillingEntity(t *testing.T) {
 	t.Run("validation rejects missing both ids", func(t *testing.T) {
 		t.Parallel()
-		req := &ListOpenReservationsByBillingEntityRequest{}
+		req := &ListOpenReservationsByBillingEntityParams{}
 		api_errors.AssertApiError(t, ErrInvalidBillingEntity, req.Validate())
 	})
 
 	t.Run("validation rejects both ids provided", func(t *testing.T) {
 		t.Parallel()
-		req := &ListOpenReservationsByBillingEntityRequest{OfficeID: 1, OrgID: 2}
+		req := &ListOpenReservationsByBillingEntityParams{OfficeID: 1, OrgID: 2}
 		api_errors.AssertApiError(t, ErrInvalidBillingEntity, req.Validate())
 	})
 
@@ -32,7 +32,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			return nil, api_errors.ErrNotFound
 		})
 
-		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityRequest{OfficeID: 99})
+		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityParams{OfficeID: 99})
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
@@ -43,7 +43,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			return nil, api_errors.ErrNotFound
 		})
 
-		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityRequest{OrgID: 99})
+		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityParams{OrgID: 99})
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
@@ -54,7 +54,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			return &accounts.GetAgentsResponse{IDs: []int64{1, 2}, IsOrganic: true}, nil
 		})
 
-		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityRequest{OfficeID: 10})
+		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityParams{OfficeID: 10})
 		api_errors.AssertApiError(t, ErrOfficeInOrganicOrg, err)
 	})
 
@@ -65,7 +65,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			return &accounts.GetAgentsResponse{IDs: []int64{1, 2}, IsOrganic: false}, nil
 		})
 
-		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityRequest{OrgID: 5})
+		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityParams{OrgID: 5})
 		api_errors.AssertApiError(t, ErrOrgIsInorganic, err)
 	})
 
@@ -76,7 +76,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		s := &Service{query: testQuerier()}
 
 		vn1 := "VCH-OFFICE-1"
-		id1 := seedReservation(t, ctx, s, agent1, func(p *CreateReservationRequest) {
+		id1 := seedReservation(t, ctx, s, agent1, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "BILLING-OFFICE-1"
 			p.CurrencyCode = "USD"
 		})
@@ -85,7 +85,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		}
 
 		vn2 := "VCH-OFFICE-2"
-		id2 := seedReservation(t, ctx, s, agent2, func(p *CreateReservationRequest) {
+		id2 := seedReservation(t, ctx, s, agent2, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "BILLING-OFFICE-2"
 			p.CurrencyCode = "EUR"
 		})
@@ -97,7 +97,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			return &accounts.GetAgentsResponse{IDs: []int64{agent1, agent2}, IsOrganic: false}, nil
 		})
 
-		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityRequest{OfficeID: 10})
+		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OfficeID: 10})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -112,7 +112,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 
 		// Two reservations in USD, one in EUR — exercises multi-currency grouping.
 		vn1 := "VCH-ORG-1"
-		id1 := seedReservation(t, ctx, s, agent1, func(p *CreateReservationRequest) {
+		id1 := seedReservation(t, ctx, s, agent1, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "BILLING-ORG-1"
 			p.CurrencyCode = "USD"
 		})
@@ -121,7 +121,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		}
 
 		vn2 := "VCH-ORG-2"
-		id2 := seedReservation(t, ctx, s, agent2, func(p *CreateReservationRequest) {
+		id2 := seedReservation(t, ctx, s, agent2, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "BILLING-ORG-2"
 			p.CurrencyCode = "USD"
 		})
@@ -130,7 +130,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		}
 
 		vn3 := "VCH-ORG-3"
-		id3 := seedReservation(t, ctx, s, agent2, func(p *CreateReservationRequest) {
+		id3 := seedReservation(t, ctx, s, agent2, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "BILLING-ORG-3"
 			p.CurrencyCode = "EUR"
 		})
@@ -142,7 +142,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			return &accounts.GetAgentsResponse{IDs: []int64{agent1, agent2}, IsOrganic: true}, nil
 		})
 
-		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityRequest{OrgID: 5})
+		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OrgID: 5})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -157,7 +157,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		})
 		q.EXPECT().GetPaymentPendingReservationsByAgentsIDs(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
 
-		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityRequest{OfficeID: 10})
+		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityParams{OfficeID: 10})
 		if err == nil {
 			t.Fatal("expected error, got nil")
 		}
@@ -170,10 +170,10 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		s := &Service{query: testQuerier()}
 
 		// Seed only booked reservations for these agents — they must not appear in open reservations.
-		seedReservation(t, ctx, s, agent1, func(p *CreateReservationRequest) {
+		seedReservation(t, ctx, s, agent1, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "BILLING-EMPTY-1"
 		})
-		seedReservation(t, ctx, s, agent2, func(p *CreateReservationRequest) {
+		seedReservation(t, ctx, s, agent2, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "BILLING-EMPTY-2"
 		})
 
@@ -181,7 +181,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			return &accounts.GetAgentsResponse{IDs: []int64{agent1, agent2}, IsOrganic: false}, nil
 		})
 
-		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityRequest{OfficeID: 10})
+		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OfficeID: 10})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -200,7 +200,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		s := &Service{query: testQuerier()}
 
 		vn := "VCH-PRICE"
-		id := seedReservation(t, ctx, s, agentID, func(p *CreateReservationRequest) {
+		id := seedReservation(t, ctx, s, agentID, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "BRK-PRICE"
 			p.PurchasePrice = 100.00
 			p.MarkupPercentage = 45.00
@@ -218,7 +218,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			return &accounts.GetAgentsResponse{IDs: []int64{agentID}, IsOrganic: true}, nil
 		})
 
-		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityRequest{OrgID: 5})
+		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OrgID: 5})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}

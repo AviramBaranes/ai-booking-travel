@@ -12,14 +12,14 @@ import (
 	"encore.dev/beta/errs"
 )
 
-type SendMonthlyReportRequest struct {
+type SendMonthlyReportParams struct {
 	ContactName  string
 	ContactEmail string
 	ExcelBase64  string
 }
 
 // encore:api private
-func (s *Service) SendMonthlyReport(ctx context.Context, p SendMonthlyReportRequest) error {
+func (s *Service) SendMonthlyReport(ctx context.Context, p SendMonthlyReportParams) error {
 	excelBytes, err := base64.StdEncoding.DecodeString(p.ExcelBase64)
 	if err != nil {
 		return api_errors.NewError(errs.InvalidArgument, "invalid excel report encoding")

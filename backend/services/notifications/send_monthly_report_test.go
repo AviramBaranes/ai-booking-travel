@@ -33,7 +33,7 @@ func TestSendMonthlyReport(t *testing.T) {
 		fake := &fakeEmailSender{}
 		s := &Service{emailSender: fake}
 
-		err := s.SendMonthlyReport(ctx, SendMonthlyReportRequest{
+		err := s.SendMonthlyReport(ctx, SendMonthlyReportParams{
 			ContactName:  "Alice",
 			ContactEmail: "alice@test.com",
 			ExcelBase64:  "not valid base64!!!",
@@ -49,7 +49,7 @@ func TestSendMonthlyReport(t *testing.T) {
 
 	t.Run("sends email with correct recipient, subject, template data, and attachment", func(t *testing.T) {
 		excelBytes := []byte("excel-bytes-payload")
-		req := SendMonthlyReportRequest{
+		req := SendMonthlyReportParams{
 			ContactName:  "Alice",
 			ContactEmail: "alice@test.com",
 			ExcelBase64:  base64.StdEncoding.EncodeToString(excelBytes),
@@ -118,7 +118,7 @@ func TestSendMonthlyReport(t *testing.T) {
 		fake := &fakeEmailSender{err: sendErr}
 		s := &Service{emailSender: fake}
 
-		err := s.SendMonthlyReport(ctx, SendMonthlyReportRequest{
+		err := s.SendMonthlyReport(ctx, SendMonthlyReportParams{
 			ContactName:  "Alice",
 			ContactEmail: "alice@test.com",
 			ExcelBase64:  base64.StdEncoding.EncodeToString([]byte("x")),

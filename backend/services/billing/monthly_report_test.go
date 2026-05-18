@@ -29,7 +29,7 @@ func TestGenerateMonthlyReport(t *testing.T) {
 			t.Fatal("GetBillingContacts should not be called")
 			return nil, nil
 		})
-		et.MockEndpoint(notifications.SendMonthlyReport, func(_ context.Context, _ notifications.SendMonthlyReportRequest) error {
+		et.MockEndpoint(notifications.SendMonthlyReport, func(_ context.Context, _ notifications.SendMonthlyReportParams) error {
 			t.Fatal("SendMonthlyReport should not be called")
 			return nil
 		})
@@ -48,7 +48,7 @@ func TestGenerateMonthlyReport(t *testing.T) {
 		et.MockEndpoint(accounts.GetBillingContacts, func(_ context.Context, _ contact.GetBillingContactsParams) (*contact.GetBillingContactsResponse, error) {
 			return nil, errors.New("contacts down")
 		})
-		et.MockEndpoint(notifications.SendMonthlyReport, func(_ context.Context, _ notifications.SendMonthlyReportRequest) error {
+		et.MockEndpoint(notifications.SendMonthlyReport, func(_ context.Context, _ notifications.SendMonthlyReportParams) error {
 			t.Fatal("SendMonthlyReport should not be called")
 			return nil
 		})
@@ -75,7 +75,7 @@ func TestGenerateMonthlyReport(t *testing.T) {
 			gotIDs = append([]int64(nil), p.AgentsIDs...)
 			return &contact.GetBillingContactsResponse{Contacts: nil}, nil
 		})
-		et.MockEndpoint(notifications.SendMonthlyReport, func(_ context.Context, _ notifications.SendMonthlyReportRequest) error {
+		et.MockEndpoint(notifications.SendMonthlyReport, func(_ context.Context, _ notifications.SendMonthlyReportParams) error {
 			t.Fatal("SendMonthlyReport should not be called when there are no contacts")
 			return nil
 		})
@@ -137,8 +137,8 @@ func TestGenerateMonthlyReport(t *testing.T) {
 		})
 
 		var mu sync.Mutex
-		sent := map[string]notifications.SendMonthlyReportRequest{}
-		et.MockEndpoint(notifications.SendMonthlyReport, func(_ context.Context, p notifications.SendMonthlyReportRequest) error {
+		sent := map[string]notifications.SendMonthlyReportParams{}
+		et.MockEndpoint(notifications.SendMonthlyReport, func(_ context.Context, p notifications.SendMonthlyReportParams) error {
 			mu.Lock()
 			defer mu.Unlock()
 			sent[p.ContactEmail] = p
