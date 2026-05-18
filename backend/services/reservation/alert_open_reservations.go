@@ -43,7 +43,7 @@ func (s *Service) AlertOpenReservations(ctx context.Context) error {
 			}
 		} else {
 			// Within 48h of pickup and still not vouchered — auto-cancel
-			if err := s.CancelReservation(ctx, r.ID); err != nil {
+			if err := CancelReservation(ctx, r.ID); err != nil {
 				rlog.Error("failed to auto-cancel open reservation", "error", err, "reservationId", r.ID)
 			}
 		}
