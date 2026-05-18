@@ -3,11 +3,13 @@ package reservation
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/accounts"
+	"encore.app/services/notifications"
 	"encore.app/services/reservation/db"
 	"encore.dev/beta/errs"
 	"encore.dev/pubsub"
@@ -70,6 +72,14 @@ func (s *Service) CancelReservation(ctx context.Context, id int64) error {
 		return nil
 	}); err != nil {
 		return api_errors.ErrInternalError
+	}
+
+	if _, err := notifications.PublishEmailEvent(ctx, notifications.EmailEventTypeCancellation, notifications.CancellationEmailPayload{
+		UserID:             reservation.UserID,
+		BookingReferenceID: reservation.BrokerReservationID,
+		DriverFullName:     fmt.Sprintf("%s %s %s", reservation.DriverTitle, reservation.DriverFirstName, reservation.DriverLastName),
+	}); err != nil {
+		rlog.Error("failed to publish cancellation email event", "error", err, "reservationId", reservation.ID)
 	}
 
 	return nil
