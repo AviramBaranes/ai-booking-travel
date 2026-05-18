@@ -34,9 +34,17 @@ export function CurrencyGroupCard({ entity, group }: CurrencyGroupCardProps) {
     [group.currencyCode],
   );
 
-  const selectedIds = useMemo(
-    () => group.reservations.filter((r) => selected.has(r.id)).map((r) => r.id),
+  const selectedReservations = useMemo(
+    () => group.reservations.filter((r) => selected.has(r.id)),
     [selected, group.reservations],
+  );
+  const selectedIds = useMemo(
+    () => selectedReservations.map((r) => r.id),
+    [selectedReservations],
+  );
+  const selectedTotal = useMemo(
+    () => selectedReservations.reduce((sum, r) => sum + r.totalPrice, 0),
+    [selectedReservations],
   );
 
   const allChecked =
@@ -79,6 +87,12 @@ export function CurrencyGroupCard({ entity, group }: CurrencyGroupCardProps) {
               <span className="text-navy font-medium">
                 {" "}
                 • {selectedIds.length} נבחרו
+                {selectedTotal > 0 && (
+                  <>
+                    {" "}
+                    (סה"כ לתשלום: {currencyFormatter.format(selectedTotal)})
+                  </>
+                )}
               </span>
             )}
           </p>
