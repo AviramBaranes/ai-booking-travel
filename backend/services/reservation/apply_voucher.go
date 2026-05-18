@@ -102,10 +102,12 @@ func sendVoucher(ctx context.Context, b broker.VoucherProvider, reservation db.R
 	}
 
 	if err = notifications.SendVoucher(ctx, notifications.SendVoucherParams{
-		RecipientEmail: recipientEmail,
-		VoucherNumber:  reservation.BrokerReservationID,
-		VoucherHTML:    htmlVoucher,
-		Broker:         notifications.VoucherBroker(reservation.Broker),
+		RecipientEmail:     recipientEmail,
+		BookingReferenceID: reservation.BrokerReservationID,
+		DriverFullName:     fmt.Sprintf("%s %s %s", reservation.DriverTitle, reservation.DriverFirstName, reservation.DriverLastName),
+		VoucherNumber:      reservation.BrokerReservationID,
+		VoucherHTML:        htmlVoucher,
+		Broker:             notifications.VoucherBroker(reservation.Broker),
 	}); err != nil {
 		return fmt.Errorf("sending voucher email: %w", err)
 	}

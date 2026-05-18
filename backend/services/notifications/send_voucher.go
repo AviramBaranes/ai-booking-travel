@@ -22,10 +22,12 @@ const (
 )
 
 type SendVoucherParams struct {
-	RecipientEmail string
-	VoucherNumber  string
-	VoucherHTML    string
-	Broker         VoucherBroker
+	RecipientEmail     string
+	BookingReferenceID string
+	DriverFullName     string
+	VoucherNumber      string
+	VoucherHTML        string
+	Broker             VoucherBroker
 }
 
 // encore:api private
@@ -54,7 +56,7 @@ func (s *Service) SendVoucher(ctx context.Context, p SendVoucherParams) error {
 		ctx,
 		s.emailSender,
 		[]string{p.RecipientEmail},
-		fmt.Sprintf("שובר השכרת רכב – %s", p.VoucherNumber),
+		fmt.Sprintf("Attached AI Booking Travel voucher number %s %s", p.BookingReferenceID, p.DriverFullName),
 		email.VoucherEmailTemplate,
 		email.VoucherEmailData{VoucherNumber: p.VoucherNumber},
 		attachments,
