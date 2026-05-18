@@ -3,12 +3,14 @@ package reservation
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/pricing"
 	"encore.app/internal/validation"
+	"encore.app/services/notifications"
 	"encore.app/services/reservation/db"
 	"encore.dev/config"
 	"encore.dev/rlog"
@@ -101,6 +103,14 @@ func (s *Service) CreateReservation(ctx context.Context, p CreateReservationPara
 	if err != nil {
 		rlog.Error("failed to insert reservation", "error", err)
 		return nil, api_errors.ErrInternalError
+	}
+
+	if _, err := notifications.PublishEmailEvent(ctx, notifications.EmailEventTypeNewOrder, notifications.NewOrderEmailPayload{
+		UserID:             p.UserID,
+		BookingReferenceID: p.BrokerReservationID,
+		DriverFullName:     fmt.Sprintf("%s %s %s", p.DriverTitle, p.DriverFirstName, p.DriverLastName),
+	}); err != nil {
+		rlog.Error("failed to publish new order email event", "error", err, "brokerReservationId", p.BrokerReservationID)
 	}
 
 	return &CreateReservationResponse{ID: id}, nil
