@@ -1,8 +1,8 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 import { useSearchParams } from "next/navigation";
 
-export function useSelectedVehicle(params: booking.SearchAvailabilityRequest) {
+export function useSelectedVehicle(params: availability.SearchAvailabilityParams) {
   const searchParams = useSearchParams();
   const { data } = useAvailableCars(params, { fromCache: true });
   const cid = searchParams.get("cid");

@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { booking } from "@/shared/client";
+import { price_offer } from "@/shared/client";
 import { useTranslations } from "next-intl";
 import { ShieldCheck, X } from "lucide-react";
 import { useState } from "react";
@@ -7,7 +7,10 @@ import { useMutation } from "@tanstack/react-query";
 import { updatePriceOffer } from "@/shared/api/price-offers-api";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
 import { usePriceOffer } from "../../_hooks/usePriceOffer";
-import { PriceOfferForm, PriceOfferStatus } from "@/app/(app)/[lang]/(withNavbar)/_components/priceOffer/PriceOfferForm";
+import {
+  PriceOfferForm,
+  PriceOfferStatus,
+} from "@/app/(app)/[lang]/(withNavbar)/_components/priceOffer/PriceOfferForm";
 
 interface EditPriceOfferDialogProps {
   open: boolean;
@@ -34,7 +37,7 @@ export function EditPriceOfferDialog({
   const [isSuccess, setIsSuccess] = useState(false);
 
   const { mutate, isPending, error } = useMutation({
-    mutationFn: (params: booking.UpdatePriceOfferParams) =>
+    mutationFn: (params: price_offer.UpdatePriceOfferParams) =>
       updatePriceOffer(priceOfferId, params),
     onSuccess: () => {
       setIsSuccess(true);

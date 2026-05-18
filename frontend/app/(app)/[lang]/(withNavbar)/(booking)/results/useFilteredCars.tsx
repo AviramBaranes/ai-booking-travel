@@ -1,10 +1,10 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useMemo } from "react";
 
-type Filter = (car: booking.AvailableVehicle) => boolean;
+type Filter = (car: availability.AvailableVehicle) => boolean;
 
 export function useFilteredCars(
-  cars: booking.AvailableVehicle[],
+  cars: availability.AvailableVehicle[],
   filters: Filter[],
 ) {
   const filteredCars = useMemo(() => {

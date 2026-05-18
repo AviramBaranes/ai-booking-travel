@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { Page } from "@/payload-types";
 import { SelectedCarCard } from "@/shared/components/booking/SelectedCarCard/SelectedCarCard";
 import { Button } from "@/components/ui/button";

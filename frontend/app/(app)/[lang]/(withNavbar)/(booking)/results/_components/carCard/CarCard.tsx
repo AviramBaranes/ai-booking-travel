@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { CarTags } from "./CarTags";
@@ -10,9 +10,9 @@ import { SupplierLogo } from "@/shared/components/booking/SupplierLogo";
 import { CarDetailsPills } from "@/shared/components/booking/CarDetailsPills";
 
 interface CarCardProps {
-  vehicle: booking.AvailableVehicle;
+  vehicle: availability.AvailableVehicle;
   daysCount: number;
-  searchRequest: booking.SearchAvailabilityRequest;
+  searchRequest: availability.SearchAvailabilityParams;
 }
 
 export function CarCard({ vehicle, daysCount, searchRequest }: CarCardProps) {

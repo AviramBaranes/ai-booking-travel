@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { accounts } from "@/shared/client";
+import { user } from "@/shared/client";
 import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import { ColumnDef } from "@/app/(app)/admin/_components/crud-table/types";
 import {
@@ -17,7 +17,7 @@ interface AccountantUpdateData {
   password: string;
 }
 
-const columns: ColumnDef<accounts.AccountantResponse>[] = [
+const columns: ColumnDef<user.AccountantResponse>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },
   { key: "firstName", label: "שם פרטי", type: "text" },
   { key: "lastName", label: "שם משפחה", type: "text" },
@@ -58,14 +58,14 @@ const updateSchema = z.object({
 export default function AccountantsTable() {
   return (
     <CrudTable<
-      accounts.AccountantResponse,
-      accounts.CreateAccountantRequest,
+      user.AccountantResponse,
+      user.CreateAccountantParams,
       AccountantUpdateData
     >
       columns={[
         ...columns,
         {
-          key: "password" as keyof accounts.AccountantResponse,
+          key: "password" as keyof user.AccountantResponse,
           label: "סיסמה",
           type: "password",
         },
@@ -74,7 +74,7 @@ export default function AccountantsTable() {
       getId={(r) => r.id}
       listFn={() => listAccountants()}
       extractList={(r) =>
-        (r as accounts.ListAccountantsResponse | undefined)?.accountants ?? []
+        (r as user.ListAccountantsResponse | undefined)?.accountants ?? []
       }
       createFn={createAccountant}
       updateFn={(id, data) =>

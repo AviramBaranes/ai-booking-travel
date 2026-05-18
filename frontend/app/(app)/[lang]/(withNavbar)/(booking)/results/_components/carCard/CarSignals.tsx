@@ -1,11 +1,11 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useDirection } from "@/shared/hooks/useDirection";
 import clsx from "clsx";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { SignalsDisplay } from "../../../_components/SignalsDisplay";
 
-export function CarSignals({ vehicle }: { vehicle: booking.AvailableVehicle }) {
+export function CarSignals({ vehicle }: { vehicle: availability.AvailableVehicle }) {
   const t = useTranslations("booking.results");
   const dir = useDirection();
 

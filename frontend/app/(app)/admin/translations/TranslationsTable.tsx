@@ -5,7 +5,7 @@ import { z } from "zod";
 import { BadgeCheck } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { booking } from "@/shared/client";
+import { translation } from "@/shared/client";
 import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import {
   ColumnDef,
@@ -31,7 +31,7 @@ function buildListParams(
   sort: SortState | null,
   page: number,
   filters: Filters,
-): booking.ListBrokerTranslationsRequest {
+): translation.ListBrokerTranslationsParams {
   return {
     Page: page,
     Search: filters.search,
@@ -87,7 +87,7 @@ export default function TranslationsTable() {
     status: "",
   });
 
-  const columns: ColumnDef<booking.BrokerTranslationRow>[] = [
+  const columns: ColumnDef<translation.BrokerTranslationRow>[] = [
     { key: "id", label: "מזהה", type: "number", editable: false },
     { key: "source_text", label: "טקסט מקור", type: "text", editable: false },
     { key: "target_text", label: "תרגום", type: "text" },
@@ -114,9 +114,9 @@ export default function TranslationsTable() {
 
   return (
     <CrudTable<
-      booking.BrokerTranslationRow,
+      translation.BrokerTranslationRow,
       never,
-      booking.UpdateBrokerTranslationRequest
+      translation.UpdateBrokerTranslationParams
     >
       columns={columns}
       queryKey="translations"
@@ -126,11 +126,11 @@ export default function TranslationsTable() {
         listBrokerTranslations(buildListParams(sort, page, filters))
       }
       extractList={(r) =>
-        (r as booking.ListBrokerTranslationsResponse | undefined)
+        (r as translation.ListBrokerTranslationsResponse | undefined)
           ?.translations ?? []
       }
       extractTotal={(r) =>
-        (r as booking.ListBrokerTranslationsResponse | undefined)?.total ?? 0
+        (r as translation.ListBrokerTranslationsResponse | undefined)?.total ?? 0
       }
       updateFn={(id, data) => updateBrokerTranslation(id, data)}
       deleteFn={deleteBrokerTranslation}

@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useMemo, useState } from "react";
 import {
   FILTERS_LIST,
@@ -8,7 +8,7 @@ import { getNestedValue, toFilterValue } from "./useFiltersOptions";
 
 export type SelectedFilters = Map<FilterConfig["id"], Set<string>>;
 
-type CarFilter = (car: booking.AvailableVehicle) => boolean;
+type CarFilter = (car: availability.AvailableVehicle) => boolean;
 
 export function useCheckboxFilters() {
   const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(
@@ -52,7 +52,7 @@ export function useCheckboxFilters() {
           return null;
         }
 
-        return (car: booking.AvailableVehicle) => {
+        return (car: availability.AvailableVehicle) => {
           const value = getNestedValue(car, filter.filterKey);
           const normalized = toFilterValue(value);
           return normalized !== null && values.has(normalized);

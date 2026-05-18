@@ -1,6 +1,6 @@
 "use client";
 
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { Page } from "@/payload-types";
 import { useSelectedVehicle } from "../../plans/_hooks/useSelectedVehicle";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
@@ -29,7 +29,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
 
 interface OrderPageContentProps {
-  searchRequest: booking.SearchAvailabilityRequest;
+  searchRequest: availability.SearchAvailabilityParams;
 }
 
 export function OrderPageContent({ searchRequest }: OrderPageContentProps) {

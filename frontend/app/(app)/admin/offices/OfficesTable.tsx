@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { accounts } from "@/shared/client";
+import { office } from "@/shared/client";
 import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import {
   ColumnDef,
@@ -16,7 +16,7 @@ import { OrgCombobox } from "@/app/(app)/admin/_components/OrgCombobox";
 import { OfficesFilterBar } from "@/app/(app)/admin/_components/OfficesFilterBar";
 import { useUrlFilters } from "@/app/(app)/admin/_hooks/useUrlFilters";
 
-const columns: ColumnDef<accounts.OfficeResponse>[] = [
+const columns: ColumnDef<office.OfficeResponse>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },
   { key: "name", label: "שם", type: "text" },
   {
@@ -85,7 +85,7 @@ function buildRequest(
   _sort: SortState | null,
   page: number,
   filters: { search: string; orgId: string },
-): accounts.ListOfficesRequest {
+): office.ListOfficesParams {
   return {
     Search: filters.search,
     OrgID: filters.orgId ? Number(filters.orgId) : 0,
@@ -98,9 +98,9 @@ export default function OfficesTable() {
 
   return (
     <CrudTable<
-      accounts.OfficeResponse,
-      accounts.CreateOfficeRequest,
-      accounts.UpdateOfficeRequest
+      office.OfficeResponse,
+      office.CreateOfficeParams,
+      office.UpdateOfficeParams
     >
       columns={columns}
       queryKey="offices"
@@ -108,10 +108,10 @@ export default function OfficesTable() {
       getId={(r) => r.id}
       listFn={(sort, page) => listOffices(buildRequest(sort, page, filters))}
       extractList={(r) =>
-        (r as accounts.ListOfficesResponse | undefined)?.offices ?? []
+        (r as office.ListOfficesResponse | undefined)?.offices ?? []
       }
       extractTotal={(r) =>
-        (r as accounts.ListOfficesResponse | undefined)?.total ?? 0
+        (r as office.ListOfficesResponse | undefined)?.total ?? 0
       }
       createFn={createOffice}
       updateFn={updateOffice}

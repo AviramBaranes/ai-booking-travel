@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useTranslations } from "next-intl";
 import { useSelectedVehicle } from "../_hooks/useSelectedVehicle";
 import { ShieldCheck, X } from "lucide-react";
@@ -15,7 +15,7 @@ import { PriceOfferForm } from "../../../_components/priceOffer/PriceOfferForm";
 interface PriceOfferDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  searchRequest: booking.SearchAvailabilityRequest;
+  searchRequest: availability.SearchAvailabilityParams;
 }
 
 const PRICE_OFFER_URL_PREFIX = "/price-offers/"; // + docNumber
@@ -26,7 +26,7 @@ export function PriceOfferDialog({
   searchRequest,
 }: PriceOfferDialogProps) {
   const { lang } = useParams();
-  const t = useTranslations("booking.plansPage");
+  const t = useTranslations("availability.PlansPage");
   const { data } = useAvailableCars(searchRequest, { fromCache: true });
   const vehicle = useSelectedVehicle(searchRequest);
 

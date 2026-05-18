@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { accounts } from "@/shared/client";
+import { user } from "@/shared/client";
 import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import { ColumnDef } from "@/app/(app)/admin/_components/crud-table/types";
 import { listAdmins, createAdmin, updateUser } from "@/shared/api/accounts-api";
@@ -13,7 +13,7 @@ interface AdminUpdateData {
   password: string;
 }
 
-const columns: ColumnDef<accounts.AdminResponse>[] = [
+const columns: ColumnDef<user.AdminResponse>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },
   { key: "firstName", label: "שם פרטי", type: "text" },
   { key: "lastName", label: "שם משפחה", type: "text" },
@@ -53,15 +53,11 @@ const updateSchema = z.object({
 
 export default function AdminsTable() {
   return (
-    <CrudTable<
-      accounts.AdminResponse,
-      accounts.CreateAdminRequest,
-      AdminUpdateData
-    >
+    <CrudTable<user.AdminResponse, user.CreateAdminParams, AdminUpdateData>
       columns={[
         ...columns,
         {
-          key: "password" as keyof accounts.AdminResponse,
+          key: "password" as keyof user.AdminResponse,
           label: "סיסמה",
           type: "password",
         },
@@ -70,7 +66,7 @@ export default function AdminsTable() {
       getId={(r) => r.id}
       listFn={() => listAdmins()}
       extractList={(r) =>
-        (r as accounts.ListAdminsResponse | undefined)?.admins ?? []
+        (r as user.ListAdminsResponse | undefined)?.admins ?? []
       }
       createFn={createAdmin}
       updateFn={(id, data) =>

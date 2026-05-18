@@ -1,10 +1,10 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useBookingSettings } from "@/shared/hooks/useBookingSettings";
 import { formatPrice } from "@/shared/utils/formatPrice";
 import { useTranslations } from "next-intl";
 
-export function FeesNote({ vehicle }: { vehicle: booking.AvailableVehicle }) {
-  const t = useTranslations("booking.plansPage");
+export function FeesNote({ vehicle }: { vehicle: availability.AvailableVehicle }) {
+  const t = useTranslations("availability.PlansPage");
   const { data } = useBookingSettings();
 
   if (

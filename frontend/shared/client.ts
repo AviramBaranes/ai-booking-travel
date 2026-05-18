@@ -16,7 +16,7 @@ export const Local: BaseURL = "http://localhost:4000"
  * Environment returns a BaseURL for calling the cloud environment with the given name.
  */
 export function Environment(name: string): BaseURL {
-    return `https://${name}-global-rental-2m42.encr.app`
+    return `https://${name}-ai-booking-travel-bo22.encr.app`
 }
 
 /**
@@ -29,7 +29,7 @@ export function PreviewEnv(pr: number | string): BaseURL {
 const BROWSER = typeof globalThis === "object" && ("window" in globalThis);
 
 /**
- * Client is an API client for the global-rental-2m42 Encore application.
+ * Client is an API client for the ai-booking-travel-bo22 Encore application.
  */
 export default class Client {
     public readonly accounts: accounts.ServiceClient
@@ -110,315 +110,7 @@ export interface ClientOptions {
 }
 
 export namespace accounts {
-    export interface AccountantResponse {
-        id: number
-        firstName: string
-        lastName: string
-        email: string
-        lastLogin: string
-        createdAt: string
-        updatedAt: string
-    }
-
-    export interface AdminResponse {
-        id: number
-        firstName: string
-        lastName: string
-        email: string
-        lastLogin: string
-        createdAt: string
-        updatedAt: string
-    }
-
-    export interface AgentResponse {
-        id: number
-        firstName: string
-        lastName: string
-        email: string
-        phoneNumber: string
-        officeId: number
-        officeName: string
-        organizationName: string
-        lastLogin: string
-        createdAt: string
-        updatedAt: string
-    }
-
-    export interface ContactResponse {
-        id: number
-        firstName: string
-        lastName: string
-        role: string
-        cellphone: string
-        email: string
-        officeId: number
-        organizationId: number
-        isPaymentResponsible: boolean
-        officeName: string
-        organizationName: string
-    }
-
-    export interface CreateAccountantRequest {
-        firstName: string
-        lastName: string
-        email: string
-        password: string
-    }
-
-    export interface CreateAccountantResponse {
-        id: number
-    }
-
-    export interface CreateAdminRequest {
-        firstName: string
-        lastName: string
-        email: string
-        password: string
-    }
-
-    export interface CreateAdminResponse {
-        id: number
-    }
-
-    export interface CreateAgentRequest {
-        firstName: string
-        lastName: string
-        email: string
-        password: string
-        phoneNumber: string
-        officeId: number
-    }
-
-    export interface CreateAgentResponse {
-        id: number
-    }
-
-    export interface CreateContactRequest {
-        firstName: string
-        lastName: string
-        role: string
-        cellphone: string
-        email: string
-        officeId?: number
-        organizationId?: number
-        isPaymentResponsible?: boolean
-    }
-
-    export interface CreateOfficeRequest {
-        name: string
-        organizationId: number
-        icountClientId?: number
-        phone?: string
-        address?: string
-    }
-
-    export interface CreateOrganizationRequest {
-        name: string
-        isOrganic: boolean
-        icountClientId?: number
-        phone?: string
-        address?: string
-        obligo?: number
-    }
-
-    export interface InorganicOffice {
-        id: number
-        name: string
-    }
-
-    export interface ListAccountantsResponse {
-        accountants: AccountantResponse[]
-    }
-
-    export interface ListAdminsResponse {
-        admins: AdminResponse[]
-    }
-
-    export interface ListAgentsRequest {
-        Search: string
-        OfficeID: number
-        OrgID: number
-        Page: number
-    }
-
-    export interface ListAgentsResponse {
-        agents: AgentResponse[]
-        total: number
-    }
-
-    export interface ListContactsRequest {
-        Search: string
-        OfficeID: number
-        OrgID: number
-        Page: number
-    }
-
-    export interface ListContactsResponse {
-        contacts: ContactResponse[]
-        total: number
-    }
-
-    export interface ListInorganicOfficeResponse {
-        offices: InorganicOffice[]
-    }
-
-    export interface ListOfficesRequest {
-        Search: string
-        OrgID: number
-        Page: number
-    }
-
-    export interface ListOfficesResponse {
-        offices: OfficeResponse[]
-        total: number
-    }
-
-    export interface ListOrganicOrganizationResponse {
-        organizations: OrganicOrganization[]
-    }
-
-    export interface ListOrganizationsRequest {
-        Search?: string
-        IsOrganic?: string
-        Page: number
-    }
-
-    export interface ListOrganizationsResponse {
-        organizations: ListOrganizationsRow[]
-        total: number
-    }
-
-    export interface ListOrganizationsRow {
-        id: number
-        name: string
-        isOrganic: boolean
-        icountClientId: number
-        phone: string
-        address: string
-        obligo: number
-        officeCount: number
-        contactCount: number
-        agentCount: number
-    }
-
-    export interface LoginAsAgentParams {
-        agentId: number
-    }
-
-    /**
-     * LoginParams defines the parameters required for user login.
-     */
-    export interface LoginParams {
-        email: string
-        password: string
-    }
-
-    /**
-     * LoginResponse defines the response structure for user login.
-     */
-    export interface LoginResponse {
-        id: number
-        email: string
-        role: db.UserRole
-        accessToken: string
-        refreshToken: string
-        phoneNumber: string
-        officeId: number
-    }
-
-    export interface OfficeResponse {
-        id: number
-        name: string
-        organizationId: number
-        organizationName: string
-        icountClientId: number
-        phone: string
-        address: string
-        contactCount: number
-        agentCount: number
-    }
-
-    export interface OrganicOrganization {
-        id: number
-        name: string
-    }
-
-    export interface OrganizationResponse {
-        id: number
-        name: string
-        isOrganic: boolean
-        icountClientId: number
-        phone: string
-        address: string
-        obligo: number
-    }
-
-    /**
-     * RefreshTokensParams defines the parameters required for refreshing tokens.
-     */
-    export interface RefreshTokensParams {
-        RefreshToken: string
-    }
-
-    /**
-     * SendCustomerLoginOTPParams defines the parameters required to send a login OTP to a customer.
-     */
-    export interface SendCustomerLoginOTPParams {
-        phoneNumber: string
-    }
-
     export interface TempAgentTagUsageResponse {
-    }
-
-    export interface UpdateContactRequest {
-        firstName?: string
-        lastName?: string
-        role?: string
-        cellphone?: string
-        email?: string
-        officeId?: number
-        organizationId?: number
-        isPaymentResponsible?: boolean
-    }
-
-    export interface UpdateOfficeRequest {
-        name?: string
-        organizationId?: number
-        icountClientId?: number
-        phone?: string
-        address?: string
-    }
-
-    export interface UpdateOrganizationRequest {
-        name?: string
-        isOrganic?: boolean
-        icountClientId?: number
-        phone?: string
-        address?: string
-        obligo?: number
-    }
-
-    export interface UpdateUserRequest {
-        firstName?: string
-        lastName?: string
-        email?: string
-        phoneNumber?: string
-        officeId?: number
-        password?: string
-    }
-
-    export interface UpdateUserResponse {
-        id: number
-        firstName: string
-        lastName: string
-        email: string
-        phoneNumber: string
-        officeId: number
-    }
-
-    export interface ValidateCustomerLoginOTPParams {
-        phoneNumber: string
-        otp: string
     }
 
     export class ServiceClient {
@@ -457,55 +149,55 @@ export namespace accounts {
         /**
          * CreateAccountant creates a new accountant user.
          */
-        public async CreateAccountant(params: CreateAccountantRequest): Promise<CreateAccountantResponse> {
+        public async CreateAccountant(params: user.CreateAccountantParams): Promise<user.CreateAccountantResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/accountants`, JSON.stringify(params))
-            return await resp.json() as CreateAccountantResponse
+            return await resp.json() as user.CreateAccountantResponse
         }
 
         /**
          * CreateAdmin creates a new admin user.
          */
-        public async CreateAdmin(params: CreateAdminRequest): Promise<CreateAdminResponse> {
+        public async CreateAdmin(params: user.CreateAdminParams): Promise<user.CreateAdminResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/admins`, JSON.stringify(params))
-            return await resp.json() as CreateAdminResponse
+            return await resp.json() as user.CreateAdminResponse
         }
 
         /**
          * CreateAgent creates a new agent user.
          */
-        public async CreateAgent(params: CreateAgentRequest): Promise<CreateAgentResponse> {
+        public async CreateAgent(params: user.CreateAgentParams): Promise<user.CreateAgentResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/agents`, JSON.stringify(params))
-            return await resp.json() as CreateAgentResponse
+            return await resp.json() as user.CreateAgentResponse
         }
 
         /**
          * CreateContact creates a new contact.
          */
-        public async CreateContact(params: CreateContactRequest): Promise<ContactResponse> {
+        public async CreateContact(params: contact.CreateContactParams): Promise<contact.ContactResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/contacts`, JSON.stringify(params))
-            return await resp.json() as ContactResponse
+            return await resp.json() as contact.ContactResponse
         }
 
         /**
          * CreateOffice creates a new office.
          */
-        public async CreateOffice(params: CreateOfficeRequest): Promise<OfficeResponse> {
+        public async CreateOffice(params: office.CreateOfficeParams): Promise<office.OfficeResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/offices`, JSON.stringify(params))
-            return await resp.json() as OfficeResponse
+            return await resp.json() as office.OfficeResponse
         }
 
         /**
          * CreateOrganization creates a new organization.
          */
-        public async CreateOrganization(params: CreateOrganizationRequest): Promise<OrganizationResponse> {
+        public async CreateOrganization(params: organization.CreateOrganizationParams): Promise<organization.OrganizationResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/organizations`, JSON.stringify(params))
-            return await resp.json() as OrganizationResponse
+            return await resp.json() as organization.OrganizationResponse
         }
 
         /**
@@ -518,25 +210,25 @@ export namespace accounts {
         /**
          * ListAccountants returns all accountant users.
          */
-        public async ListAccountants(): Promise<ListAccountantsResponse> {
+        public async ListAccountants(): Promise<user.ListAccountantsResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/accountants`)
-            return await resp.json() as ListAccountantsResponse
+            return await resp.json() as user.ListAccountantsResponse
         }
 
         /**
          * ListAdmins returns all admin users.
          */
-        public async ListAdmins(): Promise<ListAdminsResponse> {
+        public async ListAdmins(): Promise<user.ListAdminsResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/admins`)
-            return await resp.json() as ListAdminsResponse
+            return await resp.json() as user.ListAdminsResponse
         }
 
         /**
          * ListAgents lists agents with optional filtering and pagination.
          */
-        public async ListAgents(params: ListAgentsRequest): Promise<ListAgentsResponse> {
+        public async ListAgents(params: user.ListAgentsParams): Promise<user.ListAgentsResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 officeId: String(params.OfficeID),
@@ -547,13 +239,13 @@ export namespace accounts {
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/agents`, undefined, {query})
-            return await resp.json() as ListAgentsResponse
+            return await resp.json() as user.ListAgentsResponse
         }
 
         /**
          * ListContacts lists contacts with optional filtering and pagination.
          */
-        public async ListContacts(params: ListContactsRequest): Promise<ListContactsResponse> {
+        public async ListContacts(params: contact.ListContactsParams): Promise<contact.ListContactsResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 officeId: String(params.OfficeID),
@@ -564,47 +256,47 @@ export namespace accounts {
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/contacts`, undefined, {query})
-            return await resp.json() as ListContactsResponse
+            return await resp.json() as contact.ListContactsResponse
         }
 
         /**
          * ListInorganicOffices lists all inorganic offices for accountant use.
          */
-        public async ListInorganicOffices(): Promise<ListInorganicOfficeResponse> {
+        public async ListInorganicOffices(): Promise<office.ListInorganicOfficeResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/inorganic-offices`)
-            return await resp.json() as ListInorganicOfficeResponse
+            return await resp.json() as office.ListInorganicOfficeResponse
         }
 
         /**
          * ListOffices lists offices with optional filtering and pagination.
          */
-        public async ListOffices(params: ListOfficesRequest): Promise<ListOfficesResponse> {
+        public async ListOffices(params: office.ListOfficesParams): Promise<office.ListOfficesResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
-                orgId:  String(params.OrgID),
+                orgId:  params.OrgID === undefined ? undefined : String(params.OrgID),
                 page:   String(params.Page),
                 search: params.Search,
             })
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/offices`, undefined, {query})
-            return await resp.json() as ListOfficesResponse
+            return await resp.json() as office.ListOfficesResponse
         }
 
         /**
          * ListOrganicOrganizations lists all organic organizations for accountant use.
          */
-        public async ListOrganicOrganizations(): Promise<ListOrganicOrganizationResponse> {
+        public async ListOrganicOrganizations(): Promise<organization.ListOrganicOrganizationResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/organic-organizations`)
-            return await resp.json() as ListOrganicOrganizationResponse
+            return await resp.json() as organization.ListOrganicOrganizationResponse
         }
 
         /**
          * ListOrganizations lists organizations with optional search and pagination.
          */
-        public async ListOrganizations(params: ListOrganizationsRequest): Promise<ListOrganizationsResponse> {
+        public async ListOrganizations(params: organization.ListOrganizationsParams): Promise<organization.ListOrganizationsResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 isOrganic: params.IsOrganic,
@@ -614,28 +306,28 @@ export namespace accounts {
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/organizations`, undefined, {query})
-            return await resp.json() as ListOrganizationsResponse
+            return await resp.json() as organization.ListOrganizationsResponse
         }
 
-        public async Login(params: LoginParams): Promise<LoginResponse> {
+        public async Login(params: auth.LoginParams): Promise<auth.LoginResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/login`, JSON.stringify(params))
-            return await resp.json() as LoginResponse
+            return await resp.json() as auth.LoginResponse
         }
 
-        public async LoginAsAgent(params: LoginAsAgentParams): Promise<LoginResponse> {
+        public async LoginAsAgent(params: auth.LoginAsAgentParams): Promise<auth.LoginResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/login/as-agent`, JSON.stringify(params))
-            return await resp.json() as LoginResponse
+            return await resp.json() as auth.LoginResponse
         }
 
-        public async LoginBackToAdmin(): Promise<LoginResponse> {
+        public async LoginBackToAdmin(): Promise<auth.LoginResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/login/back-to-admin`)
-            return await resp.json() as LoginResponse
+            return await resp.json() as auth.LoginResponse
         }
 
-        public async RefreshTokens(params: RefreshTokensParams): Promise<LoginResponse> {
+        public async RefreshTokens(params: auth.RefreshTokensParams): Promise<auth.LoginResponse> {
             // Convert our params into the objects we need for the request
             const headers = makeRecord<string, string>({
                 authorization: params.RefreshToken,
@@ -643,10 +335,10 @@ export namespace accounts {
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/refresh`, undefined, {headers})
-            return await resp.json() as LoginResponse
+            return await resp.json() as auth.LoginResponse
         }
 
-        public async SendCustomerLoginOTP(params: SendCustomerLoginOTPParams): Promise<void> {
+        public async SendCustomerLoginOTP(params: auth.SendCustomerLoginOTPParams): Promise<void> {
             await this.baseClient.callTypedAPI("POST", `/customer-login/send-otp`, JSON.stringify(params))
         }
 
@@ -659,49 +351,49 @@ export namespace accounts {
         /**
          * UpdateContact updates an existing contact.
          */
-        public async UpdateContact(id: number, params: UpdateContactRequest): Promise<ContactResponse> {
+        public async UpdateContact(id: number, params: contact.UpdateContactParams): Promise<contact.ContactResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("PUT", `/contacts/${encodeURIComponent(id)}`, JSON.stringify(params))
-            return await resp.json() as ContactResponse
+            return await resp.json() as contact.ContactResponse
         }
 
         /**
          * UpdateOffice updates an existing office.
          */
-        public async UpdateOffice(id: number, params: UpdateOfficeRequest): Promise<OfficeResponse> {
+        public async UpdateOffice(id: number, params: office.UpdateOfficeParams): Promise<office.OfficeResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("PUT", `/offices/${encodeURIComponent(id)}`, JSON.stringify(params))
-            return await resp.json() as OfficeResponse
+            return await resp.json() as office.OfficeResponse
         }
 
         /**
          * UpdateOrganization updates an existing organization.
          */
-        public async UpdateOrganization(id: number, params: UpdateOrganizationRequest): Promise<OrganizationResponse> {
+        public async UpdateOrganization(id: number, params: organization.UpdateOrganizationParams): Promise<organization.OrganizationResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("PUT", `/organizations/${encodeURIComponent(id)}`, JSON.stringify(params))
-            return await resp.json() as OrganizationResponse
+            return await resp.json() as organization.OrganizationResponse
         }
 
         /**
          * UpdateUser updates an existing user.
          */
-        public async UpdateUser(id: number, params: UpdateUserRequest): Promise<UpdateUserResponse> {
+        public async UpdateUser(id: number, params: user.UpdateUserParams): Promise<user.UpdateUserResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("PUT", `/users/${encodeURIComponent(id)}`, JSON.stringify(params))
-            return await resp.json() as UpdateUserResponse
+            return await resp.json() as user.UpdateUserResponse
         }
 
-        public async ValidateCustomerLoginOTP(params: ValidateCustomerLoginOTPParams): Promise<LoginResponse> {
+        public async ValidateCustomerLoginOTP(params: auth.ValidateCustomerLoginOTPParams): Promise<auth.LoginResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/customer-login/validate-otp`, JSON.stringify(params))
-            return await resp.json() as LoginResponse
+            return await resp.json() as auth.LoginResponse
         }
     }
 }
 
 export namespace billing {
-    export interface BillRequestParams {
+    export interface BillParams {
         ids: number[]
         "total_paid": number
         "transfer_date": string
@@ -721,7 +413,7 @@ export namespace billing {
             this.Bill = this.Bill.bind(this)
         }
 
-        public async Bill(params: BillRequestParams): Promise<BillResponse> {
+        public async Bill(params: BillParams): Promise<BillResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/bill`, JSON.stringify(params))
             return await resp.json() as BillResponse
@@ -730,427 +422,6 @@ export namespace billing {
 }
 
 export namespace booking {
-    /**
-     * AvailableVehicle represents a vehicle that is available for rent, including details about the car, the rental plans, add-ons, location details, and price details.
-     */
-    export interface AvailableVehicle {
-        id: number
-        broker: broker.Name
-        carDetails: broker.CarDetails
-        plans: Plan[]
-        addOns: broker.AddOn[]
-        locationDetails: broker.LocationDetails
-        priceDetails: broker.PriceDetails
-        signals?: BookingSignals
-    }
-
-    /**
-     * BookParams defines the parameters required to book a car rental based on a previously retrieved snapshot of available plans. It includes details about the selected plan, driver information, and optional add-ons. Validation tags ensure that all required fields are provided and correctly formatted.
-     */
-    export interface BookParams {
-        snapshotId: number
-        rateQualifier: string
-        supplierCode: string
-        planId: string
-        includeERP: boolean
-        selectedAddOns: broker.SelectAddOn[]
-        driverTitle: string
-        driverFirstName: string
-        driverLastName: string
-        flightNumber?: string
-    }
-
-    /**
-     * BookPriceOfferParams defines the parameters required to book a car rental based on a price offer.
-     */
-    export interface BookPriceOfferParams {
-        priceOfferId: number
-        driverTitle: string
-        driverFirstName: string
-        driverLastName: string
-        flightNumber?: string
-    }
-
-    export interface BookResponse {
-        reservationId: number
-    }
-
-    /**
-     * BookingSignals holds UI-facing demand and inventory indicators for a vehicle card.
-     */
-    export interface BookingSignals {
-        liveViewers: number
-        remainingCount: number
-        tags: string[]
-    }
-
-    export interface BrokerTranslationRow {
-        id: number
-        "source_text": string
-        "target_text": string
-        status: string
-        "confidence_score": number
-    }
-
-    export interface BulkToggleLocationsRequest {
-        ids: number[]
-        enabled: boolean
-    }
-
-    export interface CouponResponse {
-        id: number
-        name: string
-        code: string
-        discount: number
-        isEnabled: boolean
-    }
-
-    export interface CreateCouponRequest {
-        name: string
-        code: string
-        discount: number
-        isEnabled: boolean
-    }
-
-    export interface CreateCurrencyRequest {
-        currencyCode: string
-        currencyISOName: string
-        rate: number
-    }
-
-    export interface CreateHertzMarkupRateRequest {
-        country: string
-        brand: string
-        pickupDateFrom: string
-        pickupDateTo: string
-        carGroup: string
-        numOfRentalDaysFrom: number
-        numOfRentalDaysTo: number
-        markUpGross: number
-        markUpNet: number
-    }
-
-    /**
-     * CreatePriceOfferParams defines the parameters required to create a price offer.
-     */
-    export interface CreatePriceOfferParams {
-        snapshotId: number
-        rateQualifier: string
-        supplierCode: string
-        includeERP: boolean
-        name: string
-        offeredCurrencyCode: string
-        offeredPrice: number
-    }
-
-    export interface CurrencyResponse {
-        id: number
-        currencyCode: string
-        currencyISOName: string
-        rate: number
-    }
-
-    /**
-     * GetAgentPriceOfferResponse represents the agent-facing details of a price offer, including internal pricing details.
-     */
-    export interface GetAgentPriceOfferResponse {
-        id: number
-        reservationId?: number
-        token: string
-        status: string
-        name: string
-        carDetails: broker.CarDetails
-        planInclusions: string[]
-        supplierCode: string
-        currencyCode: string
-        priceBefDesc: number
-        erpPrice: number
-        totalPrice: number
-        offeredCurrencyCode: string
-        offeredPrice: number
-        pickupLocationName: string
-        dropoffLocationName: string
-        pickupLocationId: number
-        dropoffLocationId: number
-        pickupDate: string
-        dropoffDate: string
-        pickupTime: string
-        dropoffTime: string
-        rentalDays: number
-        driverAge: string
-        renewedAt: string
-        createdAt: string
-    }
-
-    /**
-     * GetPendingTranslationsRequest is the request for GetPendingTranslations endpoint
-     */
-    export interface GetPendingTranslationsRequest {
-        Token: string
-    }
-
-    /**
-     * GetPendingTranslationsResponse is the response for GetPendingTranslations endpoint
-     */
-    export interface GetPendingTranslationsResponse {
-        translations: db.BrokerTranslation[]
-    }
-
-    /**
-     * GetPriceOfferResponse represents the public-facing details of a price offer, exposing only the offered price (no internal pricing breakdown).
-     */
-    export interface GetPriceOfferResponse {
-        id: number
-        status: string
-        name: string
-        carDetails: broker.CarDetails
-        planInclusions: string[]
-        isErpIncluded: boolean
-        currencyCode: string
-        totalPrice: number
-        pickupLocationName: string
-        dropoffLocationName: string
-        pickupDate: string
-        dropoffDate: string
-        rentalDays: number
-        pickupTime: string
-        dropoffTime: string
-        driverAge: string
-        createdAt: string
-    }
-
-    export interface HertzMarkupRateResponse {
-        id: number
-        country: string
-        brand: string
-        pickupDateFrom: string
-        pickupDateTo: string
-        carGroup: string
-        numOfRentalDaysFrom: number
-        numOfRentalDaysTo: number
-        markUpGross: number
-        markUpNet: number
-    }
-
-    /**
-     * InsertLocationParams defines the parameters for inserting a single location.
-     */
-    export interface InsertLocationParams {
-        broker: broker.Name
-        id: string
-        name: string
-        country: string
-        "country_code": string
-        city: string
-        iata: string
-    }
-
-    export interface ListBrokerTranslationsRequest {
-        Page: number
-        Search: string
-        Status: string
-        SortDir: string
-    }
-
-    export interface ListBrokerTranslationsResponse {
-        translations: BrokerTranslationRow[]
-        total: number
-    }
-
-    export interface ListCouponsResponse {
-        coupons: CouponResponse[]
-    }
-
-    export interface ListCurrenciesResponse {
-        currencies: CurrencyResponse[]
-    }
-
-    export interface ListHertzMarkupRatesRequest {
-        Country: string
-        Brand: string
-        CarGroup: string
-        SortBy: string
-        SortDir: string
-        Page: number
-    }
-
-    export interface ListHertzMarkupRatesResponse {
-        rates: HertzMarkupRateResponse[]
-        total: number
-    }
-
-    export interface ListLocationsRequest {
-        CountryCode: string
-        Broker: string
-        Name: string
-        Iata: string
-        Enabled: string
-        Page: number
-    }
-
-    export interface ListLocationsResponse {
-        locations: LocationRow[]
-        total: number
-    }
-
-    export interface ListPriceOffersRequest {
-        Name?: string
-        Status?: string
-        Page: number
-    }
-
-    export interface ListPriceOffersResponse {
-        priceOffers: PriceOfferSummary[]
-        total: number
-    }
-
-    export interface LocationResult {
-        id: number
-        name: string
-        country: string
-        countryCode: string
-        city: string
-        iata: string
-    }
-
-    export interface LocationRow {
-        id: number
-        name: string
-        "country_code": string
-        country: string
-        city: string
-        iata: string
-        enabled: boolean
-        "broker_location_id": string
-    }
-
-    /**
-     * Plan represents a rental plan, including its ID, name, description, full price, discount, and other pricing details.
-     */
-    export interface Plan {
-        planId: number
-        planName: string
-        fullPrice: number
-        discount: number
-        price: number
-        erpPrice: number
-        planInclusions: string[]
-        info: string[]
-        rateQualifier: string
-        supplierCode: string
-    }
-
-    /**
-     * CreatePriceOfferResponse represents the response returned after successfully creating a price offer, including the unique identifier and token for the created offer.
-     */
-    export interface PriceOfferResponse {
-        id: number
-        token: string
-    }
-
-    export interface PriceOfferSummary {
-        id: number
-        status: string
-        name: string
-        pickupLocationName: string
-        dropoffLocationName: string
-        pickupDate: string
-        dropoffDate: string
-        pickupTime: string
-        dropoffTime: string
-        currencyCode: string
-        totalPrice: number
-        offeredCurrencyCode: string
-        offeredPrice: number
-        createdAt: string
-    }
-
-    export interface RenewPriceOfferResponse {
-        found: boolean
-    }
-
-    /**
-     * SearchAvailabilityRequest represents the request for searching availability of vehicles.
-     */
-    export interface SearchAvailabilityRequest {
-        PickupLocationID: number
-        DropoffLocationID: number
-        PickupTime: string
-        DropoffTime: string
-        PickupDate: string
-        DropoffDate: string
-        DriverAge: number
-        CouponCode: string
-    }
-
-    /**
-     * SearchAvailabilityResponse represents the response for searching availability of vehicles.
-     */
-    export interface SearchAvailabilityResponse {
-        snapshotId: number
-        pickupLocationName: string
-        dropoffLocationName: string
-        daysCount: number
-        availableVehicles: AvailableVehicle[]
-    }
-
-    export interface SearchLocationParams {
-        Search: string
-    }
-
-    export interface SearchLocationResponse {
-        locations: LocationResult[]
-    }
-
-    export interface ToggleLocationRequest {
-        enabled: boolean
-    }
-
-    /**
-     * TranslateTranslationRequest is the request for TranslateTranslation endpoint
-     */
-    export interface TranslateTranslationRequest {
-        Token: string
-        id: number
-        targetText: string
-        confidence: number
-    }
-
-    export interface UpdateBrokerTranslationRequest {
-        "target_text": string
-    }
-
-    export interface UpdateCouponRequest {
-        name?: string
-        code?: string
-        discount?: number
-        isEnabled?: boolean
-    }
-
-    export interface UpdateCurrencyRequest {
-        currencyCode?: string
-        currencyISOName?: string
-        rate?: number
-    }
-
-    export interface UpdateHertzMarkupRateRequest {
-        country: string
-        brand: string
-        pickupDateFrom: string
-        pickupDateTo: string
-        carGroup: string
-        numOfRentalDaysFrom: number
-        numOfRentalDaysTo: number
-        markUpGross: number
-        markUpNet: number
-    }
-
-    export interface UpdatePriceOfferParams {
-        status?: string
-        name?: string
-        offeredCurrencyCode?: string
-        offeredPrice?: number
-    }
 
     export class ServiceClient {
         private baseClient: BaseClient
@@ -1194,56 +465,59 @@ export namespace booking {
             this.VerifyBrokerTranslation = this.VerifyBrokerTranslation.bind(this)
         }
 
-        public async Book(params: BookParams): Promise<BookResponse> {
+        public async Book(params: booking_handlers.BookParams): Promise<booking_handlers.BookResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/booking`, JSON.stringify(params))
-            return await resp.json() as BookResponse
+            return await resp.json() as booking_handlers.BookResponse
         }
 
-        public async BookPriceOffer(params: BookPriceOfferParams): Promise<BookResponse> {
+        public async BookPriceOffer(params: booking_handlers.BookPriceOfferParams): Promise<booking_handlers.BookResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/offers/book`, JSON.stringify(params))
-            return await resp.json() as BookResponse
+            return await resp.json() as booking_handlers.BookResponse
         }
 
-        public async BulkToggleLocations(params: BulkToggleLocationsRequest): Promise<void> {
+        /**
+         * BulkToggleLocations enables or disables multiple location broker codes.
+         */
+        public async BulkToggleLocations(params: location.BulkToggleLocationsParams): Promise<void> {
             await this.baseClient.callTypedAPI("PATCH", `/location-bulk-toggle`, JSON.stringify(params))
         }
 
         /**
          * CreateCoupon creates a new coupon.
          */
-        public async CreateCoupon(params: CreateCouponRequest): Promise<CouponResponse> {
+        public async CreateCoupon(params: coupon.CreateCouponParams): Promise<coupon.CouponResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/coupons`, JSON.stringify(params))
-            return await resp.json() as CouponResponse
+            return await resp.json() as coupon.CouponResponse
         }
 
         /**
          * CreateCurrency creates a new currency.
          */
-        public async CreateCurrency(params: CreateCurrencyRequest): Promise<CurrencyResponse> {
+        public async CreateCurrency(params: currency.CreateCurrencyParams): Promise<currency.CurrencyResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/currencies`, JSON.stringify(params))
-            return await resp.json() as CurrencyResponse
+            return await resp.json() as currency.CurrencyResponse
         }
 
         /**
          * CreateHertzMarkupRate creates a new hertz markup rate.
          */
-        public async CreateHertzMarkupRate(params: CreateHertzMarkupRateRequest): Promise<HertzMarkupRateResponse> {
+        public async CreateHertzMarkupRate(params: markup_rate.CreateHertzMarkupRateParams): Promise<markup_rate.HertzMarkupRateResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/hertz-markup-rates`, JSON.stringify(params))
-            return await resp.json() as HertzMarkupRateResponse
+            return await resp.json() as markup_rate.HertzMarkupRateResponse
         }
 
         /**
-         * CreatePriceOffer creates a new price offer based on the provided parameters, including details from the associated snapshot and plan, and returns the created offer's ID and token.
+         * CreatePriceOffer creates a new price offer based on the provided parameters.
          */
-        public async CreatePriceOffer(params: CreatePriceOfferParams): Promise<PriceOfferResponse> {
+        public async CreatePriceOffer(params: price_offer.CreatePriceOfferParams): Promise<price_offer.PriceOfferResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/booking/price-offers`, JSON.stringify(params))
-            return await resp.json() as PriceOfferResponse
+            return await resp.json() as price_offer.PriceOfferResponse
         }
 
         /**
@@ -1275,35 +549,35 @@ export namespace booking {
         }
 
         /**
-         * DeleteLocation deletes a location broker code by its ID.
-         * If no other broker codes reference the same location, the location is also deleted.
+         * DeleteLocation deletes a location broker code by ID. If no other broker codes
+         * reference the same location, the location is also deleted.
          */
         public async DeleteLocation(id: number): Promise<void> {
             await this.baseClient.callTypedAPI("DELETE", `/locations/${encodeURIComponent(id)}`)
         }
 
         /**
-         * GetAgentPriceOffer retrieves the details of a price offer for the authenticated agent, including internal pricing details.
+         * GetAgentPriceOffer retrieves the details of a price offer for the authenticated agent, including internal pricing.
          */
-        public async GetAgentPriceOffer(id: number): Promise<GetAgentPriceOfferResponse> {
+        public async GetAgentPriceOffer(id: number): Promise<price_offer.GetAgentPriceOfferResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/booking/price-offers/agent/${encodeURIComponent(id)}`)
-            return await resp.json() as GetAgentPriceOfferResponse
+            return await resp.json() as price_offer.GetAgentPriceOfferResponse
         }
 
         /**
-         * GetClientPriceOffer retrieves the details of a price offer based on the provided token, it doesn't exposed the agent internal pricing details.
+         * GetClientPriceOffer retrieves the details of a price offer by token (public, no internal pricing).
          */
-        public async GetClientPriceOffer(token: string): Promise<GetPriceOfferResponse> {
+        public async GetClientPriceOffer(token: string): Promise<price_offer.GetPriceOfferResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/booking/price-offers/client/${encodeURIComponent(token)}`)
-            return await resp.json() as GetPriceOfferResponse
+            return await resp.json() as price_offer.GetPriceOfferResponse
         }
 
         /**
          * GetPendingTranslations returns the list of pending translations for brokers. It requires a valid translation token in the header.
          */
-        public async GetPendingTranslations(params: GetPendingTranslationsRequest): Promise<GetPendingTranslationsResponse> {
+        public async GetPendingTranslations(params: translation.GetPendingTranslationsParams): Promise<translation.GetPendingTranslationsResponse> {
             // Convert our params into the objects we need for the request
             const headers = makeRecord<string, string>({
                 "x-translation-token": params.Token,
@@ -1311,31 +585,31 @@ export namespace booking {
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/booking/translations/pending`, undefined, {headers})
-            return await resp.json() as GetPendingTranslationsResponse
+            return await resp.json() as translation.GetPendingTranslationsResponse
         }
 
         /**
-         * InsertFlexLocations handles the HTTP request to insert Flex locations.
+         * InsertFlexLocations fetches all Flex locations from the broker and upserts them.
          */
         public async InsertFlexLocations(): Promise<void> {
             await this.baseClient.callTypedAPI("POST", `/locations/flex`)
         }
 
         /**
-         * InsertHertzLocations handles the HTTP request to insert Hertz locations.
+         * InsertHertzLocations reads a CSV file upload and upserts Hertz locations.
          */
         public async InsertHertzLocations(method: "POST", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
             return this.baseClient.callAPI(method, `/locations/hertz`, body, options)
         }
 
         /**
-         * InsertLocations handles the HTTP request to insert a single location
+         * InsertLocation inserts a single location broker code into the database.
          */
-        public async InsertLocation(params: InsertLocationParams): Promise<void> {
+        public async InsertLocation(params: location.InsertLocationParams): Promise<void> {
             await this.baseClient.callTypedAPI("POST", `/locations`, JSON.stringify(params))
         }
 
-        public async ListBrokerTranslations(params: ListBrokerTranslationsRequest): Promise<ListBrokerTranslationsResponse> {
+        public async ListBrokerTranslations(params: translation.ListBrokerTranslationsParams): Promise<translation.ListBrokerTranslationsResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 page:    String(params.Page),
@@ -1346,31 +620,31 @@ export namespace booking {
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/broker-translations`, undefined, {query})
-            return await resp.json() as ListBrokerTranslationsResponse
+            return await resp.json() as translation.ListBrokerTranslationsResponse
         }
 
         /**
          * ListCoupons lists all coupons.
          */
-        public async ListCoupons(): Promise<ListCouponsResponse> {
+        public async ListCoupons(): Promise<coupon.ListCouponsResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/coupons`)
-            return await resp.json() as ListCouponsResponse
+            return await resp.json() as coupon.ListCouponsResponse
         }
 
         /**
          * ListCurrencies lists all currencies.
          */
-        public async ListCurrencies(): Promise<ListCurrenciesResponse> {
+        public async ListCurrencies(): Promise<currency.ListCurrenciesResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/currencies`)
-            return await resp.json() as ListCurrenciesResponse
+            return await resp.json() as currency.ListCurrenciesResponse
         }
 
         /**
          * ListHertzMarkupRates lists hertz markup rates with pagination, optional filtering, and sorting.
          */
-        public async ListHertzMarkupRates(params: ListHertzMarkupRatesRequest): Promise<ListHertzMarkupRatesResponse> {
+        public async ListHertzMarkupRates(params: markup_rate.ListHertzMarkupRatesParams): Promise<markup_rate.ListHertzMarkupRatesResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 brand:    params.Brand,
@@ -1383,10 +657,13 @@ export namespace booking {
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/hertz-markup-rates`, undefined, {query})
-            return await resp.json() as ListHertzMarkupRatesResponse
+            return await resp.json() as markup_rate.ListHertzMarkupRatesResponse
         }
 
-        public async ListLocations(params: ListLocationsRequest): Promise<ListLocationsResponse> {
+        /**
+         * ListLocations lists location broker codes with optional filters.
+         */
+        public async ListLocations(params: location.ListLocationsParams): Promise<location.ListLocationsResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 broker:         params.Broker,
@@ -1399,13 +676,13 @@ export namespace booking {
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/locations`, undefined, {query})
-            return await resp.json() as ListLocationsResponse
+            return await resp.json() as location.ListLocationsResponse
         }
 
         /**
          * ListPriceOffers returns a paginated list of the authenticated agent's price offers.
          */
-        public async ListPriceOffers(params: ListPriceOffersRequest): Promise<ListPriceOffersResponse> {
+        public async ListPriceOffers(params: price_offer.ListPriceOffersRequest): Promise<price_offer.ListPriceOffersResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 name:   params.Name,
@@ -1415,22 +692,22 @@ export namespace booking {
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/booking/price-offers`, undefined, {query})
-            return await resp.json() as ListPriceOffersResponse
+            return await resp.json() as price_offer.ListPriceOffersResponse
         }
 
         /**
          * RenewPriceOffer refreshes the stored pricing details for a price offer if the original plan is still available.
          */
-        public async RenewPriceOffer(id: number): Promise<RenewPriceOfferResponse> {
+        public async RenewPriceOffer(id: number): Promise<price_offer.RenewPriceOfferResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/booking/price-offers/${encodeURIComponent(id)}/renew`)
-            return await resp.json() as RenewPriceOfferResponse
+            return await resp.json() as price_offer.RenewPriceOfferResponse
         }
 
         /**
          * SearchAvailability handles the http request for searching availability of vehicles.
          */
-        public async SearchAvailability(params: SearchAvailabilityRequest): Promise<SearchAvailabilityResponse> {
+        public async SearchAvailability(params: availability.SearchAvailabilityParams): Promise<availability.SearchAvailabilityResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 couponCode:        params.CouponCode,
@@ -1445,13 +722,13 @@ export namespace booking {
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/booking/availability`, undefined, {query})
-            return await resp.json() as SearchAvailabilityResponse
+            return await resp.json() as availability.SearchAvailabilityResponse
         }
 
         /**
-         * SearchLocations searches for locations in the database that match the given search query
+         * SearchLocations searches for locations matching the given query.
          */
-        public async SearchLocations(params: SearchLocationParams): Promise<SearchLocationResponse> {
+        public async SearchLocations(params: location.SearchLocationParams): Promise<location.SearchLocationResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 search: params.Search,
@@ -1459,17 +736,20 @@ export namespace booking {
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/locations/search`, undefined, {query})
-            return await resp.json() as SearchLocationResponse
+            return await resp.json() as location.SearchLocationResponse
         }
 
-        public async ToggleLocation(id: number, params: ToggleLocationRequest): Promise<void> {
+        /**
+         * ToggleLocation enables or disables a location broker code by ID.
+         */
+        public async ToggleLocation(id: number, params: location.ToggleLocationParams): Promise<void> {
             await this.baseClient.callTypedAPI("PATCH", `/locations/${encodeURIComponent(id)}`, JSON.stringify(params))
         }
 
         /**
          * TranslateTranslation translates a pending translation. It requires a valid translation token in the header.
          */
-        public async TranslateTranslation(params: TranslateTranslationRequest): Promise<void> {
+        public async TranslateTranslation(params: translation.TranslateTranslationParams): Promise<void> {
             // Convert our params into the objects we need for the request
             const headers = makeRecord<string, string>({
                 "x-translation-token": params.Token,
@@ -1488,41 +768,41 @@ export namespace booking {
         /**
          * UpdateBrokerTranslation updates a broker translation target text by ID.
          */
-        public async UpdateBrokerTranslation(id: number, params: UpdateBrokerTranslationRequest): Promise<void> {
+        public async UpdateBrokerTranslation(id: number, params: translation.UpdateBrokerTranslationParams): Promise<void> {
             await this.baseClient.callTypedAPI("PUT", `/broker-translations/${encodeURIComponent(id)}`, JSON.stringify(params))
         }
 
         /**
          * UpdateCoupon updates an existing coupon.
          */
-        public async UpdateCoupon(id: number, params: UpdateCouponRequest): Promise<CouponResponse> {
+        public async UpdateCoupon(id: number, params: coupon.UpdateCouponParams): Promise<coupon.CouponResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("PUT", `/coupons/${encodeURIComponent(id)}`, JSON.stringify(params))
-            return await resp.json() as CouponResponse
+            return await resp.json() as coupon.CouponResponse
         }
 
         /**
          * UpdateCurrency updates an existing currency.
          */
-        public async UpdateCurrency(id: number, params: UpdateCurrencyRequest): Promise<CurrencyResponse> {
+        public async UpdateCurrency(id: number, params: currency.UpdateCurrencyParams): Promise<currency.CurrencyResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("PUT", `/currencies/${encodeURIComponent(id)}`, JSON.stringify(params))
-            return await resp.json() as CurrencyResponse
+            return await resp.json() as currency.CurrencyResponse
         }
 
         /**
          * UpdateHertzMarkupRate updates an existing hertz markup rate.
          */
-        public async UpdateHertzMarkupRate(id: number, params: UpdateHertzMarkupRateRequest): Promise<HertzMarkupRateResponse> {
+        public async UpdateHertzMarkupRate(id: number, params: markup_rate.UpdateHertzMarkupRateParams): Promise<markup_rate.HertzMarkupRateResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("PUT", `/hertz-markup-rates/${encodeURIComponent(id)}`, JSON.stringify(params))
-            return await resp.json() as HertzMarkupRateResponse
+            return await resp.json() as markup_rate.HertzMarkupRateResponse
         }
 
         /**
          * UpdatePriceOffer updates a price offer's mutable fields for the authenticated agent.
          */
-        public async UpdatePriceOffer(id: number, params: UpdatePriceOfferParams): Promise<void> {
+        public async UpdatePriceOffer(id: number, params: price_offer.UpdatePriceOfferParams): Promise<void> {
             await this.baseClient.callTypedAPI("PATCH", `/booking/price-offers/${encodeURIComponent(id)}`, JSON.stringify(params))
         }
 
@@ -1537,9 +817,9 @@ export namespace booking {
 
 export namespace reservation {
     /**
-     * ApplyVoucherRequest is the request payload type for the apply voucher EP
+     * ApplyVoucherParams is the request payload type for the apply voucher EP
      */
-    export interface ApplyVoucherRequest {
+    export interface ApplyVoucherParams {
         voucher: string
     }
 
@@ -1599,10 +879,10 @@ export namespace reservation {
     }
 
     /**
-     * ListOpenReservationsByBillingEntityRequest filters open reservations by a billing unit.
+     * ListOpenReservationsByBillingEntityParams filters open reservations by a billing unit.
      * Exactly one of OfficeID or OrgID must be provided.
      */
-    export interface ListOpenReservationsByBillingEntityRequest {
+    export interface ListOpenReservationsByBillingEntityParams {
         OfficeID?: number
         OrgID?: number
     }
@@ -1615,7 +895,7 @@ export namespace reservation {
         currencyGroups: CurrencyGroup[]
     }
 
-    export interface ListReservationsRequest {
+    export interface ListReservationsParams {
         SortBy?: string
         Name?: string
         BookingID?: string
@@ -1658,7 +938,7 @@ export namespace reservation {
         /**
          * ApplyVoucher is the EP for applying a voucher on an agent order
          */
-        public async ApplyVoucher(id: number, params: ApplyVoucherRequest): Promise<void> {
+        public async ApplyVoucher(id: number, params: ApplyVoucherParams): Promise<void> {
             await this.baseClient.callTypedAPI("POST", `/reservations/${encodeURIComponent(id)}/voucher`, JSON.stringify(params))
         }
 
@@ -1676,7 +956,7 @@ export namespace reservation {
          * ListOpenReservationsByBillingEntity returns all unpaid/refund-pending reservations
          * for a given billing unit (an organic organization or an office of an inorganic organization).
          */
-        public async ListOpenReservationsByBillingEntity(params: ListOpenReservationsByBillingEntityRequest): Promise<ListOpenReservationsByBillingEntityResponse> {
+        public async ListOpenReservationsByBillingEntity(params: ListOpenReservationsByBillingEntityParams): Promise<ListOpenReservationsByBillingEntityResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 "office_id": params.OfficeID === undefined ? undefined : String(params.OfficeID),
@@ -1688,7 +968,7 @@ export namespace reservation {
             return await resp.json() as ListOpenReservationsByBillingEntityResponse
         }
 
-        public async ListReservations(params: ListReservationsRequest): Promise<ListReservationsResponse> {
+        public async ListReservations(params: ListReservationsParams): Promise<ListReservationsResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 bookingId:  params.BookingID,
@@ -1703,6 +983,151 @@ export namespace reservation {
             const resp = await this.baseClient.callTypedAPI("GET", `/reservations`, undefined, {query})
             return await resp.json() as ListReservationsResponse
         }
+    }
+}
+
+export namespace auth {
+    /**
+     * LoginAsAgentParams defines the parameters required to login as an agent.
+     */
+    export interface LoginAsAgentParams {
+        agentId: number
+    }
+
+    /**
+     * LoginParams defines the parameters required for user login.
+     */
+    export interface LoginParams {
+        email: string
+        password: string
+    }
+
+    /**
+     * LoginResponse is the shared response type for all login/refresh endpoints.
+     */
+    export interface LoginResponse {
+        id: number
+        email: string
+        role: db.UserRole
+        accessToken: string
+        refreshToken: string
+        phoneNumber: string
+        officeId: number
+    }
+
+    /**
+     * RefreshTokensParams defines the parameters required for refreshing tokens.
+     */
+    export interface RefreshTokensParams {
+        RefreshToken: string
+    }
+
+    /**
+     * SendCustomerLoginOTPParams defines the parameters required to send a login OTP to a customer.
+     */
+    export interface SendCustomerLoginOTPParams {
+        phoneNumber: string
+    }
+
+    /**
+     * ValidateCustomerLoginOTPParams defines the parameters required to validate a customer login OTP.
+     */
+    export interface ValidateCustomerLoginOTPParams {
+        phoneNumber: string
+        otp: string
+    }
+}
+
+export namespace availability {
+    /**
+     * AvailableVehicle represents a vehicle that is available for rent, including details about the car, the rental plans, add-ons, location details, and price details.
+     */
+    export interface AvailableVehicle {
+        id: number
+        broker: broker.Name
+        carDetails: broker.CarDetails
+        plans: Plan[]
+        addOns: broker.AddOn[]
+        locationDetails: broker.LocationDetails
+        priceDetails: broker.PriceDetails
+        signals?: BookingSignals
+    }
+
+    /**
+     * BookingSignals holds UI-facing demand and inventory indicators for a vehicle card.
+     */
+    export interface BookingSignals {
+        liveViewers: number
+        remainingCount: number
+        tags: string[]
+    }
+
+    /**
+     * Plan represents a rental plan, including its ID, name, description, full price, discount, and other pricing details.
+     */
+    export interface Plan {
+        planId: number
+        planName: string
+        fullPrice: number
+        discount: number
+        price: number
+        erpPrice: number
+        planInclusions: string[]
+        info: string[]
+        rateQualifier: string
+        supplierCode: string
+    }
+
+    /**
+     * SearchAvailabilityRequest represents the request for searching availability of vehicles.
+     */
+    export interface SearchAvailabilityParams {
+        PickupLocationID: number
+        DropoffLocationID: number
+        PickupTime: string
+        DropoffTime: string
+        PickupDate: string
+        DropoffDate: string
+        DriverAge: number
+        CouponCode: string
+    }
+
+    /**
+     * SearchAvailabilityResponse represents the response for searching availability of vehicles.
+     */
+    export interface SearchAvailabilityResponse {
+        snapshotId: number
+        pickupLocationName: string
+        dropoffLocationName: string
+        daysCount: number
+        availableVehicles: AvailableVehicle[]
+    }
+}
+
+export namespace booking_handlers {
+    export interface BookParams {
+        snapshotId: number
+        rateQualifier: string
+        supplierCode: string
+        planId: string
+        includeERP: boolean
+        selectedAddOns: broker.SelectAddOn[]
+        driverTitle: string
+        driverFirstName: string
+        driverLastName: string
+        flightNumber?: string
+    }
+
+    export interface BookPriceOfferParams {
+        priceOfferId: number
+        driverTitle: string
+        driverFirstName: string
+        driverLastName: string
+        flightNumber?: string
+    }
+
+    export interface BookResponse {
+        reservationId: number
     }
 }
 
@@ -1738,15 +1163,9 @@ export namespace broker {
     }
 
     /**
-     * LocationDetails represents the details of a rental location, including delivery collection, pickup and return branch addresses and phone numbers, location type, and pickup notes.
+     * LocationDetails holds the locationType of a rental location
      */
     export interface LocationDetails {
-        deliveryCollection: string
-        pickupBranchAddress: string
-        returnBranchAddress: string
-        pickupBranchPhone: string
-        returnBranchPhone: string
-        pickupNotes: string
         locationType: string
     }
 
@@ -1775,6 +1194,124 @@ export namespace broker {
     }
 }
 
+export namespace contact {
+    /**
+     * ContactResponse is the shared response type for contact operations.
+     */
+    export interface ContactResponse {
+        id: number
+        firstName: string
+        lastName: string
+        role: string
+        cellphone: string
+        email: string
+        officeId?: number
+        organizationId?: number
+        isPaymentResponsible: boolean
+        officeName?: string
+        organizationName?: string
+    }
+
+    export interface CreateContactParams {
+        firstName: string
+        lastName: string
+        role: string
+        cellphone: string
+        email: string
+        officeId?: number
+        organizationId?: number
+        isPaymentResponsible?: boolean
+    }
+
+    export interface ListContactsParams {
+        Search: string
+        OfficeID: number
+        OrgID: number
+        Page: number
+    }
+
+    export interface ListContactsResponse {
+        contacts: ContactResponse[]
+        total: number
+    }
+
+    export interface UpdateContactParams {
+        firstName?: string
+        lastName?: string
+        role?: string
+        cellphone?: string
+        email?: string
+        officeId?: number
+        organizationId?: number
+        isPaymentResponsible?: boolean
+    }
+}
+
+export namespace coupon {
+    export interface CouponResponse {
+        id: number
+        name: string
+        code: string
+        discount: number
+        isEnabled: boolean
+    }
+
+    export interface CreateCouponParams {
+        name: string
+        code: string
+        discount: number
+        isEnabled: boolean
+    }
+
+    export interface ListCouponsResponse {
+        coupons: CouponResponse[]
+    }
+
+    export interface UpdateCouponParams {
+        name?: string
+        code?: string
+        discount?: number
+        isEnabled?: boolean
+    }
+}
+
+export namespace currency {
+    /**
+     * CreateCurrencyParams contains the parameters for creating a new currency.
+     */
+    export interface CreateCurrencyParams {
+        currencyCode: string
+        currencyISOName: string
+        rate: number
+    }
+
+    /**
+     * CurrencyResponse represents a currency returned by the service.
+     */
+    export interface CurrencyResponse {
+        id: number
+        currencyCode: string
+        currencyISOName: string
+        rate: number
+    }
+
+    /**
+     * ListCurrenciesResponse represents the response containing a list of currencies.
+     */
+    export interface ListCurrenciesResponse {
+        currencies: CurrencyResponse[]
+    }
+
+    /**
+     * UpdateCurrencyParams contains the parameters for updating a currency.
+     */
+    export interface UpdateCurrencyParams {
+        currencyCode?: string
+        currencyISOName?: string
+        rate?: number
+    }
+}
+
 export namespace db {
     export interface BrokerTranslation {
         ID: number
@@ -1791,6 +1328,235 @@ export namespace db {
     export type UserRole = string
 }
 
+export namespace location {
+    export interface BulkToggleLocationsParams {
+        ids: number[]
+        enabled: boolean
+    }
+
+    export interface InsertLocationParams {
+        broker: broker.Name
+        id: string
+        name: string
+        country: string
+        "country_code": string
+        city: string
+        iata: string
+    }
+
+    export interface ListLocationsParams {
+        CountryCode: string
+        Broker: string
+        Name: string
+        Iata: string
+        Enabled: string
+        Page: number
+    }
+
+    export interface ListLocationsResponse {
+        locations: LocationRow[]
+        total: number
+    }
+
+    export interface LocationResult {
+        id: number
+        name: string
+        country: string
+        countryCode: string
+        city: string
+        iata: string
+    }
+
+    export interface LocationRow {
+        id: number
+        name: string
+        "country_code": string
+        country: string
+        city: string
+        iata: string
+        enabled: boolean
+        "broker_location_id": string
+    }
+
+    export interface SearchLocationParams {
+        Search: string
+    }
+
+    export interface SearchLocationResponse {
+        locations: LocationResult[]
+    }
+
+    export interface ToggleLocationParams {
+        enabled: boolean
+    }
+}
+
+export namespace markup_rate {
+    export interface CreateHertzMarkupRateParams {
+        country: string
+        brand: string
+        pickupDateFrom: string
+        pickupDateTo: string
+        carGroup: string
+        numOfRentalDaysFrom: number
+        numOfRentalDaysTo: number
+        markUpGross: number
+        markUpNet: number
+    }
+
+    export interface HertzMarkupRateResponse {
+        id: number
+        country: string
+        brand: string
+        pickupDateFrom: string
+        pickupDateTo: string
+        carGroup: string
+        numOfRentalDaysFrom: number
+        numOfRentalDaysTo: number
+        markUpGross: number
+        markUpNet: number
+    }
+
+    export interface ListHertzMarkupRatesParams {
+        Country: string
+        Brand: string
+        CarGroup: string
+        SortBy: string
+        SortDir: string
+        Page: number
+    }
+
+    export interface ListHertzMarkupRatesResponse {
+        rates: HertzMarkupRateResponse[]
+        total: number
+    }
+
+    export interface UpdateHertzMarkupRateParams {
+        country: string
+        brand: string
+        pickupDateFrom: string
+        pickupDateTo: string
+        carGroup: string
+        numOfRentalDaysFrom: number
+        numOfRentalDaysTo: number
+        markUpGross: number
+        markUpNet: number
+    }
+}
+
+export namespace office {
+    export interface CreateOfficeParams {
+        name: string
+        organizationId: number
+        icountClientId?: number
+        phone?: string
+        address?: string
+    }
+
+    export interface InorganicOffice {
+        id: number
+        name: string
+    }
+
+    export interface ListInorganicOfficeResponse {
+        offices: InorganicOffice[]
+    }
+
+    export interface ListOfficesParams {
+        Search?: string
+        OrgID?: number
+        Page: number
+    }
+
+    export interface ListOfficesResponse {
+        offices: OfficeResponse[]
+        total: number
+    }
+
+    export interface OfficeResponse {
+        id: number
+        name: string
+        organizationId: number
+        organizationName: string
+        icountClientId?: number
+        phone?: string
+        address?: string
+        contactCount: number
+        agentCount: number
+    }
+
+    export interface UpdateOfficeParams {
+        name?: string
+        organizationId?: number
+        icountClientId?: number
+        phone?: string
+        address?: string
+    }
+}
+
+export namespace organization {
+    export interface CreateOrganizationParams {
+        name: string
+        isOrganic: boolean
+        icountClientId?: number
+        phone?: string
+        address?: string
+        obligo?: number
+    }
+
+    export interface ListOrganicOrganizationResponse {
+        organizations: OrganicOrganization[]
+    }
+
+    export interface ListOrganizationsParams {
+        Search?: string
+        IsOrganic?: string
+        Page: number
+    }
+
+    export interface ListOrganizationsResponse {
+        organizations: ListOrganizationsRow[]
+        total: number
+    }
+
+    export interface ListOrganizationsRow {
+        id: number
+        name: string
+        isOrganic: boolean
+        icountClientId?: number
+        phone?: string
+        address?: string
+        obligo?: number
+        officeCount: number
+        contactCount: number
+        agentCount: number
+    }
+
+    export interface OrganicOrganization {
+        id: number
+        name: string
+    }
+
+    export interface OrganizationResponse {
+        id: number
+        name: string
+        isOrganic: boolean
+        icountClientId?: number
+        phone?: string
+        address?: string
+        obligo?: number
+    }
+
+    export interface UpdateOrganizationParams {
+        name?: string
+        isOrganic?: boolean
+        icountClientId?: number
+        phone?: string
+        address?: string
+        obligo?: number
+    }
+}
+
 export namespace pgtype {
     export type InfinityModifier = number
 
@@ -1801,6 +1567,333 @@ export namespace pgtype {
         Time: string
         InfinityModifier: InfinityModifier
         Valid: boolean
+    }
+}
+
+export namespace price_offer {
+    /**
+     * CreatePriceOfferParams defines the parameters required to create a price offer.
+     */
+    export interface CreatePriceOfferParams {
+        snapshotId: number
+        rateQualifier: string
+        supplierCode: string
+        includeERP: boolean
+        name: string
+        offeredCurrencyCode: string
+        offeredPrice: number
+    }
+
+    /**
+     * GetAgentPriceOfferResponse is the agent-facing details of a price offer, including internal pricing.
+     */
+    export interface GetAgentPriceOfferResponse {
+        id: number
+        reservationId?: number
+        token: string
+        status: string
+        name: string
+        carDetails: broker.CarDetails
+        planInclusions: string[]
+        supplierCode: string
+        currencyCode: string
+        priceBefDesc: number
+        erpPrice: number
+        totalPrice: number
+        offeredCurrencyCode: string
+        offeredPrice: number
+        pickupLocationName: string
+        dropoffLocationName: string
+        pickupLocationId: number
+        dropoffLocationId: number
+        pickupDate: string
+        dropoffDate: string
+        pickupTime: string
+        dropoffTime: string
+        rentalDays: number
+        driverAge: string
+        renewedAt: string
+        createdAt: string
+    }
+
+    /**
+     * GetPriceOfferResponse is the public-facing details of a price offer (no internal pricing breakdown).
+     */
+    export interface GetPriceOfferResponse {
+        id: number
+        status: string
+        name: string
+        carDetails: broker.CarDetails
+        planInclusions: string[]
+        isErpIncluded: boolean
+        currencyCode: string
+        totalPrice: number
+        pickupLocationName: string
+        dropoffLocationName: string
+        pickupDate: string
+        dropoffDate: string
+        rentalDays: number
+        pickupTime: string
+        dropoffTime: string
+        driverAge: string
+        createdAt: string
+    }
+
+    /**
+     * ListPriceOffersRequest holds the query parameters for listing price offers.
+     */
+    export interface ListPriceOffersRequest {
+        Name?: string
+        Status?: string
+        Page: number
+    }
+
+    /**
+     * ListPriceOffersResponse wraps a page of price offer summaries with a total count.
+     */
+    export interface ListPriceOffersResponse {
+        priceOffers: PriceOfferSummary[]
+        total: number
+    }
+
+    /**
+     * PriceOfferResponse is returned after successfully creating a price offer.
+     */
+    export interface PriceOfferResponse {
+        id: number
+        token: string
+    }
+
+    /**
+     * PriceOfferSummary is a compact price offer representation for list views.
+     */
+    export interface PriceOfferSummary {
+        id: number
+        status: string
+        name: string
+        pickupLocationName: string
+        dropoffLocationName: string
+        pickupDate: string
+        dropoffDate: string
+        pickupTime: string
+        dropoffTime: string
+        currencyCode: string
+        totalPrice: number
+        offeredCurrencyCode: string
+        offeredPrice: number
+        createdAt: string
+    }
+
+    /**
+     * RenewPriceOfferResponse is returned after attempting to renew a price offer.
+     */
+    export interface RenewPriceOfferResponse {
+        found: boolean
+    }
+
+    /**
+     * UpdatePriceOfferParams holds the mutable fields for a price offer update.
+     */
+    export interface UpdatePriceOfferParams {
+        status?: string
+        name?: string
+        offeredCurrencyCode?: string
+        offeredPrice?: number
+    }
+}
+
+export namespace translation {
+    export interface BrokerTranslationRow {
+        id: number
+        "source_text": string
+        "target_text": string
+        status: string
+        "confidence_score": number
+    }
+
+    export interface GetPendingTranslationsParams {
+        Token: string
+    }
+
+    export interface GetPendingTranslationsResponse {
+        translations: db.BrokerTranslation[]
+    }
+
+    export interface ListBrokerTranslationsParams {
+        Page: number
+        Search: string
+        Status: string
+        SortDir: string
+    }
+
+    export interface ListBrokerTranslationsResponse {
+        translations: BrokerTranslationRow[]
+        total: number
+    }
+
+    export interface TranslateTranslationParams {
+        Token: string
+        id: number
+        targetText: string
+        confidence: number
+    }
+
+    export interface UpdateBrokerTranslationParams {
+        "target_text": string
+    }
+}
+
+export namespace user {
+    /**
+     * AccountantResponse is the response type for a single accountant.
+     */
+    export interface AccountantResponse {
+        id: number
+        firstName: string
+        lastName: string
+        email: string
+        lastLogin: string
+        createdAt: string
+        updatedAt: string
+    }
+
+    /**
+     * AdminResponse is the response type for a single admin.
+     */
+    export interface AdminResponse {
+        id: number
+        firstName: string
+        lastName: string
+        email: string
+        lastLogin: string
+        createdAt: string
+        updatedAt: string
+    }
+
+    /**
+     * AgentResponse is the response type for a single agent.
+     */
+    export interface AgentResponse {
+        id: number
+        firstName: string
+        lastName: string
+        email: string
+        phoneNumber: string
+        officeId: number
+        officeName: string
+        organizationName: string
+        lastLogin: string
+        createdAt: string
+        updatedAt: string
+    }
+
+    /**
+     * CreateAccountantParams are the params for creating an accountant.
+     */
+    export interface CreateAccountantParams {
+        firstName: string
+        lastName: string
+        email: string
+        password: string
+    }
+
+    /**
+     * CreateAccountantResponse is the response for creating an accountant.
+     */
+    export interface CreateAccountantResponse {
+        id: number
+    }
+
+    /**
+     * CreateAdminParams are the params for creating an admin.
+     */
+    export interface CreateAdminParams {
+        firstName: string
+        lastName: string
+        email: string
+        password: string
+    }
+
+    /**
+     * CreateAdminResponse is the response for creating an admin.
+     */
+    export interface CreateAdminResponse {
+        id: number
+    }
+
+    /**
+     * CreateAgentParams are the params for creating an agent.
+     */
+    export interface CreateAgentParams {
+        firstName: string
+        lastName: string
+        email: string
+        password: string
+        phoneNumber: string
+        officeId: number
+    }
+
+    /**
+     * CreateAgentResponse is the response for creating an agent.
+     */
+    export interface CreateAgentResponse {
+        id: number
+    }
+
+    /**
+     * ListAccountantsResponse is the response for listing accountants.
+     */
+    export interface ListAccountantsResponse {
+        accountants: AccountantResponse[]
+    }
+
+    /**
+     * ListAdminsResponse is the response for listing admins.
+     */
+    export interface ListAdminsResponse {
+        admins: AdminResponse[]
+    }
+
+    /**
+     * ListAgentsParams are the params for listing agents.
+     */
+    export interface ListAgentsParams {
+        Search: string
+        OfficeID: number
+        OrgID: number
+        Page: number
+    }
+
+    /**
+     * ListAgentsResponse is the response for listing agents.
+     */
+    export interface ListAgentsResponse {
+        agents: AgentResponse[]
+        total: number
+    }
+
+    /**
+     * UpdateUserParams are the params for updating a user.
+     */
+    export interface UpdateUserParams {
+        firstName?: string
+        lastName?: string
+        email?: string
+        phoneNumber?: string
+        officeId?: number
+        password?: string
+    }
+
+    /**
+     * UpdateUserResponse is the response for updating a user.
+     */
+    export interface UpdateUserResponse {
+        id: number
+        firstName: string
+        lastName: string
+        email: string
+        phoneNumber: string
+        officeId: number
     }
 }
 
@@ -2033,7 +2126,7 @@ class BaseClient {
         // Add User-Agent header if the script is running in the server
         // because browsers do not allow setting User-Agent headers to requests
         if (!BROWSER) {
-            this.headers["User-Agent"] = "global-rental-2m42-Generated-TS-Client (Encore/v1.54.0)";
+            this.headers["User-Agent"] = "ai-booking-travel-bo22-Generated-TS-Client (Encore/v1.54.0)";
         }
 
         this.requestInit = options.requestInit ?? {};

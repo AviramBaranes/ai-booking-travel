@@ -1,10 +1,10 @@
-import { booking } from "../client";
+import { availability, booking_handlers } from "../client";
 import { withErrorHandler } from "./_api";
 
-export function searchAvailableCars(p: booking.SearchAvailabilityRequest) {
+export function searchAvailableCars(p: availability.SearchAvailabilityParams) {
   return withErrorHandler((client) => client.booking.SearchAvailability(p));
 }
 
-export function bookCar(p: booking.BookParams) {
+export function bookCar(p: booking_handlers.BookParams) {
   return withErrorHandler((client) => client.booking.Book(p));
 }

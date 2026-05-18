@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { z } from "zod";
-import { booking } from "@/shared/client";
+import { markup_rate } from "@/shared/client";
 import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import {
   ColumnDef,
@@ -15,7 +15,7 @@ import {
   deleteHertzMarkupRate,
 } from "@/shared/api/hertz-rates-api";
 
-const columns: ColumnDef<booking.HertzMarkupRateResponse>[] = [
+const columns: ColumnDef<markup_rate.HertzMarkupRateResponse>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },
   { key: "country", label: "מדינה", type: "text", sortable: true },
   { key: "brand", label: "מותג", type: "text", sortable: true },
@@ -70,7 +70,7 @@ function buildListParams(
   sort: SortState | null,
   page: number,
   filters: Filters,
-): booking.ListHertzMarkupRatesRequest {
+): markup_rate.ListHertzMarkupRatesParams {
   return {
     Country: filters.country,
     Brand: filters.brand,
@@ -136,9 +136,9 @@ export default function PricingTable() {
 
   return (
     <CrudTable<
-      booking.HertzMarkupRateResponse,
-      booking.CreateHertzMarkupRateRequest,
-      booking.UpdateHertzMarkupRateRequest
+      markup_rate.HertzMarkupRateResponse,
+      markup_rate.CreateHertzMarkupRateParams,
+      markup_rate.UpdateHertzMarkupRateParams
     >
       columns={columns}
       queryKey="hertz-markup-rates"
@@ -148,10 +148,10 @@ export default function PricingTable() {
         listHertzMarkupRates(buildListParams(sort, page, filters))
       }
       extractList={(r) =>
-        (r as booking.ListHertzMarkupRatesResponse | undefined)?.rates ?? []
+        (r as markup_rate.ListHertzMarkupRatesResponse | undefined)?.rates ?? []
       }
       extractTotal={(r) =>
-        (r as booking.ListHertzMarkupRatesResponse | undefined)?.total ?? 0
+        (r as markup_rate.ListHertzMarkupRatesResponse | undefined)?.total ?? 0
       }
       createFn={createHertzMarkupRate}
       updateFn={updateHertzMarkupRate}

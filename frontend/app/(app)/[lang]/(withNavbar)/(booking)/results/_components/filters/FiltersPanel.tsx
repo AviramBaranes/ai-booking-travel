@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useTranslations } from "next-intl";
 import { CheckboxFilter } from "./CheckboxFilter";
 import { useFilterOptions } from "../../_hooks/useFiltersOptions";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
 interface FiltersPanelProps {
-  cars: booking.AvailableVehicle[];
+  cars: availability.AvailableVehicle[];
   selectedFilters: SelectedFilters;
   onToggle: (filterId: FilterConfig["id"], value: string) => void;
   onClear: () => void;

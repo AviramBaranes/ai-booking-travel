@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useDirection } from "@/shared/hooks/useDirection";
 import { formatPrice } from "@/shared/utils/formatPrice";
 import clsx from "clsx";
@@ -14,8 +14,8 @@ export function CarPriceDetails({
   daysCount,
 }: {
   daysCount: number;
-  vehicle: booking.AvailableVehicle;
-  searchRequest: booking.SearchAvailabilityRequest;
+  vehicle: availability.AvailableVehicle;
+  searchRequest: availability.SearchAvailabilityParams;
 }) {
   const t = useTranslations("booking.results.carDetails");
   const dir = useDirection();

@@ -1,8 +1,8 @@
-import { booking } from "../client";
+import { translation } from "../client";
 import { withErrorHandler } from "./_api";
 
 export function listBrokerTranslations(
-  params: booking.ListBrokerTranslationsRequest,
+  params: translation.ListBrokerTranslationsParams,
 ) {
   return withErrorHandler((client) =>
     client.booking.ListBrokerTranslations(params),
@@ -17,7 +17,7 @@ export function deleteBrokerTranslation(id: number) {
 
 export function updateBrokerTranslation(
   id: number,
-  data: booking.UpdateBrokerTranslationRequest,
+  data: translation.UpdateBrokerTranslationParams,
 ) {
   return withErrorHandler((client) =>
     client.booking.UpdateBrokerTranslation(id, data),

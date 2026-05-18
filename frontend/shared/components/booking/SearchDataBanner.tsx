@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 import { SearchDataBannerDisplay } from "./SearchDataBannerDisplay";
 import { SearchDataFormWrapper } from "./SearchDataFormWrapper";
@@ -13,7 +13,7 @@ interface SearchDataBannerProps extends Omit<
 > {
   pickUpLocationId: number;
   dropOffLocationId: number;
-  searchRequest: booking.SearchAvailabilityRequest;
+  searchRequest: availability.SearchAvailabilityParams;
   showButton?: boolean;
   fromCache?: boolean;
 }

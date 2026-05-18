@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { accounts } from "@/shared/client";
+import { contact } from "@/shared/client";
 import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import {
   ColumnDef,
@@ -21,7 +21,7 @@ import {
 } from "@/app/(app)/admin/_components/ContactBelongsToPicker";
 import { useUrlFilters } from "@/app/(app)/admin/_hooks/useUrlFilters";
 
-const columns: ColumnDef<accounts.ContactResponse>[] = [
+const columns: ColumnDef<contact.ContactResponse>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },
   { key: "firstName", label: "שם פרטי", type: "text" },
   { key: "lastName", label: "שם משפחה", type: "text" },
@@ -43,9 +43,9 @@ const columns: ColumnDef<accounts.ContactResponse>[] = [
       return "";
     },
     renderEditCell: ({ value, onChange, row }) => {
-      const contact = row as accounts.ContactResponse | undefined;
+      const contact = row as contact.ContactResponse | undefined;
       const initialType =
-        contact && contact.organizationId > 0 ? "org" : "office";
+        contact && (contact.organizationId ?? 0) > 0 ? "org" : "office";
       const needsEncoding =
         typeof value === "number" ||
         value == null ||
@@ -76,33 +76,29 @@ const associationField = z
   .string()
   .refine((v) => parseAssociation(v).id > 0, "יש לבחור משרד או רשת");
 
+const createSchema = z.object({
+  firstName: z.string().min(1, "שדה חובה"),
+  lastName: z.string().min(1, "שדה חובה"),
+  role: z.string().min(1, "שדה חובה"),
+  cellphone: z.string().min(1, "שדה חובה"),
+  email: z.string().email("אימייל לא תקין"),
+  officeId: associationField,
+  isPaymentResponsible: z.boolean().optional(),
+});
 
-
-const createSchema = z
-  .object({
-    firstName: z.string().min(1, "שדה חובה"),
-    lastName: z.string().min(1, "שדה חובה"),
-    role: z.string().min(1, "שדה חובה"),
-    cellphone: z.string().min(1, "שדה חובה"),
-    email: z.string().email("אימייל לא תקין"),
-    officeId: associationField,
-    isPaymentResponsible: z.boolean().optional(),
-  })
-
-const updateSchema = z
-  .object({
-    firstName: z.string().optional(),
-    lastName: z.string().optional(),
-    role: z.string().optional(),
-    cellphone: z.string().optional(),
-    email: z.string().email("אימייל לא תקין").optional().or(z.literal("")),
-    officeId: associationField,
-    isPaymentResponsible: z.boolean().optional(),
-  })
+const updateSchema = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  role: z.string().optional(),
+  cellphone: z.string().optional(),
+  email: z.string().email("אימייל לא תקין").optional().or(z.literal("")),
+  officeId: associationField,
+  isPaymentResponsible: z.boolean().optional(),
+});
 
 function formDataToCreatePayload(
   data: Record<string, unknown>,
-): accounts.CreateContactRequest {
+): contact.CreateContactParams {
   const { type, id } = parseAssociation(data.officeId);
   return {
     firstName: data.firstName as string,
@@ -118,7 +114,7 @@ function formDataToCreatePayload(
 
 function formDataToUpdatePayload(
   data: Record<string, unknown>,
-): accounts.UpdateContactRequest {
+): contact.UpdateContactParams {
   const { type, id } = parseAssociation(data.officeId);
   return {
     firstName: data.firstName as string,
@@ -136,7 +132,7 @@ function buildRequest(
   _sort: SortState | null,
   page: number,
   filters: { search: string; orgId: string; officeId: string },
-): accounts.ListContactsRequest {
+): contact.ListContactsParams {
   return {
     Search: filters.search,
     OrgID: filters.orgId ? Number(filters.orgId) : 0,
@@ -150,9 +146,9 @@ export default function ContactsTable() {
 
   return (
     <CrudTable<
-      accounts.ContactResponse,
-      accounts.CreateContactRequest,
-      accounts.UpdateContactRequest
+      contact.ContactResponse,
+      contact.CreateContactParams,
+      contact.UpdateContactParams
     >
       columns={columns}
       queryKey="contacts"
@@ -160,10 +156,10 @@ export default function ContactsTable() {
       getId={(r) => r.id}
       listFn={(sort, page) => listContacts(buildRequest(sort, page, filters))}
       extractList={(r) =>
-        (r as accounts.ListContactsResponse | undefined)?.contacts ?? []
+        (r as contact.ListContactsResponse | undefined)?.contacts ?? []
       }
       extractTotal={(r) =>
-        (r as accounts.ListContactsResponse | undefined)?.total ?? 0
+        (r as contact.ListContactsResponse | undefined)?.total ?? 0
       }
       createFn={(data) => createContact(formDataToCreatePayload(data as never))}
       updateFn={(id, data) =>

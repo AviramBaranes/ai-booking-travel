@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { accounts } from "@/shared/client";
+import { user } from "@/shared/client";
 import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import {
   ColumnDef,
@@ -24,7 +24,7 @@ const formatDate = (v: unknown) => {
   });
 };
 
-const columns: ColumnDef<accounts.AgentResponse>[] = [
+const columns: ColumnDef<user.AgentResponse>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },
   { key: "firstName", label: "שם פרטי", type: "text" },
   { key: "lastName", label: "שם משפחה", type: "text" },
@@ -94,7 +94,7 @@ function buildRequest(
   _sort: SortState | null,
   page: number,
   filters: { search: string; orgId: string; officeId: string },
-): accounts.ListAgentsRequest {
+): user.ListAgentsParams {
   return {
     Search: filters.search,
     OrgID: filters.orgId ? Number(filters.orgId) : 0,
@@ -108,19 +108,19 @@ export default function AgentsTable() {
 
   return (
     <CrudTable<
-      accounts.AgentResponse,
-      accounts.CreateAgentRequest,
-      accounts.UpdateUserRequest
+      user.AgentResponse,
+      user.CreateAgentParams,
+      user.UpdateUserParams
     >
       columns={[
         ...columns,
         {
-          key: "password" as keyof accounts.AgentResponse,
+          key: "password" as keyof user.AgentResponse,
           label: "סיסמה",
           type: "password",
         },
         {
-          key: "actions" as keyof accounts.AgentResponse,
+          key: "actions" as keyof user.AgentResponse,
           label: "פעולות",
           type: "text",
           editable: false,
@@ -132,10 +132,10 @@ export default function AgentsTable() {
       getId={(r) => r.id}
       listFn={(sort, page) => listAgents(buildRequest(sort, page, filters))}
       extractList={(r) =>
-        (r as accounts.ListAgentsResponse | undefined)?.agents ?? []
+        (r as user.ListAgentsResponse | undefined)?.agents ?? []
       }
       extractTotal={(r) =>
-        (r as accounts.ListAgentsResponse | undefined)?.total ?? 0
+        (r as user.ListAgentsResponse | undefined)?.total ?? 0
       }
       createFn={createAgent}
       updateFn={(id, data) => updateUser(id, data)}

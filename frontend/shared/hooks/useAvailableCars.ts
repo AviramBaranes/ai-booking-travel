@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { booking } from "../client";
+import { availability } from "../client";
 import { searchAvailableCars } from "../api/booking-api";
 
 export const bookingKeys = {
-  availability: (params: booking.SearchAvailabilityRequest) =>
+  availability: (params: availability.SearchAvailabilityParams) =>
     ["booking", "availability", params] as const,
 };
 
@@ -12,7 +12,7 @@ interface UseAvailableCarsOptions {
 }
 
 export function useAvailableCars(
-  params: booking.SearchAvailabilityRequest,
+  params: availability.SearchAvailabilityParams,
   opts?: UseAvailableCarsOptions,
 ) {
   return useQuery({

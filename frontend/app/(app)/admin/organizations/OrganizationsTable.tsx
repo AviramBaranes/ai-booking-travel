@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { z } from "zod";
-import { accounts } from "@/shared/client";
+import { accounts, organization } from "@/shared/client";
 import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import {
   ColumnDef,
@@ -19,7 +19,7 @@ const ORGANIC_OPTIONS = [
   { value: "false", label: "לא אורגני" },
 ];
 
-const columns: ColumnDef<accounts.ListOrganizationsRow>[] = [
+const columns: ColumnDef<organization.ListOrganizationsRow>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },
   { key: "name", label: "שם", type: "text" },
   {
@@ -108,7 +108,7 @@ function buildRequest(
   _sort: SortState | null,
   page: number,
   filters: Filters,
-): accounts.ListOrganizationsRequest {
+): organization.ListOrganizationsParams {
   return {
     Search: filters.search,
     IsOrganic: filters.isOrganic,
@@ -172,7 +172,7 @@ export default function OrganizationsTable() {
   });
 
   return (
-    <CrudTable<accounts.ListOrganizationsRow, OrgCreateData, OrgUpdateData>
+    <CrudTable<organization.ListOrganizationsRow, OrgCreateData, OrgUpdateData>
       columns={columns}
       queryKey="organizations"
       queryKeyDeps={[filters.search, filters.isOrganic]}
@@ -181,11 +181,11 @@ export default function OrganizationsTable() {
         listOrganizations(buildRequest(sort, page, filters))
       }
       extractList={(r) =>
-        (r as accounts.ListOrganizationsResponse | undefined)?.organizations ??
+        (r as organization.ListOrganizationsResponse | undefined)?.organizations ??
         []
       }
       extractTotal={(r) =>
-        (r as accounts.ListOrganizationsResponse | undefined)?.total ?? 0
+        (r as organization.ListOrganizationsResponse | undefined)?.total ?? 0
       }
       createFn={(data) =>
         createOrganization({

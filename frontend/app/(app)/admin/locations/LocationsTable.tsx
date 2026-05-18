@@ -4,7 +4,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { Power, PowerOff } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { booking } from "@/shared/client";
+import { location } from "@/shared/client";
 import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import {
   ColumnDef,
@@ -18,7 +18,7 @@ import {
   bulkToggleLocations,
 } from "@/shared/api/locations-api";
 
-const columns: ColumnDef<booking.LocationRow>[] = [
+const columns: ColumnDef<location.LocationRow>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },
   { key: "name", label: "שם", type: "text", editable: false },
   { key: "country_code", label: "קוד מדינה", type: "text", editable: false },
@@ -60,7 +60,7 @@ function buildListParams(
   _sort: SortState | null,
   page: number,
   filters: Filters,
-): booking.ListLocationsRequest {
+): location.ListLocationsParams {
   return {
     CountryCode: filters.countryCode,
     Broker: filters.broker,
@@ -158,8 +158,8 @@ export default function LocationsTable() {
 
   return (
     <CrudTable<
-      booking.LocationRow,
-      booking.InsertLocationParams,
+      location.LocationRow,
+      location.InsertLocationParams,
       { enabled: boolean }
     >
       columns={columns}
@@ -176,10 +176,10 @@ export default function LocationsTable() {
         listLocations(buildListParams(sort, page, filters))
       }
       extractList={(r) =>
-        (r as booking.ListLocationsResponse | undefined)?.locations ?? []
+        (r as location.ListLocationsResponse | undefined)?.locations ?? []
       }
       extractTotal={(r) =>
-        (r as booking.ListLocationsResponse | undefined)?.total ?? 0
+        (r as location.ListLocationsResponse | undefined)?.total ?? 0
       }
       createFn={insertLocation}
       updateFn={(id, data) => toggleLocation(id, data.enabled)}

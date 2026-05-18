@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useTranslations } from "next-intl";
 import { SelectedCarPriceDetails } from "./SelectedCarPriceDetails";
 import { SelectedCarCardWrapper } from "./SelectedCarCardWrapper";
@@ -7,7 +7,7 @@ import { SelectedCarHeader } from "./SelectedCarHeader";
 interface SelectedCarCardProps {
   daysCount: number;
   selectedPlanIndex: number;
-  vehicle: booking.AvailableVehicle;
+  vehicle: availability.AvailableVehicle;
   isErpSelected: boolean;
   children?: React.ReactNode;
 }

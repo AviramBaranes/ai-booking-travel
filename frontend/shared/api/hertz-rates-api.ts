@@ -1,8 +1,8 @@
-import { booking } from "../client";
+import { markup_rate } from "../client";
 import { withErrorHandler } from "./_api";
 
 export function listHertzMarkupRates(
-  params: booking.ListHertzMarkupRatesRequest,
+  params: markup_rate.ListHertzMarkupRatesParams,
 ) {
   return withErrorHandler((client) =>
     client.booking.ListHertzMarkupRates(params),
@@ -10,7 +10,7 @@ export function listHertzMarkupRates(
 }
 
 export function createHertzMarkupRate(
-  data: booking.CreateHertzMarkupRateRequest,
+  data: markup_rate.CreateHertzMarkupRateParams,
 ) {
   return withErrorHandler((client) =>
     client.booking.CreateHertzMarkupRate(data),
@@ -19,7 +19,7 @@ export function createHertzMarkupRate(
 
 export function updateHertzMarkupRate(
   id: number,
-  data: booking.UpdateHertzMarkupRateRequest,
+  data: markup_rate.UpdateHertzMarkupRateParams,
 ) {
   return withErrorHandler((client) =>
     client.booking.UpdateHertzMarkupRate(id, data),

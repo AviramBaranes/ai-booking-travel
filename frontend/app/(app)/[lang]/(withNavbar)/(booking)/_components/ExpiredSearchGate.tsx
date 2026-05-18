@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { bookingKeys } from "@/shared/hooks/useAvailableCars";
 import { searchRequestToParams } from "../results/searchQuery";
 
@@ -16,7 +16,7 @@ const SEARCH_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
 interface ExpiredSearchGateProps {
   children: React.ReactNode;
-  searchRequest: booking.SearchAvailabilityRequest;
+  searchRequest: availability.SearchAvailabilityParams;
 }
 
 export function ExpiredSearchGate({

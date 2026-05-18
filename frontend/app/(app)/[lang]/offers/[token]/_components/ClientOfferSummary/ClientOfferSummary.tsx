@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import {  price_offer } from "@/shared/client";
 import { HeaderSection } from "./HeaderSection";
 import { RentalSummary } from "@/app/(app)/[lang]/(withNavbar)/(my-account)/_components/RentalSummary";
 import { CarDetailsSection } from "@/app/(app)/[lang]/(withNavbar)/(my-account)/_components/CarDetailsSection";
@@ -10,7 +10,7 @@ export async function ClientOfferSummary({
   offer,
   lang,
 }: {
-  offer: booking.GetPriceOfferResponse;
+  offer: price_offer.GetPriceOfferResponse;
   lang: string;
 }) {
   const t = await getTranslations("MyAccount.priceOffer.summary.labels");

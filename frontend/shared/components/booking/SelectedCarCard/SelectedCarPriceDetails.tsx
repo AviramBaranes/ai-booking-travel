@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { PriceDetailRow } from "../PriceDetailRow";
 import { useTranslations } from "next-intl";
 import { RentalPriceForDays } from "../RentalPriceForDays";
@@ -10,7 +10,7 @@ export function SelectedCarPriceDetails({
   isErpSelected,
   daysCount,
 }: {
-  vehicle: booking.AvailableVehicle;
+  vehicle: availability.AvailableVehicle;
   selectedPlanIndex: number;
   isErpSelected: boolean;
   daysCount: number;

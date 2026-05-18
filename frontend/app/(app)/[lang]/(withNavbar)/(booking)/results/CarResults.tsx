@@ -1,7 +1,7 @@
 "use client";
 
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useTranslations } from "next-intl";
 import { useFilteredCars } from "./useFilteredCars";
 import { CarCard } from "./_components/carCard/CarCard";
@@ -17,7 +17,7 @@ import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import { useEffect } from "react";
 
 interface CarResultsProps {
-  searchRequest: booking.SearchAvailabilityRequest;
+  searchRequest: availability.SearchAvailabilityParams;
 }
 
 export function CarResults({ searchRequest }: CarResultsProps) {

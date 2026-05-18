@@ -1,7 +1,7 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useTranslations } from "next-intl";
 
-export function CarTags({ vehicle }: { vehicle: booking.AvailableVehicle }) {
+export function CarTags({ vehicle }: { vehicle: availability.AvailableVehicle }) {
   const t = useTranslations("booking.results");
 
   return (

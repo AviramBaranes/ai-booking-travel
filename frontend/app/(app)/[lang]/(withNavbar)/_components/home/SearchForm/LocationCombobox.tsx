@@ -9,7 +9,7 @@ import {
   ComboboxItem,
 } from "@/components/ui/combobox";
 import { Building2, MapPin, Plane } from "lucide-react";
-import { booking } from "@/shared/client";
+import { availability, location } from "@/shared/client";
 import { FieldError } from "react-hook-form";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 
@@ -63,7 +63,7 @@ export function LocationCombobox({
       <ComboboxContent className="rounded-xl p-4">
         <ComboboxEmpty>לא נמצאו מיקומים</ComboboxEmpty>
         <ComboboxList className="divide-y divide-border" dir="ltr">
-          {(loc: booking.LocationResult) => (
+          {(loc: location.LocationResult) => (
             <ComboboxItem
               key={loc.id}
               value={loc.name}

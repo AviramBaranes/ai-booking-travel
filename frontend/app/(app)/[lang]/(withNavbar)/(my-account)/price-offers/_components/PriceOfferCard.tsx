@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { price_offer } from "@/shared/client";
 import { AccountCardLabelValue } from "../../_components/AccountCardLabelValue";
 import { formatPrice } from "@/shared/utils/formatPrice";
 import Link from "next/link";
@@ -9,7 +9,7 @@ import { statusToBg, statusToColor } from "../_utils/statusesStyles";
 export function PriceOfferCard({
   priceOffer,
 }: {
-  priceOffer: booking.PriceOfferSummary;
+  priceOffer: price_offer.PriceOfferSummary;
 }) {
   const { lang } = useParams();
   const tLabels = useTranslations("MyAccount.priceOffers.labels");

@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { booking } from "@/shared/client";
+import { coupon } from "@/shared/client";
 import { CrudTable } from "@/app/(app)/admin/_components/crud-table/CrudTable";
 import { ColumnDef } from "@/app/(app)/admin/_components/crud-table/types";
 import {
@@ -11,7 +11,7 @@ import {
   deleteCoupon,
 } from "@/shared/api/coupons-api";
 
-const columns: ColumnDef<booking.CouponResponse>[] = [
+const columns: ColumnDef<coupon.CouponResponse>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },
   { key: "name", label: "שם", type: "text" },
   { key: "code", label: "קוד", type: "text" },
@@ -32,16 +32,16 @@ const couponSchema = z.object({
 export default function CouponsTable() {
   return (
     <CrudTable<
-      booking.CouponResponse,
-      booking.CreateCouponRequest,
-      booking.UpdateCouponRequest
+      coupon.CouponResponse,
+      coupon.CreateCouponParams,
+      coupon.UpdateCouponParams
     >
       columns={columns}
       queryKey="coupons"
       getId={(r) => r.id}
       listFn={() => listCoupons()}
       extractList={(r) =>
-        (r as booking.ListCouponsResponse | undefined)?.coupons ?? []
+        (r as coupon.ListCouponsResponse | undefined)?.coupons ?? []
       }
       createFn={createCoupon}
       updateFn={updateCoupon}

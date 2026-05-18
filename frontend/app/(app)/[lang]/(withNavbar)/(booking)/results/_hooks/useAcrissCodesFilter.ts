@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useMemo, useState } from "react";
 import { CAR_GROUPS_FILTERS } from "../../_components/_constants/carGroupsFilters";
 
@@ -14,7 +14,7 @@ export function useAcrissCodesFilter() {
     );
   }, [selectedGroups]);
 
-  const filterFunction = (car: booking.AvailableVehicle) => {
+  const filterFunction = (car: availability.AvailableVehicle) => {
     return acrissCodes.size === 0 || acrissCodes.has(car.carDetails.acriss);
   };
 

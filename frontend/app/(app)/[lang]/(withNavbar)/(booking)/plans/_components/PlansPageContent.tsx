@@ -1,6 +1,6 @@
 "use client";
 
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { InclusionsDisplay } from "./InclustionsDisplay";
 import { useSelectedVehicle } from "../_hooks/useSelectedVehicle";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
@@ -23,11 +23,11 @@ import { FeesNote } from "./FeesNote";
 import { PriceOfferDialog } from "./PriceOfferDialog";
 
 interface PlansPageContentProps {
-  searchRequest: booking.SearchAvailabilityRequest;
+  searchRequest: availability.SearchAvailabilityParams;
 }
 
 export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
-  const t = useTranslations("booking.plansPage");
+  const t = useTranslations("availability.PlansPage");
   const { lang } = useParams();
   const router = useRouter();
   const currentSearchParams = useSearchParams();

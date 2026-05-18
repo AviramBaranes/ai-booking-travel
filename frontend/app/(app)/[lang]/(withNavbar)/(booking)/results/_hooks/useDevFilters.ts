@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useMemo, useState } from "react";
 
 export type PlansCountFilter = "2" | "3" | null;
@@ -20,7 +20,7 @@ export function useDevFilters() {
   }
 
   const filterFn = useMemo(() => {
-    return (car: booking.AvailableVehicle) => {
+    return (car: availability.AvailableVehicle) => {
       if (!isDevelopment) {
         return true;
       }

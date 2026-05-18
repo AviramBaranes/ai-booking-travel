@@ -12,7 +12,7 @@ export function isBillingFailedError(err: unknown): err is BillingFailedError {
   return err instanceof BillingFailedError;
 }
 
-export function bill(params: billing.BillRequestParams) {
+export function bill(params: billing.BillParams) {
   return withErrorHandler(async (client) => {
     try {
       return await client.billing.Bill(params);

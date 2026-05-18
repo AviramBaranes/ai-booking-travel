@@ -1,14 +1,14 @@
 import { useTranslations } from "next-intl";
 import { SummaryRow } from "../../../../_components/SummaryRow";
 import { statusToColor } from "../../../_utils/statusesStyles";
-import { booking } from "@/shared/client";
+import { price_offer } from "@/shared/client";
 import { PriceOfferActions } from "./PriceOfferActions";
 import { useParams } from "next/navigation";
 
 export function HeaderSection({
   priceOffer,
 }: {
-  priceOffer: booking.GetAgentPriceOfferResponse;
+  priceOffer: price_offer.GetAgentPriceOfferResponse;
 }) {
   const { lang } = useParams();
   const t = useTranslations("MyAccount.priceOffer.summary");

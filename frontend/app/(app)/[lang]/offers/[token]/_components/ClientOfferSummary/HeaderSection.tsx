@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { price_offer } from "@/shared/client";
 import { getTranslations } from "next-intl/server";
 import { SummaryRow } from "@/app/(app)/[lang]/(withNavbar)/(my-account)/_components/SummaryRow";
 import { statusToColor } from "@/app/(app)/[lang]/(withNavbar)/(my-account)/price-offers/_utils/statusesStyles";
@@ -7,7 +7,7 @@ export async function HeaderSection({
   offer,
   lang,
 }: {
-  offer: booking.GetPriceOfferResponse;
+  offer: price_offer.GetPriceOfferResponse;
   lang: string;
 }) {
   const t = await getTranslations("MyAccount.priceOffer.summary");

@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { useMemo } from "react";
 import { FILTERS_LIST } from "../../_components/_constants/filtersList";
 
@@ -36,7 +36,7 @@ export function toFilterValue(value: unknown): string | null {
   return null;
 }
 
-export function useFilterOptions(cars: booking.AvailableVehicle[]) {
+export function useFilterOptions(cars: availability.AvailableVehicle[]) {
   const filtersOptions = useMemo<FilterOption[]>(() => {
     return FILTERS_LIST.map((filter) => {
       const valuesSet = new Set<string>();

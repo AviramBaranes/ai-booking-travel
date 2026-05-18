@@ -1,7 +1,7 @@
 import { reservation } from "../client";
 import { withErrorHandler } from "./_api";
 
-export function listReservations(params: reservation.ListReservationsRequest) {
+export function listReservations(params: reservation.ListReservationsParams) {
   return withErrorHandler((client) =>
     client.reservation.ListReservations(params),
   );
@@ -28,7 +28,7 @@ export function cancelReservation(reservationId: number) {
 }
 
 export function listOpenReservations(
-  params: reservation.ListOpenReservationsByBillingEntityRequest,
+  params: reservation.ListOpenReservationsByBillingEntityParams,
 ) {
   return withErrorHandler((client) =>
     client.reservation.ListOpenReservationsByBillingEntity(params),

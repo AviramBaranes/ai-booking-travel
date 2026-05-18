@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 import { formatPrice } from "@/shared/utils/formatPrice";
 import { CircleCheckBig, Circle, ShieldCheck, X, Crown } from "lucide-react";
 import { RentalPriceForDays } from "@/shared/components/booking/RentalPriceForDays";
 
 interface OtherPlansButtonProps {
-  plans: booking.Plan[];
+  plans: availability.Plan[];
   selectedPlan: number;
   onSelectPlan: (index: number) => void;
   currency: string;
@@ -24,7 +24,7 @@ export function OtherPlansButton({
   currency,
   daysCount,
 }: OtherPlansButtonProps) {
-  const t = useTranslations("booking.plansDialog");
+  const t = useTranslations("availability.PlansDialog");
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"terms" | "inclusions">(
     "inclusions",

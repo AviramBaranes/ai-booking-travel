@@ -1,17 +1,17 @@
-import { booking } from "../client";
+import { currency } from "../client";
 import { withErrorHandler } from "./_api";
 
 export function listCurrencies() {
   return withErrorHandler((client) => client.booking.ListCurrencies());
 }
 
-export function createCurrency(data: booking.CreateCurrencyRequest) {
+export function createCurrency(data: currency.CreateCurrencyParams) {
   return withErrorHandler((client) => client.booking.CreateCurrency(data));
 }
 
 export function updateCurrency(
   id: number,
-  data: booking.UpdateCurrencyRequest,
+  data: currency.UpdateCurrencyParams,
 ) {
   return withErrorHandler((client) => client.booking.UpdateCurrency(id, data));
 }

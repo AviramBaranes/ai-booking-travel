@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { price_offer } from "@/shared/client";
 import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellationBadge";
 import { SelectedCarCardWrapper } from "@/shared/components/booking/SelectedCarCard/SelectedCarCardWrapper";
 import { SelectedCarHeader } from "@/shared/components/booking/SelectedCarCard/SelectedCarHeader";
@@ -7,7 +7,7 @@ import { getTranslations } from "next-intl/server";
 export async function ClientOfferCarCard({
   offer,
 }: {
-  offer: booking.GetPriceOfferResponse;
+  offer: price_offer.GetPriceOfferResponse;
 }) {
   const t = await getTranslations("MyAccount.reservation");
 

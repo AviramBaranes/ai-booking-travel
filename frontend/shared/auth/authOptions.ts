@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 import { login, loginWithOTP } from "../api/accounts-api";
 import Client, { BaseURL, Local } from "../client";
-import { accounts } from "../client";
+import { auth } from "../client";
 import { JWT } from "next-auth/jwt";
 
 // Deduplicates concurrent refresh calls for the same refresh token,
@@ -149,7 +149,7 @@ export const authOptions: NextAuthOptions = {
       return res;
     },
     async session({ session, token }) {
-      session.user = token as unknown as accounts.LoginResponse & {
+      session.user = token as unknown as auth.LoginResponse & {
         customExp: number;
         isAdminAsAgent?: boolean;
       };

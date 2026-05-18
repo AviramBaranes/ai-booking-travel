@@ -1,4 +1,4 @@
-import { booking } from "@/shared/client";
+import { availability } from "@/shared/client";
 
 export interface SearchQuery {
   pickupLocationId: number;
@@ -13,7 +13,7 @@ export interface SearchQuery {
 
 export function toSearchRequest(
   query: SearchQuery,
-): booking.SearchAvailabilityRequest {
+): availability.SearchAvailabilityParams {
   const fmt = (d: Date) => d.toISOString().split("T")[0];
   return {
     PickupLocationID: query.pickupLocationId,
@@ -28,7 +28,7 @@ export function toSearchRequest(
 }
 
 export function searchRequestToParams(
-  request: booking.SearchAvailabilityRequest,
+  request: availability.SearchAvailabilityParams,
 ): string {
   const params = new URLSearchParams({
     pl: String(request.PickupLocationID),
