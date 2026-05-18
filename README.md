@@ -93,6 +93,15 @@ Before running the application locally, ensure you have the following tools inst
 
 ---
 
+## AI Agents & Development Tools
+
+This project is configured to work seamlessly with GitHub Copilot and relies on the Model Context Protocol (MCP) to supply backend intelligence to your AI assistant.
+
+- **Copilot Instructions**: Custom codebase rules and project conventions are detailed in `.github/copilot-instructions.md`. Copilot uses this context to enforce our Go/Encore practices and frontend app routing conventions seamlessly.
+- **Encore MCP Server**: Configured in `.vscode/mcp.json`, the project uses the `encore-mcp` server (invoked via `encore mcp run --app=ai-booking-travel-bo22`). This enables your IDE's AI assistant to automatically understand the Encore application architecture, call local endpoints, query databases, and read local API specs.
+
+---
+
 ## Environments & CI/CD
 
 Currently, the application relies on the **Local** environment. As the project evolves, the deployment strategy will follow this structure:

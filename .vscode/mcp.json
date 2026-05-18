@@ -4,7 +4,7 @@
             "args": [
                 "mcp",
                 "run",
-                "--app=global-rental-2m42"
+                "--app=ai-booking-travel-bo22"
             ],
             "command": "encore"
         }

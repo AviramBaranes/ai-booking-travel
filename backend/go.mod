@@ -3,7 +3,7 @@ module encore.app
 go 1.24.0
 
 require (
-	encore.dev v1.48.13
+	encore.dev v1.52.1
 	github.com/go-playground/validator/v10 v10.27.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0

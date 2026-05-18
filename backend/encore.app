@@ -1,5 +1,5 @@
 {
-    "id": "global-rental-2m42",
+	"id": "ai-booking-travel-bo22",
     "global_cors": {
         "allow_origins_with_credentials": [
             "http://localhost:3000"
