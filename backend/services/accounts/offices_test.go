@@ -31,8 +31,8 @@ func validUpdateOfficeParams() oh.UpdateOfficeParams {
 	phone := "0529876543"
 	address := "456 Updated St"
 	return oh.UpdateOfficeParams{
-		Name:           &name,
-		OrganizationID: &orgID,
+		Name:           name,
+		OrganizationID: orgID,
 		Phone:          &phone,
 		Address:        &address,
 	}
@@ -382,7 +382,11 @@ func TestUpdateOffice(t *testing.T) {
 		org := createTestOrg(t, s, "UpdateOfficeOrganicIcountOrg")
 		office := createTestOffice(t, s, org.ID, "UpdateOfficeOrganicIcountTarget")
 		icountID := int32(55)
-		_, err := s.UpdateOffice(ctx, office.ID, oh.UpdateOfficeParams{IcountClientID: &icountID})
+		p := validUpdateOfficeParams()
+		p.Name = office.Name
+		p.OrganizationID = org.ID
+		p.IcountClientID = &icountID
+		_, err := s.UpdateOffice(ctx, office.ID, p)
 		api_errors.AssertApiError(t, oh.ErrOfficeOrganicForbidsIcountClientID, err)
 	})
 
@@ -402,7 +406,11 @@ func TestUpdateOffice(t *testing.T) {
 			t.Fatalf("failed to create office: %v", err)
 		}
 		newIcount := int32(99)
-		resp, err := s.UpdateOffice(ctx, office.ID, oh.UpdateOfficeParams{IcountClientID: &newIcount})
+		p := validUpdateOfficeParams()
+		p.Name = office.Name
+		p.OrganizationID = org.ID
+		p.IcountClientID = &newIcount
+		resp, err := s.UpdateOffice(ctx, office.ID, p)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -428,9 +436,13 @@ func TestUpdateOffice(t *testing.T) {
 		}
 		orgOrg := createTestOrg(t, s, "UpdateOfficeMoveToOrganicDst")
 		newIcount := int32(55)
-		_, err = s.UpdateOffice(ctx, office.ID, oh.UpdateOfficeParams{
-			OrganizationID: &orgOrg.ID, IcountClientID: &newIcount,
-		})
+
+		p := validUpdateOfficeParams()
+		p.Name = office.Name
+		p.OrganizationID = orgOrg.ID
+		p.IcountClientID = &newIcount
+
+		_, err = s.UpdateOffice(ctx, office.ID, p)
 		api_errors.AssertApiError(t, oh.ErrOfficeOrganicForbidsIcountClientID, err)
 	})
 
@@ -440,40 +452,19 @@ func TestUpdateOffice(t *testing.T) {
 		created := createTestOffice(t, s, org.ID, "Update Full Office")
 
 		params := validUpdateOfficeParams()
-		params.OrganizationID = &org.ID // keep same org
+		params.OrganizationID = org.ID // keep same org
 		resp, err := s.UpdateOffice(ctx, created.ID, params)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if resp.Name != *params.Name {
-			t.Fatalf("expected name %q, got %q", *params.Name, resp.Name)
+		if resp.Name != params.Name {
+			t.Fatalf("expected name %q, got %q", params.Name, resp.Name)
 		}
 		if resp.Phone == nil || *resp.Phone != *params.Phone {
 			t.Fatalf("expected phone %q, got %v", *params.Phone, resp.Phone)
 		}
 		if resp.Address == nil || *resp.Address != *params.Address {
 			t.Fatalf("expected address %q, got %v", *params.Address, resp.Address)
-		}
-	})
-
-	t.Run("partial update only changes provided fields", func(t *testing.T) {
-		t.Parallel()
-		org := createTestOrg(t, s, "PartialUpdateOfficeOrg")
-		created := createTestOffice(t, s, org.ID, "Partial Update Office")
-
-		newName := "Partial Updated Name"
-		resp, err := s.UpdateOffice(ctx, created.ID, oh.UpdateOfficeParams{Name: &newName})
-		if err != nil {
-			t.Fatalf("expected no error, got %v", err)
-		}
-		if resp.Name != "Partial Updated Name" {
-			t.Fatalf("expected name 'Partial Updated Name', got %q", resp.Name)
-		}
-		if resp.OrganizationID != created.OrganizationID {
-			t.Fatalf("expected organizationId unchanged %d, got %d", created.OrganizationID, resp.OrganizationID)
-		}
-		if (resp.Phone == nil) != (created.Phone == nil) || (resp.Phone != nil && *resp.Phone != *created.Phone) {
-			t.Fatalf("expected phone unchanged %v, got %v", created.Phone, resp.Phone)
 		}
 	})
 
@@ -490,15 +481,17 @@ func TestUpdateOffice(t *testing.T) {
 		officeB := createTestOffice(t, s, org.ID, "Dup Update Office B")
 
 		dupName := "Dup Update Office A"
-		_, err := s.UpdateOffice(ctx, officeB.ID, oh.UpdateOfficeParams{Name: &dupName})
+		p := validUpdateOfficeParams()
+		p.Name = dupName
+		p.OrganizationID = org.ID
+		_, err := s.UpdateOffice(ctx, officeB.ID, p)
 		api_errors.AssertApiError(t, oh.ErrNameAlreadyExists, err)
 	})
 
 	t.Run("validation rejects blank name", func(t *testing.T) {
 		t.Parallel()
 		p := validUpdateOfficeParams()
-		blank := "   "
-		p.Name = &blank
+		p.Name = "   "
 		api_errors.AssertApiError(t, invalidValueErr("name"), p.Validate())
 	})
 

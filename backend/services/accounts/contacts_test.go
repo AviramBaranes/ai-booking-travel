@@ -34,21 +34,24 @@ func validUpdateContactParams() contact.UpdateContactParams {
 	cellphone := "0529876543"
 	email := "jane.smith@test.com"
 	return contact.UpdateContactParams{
-		FirstName: &firstName,
-		LastName:  &lastName,
-		Role:      &role,
-		Cellphone: &cellphone,
-		Email:     &email,
+		FirstName: firstName,
+		LastName:  lastName,
+		Role:      role,
+		Cellphone: cellphone,
+		Email:     email,
 	}
 }
 
 // seedOrgAndOffice creates an org and office for use in contact tests.
+// Defaults to organic so org-level payment responsible tests pass.
 func seedOrgAndOffice(t *testing.T) (orgID int64, officeID int64) {
 	t.Helper()
 	ctx := context.Background()
+	id := int32(999)
 	org, err := query.CreateOrganization(ctx, db.CreateOrganizationParams{
-		Name:      randomName(),
-		IsOrganic: false,
+		Name:           randomName(),
+		IsOrganic:      true,
+		IcountClientID: &id,
 	})
 	if err != nil {
 		t.Fatalf("failed to create org: %v", err)
@@ -465,7 +468,7 @@ func TestUpdateContact(t *testing.T) {
 	ctx := context.Background()
 	s := &Service{query: query}
 
-	t.Run("updates only provided fields", func(t *testing.T) {
+	t.Run("updates fields exactly to provided values", func(t *testing.T) {
 		t.Parallel()
 		_, officeID := seedOrgAndOffice(t)
 		p := validCreateContactParams(&officeID, nil)
@@ -476,7 +479,15 @@ func TestUpdateContact(t *testing.T) {
 		}
 
 		newFirst := "UpdatedFirst"
-		resp, err := s.UpdateContact(ctx, created.ID, contact.UpdateContactParams{FirstName: &newFirst})
+		pUpdate := validUpdateContactParams()
+		pUpdate.FirstName = newFirst
+		pUpdate.LastName = created.LastName
+		pUpdate.Role = created.Role
+		pUpdate.Cellphone = created.Cellphone
+		pUpdate.Email = created.Email
+		pUpdate.OfficeID = &officeID
+
+		resp, err := s.UpdateContact(ctx, created.ID, pUpdate)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -508,28 +519,29 @@ func TestUpdateContact(t *testing.T) {
 			t.Fatalf("failed to create contact: %v", err)
 		}
 
-		isTrue := true
 		params := validUpdateContactParams()
-		params.Email = ptrStr(fmt.Sprintf("updated_full_%d@test.com", time.Now().UnixNano()))
-		params.IsPaymentResponsible = &isTrue
+		params.Email = fmt.Sprintf("updated_full_%d@test.com", time.Now().UnixNano())
+		params.IsPaymentResponsible = true
+		params.OrganizationID = &orgID
+
 		resp, err := s.UpdateContact(ctx, created.ID, params)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if resp.FirstName != *params.FirstName {
-			t.Fatalf("expected firstName %q, got %q", *params.FirstName, resp.FirstName)
+		if resp.FirstName != params.FirstName {
+			t.Fatalf("expected firstName %q, got %q", params.FirstName, resp.FirstName)
 		}
-		if resp.LastName != *params.LastName {
-			t.Fatalf("expected lastName %q, got %q", *params.LastName, resp.LastName)
+		if resp.LastName != params.LastName {
+			t.Fatalf("expected lastName %q, got %q", params.LastName, resp.LastName)
 		}
-		if resp.Role != *params.Role {
-			t.Fatalf("expected role %q, got %q", *params.Role, resp.Role)
+		if resp.Role != params.Role {
+			t.Fatalf("expected role %q, got %q", params.Role, resp.Role)
 		}
-		if resp.Cellphone != *params.Cellphone {
-			t.Fatalf("expected cellphone %q, got %q", *params.Cellphone, resp.Cellphone)
+		if resp.Cellphone != params.Cellphone {
+			t.Fatalf("expected cellphone %q, got %q", params.Cellphone, resp.Cellphone)
 		}
-		if resp.Email != *params.Email {
-			t.Fatalf("expected email %q, got %q", *params.Email, resp.Email)
+		if resp.Email != params.Email {
+			t.Fatalf("expected email %q, got %q", params.Email, resp.Email)
 		}
 		if !resp.IsPaymentResponsible {
 			t.Fatal("expected isPaymentResponsible to be true after full update")
@@ -538,21 +550,24 @@ func TestUpdateContact(t *testing.T) {
 
 	t.Run("returns not found for non-existent id", func(t *testing.T) {
 		t.Parallel()
-		_, err := s.UpdateContact(ctx, 999999, validUpdateContactParams())
+		officeID := int64(1)
+		p := validUpdateContactParams()
+		p.OfficeID = &officeID
+		_, err := s.UpdateContact(ctx, 999999, p)
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
 	t.Run("validation rejects blank firstName", func(t *testing.T) {
 		t.Parallel()
-		blank := "   "
-		p := contact.UpdateContactParams{FirstName: &blank}
+		p := validUpdateContactParams()
+		p.FirstName = "   "
 		api_errors.AssertApiError(t, invalidValueErr("firstName"), p.Validate())
 	})
 
 	t.Run("validation rejects invalid email", func(t *testing.T) {
 		t.Parallel()
-		bad := "not-an-email"
-		p := contact.UpdateContactParams{Email: &bad}
+		p := validUpdateContactParams()
+		p.Email = "not-an-email"
 		api_errors.AssertApiError(t, invalidValueErr("email"), p.Validate())
 	})
 
@@ -683,14 +698,12 @@ func TestGetBillingContacts(t *testing.T) {
 		t.Parallel()
 
 		// Organization A: organic, two offices, one org-level payment contact (expected match).
-		// Also seeded: an office-level contact (excluded by the organic + office mismatch)
-		// and a non-payment-responsible org-level contact (excluded by the flag).
+		// Also seeded: a non-payment-responsible org-level contact (excluded by the flag).
 		orgA := seedOrg(t, true)
 		officeA1, officeA2 := seedOffice(t, orgA.ID), seedOffice(t, orgA.ID)
 		agentA1 := seedAgent(t, s, randomName()+"@test.com", randomIsraeliPhoneNumber(), officeA1.ID)
 		agentA2 := seedAgent(t, s, randomName()+"@test.com", randomIsraeliPhoneNumber(), officeA2.ID)
 		contactA := seedContact(t, nil, &orgA.ID, true)
-		seedContact(t, &officeA1.ID, nil, true)
 		seedContact(t, nil, &orgA.ID, false)
 
 		// Organization B: non-organic, two offices.
@@ -698,7 +711,6 @@ func TestGetBillingContacts(t *testing.T) {
 		//              a single BillingContact grouping both agents under one office.
 		//   Office B2: one agent and one office-level payment contact, producing a
 		//              separate BillingContact.
-		// Also seeded: an org-level payment contact (excluded by the non-organic + org mismatch).
 		orgB := seedOrg(t, false)
 		officeB1, officeB2 := seedOffice(t, orgB.ID), seedOffice(t, orgB.ID)
 		agentB1a := seedAgent(t, s, randomName()+"@test.com", randomIsraeliPhoneNumber(), officeB1.ID)
@@ -706,7 +718,6 @@ func TestGetBillingContacts(t *testing.T) {
 		agentB2 := seedAgent(t, s, randomName()+"@test.com", randomIsraeliPhoneNumber(), officeB2.ID)
 		contactB1 := seedContact(t, &officeB1.ID, nil, true)
 		contactB2 := seedContact(t, &officeB2.ID, nil, true)
-		seedContact(t, nil, &orgB.ID, true)
 
 		// Organization C: non-organic, single office with two payment-responsible contacts,
 		// expected to produce two BillingContacts that share the same office.

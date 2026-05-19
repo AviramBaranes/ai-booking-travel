@@ -233,20 +233,20 @@ func (q *Queries) ListOrganizations(ctx context.Context, arg ListOrganizationsPa
 const updateOrganization = `-- name: UpdateOrganization :one
 UPDATE organizations
 SET
-    name             = COALESCE($1,             name),
-    is_organic       = COALESCE($2,       is_organic),
-    icount_client_id = COALESCE($3, icount_client_id),
-    phone            = COALESCE($4,            phone),
-    address          = COALESCE($5,          address),
-    obligo           = COALESCE($6,           obligo),
+    name             = $1,
+    is_organic       = $2,
+    icount_client_id = $3,
+    phone            = $4,
+    address          = $5,
+    obligo           = $6,
     updated_at       = CURRENT_TIMESTAMP
 WHERE id = $7
 RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at
 `
 
 type UpdateOrganizationParams struct {
-	Name           *string
-	IsOrganic      *bool
+	Name           string
+	IsOrganic      bool
 	IcountClientID *int32
 	Phone          *string
 	Address        *string

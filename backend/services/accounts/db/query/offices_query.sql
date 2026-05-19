@@ -46,11 +46,11 @@ RETURNING id, name, organization_id, icount_client_id, phone, address, created_a
 -- name: UpdateOffice :one
 UPDATE offices
 SET
-    name             = COALESCE(sqlc.narg(name),             name),
-    organization_id  = COALESCE(sqlc.narg(organization_id),  organization_id),
-    icount_client_id = COALESCE(sqlc.narg(icount_client_id), icount_client_id),
-    phone            = COALESCE(sqlc.narg(phone),            phone),
-    address          = COALESCE(sqlc.narg(address),          address),
+    name             = sqlc.arg(name),
+    organization_id  = sqlc.arg(organization_id),
+    icount_client_id = sqlc.narg(icount_client_id),
+    phone            = sqlc.narg(phone),
+    address          = sqlc.narg(address),
     updated_at       = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg(id)
 RETURNING id, name, organization_id, icount_client_id, phone, address, created_at, updated_at;

@@ -29,15 +29,13 @@ func validCreateOrgParams() organization.CreateOrganizationParams {
 }
 
 func validUpdateOrgParams() organization.UpdateOrganizationParams {
-	name := "Updated Organization"
-	isOrganic := true
 	icountClientID := int32(200)
 	phone := "0529876543"
 	address := "456 Updated St"
 	obligo := int32(2000)
 	return organization.UpdateOrganizationParams{
-		Name:           &name,
-		IsOrganic:      &isOrganic,
+		Name:           "Updated Organization",
+		IsOrganic:      true,
 		IcountClientID: &icountClientID,
 		Phone:          &phone,
 		Address:        &address,
@@ -475,16 +473,14 @@ func TestUpdateOrganization(t *testing.T) {
 	s := &Service{query: query}
 
 	t.Run("validation rejects non-organic with icount_client_id", func(t *testing.T) {
-		isOrganic := false
 		icountID := int32(50)
-		p := organization.UpdateOrganizationParams{IsOrganic: &isOrganic, IcountClientID: &icountID}
+		p := organization.UpdateOrganizationParams{Name: "org", IsOrganic: false, IcountClientID: &icountID}
 		api_errors.AssertApiError(t, organization.ErrOrganizationNonOrganicForbidsIcountClientID, p.Validate())
 	})
 
 	t.Run("validation rejects blank name", func(t *testing.T) {
 		p := validUpdateOrgParams()
-		blank := "   "
-		p.Name = &blank
+		p.Name = "   "
 		api_errors.AssertApiError(t, invalidValueErr("name"), p.Validate())
 	})
 
@@ -501,14 +497,6 @@ func TestUpdateOrganization(t *testing.T) {
 		}
 	})
 
-	t.Run("validation accepts partial update with only name", func(t *testing.T) {
-		name := "Partial"
-		p := organization.UpdateOrganizationParams{Name: &name}
-		if err := p.Validate(); err != nil {
-			t.Fatalf("expected no error, got %v", err)
-		}
-	})
-
 	t.Run("updates organization successfully", func(t *testing.T) {
 		created := createTestOrg(t, s, "Update Full Org")
 
@@ -517,20 +505,20 @@ func TestUpdateOrganization(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if resp.Name != *params.Name {
-			t.Fatalf("expected name %q, got %q", *params.Name, resp.Name)
+		if resp.Name != params.Name {
+			t.Fatalf("expected name %q, got %q", params.Name, resp.Name)
 		}
-		if resp.IsOrganic != *params.IsOrganic {
-			t.Fatalf("expected isOrganic %v, got %v", *params.IsOrganic, resp.IsOrganic)
+		if resp.IsOrganic != params.IsOrganic {
+			t.Fatalf("expected isOrganic %v, got %v", params.IsOrganic, resp.IsOrganic)
 		}
 		if resp.Phone == nil || *resp.Phone != *params.Phone {
-			t.Fatalf("expected phone %q, got %v", *params.Phone, resp.Phone)
+			t.Fatalf("expected phone %q, got %v", *params.Phone, *resp.Phone)
 		}
 		if resp.Address == nil || *resp.Address != *params.Address {
-			t.Fatalf("expected address %q, got %v", *params.Address, resp.Address)
+			t.Fatalf("expected address %q, got %v", *params.Address, *resp.Address)
 		}
 		if resp.Obligo == nil || *resp.Obligo != *params.Obligo {
-			t.Fatalf("expected obligo %v, got %v", *params.Obligo, resp.Obligo)
+			t.Fatalf("expected obligo %v, got %v", *params.Obligo, *resp.Obligo)
 		}
 		if resp.IcountClientID == nil || *resp.IcountClientID != *params.IcountClientID {
 			t.Fatalf("expected icountClientId %v, got %v", params.IcountClientID, resp.IcountClientID)
@@ -538,46 +526,14 @@ func TestUpdateOrganization(t *testing.T) {
 	})
 
 	t.Run("returns error when adding icount to non-organic org", func(t *testing.T) {
-		org, err := s.CreateOrganization(ctx, organization.CreateOrganizationParams{
-			Name: "NonOrganic IcountAdd UniqueNOIA", IsOrganic: false,
-		})
-		if err != nil {
-			t.Fatalf("failed to create non-organic org: %v", err)
-		}
 		icountID := int32(50)
-		_, err = s.UpdateOrganization(ctx, org.ID, organization.UpdateOrganizationParams{IcountClientID: &icountID})
-		api_errors.AssertApiError(t, organization.ErrOrganizationNonOrganicForbidsIcountClientID, err)
+		p := organization.UpdateOrganizationParams{Name: "Name", IsOrganic: false, IcountClientID: &icountID}
+		api_errors.AssertApiError(t, organization.ErrOrganizationNonOrganicForbidsIcountClientID, p.Validate())
 	})
 
 	t.Run("returns error when switching to organic without icount_client_id", func(t *testing.T) {
-		org, err := s.CreateOrganization(ctx, organization.CreateOrganizationParams{
-			Name: "NonOrganic ToOrganic UniqueNOTO", IsOrganic: false,
-		})
-		if err != nil {
-			t.Fatalf("failed to create non-organic org: %v", err)
-		}
-		isOrganic := true
-		_, err = s.UpdateOrganization(ctx, org.ID, organization.UpdateOrganizationParams{IsOrganic: &isOrganic})
-		api_errors.AssertApiError(t, organization.ErrOrganizationOrganicRequiresIcountClientID, err)
-	})
-
-	t.Run("partial update only changes provided fields", func(t *testing.T) {
-		created := createTestOrg(t, s, "Partial Update Org")
-
-		newName := "Partial Updated Name"
-		resp, err := s.UpdateOrganization(ctx, created.ID, organization.UpdateOrganizationParams{Name: &newName})
-		if err != nil {
-			t.Fatalf("expected no error, got %v", err)
-		}
-		if resp.Name != "Partial Updated Name" {
-			t.Fatalf("expected name 'Partial Updated Name', got %q", resp.Name)
-		}
-		if resp.IsOrganic != created.IsOrganic {
-			t.Fatalf("expected isOrganic unchanged %v, got %v", created.IsOrganic, resp.IsOrganic)
-		}
-		if (resp.Phone == nil) != (created.Phone == nil) || (resp.Phone != nil && *resp.Phone != *created.Phone) {
-			t.Fatalf("expected phone unchanged %v, got %v", created.Phone, resp.Phone)
-		}
+		p := organization.UpdateOrganizationParams{Name: "Name", IsOrganic: true}
+		api_errors.AssertApiError(t, organization.ErrOrganizationOrganicRequiresIcountClientID, p.Validate())
 	})
 
 	t.Run("returns not found when org does not exist", func(t *testing.T) {
@@ -589,8 +545,9 @@ func TestUpdateOrganization(t *testing.T) {
 		createTestOrg(t, s, "Dup Update Org A")
 		orgB := createTestOrg(t, s, "Dup Update Org B")
 
-		dupName := "Dup Update Org A"
-		_, err := s.UpdateOrganization(ctx, orgB.ID, organization.UpdateOrganizationParams{Name: &dupName})
+		dupParams := validUpdateOrgParams()
+		dupParams.Name = "Dup Update Org A"
+		_, err := s.UpdateOrganization(ctx, orgB.ID, dupParams)
 		api_errors.AssertApiError(t, organization.ErrNameAlreadyExists, err)
 	})
 

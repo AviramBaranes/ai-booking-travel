@@ -240,19 +240,19 @@ func (q *Queries) ListOffices(ctx context.Context, arg ListOfficesParams) ([]Lis
 const updateOffice = `-- name: UpdateOffice :one
 UPDATE offices
 SET
-    name             = COALESCE($1,             name),
-    organization_id  = COALESCE($2,  organization_id),
-    icount_client_id = COALESCE($3, icount_client_id),
-    phone            = COALESCE($4,            phone),
-    address          = COALESCE($5,          address),
+    name             = $1,
+    organization_id  = $2,
+    icount_client_id = $3,
+    phone            = $4,
+    address          = $5,
     updated_at       = CURRENT_TIMESTAMP
 WHERE id = $6
 RETURNING id, name, organization_id, icount_client_id, phone, address, created_at, updated_at
 `
 
 type UpdateOfficeParams struct {
-	Name           *string
-	OrganizationID *int64
+	Name           string
+	OrganizationID int64
 	IcountClientID *int32
 	Phone          *string
 	Address        *string

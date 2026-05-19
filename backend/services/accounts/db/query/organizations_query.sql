@@ -48,12 +48,12 @@ RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, create
 -- name: UpdateOrganization :one
 UPDATE organizations
 SET
-    name             = COALESCE(sqlc.narg(name),             name),
-    is_organic       = COALESCE(sqlc.narg(is_organic),       is_organic),
-    icount_client_id = COALESCE(sqlc.narg(icount_client_id), icount_client_id),
-    phone            = COALESCE(sqlc.narg(phone),            phone),
-    address          = COALESCE(sqlc.narg(address),          address),
-    obligo           = COALESCE(sqlc.narg(obligo),           obligo),
+    name             = sqlc.arg(name),
+    is_organic       = sqlc.arg(is_organic),
+    icount_client_id = sqlc.narg(icount_client_id),
+    phone            = sqlc.narg(phone),
+    address          = sqlc.narg(address),
+    obligo           = sqlc.narg(obligo),
     updated_at       = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg(id)
 RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at;

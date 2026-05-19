@@ -194,28 +194,28 @@ func (q *Queries) ListContacts(ctx context.Context, arg ListContactsParams) ([]L
 const updateContact = `-- name: UpdateContact :one
 UPDATE contacts
 SET
-    first_name      = COALESCE($1,      first_name),
-    last_name       = COALESCE($2,       last_name),
-    role            = COALESCE($3,            role),
-    cellphone       = COALESCE($4,       cellphone),
-    email           = COALESCE($5,           email),
-    office_id              = COALESCE($6,              office_id),
-    organization_id        = COALESCE($7,        organization_id),
-    is_payment_responsible = COALESCE($8, is_payment_responsible),
+    first_name             = $1,
+    last_name              = $2,
+    role                   = $3,
+    cellphone              = $4,
+    email                  = $5,
+    office_id              = $6,
+    organization_id        = $7,
+    is_payment_responsible = $8,
     updated_at             = CURRENT_TIMESTAMP
 WHERE id = $9
 RETURNING id, first_name, last_name, role, cellphone, email, office_id, organization_id, is_payment_responsible, created_at, updated_at
 `
 
 type UpdateContactParams struct {
-	FirstName            *string
-	LastName             *string
-	Role                 *string
-	Cellphone            *string
-	Email                *string
+	FirstName            string
+	LastName             string
+	Role                 string
+	Cellphone            string
+	Email                string
 	OfficeID             *int64
 	OrganizationID       *int64
-	IsPaymentResponsible *bool
+	IsPaymentResponsible bool
 	ID                   int64
 }
 
