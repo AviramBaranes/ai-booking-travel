@@ -238,13 +238,61 @@ func TestCreateReservation(t *testing.T) {
 	ctx := context.Background()
 	s := &Service{query: testQuerier()}
 
-	t.Run("creates reservation successfully", func(t *testing.T) {
+	t.Run("creates reservation successfully with org data", func(t *testing.T) {
+		p := validCreateReservationParams()
+		officeID := int64(1)
+		organizationID := int64(1)
+		isOrganic := true
+		p.OfficeID = &officeID
+		p.OrganizationID = &organizationID
+		p.IsOrganizationOrganic = &isOrganic
+
+		resp, err := s.CreateReservation(ctx, *p)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.ID == 0 {
+			t.Fatal("expected non-zero ID")
+		}
+
+		r, err := s.query.GetReservationByID(ctx, resp.ID)
+		if err != nil {
+			t.Fatalf("failed to get reservation: %v", err)
+		}
+
+		if r.OfficeID == nil || *r.OfficeID != officeID {
+			t.Fatalf("expected office ID %d, got %v", officeID, r.OfficeID)
+		}
+		if r.OrganizationID == nil || *r.OrganizationID != organizationID {
+			t.Fatalf("expected organization ID %d, got %v", organizationID, r.OrganizationID)
+		}
+		if r.IsOrganizationOrganic == nil || *r.IsOrganizationOrganic != isOrganic {
+			t.Fatalf("expected IsOrganizationOrganic %v, got %v", isOrganic, r.IsOrganizationOrganic)
+		}
+	})
+
+	t.Run("creates reservation successfully without org data", func(t *testing.T) {
 		resp, err := s.CreateReservation(ctx, *validCreateReservationParams())
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 		if resp.ID == 0 {
 			t.Fatal("expected non-zero ID")
+		}
+
+		r, err := s.query.GetReservationByID(ctx, resp.ID)
+		if err != nil {
+			t.Fatalf("failed to get reservation: %v", err)
+		}
+
+		if r.OfficeID != nil {
+			t.Fatalf("expected nil office ID, got %v", r.OfficeID)
+		}
+		if r.OrganizationID != nil {
+			t.Fatalf("expected nil organization ID, got %v", r.OrganizationID)
+		}
+		if r.IsOrganizationOrganic != nil {
+			t.Fatalf("expected nil IsOrganizationOrganic, got %v", r.IsOrganizationOrganic)
 		}
 	})
 

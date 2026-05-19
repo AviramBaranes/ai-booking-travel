@@ -101,32 +101,43 @@ func (s *BookingService) buildCreateReservationParams(
 		rlog.Error("failed to get location names for reservation request", "error", err)
 	}
 
+	var officeID, organizationID *int64
+	var isOrganizationOrganic *bool
+	if authData.OrganizationContext != nil {
+		officeID = &authData.OrganizationContext.OfficeID
+		organizationID = &authData.OrganizationContext.OrganizationID
+		isOrganizationOrganic = &authData.OrganizationContext.IsOrganic
+	}
+
 	return reservation.CreateReservationParams{
-		UserID:              authData.UserID,
-		BrokerReservationID: confirmationNumber,
-		Broker:              string(plan.Broker),
-		SupplierCode:        plan.SupplierCode,
-		CarDetails:          &plan.CarDetails,
-		PlanInclusions:      plan.Inclusions,
-		PickupDate:          dbadapters.DateToString(snapshot.PickupDate),
-		DropoffDate:         dbadapters.DateToString(snapshot.DropoffDate),
-		RentalDays:          rentalDays,
-		DriverTitle:         p.DriverTitle,
-		DriverFirstName:     p.DriverFirstName,
-		DriverLastName:      p.DriverLastName,
-		DriverAge:           driverAge,
-		CountryCode:         snapshot.CountryCode,
-		CurrencyCode:        plan.CurrencyCode,
-		CurrencyRate:        plan.CurrencyRate,
-		PurchasePrice:       plan.CarPurchasePrice,
-		MarkupPercentage:    plan.MarkupPercentage,
-		DiscountPercentage:  int(plan.DiscountPercentage),
-		BrokerErpPrice:      brokerErpPrice,
-		BtErpPrice:          btErpPrice,
-		PickupTime:          snapshot.PickupTime,
-		DropoffTime:         snapshot.DropoffTime,
-		PickupLocationName:  pickupLocName,
-		DropoffLocationName: dropoffLocName,
+		UserID:                authData.UserID,
+		OfficeID:              officeID,
+		OrganizationID:        organizationID,
+		IsOrganizationOrganic: isOrganizationOrganic,
+		BrokerReservationID:   confirmationNumber,
+		Broker:                string(plan.Broker),
+		SupplierCode:          plan.SupplierCode,
+		CarDetails:            &plan.CarDetails,
+		PlanInclusions:        plan.Inclusions,
+		PickupDate:            dbadapters.DateToString(snapshot.PickupDate),
+		DropoffDate:           dbadapters.DateToString(snapshot.DropoffDate),
+		RentalDays:            rentalDays,
+		DriverTitle:           p.DriverTitle,
+		DriverFirstName:       p.DriverFirstName,
+		DriverLastName:        p.DriverLastName,
+		DriverAge:             driverAge,
+		CountryCode:           snapshot.CountryCode,
+		CurrencyCode:          plan.CurrencyCode,
+		CurrencyRate:          plan.CurrencyRate,
+		PurchasePrice:         plan.CarPurchasePrice,
+		MarkupPercentage:      plan.MarkupPercentage,
+		DiscountPercentage:    int(plan.DiscountPercentage),
+		BrokerErpPrice:        brokerErpPrice,
+		BtErpPrice:            btErpPrice,
+		PickupTime:            snapshot.PickupTime,
+		DropoffTime:           snapshot.DropoffTime,
+		PickupLocationName:    pickupLocName,
+		DropoffLocationName:   dropoffLocName,
 	}
 }
 
