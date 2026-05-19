@@ -79,7 +79,7 @@ func (s *Service) sendCancellationEmail(ctx context.Context, raw json.RawMessage
 		ctx,
 		s.emailSender,
 		[]string{userEmail.Email},
-		fmt.Sprintf("Global Rentals reservation number %s- %s has been cancelled", p.BookingReferenceID, p.DriverFullName),
+		fmt.Sprintf("AI Booking Travel reservation number %s- %s has been cancelled", p.BookingReferenceID, p.DriverFullName),
 		email.CancellationEmailTemplate,
 		email.CancellationEmailData{
 			BookingReferenceID: p.BookingReferenceID,
@@ -109,7 +109,7 @@ func (s *Service) sendNewOrderEmail(ctx context.Context, raw json.RawMessage) er
 		ctx,
 		s.emailSender,
 		[]string{userEmail.Email},
-		fmt.Sprintf("Attached Global Rentals reservation number %s- %s", p.BookingReferenceID, p.DriverFullName),
+		fmt.Sprintf("Attached AI Booking Travel reservation number %s- %s", p.BookingReferenceID, p.DriverFullName),
 		email.NewOrderEmailTemplate,
 		email.NewOrderEmailData{
 			BookingReferenceID: p.BookingReferenceID,

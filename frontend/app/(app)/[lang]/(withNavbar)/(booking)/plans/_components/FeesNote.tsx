@@ -4,7 +4,7 @@ import { formatPrice } from "@/shared/utils/formatPrice";
 import { useTranslations } from "next-intl";
 
 export function FeesNote({ vehicle }: { vehicle: availability.AvailableVehicle }) {
-  const t = useTranslations("availability.PlansPage");
+  const t = useTranslations("booking.plansPage");
   const { data } = useBookingSettings();
 
   if (

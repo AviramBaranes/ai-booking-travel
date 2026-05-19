@@ -24,7 +24,7 @@ export function OtherPlansButton({
   currency,
   daysCount,
 }: OtherPlansButtonProps) {
-  const t = useTranslations("availability.PlansDialog");
+  const t = useTranslations("booking.plansDialog");
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"terms" | "inclusions">(
     "inclusions",

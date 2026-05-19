@@ -20,7 +20,7 @@ export function ErpDialog({
   onDecline,
   erpPriceCurrency,
 }: ErpDialogProps) {
-  const t = useTranslations("availability.PlansPage");
+  const t = useTranslations("booking.plansPage");
   const { data: bookingSettings } = useBookingSettings();
 
   return (

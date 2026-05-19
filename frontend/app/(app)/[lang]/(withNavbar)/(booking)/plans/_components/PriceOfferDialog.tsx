@@ -26,7 +26,7 @@ export function PriceOfferDialog({
   searchRequest,
 }: PriceOfferDialogProps) {
   const { lang } = useParams();
-  const t = useTranslations("availability.PlansPage");
+  const t = useTranslations("booking.plansPage");
   const { data } = useAvailableCars(searchRequest, { fromCache: true });
   const vehicle = useSelectedVehicle(searchRequest);
 

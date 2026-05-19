@@ -131,7 +131,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			BookingReferenceID: "GR-001",
 			DriverFullName:     "John Doe",
 		}
-		wantSubject := fmt.Sprintf("Global Rentals reservation number %s- %s has been cancelled", payload.BookingReferenceID, payload.DriverFullName)
+		wantSubject := fmt.Sprintf("AI Booking Travel reservation number %s- %s has been cancelled", payload.BookingReferenceID, payload.DriverFullName)
 
 		t.Run("sends to resolved user email with correct subject and body", func(t *testing.T) {
 			et.MockEndpoint(accounts.GetUserEmail, func(_ context.Context, p accounts.GetUserEmailParams) (*accountsuser.GetUserEmailResponse, error) {
@@ -203,7 +203,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			BookingReferenceID: "GR-002",
 			DriverFullName:     "Jane Smith",
 		}
-		wantSubject := fmt.Sprintf("Attached Global Rentals reservation number %s- %s", payload.BookingReferenceID, payload.DriverFullName)
+		wantSubject := fmt.Sprintf("Attached AI Booking Travel reservation number %s- %s", payload.BookingReferenceID, payload.DriverFullName)
 
 		t.Run("sends to resolved user email with correct subject and body", func(t *testing.T) {
 			et.MockEndpoint(accounts.GetUserEmail, func(_ context.Context, p accounts.GetUserEmailParams) (*accountsuser.GetUserEmailResponse, error) {

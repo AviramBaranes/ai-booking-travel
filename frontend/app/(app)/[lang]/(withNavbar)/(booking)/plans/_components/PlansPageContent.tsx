@@ -27,7 +27,7 @@ interface PlansPageContentProps {
 }
 
 export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
-  const t = useTranslations("availability.PlansPage");
+  const t = useTranslations("booking.plansPage");
   const { lang } = useParams();
   const router = useRouter();
   const currentSearchParams = useSearchParams();
