@@ -1,4 +1,4 @@
-import { accounts, auth, contact, office, organization, user } from "../client";
+import { auth, contact, office, organization, user } from "../client";
 import { withErrorHandler } from "./_api";
 
 // Auth
@@ -59,8 +59,9 @@ export function listOrganizations(data: organization.ListOrganizationsParams) {
   return withErrorHandler((client) => client.accounts.ListOrganizations(data));
 }
 
-export function createOrganization(data: organization.CreateOrganizationParams) {
-  if (!data.icountClientId) delete data.icountClientId; 
+export function createOrganization(
+  data: organization.CreateOrganizationParams,
+) {
   return withErrorHandler((client) => client.accounts.CreateOrganization(data));
 }
 
@@ -68,16 +69,15 @@ export function updateOrganization(
   id: number,
   data: organization.UpdateOrganizationParams,
 ) {
-  console.log("Updating organization with data:", data);
-  if (!data.icountClientId) delete data.icountClientId; 
-  console.log("Data after removing icountClientId if falsy:", data);
   return withErrorHandler((client) =>
     client.accounts.UpdateOrganization(id, data),
   );
 }
 
 export function listOrganicOrganizations() {
-  return withErrorHandler((client) => client.accounts.ListOrganicOrganizations());
+  return withErrorHandler((client) =>
+    client.accounts.ListOrganicOrganizations(),
+  );
 }
 
 // Offices
@@ -86,12 +86,10 @@ export function listOffices(data: office.ListOfficesParams) {
 }
 
 export function createOffice(data: office.CreateOfficeParams) {
-  if (!data.icountClientId) delete data.icountClientId; 
   return withErrorHandler((client) => client.accounts.CreateOffice(data));
 }
 
 export function updateOffice(id: number, data: office.UpdateOfficeParams) {
-  if (!data.icountClientId) delete data.icountClientId; 
   return withErrorHandler((client) => client.accounts.UpdateOffice(id, data));
 }
 
@@ -106,8 +104,8 @@ export function updateUser(id: number, data: user.UpdateUserParams) {
 
 export function sendOTP(data: auth.SendCustomerLoginOTPParams) {
   // Bypass withErrorHandler to avoid the 401→redirect behaviour on a public endpoint.
-  return withErrorHandler((client) =>
-    client.accounts.SendCustomerLoginOTP(data),
+  return withErrorHandler(
+    (client) => client.accounts.SendCustomerLoginOTP(data),
     { skipAuthRedirect: true },
   );
 }
@@ -117,4 +115,3 @@ export function loginWithOTP(data: auth.ValidateCustomerLoginOTPParams) {
     client.accounts.ValidateCustomerLoginOTP(data),
   );
 }
- 

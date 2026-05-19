@@ -25,6 +25,18 @@ import { EditableRow } from "./EditableRow";
 import { CreateRow } from "./CreateRow";
 import { TableSkeleton } from "./TableSkeleton";
 
+function clearEmptyData<T>(data: T): T {
+  const cleanedData = {} as T;
+  for (const key in data) {
+    const value = data[key];
+    if (value !== "" && value !== 0) {
+      (cleanedData as any)[key] = value;
+    }
+  }
+
+  return cleanedData;
+}
+
 export function CrudTable<
   TRow = Record<string, unknown>,
   TCreate = unknown,
@@ -105,7 +117,7 @@ export function CrudTable<
   const totalPages = total > 0 ? Math.ceil(total / pageSize) : 0;
 
   const createMutation = useMutation({
-    mutationFn: (data: TCreate) => createFn?.(data) ?? Promise.resolve(),
+    mutationFn: (data: TCreate) => createFn?.(clearEmptyData(data)) ?? Promise.resolve(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [queryKey] });
       clearError();
@@ -115,7 +127,7 @@ export function CrudTable<
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: TUpdate }) =>
-      updateFn(id, data),
+      updateFn(id, clearEmptyData(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [queryKey] });
       setEditingId(null);
