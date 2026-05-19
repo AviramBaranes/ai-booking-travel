@@ -130,19 +130,19 @@ func (mr *MockQuerierMockRecorder) GetPaymentPendingReservations(ctx any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaymentPendingReservations", reflect.TypeOf((*MockQuerier)(nil).GetPaymentPendingReservations), ctx)
 }
 
-// GetPaymentPendingReservationsByAgentsIDs mocks base method.
-func (m *MockQuerier) GetPaymentPendingReservationsByAgentsIDs(ctx context.Context, agentIds []int64) ([]db.GetPaymentPendingReservationsByAgentsIDsRow, error) {
+// GetPaymentPendingReservationsByBillingEntity mocks base method.
+func (m *MockQuerier) GetPaymentPendingReservationsByBillingEntity(ctx context.Context, arg db.GetPaymentPendingReservationsByBillingEntityParams) ([]db.GetPaymentPendingReservationsByBillingEntityRow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPaymentPendingReservationsByAgentsIDs", ctx, agentIds)
-	ret0, _ := ret[0].([]db.GetPaymentPendingReservationsByAgentsIDsRow)
+	ret := m.ctrl.Call(m, "GetPaymentPendingReservationsByBillingEntity", ctx, arg)
+	ret0, _ := ret[0].([]db.GetPaymentPendingReservationsByBillingEntityRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetPaymentPendingReservationsByAgentsIDs indicates an expected call of GetPaymentPendingReservationsByAgentsIDs.
-func (mr *MockQuerierMockRecorder) GetPaymentPendingReservationsByAgentsIDs(ctx, agentIds any) *gomock.Call {
+// GetPaymentPendingReservationsByBillingEntity indicates an expected call of GetPaymentPendingReservationsByBillingEntity.
+func (mr *MockQuerierMockRecorder) GetPaymentPendingReservationsByBillingEntity(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaymentPendingReservationsByAgentsIDs", reflect.TypeOf((*MockQuerier)(nil).GetPaymentPendingReservationsByAgentsIDs), ctx, agentIds)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaymentPendingReservationsByBillingEntity", reflect.TypeOf((*MockQuerier)(nil).GetPaymentPendingReservationsByBillingEntity), ctx, arg)
 }
 
 // GetReservationByID mocks base method.

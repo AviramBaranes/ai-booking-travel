@@ -270,7 +270,7 @@ func (q *Queries) GetPaymentPendingReservations(ctx context.Context) ([]GetPayme
 	return items, nil
 }
 
-const getPaymentPendingReservationsByAgentsIDs = `-- name: GetPaymentPendingReservationsByAgentsIDs :many
+const getPaymentPendingReservationsByBillingEntity = `-- name: GetPaymentPendingReservationsByBillingEntity :many
 SELECT
     id,
     broker_reservation_id,
@@ -286,14 +286,33 @@ SELECT
     pickup_date
 FROM reservations
 WHERE
-    user_id = ANY($1::BIGINT[])
+    (
+        (
+            $1::BIGINT IS NULL 
+            AND  ($2::BIGINT) IS NOT NULL 
+            AND organization_id = $2::BIGINT
+            AND is_organization_organic = TRUE
+        )
+    OR
+        (
+            $2::BIGINT IS NULL 
+            AND  ($1::BIGINT) IS NOT NULL 
+            AND office_id = $1::BIGINT
+            AND is_organization_organic = FALSE
+        )
+    )
 AND(
     (reservation_status = 'vouchered' AND payment_status = 'unpaid')
 OR
     (reservation_status = 'canceled' AND payment_status = 'refund_pending'))
 `
 
-type GetPaymentPendingReservationsByAgentsIDsRow struct {
+type GetPaymentPendingReservationsByBillingEntityParams struct {
+	OfficeID       *int64
+	OrganizationID *int64
+}
+
+type GetPaymentPendingReservationsByBillingEntityRow struct {
 	ID                  int64
 	BrokerReservationID string
 	PaymentStatus       PaymentStatus
@@ -308,15 +327,15 @@ type GetPaymentPendingReservationsByAgentsIDsRow struct {
 	PickupDate          pgtype.Date
 }
 
-func (q *Queries) GetPaymentPendingReservationsByAgentsIDs(ctx context.Context, agentIds []int64) ([]GetPaymentPendingReservationsByAgentsIDsRow, error) {
-	rows, err := q.db.Query(ctx, getPaymentPendingReservationsByAgentsIDs, agentIds)
+func (q *Queries) GetPaymentPendingReservationsByBillingEntity(ctx context.Context, arg GetPaymentPendingReservationsByBillingEntityParams) ([]GetPaymentPendingReservationsByBillingEntityRow, error) {
+	rows, err := q.db.Query(ctx, getPaymentPendingReservationsByBillingEntity, arg.OfficeID, arg.OrganizationID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetPaymentPendingReservationsByAgentsIDsRow
+	var items []GetPaymentPendingReservationsByBillingEntityRow
 	for rows.Next() {
-		var i GetPaymentPendingReservationsByAgentsIDsRow
+		var i GetPaymentPendingReservationsByBillingEntityRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.BrokerReservationID,

@@ -151,7 +151,7 @@ WHERE
 OR
     (reservation_status = 'canceled' AND payment_status = 'refund_pending');
 
--- name: GetPaymentPendingReservationsByAgentsIDs :many
+-- name: GetPaymentPendingReservationsByBillingEntity :many
 SELECT
     id,
     broker_reservation_id,
@@ -167,7 +167,21 @@ SELECT
     pickup_date
 FROM reservations
 WHERE
-    user_id = ANY(sqlc.arg(agent_ids)::BIGINT[])
+    (
+        (
+            sqlc.narg(office_id)::BIGINT IS NULL 
+            AND  (sqlc.narg(organization_id)::BIGINT) IS NOT NULL 
+            AND organization_id = sqlc.narg(organization_id)::BIGINT
+            AND is_organization_organic = TRUE
+        )
+    OR
+        (
+            sqlc.narg(organization_id)::BIGINT IS NULL 
+            AND  (sqlc.narg(office_id)::BIGINT) IS NOT NULL 
+            AND office_id = sqlc.narg(office_id)::BIGINT
+            AND is_organization_organic = FALSE
+        )
+    )
 AND(
     (reservation_status = 'vouchered' AND payment_status = 'unpaid')
 OR

@@ -28,7 +28,5 @@ func initService() (*Service, error) {
 }
 
 type GetUserEmailParams = user.GetUserEmailParams
-type GetAgentsByOfficeIDRequest = user.GetAgentsByOfficeIDParams
-type GetAgentsByOrganizationIDRequest = user.GetAgentsByOrganizationIDParams
 type ListAdminsEmailsResponse = user.ListAdminsEmailsResponse
 type GetAgentsResponse = user.GetAgentsResponse

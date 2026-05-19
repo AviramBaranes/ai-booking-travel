@@ -108,22 +108,6 @@ func (s *Service) CreateAgent(ctx context.Context, params user.CreateAgentParams
 	return h.CreateAgent(ctx, params)
 }
 
-// GetAgentsByOfficeID retrieves agent IDs for a given office ID.
-//
-// encore:api private
-func (s *Service) GetAgentsByOfficeID(ctx context.Context, params user.GetAgentsByOfficeIDParams) (*user.GetAgentsResponse, error) {
-	h := user.NewUserService(s.query)
-	return h.GetAgentsByOfficeID(ctx, params)
-}
-
-// GetAgentsByOrganizationID retrieves agent IDs for a given organization ID.
-//
-// encore:api private
-func (s *Service) GetAgentsByOrganizationID(ctx context.Context, params user.GetAgentsByOrganizationIDParams) (*user.GetAgentsResponse, error) {
-	h := user.NewUserService(s.query)
-	return h.GetAgentsByOrganizationID(ctx, params)
-}
-
 // ListAccountants returns all accountant users.
 //
 //encore:api auth method=GET path=/accountants tag:admin

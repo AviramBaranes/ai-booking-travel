@@ -7,7 +7,6 @@ import (
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/pricing"
-	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
 	"encore.dev/beta/errs"
 	"encore.dev/rlog"
@@ -79,14 +78,18 @@ type CurrencyGroup struct {
 //
 //encore:api auth method=GET path=/reservations-for-billing tag:accountant
 func (s *Service) ListOpenReservationsByBillingEntity(ctx context.Context, p *ListOpenReservationsByBillingEntityParams) (*ListOpenReservationsByBillingEntityResponse, error) {
-	agentIDs, err := s.getAgentsByBillingEntity(ctx, p.OfficeID, p.OrgID)
-	if err != nil {
-		return nil, err
+	var officeID, orgID *int64
+	if p.OfficeID != 0 {
+		officeID = &p.OfficeID
+	} else {
+		orgID = &p.OrgID
 	}
-
-	rows, err := s.query.GetPaymentPendingReservationsByAgentsIDs(ctx, agentIDs)
+	rows, err := s.query.GetPaymentPendingReservationsByBillingEntity(ctx, db.GetPaymentPendingReservationsByBillingEntityParams{
+		OfficeID:       officeID,
+		OrganizationID: orgID,
+	})
 	if err != nil {
-		rlog.Error("failed to fetch reservations by billing entity", "error", err, "agent_ids", agentIDs)
+		rlog.Error("failed to fetch reservations by billing entity", "error", err, "officeID", p.OfficeID, "orgID", p.OrgID)
 		return nil, err
 	}
 
@@ -95,41 +98,9 @@ func (s *Service) ListOpenReservationsByBillingEntity(ctx context.Context, p *Li
 	}, nil
 }
 
-// getAgentsByBillingEntity resolves agent IDs from the given billing unit and validates
-// that the billing unit type matches the organization's organic setting.
-func (s *Service) getAgentsByBillingEntity(ctx context.Context, officeID, orgID int64) ([]int64, error) {
-	if officeID != 0 {
-		r, err := accounts.GetAgentsByOfficeID(ctx, accounts.GetAgentsByOfficeIDRequest{
-			OfficeID: officeID,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		if r.IsOrganic {
-			return nil, ErrOfficeInOrganicOrg
-		}
-
-		return r.IDs, nil
-	}
-
-	r, err := accounts.GetAgentsByOrganizationID(ctx, accounts.GetAgentsByOrganizationIDRequest{
-		OrgID: orgID,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if !r.IsOrganic {
-		return nil, ErrOrgIsInorganic
-	}
-
-	return r.IDs, nil
-}
-
 // toCurrencyGroups maps db rows to CurrencyGroup response objects, grouping reservations
 // by their currency code while preserving the order of first appearance.
-func toCurrencyGroups(rows []db.GetPaymentPendingReservationsByAgentsIDsRow) []CurrencyGroup {
+func toCurrencyGroups(rows []db.GetPaymentPendingReservationsByBillingEntityRow) []CurrencyGroup {
 	var groups []CurrencyGroup
 	for _, r := range rows {
 		groupIndex := -1
@@ -182,7 +153,7 @@ func roundPrice(price float64) float64 {
 }
 
 // getReservationPriceDetails computes purchase price, selling price, profit, and ERP price from a db row.
-func getReservationPriceDetails(row db.GetPaymentPendingReservationsByAgentsIDsRow) priceDetails {
+func getReservationPriceDetails(row db.GetPaymentPendingReservationsByBillingEntityRow) priceDetails {
 	carPurchasePrice := dbadapters.NumericToFloat64(row.PurchasePrice) + dbadapters.NumericToFloat64(row.BrokerErpPrice)
 	mp := dbadapters.NumericToFloat64(row.MarkupPercentage)
 	carSellingPrice := pricing.ApplyMarkup(carPurchasePrice, mp)

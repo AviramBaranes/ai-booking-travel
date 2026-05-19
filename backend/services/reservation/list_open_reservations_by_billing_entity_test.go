@@ -5,9 +5,7 @@ import (
 	"testing"
 
 	"encore.app/internal/api_errors"
-	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
-	"encore.dev/et"
 )
 
 func TestListOpenReservationsByBillingEntity(t *testing.T) {
@@ -23,53 +21,12 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		api_errors.AssertApiError(t, ErrInvalidBillingEntity, req.Validate())
 	})
 
-	t.Run("returns error when GetAgentsByOfficeID fails", func(t *testing.T) {
-		t.Parallel()
-		s := &Service{query: testQuerier()}
-		et.MockEndpoint(accounts.GetAgentsByOfficeID, func(_ context.Context, _ accounts.GetAgentsByOfficeIDRequest) (*accounts.GetAgentsResponse, error) {
-			return nil, api_errors.ErrNotFound
-		})
-
-		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityParams{OfficeID: 99})
-		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
-	})
-
-	t.Run("returns error when GetAgentsByOrganizationID fails", func(t *testing.T) {
-		t.Parallel()
-		s := &Service{query: testQuerier()}
-		et.MockEndpoint(accounts.GetAgentsByOrganizationID, func(_ context.Context, _ accounts.GetAgentsByOrganizationIDRequest) (*accounts.GetAgentsResponse, error) {
-			return nil, api_errors.ErrNotFound
-		})
-
-		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityParams{OrgID: 99})
-		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
-	})
-
-	t.Run("returns ErrOfficeInOrganicOrg when office belongs to organic org", func(t *testing.T) {
-		t.Parallel()
-		s := &Service{query: testQuerier()}
-		et.MockEndpoint(accounts.GetAgentsByOfficeID, func(_ context.Context, _ accounts.GetAgentsByOfficeIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int64{1, 2}, IsOrganic: true}, nil
-		})
-
-		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityParams{OfficeID: 10})
-		api_errors.AssertApiError(t, ErrOfficeInOrganicOrg, err)
-	})
-
-	t.Run("returns ErrOrgIsInorganic when org is inorganic", func(t *testing.T) {
-		t.Parallel()
-		s := &Service{query: testQuerier()}
-		et.MockEndpoint(accounts.GetAgentsByOrganizationID, func(_ context.Context, _ accounts.GetAgentsByOrganizationIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int64{1, 2}, IsOrganic: false}, nil
-		})
-
-		_, err := s.ListOpenReservationsByBillingEntity(context.Background(), &ListOpenReservationsByBillingEntityParams{OrgID: 5})
-		api_errors.AssertApiError(t, ErrOrgIsInorganic, err)
-	})
-
 	t.Run("returns reservations for multiple agents in an office (inorganic)", func(t *testing.T) {
 		t.Parallel()
 		const agent1, agent2 int64 = 10001, 10002
+		officeID := int64(10)
+		orgID := int64(20)
+		isOrganic := false
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
 
@@ -77,6 +34,9 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		id1 := seedReservation(t, ctx, s, agent1, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "BILLING-OFFICE-1"
 			p.CurrencyCode = "USD"
+			p.OfficeID = &officeID
+			p.OrganizationID = &orgID
+			p.IsOrganizationOrganic = &isOrganic
 		})
 		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id1, UserID: agent1, VoucherNumber: &vn1}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
@@ -86,16 +46,15 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		id2 := seedReservation(t, ctx, s, agent2, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "BILLING-OFFICE-2"
 			p.CurrencyCode = "EUR"
+			p.OfficeID = &officeID
+			p.OrganizationID = &orgID
+			p.IsOrganizationOrganic = &isOrganic
 		})
 		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id2, UserID: agent2, VoucherNumber: &vn2}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
 
-		et.MockEndpoint(accounts.GetAgentsByOfficeID, func(_ context.Context, _ accounts.GetAgentsByOfficeIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int64{agent1, agent2}, IsOrganic: false}, nil
-		})
-
-		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OfficeID: 10})
+		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OfficeID: officeID})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -105,6 +64,10 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 	t.Run("returns reservations for multiple agents in an organic org", func(t *testing.T) {
 		t.Parallel()
 		const agent1, agent2 int64 = 20001, 20002
+		officeID1 := int64(11)
+		officeID2 := int64(12)
+		orgID := int64(21)
+		isOrganic := true
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
 
@@ -113,6 +76,9 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		id1 := seedReservation(t, ctx, s, agent1, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "BILLING-ORG-1"
 			p.CurrencyCode = "USD"
+			p.OfficeID = &officeID1
+			p.OrganizationID = &orgID
+			p.IsOrganizationOrganic = &isOrganic
 		})
 		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id1, UserID: agent1, VoucherNumber: &vn1}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
@@ -122,6 +88,9 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		id2 := seedReservation(t, ctx, s, agent2, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "BILLING-ORG-2"
 			p.CurrencyCode = "USD"
+			p.OfficeID = &officeID2
+			p.OrganizationID = &orgID
+			p.IsOrganizationOrganic = &isOrganic
 		})
 		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id2, UserID: agent2, VoucherNumber: &vn2}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
@@ -131,16 +100,15 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		id3 := seedReservation(t, ctx, s, agent2, func(p *CreateReservationParams) {
 			p.BrokerReservationID = "BILLING-ORG-3"
 			p.CurrencyCode = "EUR"
+			p.OfficeID = &officeID2
+			p.OrganizationID = &orgID
+			p.IsOrganizationOrganic = &isOrganic
 		})
 		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id3, UserID: agent2, VoucherNumber: &vn3}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
 
-		et.MockEndpoint(accounts.GetAgentsByOrganizationID, func(_ context.Context, _ accounts.GetAgentsByOrganizationIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int64{agent1, agent2}, IsOrganic: true}, nil
-		})
-
-		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OrgID: 5})
+		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OrgID: orgID})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -161,10 +129,6 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			p.BrokerReservationID = "BILLING-EMPTY-2"
 		})
 
-		et.MockEndpoint(accounts.GetAgentsByOfficeID, func(_ context.Context, _ accounts.GetAgentsByOfficeIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int64{agent1, agent2}, IsOrganic: false}, nil
-		})
-
 		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OfficeID: 10})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
@@ -180,6 +144,8 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		// MarkupPercentage=45% → carSellingPrice=115*1.45=166.75, profit=51.75
 		// BtErpPrice=20 → erpSellingPrice=20
 		const agentID int64 = 40001
+		orgID := int64(40)
+		isOrganic := true
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
 
@@ -193,16 +159,14 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			p.CurrencyCode = "USD"
 			p.PickupDate = "2026-07-01"
 			p.DropoffDate = "2026-07-05"
+			p.OrganizationID = &orgID
+			p.IsOrganizationOrganic = &isOrganic
 		})
 		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id, UserID: agentID, VoucherNumber: &vn}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
 
-		et.MockEndpoint(accounts.GetAgentsByOrganizationID, func(_ context.Context, _ accounts.GetAgentsByOrganizationIDRequest) (*accounts.GetAgentsResponse, error) {
-			return &accounts.GetAgentsResponse{IDs: []int64{agentID}, IsOrganic: true}, nil
-		})
-
-		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OrgID: 5})
+		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OrgID: orgID})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
