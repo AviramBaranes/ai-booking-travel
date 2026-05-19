@@ -356,14 +356,33 @@ func (q *Queries) GetAgentsByOrganizationID(ctx context.Context, organizationID 
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, first_name, last_name, role, email, phone_number, otp, office_id, password_hash, last_login, created_at, updated_at
+SELECT users.id, users.first_name, users.last_name, users.role, users.email, users.phone_number, users.otp, users.office_id, users.password_hash, users.last_login, users.created_at, users.updated_at, organization.id AS organization_id, organization.is_organic
 FROM users
+LEFT JOIN offices ON offices.id = users.office_id
+LEFT JOIN organizations AS organization ON organization.id = offices.organization_id
 WHERE email = $1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+type GetUserByEmailRow struct {
+	ID             int64
+	FirstName      string
+	LastName       string
+	Role           UserRole
+	Email          string
+	PhoneNumber    *string
+	Otp            *string
+	OfficeID       *int64
+	PasswordHash   string
+	LastLogin      pgtype.Timestamptz
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+	OrganizationID *int64
+	IsOrganic      *bool
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
 	row := q.db.QueryRow(ctx, getUserByEmail, email)
-	var i User
+	var i GetUserByEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -377,19 +396,40 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.OrganizationID,
+		&i.IsOrganic,
 	)
 	return i, err
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, first_name, last_name, role, email, phone_number, otp, office_id, password_hash, last_login, created_at, updated_at
+SELECT users.id, users.first_name, users.last_name, users.role, users.email, users.phone_number, users.otp, users.office_id, users.password_hash, users.last_login, users.created_at, users.updated_at, organization.id AS organization_id, organization.is_organic
 FROM users
-WHERE id = $1
+LEFT JOIN offices ON offices.id = users.office_id
+LEFT JOIN organizations AS organization ON organization.id = offices.organization_id
+WHERE users.id = $1
 `
 
-func (q *Queries) GetUserById(ctx context.Context, id int64) (User, error) {
+type GetUserByIdRow struct {
+	ID             int64
+	FirstName      string
+	LastName       string
+	Role           UserRole
+	Email          string
+	PhoneNumber    *string
+	Otp            *string
+	OfficeID       *int64
+	PasswordHash   string
+	LastLogin      pgtype.Timestamptz
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+	OrganizationID *int64
+	IsOrganic      *bool
+}
+
+func (q *Queries) GetUserById(ctx context.Context, id int64) (GetUserByIdRow, error) {
 	row := q.db.QueryRow(ctx, getUserById, id)
-	var i User
+	var i GetUserByIdRow
 	err := row.Scan(
 		&i.ID,
 		&i.FirstName,
@@ -403,6 +443,8 @@ func (q *Queries) GetUserById(ctx context.Context, id int64) (User, error) {
 		&i.LastLogin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.OrganizationID,
+		&i.IsOrganic,
 	)
 	return i, err
 }

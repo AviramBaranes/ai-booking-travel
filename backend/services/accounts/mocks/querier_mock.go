@@ -383,10 +383,10 @@ func (mr *MockQuerierMockRecorder) GetRefreshToken(ctx, jti any) *gomock.Call {
 }
 
 // GetUserByEmail mocks base method.
-func (m *MockQuerier) GetUserByEmail(ctx context.Context, email string) (db.User, error) {
+func (m *MockQuerier) GetUserByEmail(ctx context.Context, email string) (db.GetUserByEmailRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByEmail", ctx, email)
-	ret0, _ := ret[0].(db.User)
+	ret0, _ := ret[0].(db.GetUserByEmailRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -398,10 +398,10 @@ func (mr *MockQuerierMockRecorder) GetUserByEmail(ctx, email any) *gomock.Call {
 }
 
 // GetUserById mocks base method.
-func (m *MockQuerier) GetUserById(ctx context.Context, id int64) (db.User, error) {
+func (m *MockQuerier) GetUserById(ctx context.Context, id int64) (db.GetUserByIdRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserById", ctx, id)
-	ret0, _ := ret[0].(db.User)
+	ret0, _ := ret[0].(db.GetUserByIdRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

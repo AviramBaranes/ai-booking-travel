@@ -61,15 +61,15 @@ func assertTimeAlmostEqual(t *testing.T, got, want time.Time) {
 }
 
 // assertRefreshClaims verifies core refresh token claims.
-func assertRefreshClaims(t *testing.T, claims *jwt.RefreshTokenClaims, user *db.User) {
+func assertRefreshClaims(t *testing.T, claims *jwt.RefreshTokenClaims, userID int64) {
 	t.Helper()
-	if claims.UserID != user.ID {
-		t.Errorf("Expected UserID %d, got %d", user.ID, claims.UserID)
+	if claims.UserID != userID {
+		t.Errorf("Expected UserID %d, got %d", userID, claims.UserID)
 	}
 	if claims.Issuer != jwt.Issuer {
 		t.Errorf("Expected Issuer %s, got %s", jwt.Issuer, claims.Issuer)
 	}
-	expectedSub := strconv.Itoa(int(user.ID))
+	expectedSub := strconv.Itoa(int(userID))
 	if claims.Subject != expectedSub {
 		t.Errorf("Expected Subject %s, got %s", expectedSub, claims.Subject)
 	}
@@ -84,18 +84,33 @@ func generateTestEmail() string {
 }
 
 // assertAccessClaims verifies core access token claims.
-func assertAccessClaims(t *testing.T, claims *jwt.AccessTokenClaims, user *db.User) {
+func assertAccessClaims(t *testing.T, claims *jwt.AccessTokenClaims, expectedData jwt.AccessTokenData) {
 	t.Helper()
-	if claims.UserID != user.ID {
-		t.Errorf("Expected UserID %d, got %d", user.ID, claims.UserID)
+	if claims.UserID != expectedData.UserID {
+		t.Errorf("Expected UserID %d, got %d", expectedData.UserID, claims.UserID)
 	}
-	if string(claims.Role) != string(user.Role) {
-		t.Errorf("Expected Role %s, got %s", user.Role, claims.Role)
+	if string(claims.Role) != string(expectedData.Role) {
+		t.Errorf("Expected Role %s, got %s", expectedData.Role, claims.Role)
 	}
+
+	if claims.OrganizationContext != nil && expectedData.OrganizationContext != nil {
+		if claims.OrganizationContext.OfficeID != expectedData.OrganizationContext.OfficeID {
+			t.Errorf("Expected OfficeID %d, got %d", expectedData.OrganizationContext.OfficeID, claims.OrganizationContext.OfficeID)
+		}
+		if claims.OrganizationContext.OrganizationID != expectedData.OrganizationContext.OrganizationID {
+			t.Errorf("Expected OrganizationID %d, got %d", expectedData.OrganizationContext.OrganizationID, claims.OrganizationContext.OrganizationID)
+		}
+		if claims.OrganizationContext.IsOrganic != expectedData.OrganizationContext.IsOrganic {
+			t.Errorf("Expected IsOrganic %v, got %v", expectedData.OrganizationContext.IsOrganic, claims.OrganizationContext.IsOrganic)
+		}
+	} else if claims.OrganizationContext != nil || expectedData.OrganizationContext != nil {
+		t.Error("Expected both OrganizationContext to be nil or non-nil")
+	}
+
 	if claims.Issuer != jwt.Issuer {
 		t.Errorf("Expected Issuer %s, got %s", jwt.Issuer, claims.Issuer)
 	}
-	expectedSub := strconv.Itoa(int(user.ID))
+	expectedSub := strconv.Itoa(int(expectedData.UserID))
 	if claims.Subject != expectedSub {
 		t.Errorf("Expected Subject %s, got %s", expectedSub, claims.Subject)
 	}
@@ -119,13 +134,14 @@ func registerAdmin(ctx context.Context, email, password string) (*user.CreateAdm
 }
 
 var nameCounter atomic.Int64
+var phoneCounter atomic.Int64
 
 func randomName() string {
 	return fmt.Sprintf("name_%d_%d", time.Now().UnixNano(), nameCounter.Add(1))
 }
 
 func randomIsraeliPhoneNumber() string {
-	return fmt.Sprintf("05%08d", time.Now().UnixNano()%100000000)
+	return fmt.Sprintf("05%08d", phoneCounter.Add(1)%100000000)
 }
 
 func createAgent(ctx context.Context, p user.CreateAgentParams) (*user.CreateAgentResponse, func(), error) {

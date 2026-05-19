@@ -20,18 +20,33 @@ var secrets struct {
 	SecretKey string
 }
 
+// AccessTokenData represents the data stored in the JWT access token.
+type AccessTokenData struct {
+	UserID              int64
+	Role                db.UserRole
+	AdminRefID          *int64
+	OrganizationContext *OrganizationContext
+}
+
+// OrganizationContext holds organization-related information to be included in the JWT claims.
+type OrganizationContext struct {
+	OfficeID       int64 `json:"officeId"`
+	OrganizationID int64 `json:"organizationId"`
+	IsOrganic      bool  `json:"isOrganic"`
+}
+
 // SignAccessToken generates a signed JWT access token for the given user ID and role.
-func SignAccessToken(user db.User, adminRefID *int64) (string, error) {
+func SignAccessToken(data AccessTokenData) (string, error) {
 	now := time.Now()
 
 	claims := AccessTokenClaims{
-		UserID:     user.ID,
-		Role:       user.Role,
-		OfficeID:   user.OfficeID,
-		AdminRefID: adminRefID,
+		UserID:              data.UserID,
+		Role:                data.Role,
+		AdminRefID:          data.AdminRefID,
+		OrganizationContext: data.OrganizationContext,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    Issuer,
-			Subject:   strconv.FormatInt(int64(user.ID), 10),
+			Subject:   strconv.FormatInt(int64(data.UserID), 10),
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(now.Add(accessTokenTTL)),
@@ -42,7 +57,7 @@ func SignAccessToken(user db.User, adminRefID *int64) (string, error) {
 
 	st, err := token.SignedString([]byte(secrets.SecretKey))
 	if err != nil {
-		return "", fmt.Errorf("sign access token for user_id=%d: %w", user.ID, err)
+		return "", fmt.Errorf("sign access token for user_id=%d: %w", data.UserID, err)
 	}
 
 	return st, nil

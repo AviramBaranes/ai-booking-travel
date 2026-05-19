@@ -24,9 +24,11 @@ VALUES (
 RETURNING id, role, first_name, last_name, email, phone_number, otp, office_id, last_login, created_at, updated_at;
 
 -- name: GetUserById :one
-SELECT *
+SELECT users.*, organization.id AS organization_id, organization.is_organic
 FROM users
-WHERE id = $1;
+LEFT JOIN offices ON offices.id = users.office_id
+LEFT JOIN organizations AS organization ON organization.id = offices.organization_id
+WHERE users.id = $1;
 
 -- name: DeleteUser :exec
 DELETE FROM users
@@ -37,8 +39,10 @@ SELECT id FROM users
 WHERE email = $1;
 
 -- name: GetUserByEmail :one
-SELECT *
+SELECT users.*, organization.id AS organization_id, organization.is_organic
 FROM users
+LEFT JOIN offices ON offices.id = users.office_id
+LEFT JOIN organizations AS organization ON organization.id = offices.organization_id
 WHERE email = $1;
 
 -- name: GetUserByPhone :one

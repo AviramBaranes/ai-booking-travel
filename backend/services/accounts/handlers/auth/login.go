@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/jwt"
 	"encore.app/internal/password"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
@@ -22,7 +23,7 @@ func (p LoginParams) Validate() error {
 }
 
 func (s *AuthService) Login(ctx context.Context, p LoginParams) (*LoginResponse, error) {
-	row, err := s.query.GetUserByEmail(ctx, p.Email)
+	user, err := s.query.GetUserByEmail(ctx, p.Email)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
 			return nil, ErrInvalidCredentials
@@ -31,23 +32,36 @@ func (s *AuthService) Login(ctx context.Context, p LoginParams) (*LoginResponse,
 		return nil, api_errors.ErrInternalError
 	}
 
-	if !password.ComparePassword(row.PasswordHash, p.Password) {
+	if !password.ComparePassword(user.PasswordHash, p.Password) {
 		return nil, ErrInvalidCredentials
 	}
 
-	accessToken, refreshToken, err := s.generateTokens(ctx, row, nil)
+	var orgCtx *jwt.OrganizationContext
+	if user.OfficeID != nil && user.OrganizationID != nil && user.IsOrganic != nil {
+		orgCtx = &jwt.OrganizationContext{
+			OfficeID:       *user.OfficeID,
+			OrganizationID: *user.OrganizationID,
+			IsOrganic:      *user.IsOrganic,
+		}
+	}
+
+	accessToken, refreshToken, err := s.generateTokens(ctx, jwt.AccessTokenData{
+		UserID:              user.ID,
+		Role:                user.Role,
+		OrganizationContext: orgCtx,
+	})
 	if err != nil {
-		rlog.Error("failed to generate tokens", "user_id", row.ID, "error", err)
+		rlog.Error("failed to generate tokens", "user_id", user.ID, "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 
 	return &LoginResponse{
-		ID:           row.ID,
-		Role:         row.Role,
+		ID:           user.ID,
+		Role:         user.Role,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
-		Email:        row.Email,
-		PhoneNumber:  ptrToStr(row.PhoneNumber),
-		OfficeID:     row.OfficeID,
+		Email:        user.Email,
+		PhoneNumber:  ptrToStr(user.PhoneNumber),
+		OfficeID:     user.OfficeID,
 	}, nil
 }

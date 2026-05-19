@@ -45,7 +45,7 @@ func TestListAgents(t *testing.T) {
 		for i := 1; i <= 18; i++ {
 			seedAgent(t, s,
 				fmt.Sprintf("%s_%02d@test.com", prefix, i),
-				fmt.Sprintf("05%08d", i),
+				randomIsraeliPhoneNumber(),
 				officeID,
 			)
 		}
@@ -91,7 +91,7 @@ func TestListAgents(t *testing.T) {
 		for i := 1; i <= 18; i++ {
 			seedAgent(t, s,
 				fmt.Sprintf("%s_%02d@test.com", prefix, i),
-				fmt.Sprintf("06%08d", i),
+				randomIsraeliPhoneNumber(),
 				officeID,
 			)
 		}

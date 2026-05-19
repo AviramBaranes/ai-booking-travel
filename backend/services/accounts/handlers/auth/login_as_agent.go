@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/jwt"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
 	"encore.dev/rlog"
@@ -31,7 +32,9 @@ func (s *AuthService) LoginAsAgent(ctx context.Context, params LoginAsAgentParam
 		return nil, api_errors.ErrInternalError
 	}
 
-	accessToken, refreshToken, err := s.generateTokens(ctx, agent, &adminID)
+	data := accessTokenDataFromUser(agent, &adminID)
+	accessToken, refreshToken, err := s.generateTokens(ctx, data)
+
 	if err != nil {
 		rlog.Error("failed to generate tokens in login as agent", "user_id", agent.ID, "error", err)
 		return nil, api_errors.ErrInternalError
@@ -46,4 +49,23 @@ func (s *AuthService) LoginAsAgent(ctx context.Context, params LoginAsAgentParam
 		PhoneNumber:  ptrToStr(agent.PhoneNumber),
 		OfficeID:     agent.OfficeID,
 	}, nil
+}
+
+// accessTokenDataFromUser converts a db.GetUserByIdRow to jwt.AccessTokenData, including the admin ref ID for login as agent.
+func accessTokenDataFromUser(agent db.GetUserByIdRow, adminID *int64) jwt.AccessTokenData {
+	var orgCtx *jwt.OrganizationContext
+	if agent.OfficeID != nil && agent.OrganizationID != nil && agent.IsOrganic != nil {
+		orgCtx = &jwt.OrganizationContext{
+			OfficeID:       *agent.OfficeID,
+			OrganizationID: *agent.OrganizationID,
+			IsOrganic:      *agent.IsOrganic,
+		}
+	}
+
+	return jwt.AccessTokenData{
+		UserID:              agent.ID,
+		Role:                agent.Role,
+		AdminRefID:          adminID,
+		OrganizationContext: orgCtx,
+	}
 }

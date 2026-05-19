@@ -48,21 +48,21 @@ var (
 	)
 )
 
-func (s *AuthService) generateTokens(ctx context.Context, user db.User, adminRefID *int64) (string, string, error) {
-	accessToken, err := jwt.SignAccessToken(user, adminRefID)
+func (s *AuthService) generateTokens(ctx context.Context, data jwt.AccessTokenData) (string, string, error) {
+	accessToken, err := jwt.SignAccessToken(data)
 	if err != nil {
 		return "", "", errs.Wrap(err, "failed to sign access token")
 	}
 
-	refreshToken, jti, exp, err := jwt.SignRefreshToken(user.ID)
+	refreshToken, jti, exp, err := jwt.SignRefreshToken(data.UserID)
 	if err != nil {
 		return "", "", errs.Wrap(err, "failed to sign refresh token")
 	}
 
 	err = s.query.SaveRefreshToken(ctx, db.SaveRefreshTokenParams{
 		Jti:        jti,
-		UserID:     user.ID,
-		AdminRefID: adminRefID,
+		UserID:     data.UserID,
+		AdminRefID: data.AdminRefID,
 		ExpiresAt:  dbadapters.DBTime(exp),
 	})
 	if err != nil {

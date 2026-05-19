@@ -151,7 +151,20 @@ func TestLogin(t *testing.T) {
 				t.Fatalf("Failed to query user: %v, user: %s", err, c.email)
 			}
 
-			assertAccessClaims(t, accessClaims, &user)
+			var orgCtx *jwt.OrganizationContext
+			if user.OfficeID != nil && user.OrganizationID != nil && user.IsOrganic != nil {
+				orgCtx = &jwt.OrganizationContext{
+					OfficeID:       *user.OfficeID,
+					OrganizationID: *user.OrganizationID,
+					IsOrganic:      *user.IsOrganic,
+				}
+			}
+
+			assertAccessClaims(t, accessClaims, jwt.AccessTokenData{
+				UserID:              user.ID,
+				Role:                user.Role,
+				OrganizationContext: orgCtx,
+			})
 			if time.Until(accessClaims.ExpiresAt.Time) <= 0 {
 				t.Error("Access token already expired")
 			}
@@ -160,7 +173,8 @@ func TestLogin(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to validate refresh token: %v", err)
 			}
-			assertRefreshClaims(t, refreshClaims, &user)
+
+			assertRefreshClaims(t, refreshClaims, user.ID)
 			if time.Until(refreshClaims.ExpiresAt.Time) <= 0 {
 				t.Error("Refresh token already expired")
 			}
@@ -249,7 +263,21 @@ func TestLoginAsAgent(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to query agent: %v", err)
 		}
-		assertAccessClaims(t, accessClaims, &agentUser)
+
+		var orgCtx *jwt.OrganizationContext
+		if agentUser.OfficeID != nil && agentUser.OrganizationID != nil && agentUser.IsOrganic != nil {
+			orgCtx = &jwt.OrganizationContext{
+				OfficeID:       *agentUser.OfficeID,
+				OrganizationID: *agentUser.OrganizationID,
+				IsOrganic:      *agentUser.IsOrganic,
+			}
+		}
+
+		assertAccessClaims(t, accessClaims, jwt.AccessTokenData{
+			UserID:              agentUser.ID,
+			Role:                agentUser.Role,
+			OrganizationContext: orgCtx,
+		})
 
 		// Verify refresh token stored with admin ref
 		refreshClaims, err := jwt.ValidateRefreshToken(resp.RefreshToken)
@@ -337,7 +365,11 @@ func TestLoginBackToAdmin(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to query admin: %v", err)
 		}
-		assertAccessClaims(t, accessClaims, &adminUser)
+		assertAccessClaims(t, accessClaims, jwt.AccessTokenData{
+			UserID:              adminUser.ID,
+			Role:                adminUser.Role,
+			OrganizationContext: nil,
+		})
 	})
 }
 

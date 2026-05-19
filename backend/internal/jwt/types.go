@@ -7,10 +7,10 @@ import (
 
 // AccessTokenClaims represents the claims for an access token.
 type AccessTokenClaims struct {
-	Role       db.UserRole `json:"role"`
-	UserID     int64       `json:"userId"`
-	OfficeID   *int64      `json:"officeId,omitempty"`
-	AdminRefID *int64      `json:"adminRefId,omitempty"`
+	Role                db.UserRole          `json:"role"`
+	UserID              int64                `json:"userId"`
+	AdminRefID          *int64               `json:"adminRefId,omitempty"`
+	OrganizationContext *OrganizationContext `json:"organizationContext,omitempty"`
 	jwt.RegisteredClaims
 }
 

@@ -37,29 +37,22 @@ func TestCreateFirstAdmin(t *testing.T) {
 	})
 
 	t.Run("Success And User already exists", func(t *testing.T) {
-		email := "admin@example.com"
+		email := generateTestEmail()
 		secrets.FirstAdminEmail = email
 		secrets.FirstAdminPassword = "password123"
-
-		// validate admin not exists yet:
-		admin, err := query.GetUserByEmail(ctx, email)
-		if err != nil && !errors.Is(err, db.ErrNoRows) {
-			t.Fatalf("failed to get user by email: %v", err)
-		}
-		if err == nil {
-			t.Fatalf("expected no admin user, but found one: %v", admin)
-		}
 
 		// success, should create admin user
 		createFirstAdmin(query)
 
 		// validate admin was created:
-		admin, err = query.GetUserByEmail(ctx, email)
+		id, err := query.CheckUserExists(ctx, email)
 		if err != nil {
-			t.Fatalf("failed to get user by email after creation: %v", err)
+			t.Fatalf("failed to find user after creation: %v", err)
 		}
-		if admin.Email != email {
-			t.Errorf("expected email %s, got %s", email, admin.Email)
+		defer query.DeleteUser(ctx, id)
+
+		if id == 0 {
+			t.Error("expected non-zero user ID")
 		}
 
 		// user already exists, should not panic or create another user

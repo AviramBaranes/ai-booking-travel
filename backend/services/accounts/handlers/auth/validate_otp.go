@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/jwt"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
 	"encore.dev/rlog"
@@ -34,7 +35,10 @@ func (s *AuthService) ValidateCustomerLoginOTP(ctx context.Context, params Valid
 		return nil, ErrInvalidCredentials
 	}
 
-	accessToken, refreshToken, err := s.generateTokens(ctx, user, nil)
+	accessToken, refreshToken, err := s.generateTokens(ctx, jwt.AccessTokenData{
+		UserID: user.ID,
+		Role:   user.Role,
+	})
 	if err != nil {
 		rlog.Error("failed to generate tokens in validate customer login OTP", "user_id", user.ID, "error", err)
 		return nil, api_errors.ErrInternalError

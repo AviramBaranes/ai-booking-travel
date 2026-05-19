@@ -15,14 +15,18 @@ func TestMain(m *testing.M) {
 }
 
 func TestSignAccessToken(t *testing.T) {
-	office_id := int64(10)
-	user := db.User{
-		ID:       123,
-		Role:     "agent",
-		OfficeID: &office_id,
+	user := AccessTokenData{
+		UserID:     123,
+		Role:       "agent",
+		AdminRefID: nil,
+		OrganizationContext: &OrganizationContext{
+			OfficeID:       int64(10),
+			OrganizationID: int64(20),
+			IsOrganic:      true,
+		},
 	}
 
-	tokenString, err := SignAccessToken(user, nil)
+	tokenString, err := SignAccessToken(user)
 	if err != nil {
 		t.Fatalf("SignAccessToken failed: %v", err)
 	}
@@ -45,14 +49,20 @@ func TestSignAccessToken(t *testing.T) {
 		t.Fatal("Could not cast claims")
 	}
 
-	if claims.UserID != user.ID {
-		t.Errorf("Expected UserID %d, got %d", user.ID, claims.UserID)
+	if claims.UserID != user.UserID {
+		t.Errorf("Expected UserID %d, got %d", user.UserID, claims.UserID)
 	}
 	if claims.Role != user.Role {
 		t.Errorf("Expected Role %s, got %s", user.Role, claims.Role)
 	}
-	if *claims.OfficeID != *user.OfficeID {
-		t.Errorf("Expected OfficeID %d, got %d", *user.OfficeID, *claims.OfficeID)
+	if claims.OrganizationContext.OfficeID != user.OrganizationContext.OfficeID {
+		t.Errorf("Expected OfficeID %d, got %d", user.OrganizationContext.OfficeID, claims.OrganizationContext.OfficeID)
+	}
+	if claims.OrganizationContext.OrganizationID != user.OrganizationContext.OrganizationID {
+		t.Errorf("Expected OrganizationID %d, got %d", user.OrganizationContext.OrganizationID, claims.OrganizationContext.OrganizationID)
+	}
+	if claims.OrganizationContext.IsOrganic != user.OrganizationContext.IsOrganic {
+		t.Errorf("Expected IsOrganic %v, got %v", user.OrganizationContext.IsOrganic, claims.OrganizationContext.IsOrganic)
 	}
 	if claims.Issuer != Issuer {
 		t.Errorf("Expected Issuer %s, got %s", Issuer, claims.Issuer)
@@ -64,7 +74,10 @@ func TestValidateAccessToken(t *testing.T) {
 		ID:   123,
 		Role: "admin",
 	}
-	validToken, _ := SignAccessToken(user, nil)
+	validToken, _ := SignAccessToken(AccessTokenData{
+		UserID: user.ID,
+		Role:   user.Role,
+	})
 
 	t.Run("Valid token", func(t *testing.T) {
 		claims, err := ValidateAccessToken(validToken)

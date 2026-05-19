@@ -52,7 +52,8 @@ func (s *AuthService) RefreshTokens(ctx context.Context, p RefreshTokensParams) 
 		return nil, api_errors.ErrInternalError
 	}
 
-	accessToken, refreshToken, err := s.generateTokens(ctx, user, savedToken.AdminRefID)
+	data := accessTokenDataFromUser(user, savedToken.AdminRefID)
+	accessToken, refreshToken, err := s.generateTokens(ctx, data)
 	if err != nil {
 		rlog.Error("failed to generate new tokens", "user_id", user.ID, "error", err)
 		return nil, api_errors.ErrInternalError

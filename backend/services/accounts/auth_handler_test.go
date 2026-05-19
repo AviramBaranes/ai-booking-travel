@@ -15,15 +15,20 @@ func TestAuthHandler(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("Valid token", func(t *testing.T) {
-		office_id := int64(123)
-		user := db.User{
-			ID:       123,
-			Role:     db.UserRoleAgent,
-			Email:    "test@test.com",
-			OfficeID: &office_id,
+		officeID := int64(1)
+		organizationID := int64(2)
+		isOrganic := true
+		data := jwt.AccessTokenData{
+			UserID: 123,
+			Role:   db.UserRoleAgent,
+			OrganizationContext: &jwt.OrganizationContext{
+				OfficeID:       officeID,
+				OrganizationID: organizationID,
+				IsOrganic:      isOrganic,
+			},
 		}
 
-		token, err := jwt.SignAccessToken(user, nil)
+		token, err := jwt.SignAccessToken(data)
 		if err != nil {
 			t.Fatalf("Failed to sign token: %v", err)
 		}
@@ -37,14 +42,20 @@ func TestAuthHandler(t *testing.T) {
 			t.Errorf("Expected UID '123', got '%s'", uid)
 		}
 
-		if authData.UserID != user.ID {
-			t.Errorf("Expected UserID %d, got %d", user.ID, authData.UserID)
+		if authData.UserID != data.UserID {
+			t.Errorf("Expected UserID %d, got %d", data.UserID, authData.UserID)
 		}
-		if authData.Role != UserRoleAgent {
-			t.Errorf("Expected Role %s, got %s", UserRoleAgent, authData.Role)
+		if authData.Role != UserRole(data.Role) {
+			t.Errorf("Expected Role %s, got %s", UserRole(data.Role), authData.Role)
 		}
-		if authData.OfficeID != office_id {
-			t.Errorf("Expected OfficeID %d, got %d", office_id, authData.OfficeID)
+		if authData.OrganizationContext.OfficeID != officeID {
+			t.Errorf("Expected OfficeID %d, got %d", officeID, authData.OrganizationContext.OfficeID)
+		}
+		if authData.OrganizationContext.OrganizationID != organizationID {
+			t.Errorf("Expected OrganizationID %d, got %d", organizationID, authData.OrganizationContext.OrganizationID)
+		}
+		if authData.OrganizationContext.IsOrganic != isOrganic {
+			t.Errorf("Expected IsOrganic %v, got %v", isOrganic, authData.OrganizationContext.IsOrganic)
 		}
 	})
 
@@ -54,15 +65,20 @@ func TestAuthHandler(t *testing.T) {
 	})
 
 	t.Run("Expired token", func(t *testing.T) {
-		office_id := int64(456)
-		user := db.User{
-			ID:       456,
-			Role:     db.UserRoleAgent,
-			Email:    "test@test.com",
-			OfficeID: &office_id,
+		officeID := int64(456)
+		organizationID := int64(789)
+		isOrganic := false
+		data := jwt.AccessTokenData{
+			UserID: 456,
+			Role:   db.UserRoleAgent,
+			OrganizationContext: &jwt.OrganizationContext{
+				OfficeID:       officeID,
+				OrganizationID: organizationID,
+				IsOrganic:      isOrganic,
+			},
 		}
 
-		token, err := jwt.SignAccessToken(user, nil)
+		token, err := jwt.SignAccessToken(data)
 		if err != nil {
 			t.Fatalf("Failed to sign token: %v", err)
 		}

@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/jwt"
 	"encore.app/services/accounts/db"
 	"encore.dev/rlog"
 )
@@ -25,7 +26,11 @@ func (s *AuthService) LoginBackToAdmin(ctx context.Context, adminRefID *int64) (
 		return nil, api_errors.ErrInternalError
 	}
 
-	accessToken, refreshToken, err := s.generateTokens(ctx, admin, nil)
+	accessToken, refreshToken, err := s.generateTokens(ctx, jwt.AccessTokenData{
+		UserID: admin.ID,
+		Role:   admin.Role,
+	})
+
 	if err != nil {
 		rlog.Error("failed to generate tokens in login back to admin", "user_id", admin.ID, "error", err)
 		return nil, api_errors.ErrInternalError

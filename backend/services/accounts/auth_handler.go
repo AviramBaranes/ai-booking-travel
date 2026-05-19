@@ -19,10 +19,10 @@ const (
 )
 
 type AuthData struct {
-	UserID     int64
-	Role       UserRole
-	OfficeID   int64
-	AdminRefID *int64
+	UserID              int64
+	Role                UserRole
+	AdminRefID          *int64
+	OrganizationContext *jwt.OrganizationContext
 }
 
 // encore: authhandler
@@ -32,15 +32,11 @@ func AuthHandler(ctx context.Context, token string) (auth.UID, *AuthData, error)
 		return "", nil, api_errors.ErrUnauthenticated
 	}
 
-	var officeID int64
-	if claims.OfficeID != nil {
-		officeID = *claims.OfficeID
-	}
 	authData := &AuthData{
-		UserID:     claims.UserID,
-		Role:       UserRole(claims.Role),
-		OfficeID:   officeID,
-		AdminRefID: claims.AdminRefID,
+		UserID:              claims.UserID,
+		Role:                UserRole(claims.Role),
+		AdminRefID:          claims.AdminRefID,
+		OrganizationContext: claims.OrganizationContext,
 	}
 
 	uid := strconv.Itoa(int(authData.UserID))

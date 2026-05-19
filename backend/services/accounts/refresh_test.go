@@ -107,7 +107,7 @@ func TestRefreshTokens(t *testing.T) {
 
 		q.EXPECT().
 			GetUserById(gomock.Any(), int64(999999)).
-			Return(db.User{}, db.ErrNoRows)
+			Return(db.GetUserByIdRow{}, db.ErrNoRows)
 
 		s := &Service{query: q}
 		_, err = s.RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
@@ -154,7 +154,10 @@ func TestRefreshTokens(t *testing.T) {
 			t.Fatalf("failed to get user: %v", err)
 		}
 
-		assertAccessClaims(t, accessClaims, &user)
+		assertAccessClaims(t, accessClaims, jwt.AccessTokenData{
+			UserID: admin.ID,
+			Role:   db.UserRoleAdmin,
+		})
 		if time.Until(accessClaims.ExpiresAt.Time) <= 0 {
 			t.Error("access token already expired")
 		}
@@ -163,7 +166,7 @@ func TestRefreshTokens(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to validate new refresh token: %v", err)
 		}
-		assertRefreshClaims(t, refreshClaims, &user)
+		assertRefreshClaims(t, refreshClaims, admin.ID)
 		if time.Until(refreshClaims.ExpiresAt.Time) <= 0 {
 			t.Error("refresh token already expired")
 		}
