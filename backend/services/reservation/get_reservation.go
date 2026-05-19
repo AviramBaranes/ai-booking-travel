@@ -106,7 +106,7 @@ type reservationPriceDetails struct {
 }
 
 // calculatePriceDetails calculates the price details for a reservation based on the given parameters.
-func calculatePriceDetails(reservation db.GetReservationByIDRow) reservationPriceDetails {
+func calculatePriceDetails(reservation db.Reservation) reservationPriceDetails {
 	pp := dbadapters.NumericToFloat64(reservation.PurchasePrice)
 	mp := dbadapters.NumericToFloat64(reservation.MarkupPercentage)
 	bErp := dbadapters.NumericToFloat64(reservation.BrokerErpPrice)

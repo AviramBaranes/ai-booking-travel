@@ -1,6 +1,9 @@
 -- name: InsertReservation :one
 INSERT INTO reservations (
     user_id,
+    office_id,
+    organization_id,
+    is_organization_organic,
     broker_reservation_id,
     broker,
     supplier_code,
@@ -29,6 +32,9 @@ INSERT INTO reservations (
     dropoff_location_name
 ) VALUES (
     @user_id,
+    @office_id,
+    @organization_id,
+    @is_organization_organic,
     @broker_reservation_id,
     @broker,
     @supplier_code,
@@ -58,40 +64,7 @@ INSERT INTO reservations (
 ) RETURNING id;
 
 -- name: GetReservationByID :one
-SELECT
-    id,
-    user_id,
-    broker_reservation_id,
-    reservation_status,
-    payment_status,
-    broker,
-    supplier_code,
-    car_details,
-    plan_inclusions,
-    country_code,
-    currency_code,
-    currency_rate,
-    purchase_price,
-    markup_percentage,
-    discount_percentage,
-    broker_erp_price,
-    bt_erp_price,
-    vat_percentage,
-    total_price,
-    pickup_date,
-    dropoff_date,
-    pickup_time,
-    dropoff_time,
-    rental_days,
-    driver_title,
-    driver_first_name,
-    driver_last_name,
-    driver_age,
-    pickup_location_name,
-    dropoff_location_name,
-    voucher_number,
-    vouchered_at,
-    created_at
+SELECT *
 FROM reservations
 WHERE id = @id;
 

@@ -82,7 +82,7 @@ func TestCancelReservation(t *testing.T) {
 	t.Run("does not enqueue a cancellation event when DB lookup fails", func(t *testing.T) {
 		const userID int64 = 1004
 		q, s := mockService(t)
-		q.EXPECT().GetReservationByID(gomock.Any(), int64(42)).Return(db.GetReservationByIDRow{}, errors.New("db error"))
+		q.EXPECT().GetReservationByID(gomock.Any(), int64(42)).Return(db.Reservation{}, errors.New("db error"))
 		et.MockService[Interface]("reservation", s)
 
 		err := CancelReservation(authContext(userID), 42)

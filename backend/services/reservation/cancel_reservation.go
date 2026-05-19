@@ -86,7 +86,7 @@ func (s *Service) CancelReservation(ctx context.Context, id int64) error {
 }
 
 // canCancel checks if the reservation can be canceled based on the current time and the pickup time.
-func canCancel(reservation db.GetReservationByIDRow) bool {
+func canCancel(reservation db.Reservation) bool {
 	pickupDateTime, err := dbadapters.CombineDateTime(reservation.PickupDate, reservation.PickupTime)
 	if err != nil {
 		rlog.Error("failed to parse pickup date and time", "error", err, "reservationId", reservation.ID, "pickupTime", reservation.PickupTime)

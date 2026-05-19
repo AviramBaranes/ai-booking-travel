@@ -8,6 +8,9 @@ CREATE TABLE
     reservations (
         id BIGSERIAL PRIMARY KEY,
         user_id BIGINT NOT NULL,
+        office_id BIGINT,
+        organization_id BIGINT,
+        is_organization_organic BOOLEAN,
         broker_reservation_id TEXT NOT NULL,
         reservation_status reservation_status NOT NULL DEFAULT 'booked',
         payment_status payment_status NOT NULL DEFAULT 'unpaid',

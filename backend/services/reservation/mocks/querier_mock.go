@@ -146,10 +146,10 @@ func (mr *MockQuerierMockRecorder) GetPaymentPendingReservationsByAgentsIDs(ctx,
 }
 
 // GetReservationByID mocks base method.
-func (m *MockQuerier) GetReservationByID(ctx context.Context, id int64) (db.GetReservationByIDRow, error) {
+func (m *MockQuerier) GetReservationByID(ctx context.Context, id int64) (db.Reservation, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetReservationByID", ctx, id)
-	ret0, _ := ret[0].(db.GetReservationByIDRow)
+	ret0, _ := ret[0].(db.Reservation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

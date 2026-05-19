@@ -61,7 +61,7 @@ type CreateReservationResponse struct {
 	ID int64 `json:"id"`
 }
 
-// encore:api private method=POST path=/reservations
+// encore:api private
 func (s *Service) CreateReservation(ctx context.Context, p CreateReservationParams) (*CreateReservationResponse, error) {
 	carDetailsJSON, err := json.Marshal(p.CarDetails)
 	if err != nil {

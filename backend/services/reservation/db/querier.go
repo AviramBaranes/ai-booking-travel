@@ -16,7 +16,7 @@ type Querier interface {
 	GetOutboxByTopic(ctx context.Context, topic string) ([]Outbox, error)
 	GetPaymentPendingReservations(ctx context.Context) ([]GetPaymentPendingReservationsRow, error)
 	GetPaymentPendingReservationsByAgentsIDs(ctx context.Context, agentIds []int64) ([]GetPaymentPendingReservationsByAgentsIDsRow, error)
-	GetReservationByID(ctx context.Context, id int64) (GetReservationByIDRow, error)
+	GetReservationByID(ctx context.Context, id int64) (Reservation, error)
 	InsertReservation(ctx context.Context, arg InsertReservationParams) (int64, error)
 	ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error)
 	ResolveReservationsPayment(ctx context.Context, ids []int64) error

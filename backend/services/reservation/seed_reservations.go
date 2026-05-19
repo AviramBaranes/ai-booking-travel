@@ -62,7 +62,7 @@ func (s *Service) SeedReservations(ctx context.Context) (*SeedReservationsRespon
 	sourceIDs := []int64{1, 4}
 
 	// Fetch source reservations
-	var sources []db.GetReservationByIDRow
+	var sources []db.Reservation
 	for _, id := range sourceIDs {
 		row, err := s.query.GetReservationByID(ctx, id)
 		if err != nil {
