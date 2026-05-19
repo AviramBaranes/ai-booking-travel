@@ -60,6 +60,7 @@ export function listOrganizations(data: organization.ListOrganizationsParams) {
 }
 
 export function createOrganization(data: organization.CreateOrganizationParams) {
+  if (!data.icountClientId) delete data.icountClientId; 
   return withErrorHandler((client) => client.accounts.CreateOrganization(data));
 }
 
@@ -67,6 +68,9 @@ export function updateOrganization(
   id: number,
   data: organization.UpdateOrganizationParams,
 ) {
+  console.log("Updating organization with data:", data);
+  if (!data.icountClientId) delete data.icountClientId; 
+  console.log("Data after removing icountClientId if falsy:", data);
   return withErrorHandler((client) =>
     client.accounts.UpdateOrganization(id, data),
   );
@@ -82,10 +86,12 @@ export function listOffices(data: office.ListOfficesParams) {
 }
 
 export function createOffice(data: office.CreateOfficeParams) {
+  if (!data.icountClientId) delete data.icountClientId; 
   return withErrorHandler((client) => client.accounts.CreateOffice(data));
 }
 
 export function updateOffice(id: number, data: office.UpdateOfficeParams) {
+  if (!data.icountClientId) delete data.icountClientId; 
   return withErrorHandler((client) => client.accounts.UpdateOffice(id, data));
 }
 

@@ -1236,11 +1236,11 @@ export namespace contact {
     }
 
     export interface UpdateContactParams {
-        firstName?: string
-        lastName?: string
-        role?: string
-        cellphone?: string
-        email?: string
+        firstName: string
+        lastName: string
+        role: string
+        cellphone: string
+        email: string
         officeId?: number
         organizationId?: number
         isPaymentResponsible?: boolean
@@ -1486,8 +1486,8 @@ export namespace office {
     }
 
     export interface UpdateOfficeParams {
-        name?: string
-        organizationId?: number
+        name: string
+        organizationId: number
         icountClientId?: number
         phone?: string
         address?: string
@@ -1548,8 +1548,8 @@ export namespace organization {
     }
 
     export interface UpdateOrganizationParams {
-        name?: string
-        isOrganic?: boolean
+        name: string
+        isOrganic: boolean
         icountClientId?: number
         phone?: string
         address?: string
