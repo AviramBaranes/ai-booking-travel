@@ -7,4 +7,9 @@ EmailPort: 587
 SMSUsername: "sogomatic"
 SMSSenderName: "Sogomatic"
 
-GotenbergURL: "http://localhost:8080"
+GotenbergURL: [
+	if #Meta.Environment.Type == "development" && #Meta.Environment.Cloud == "local" { "http://localhost:8080" },
+	if #Meta.Environment.Name == "staging" { "http://localhost:8080" },
+	if #Meta.Environment.Type == "production" { "http://localhost:8080" },
+	"http://localhost:8080",
+][0]
