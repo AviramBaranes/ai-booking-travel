@@ -1,10 +1,16 @@
 import { getServerSession } from "next-auth";
-import Client, { isAPIError, Local } from "../client";
+import Client, { isAPIError, Local, Environment } from "../client";
 import { authOptions } from "../auth/authOptions";
 import { getLang } from "../lang/lang";
 import { AppError } from "./AppError";
 
-let client = new Client(Local);
+function getBaseURL(): string {
+  const env = process.env.NEXT_PUBLIC_ENCORE_ENV;
+  if (!env || env === "local") return Local;
+  return Environment(env);
+}
+
+let client = new Client(getBaseURL());
 
 export function setAuthorizationHeader(token: string) {
   client = client.with({
