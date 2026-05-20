@@ -129,7 +129,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			p.BrokerReservationID = "BILLING-EMPTY-2"
 		})
 
-		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OfficeID: 10})
+		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OfficeID: 30000})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
