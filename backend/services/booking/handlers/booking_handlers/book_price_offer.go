@@ -168,32 +168,46 @@ func buildPriceOfferReservationRequest(
 		return reservation.CreateReservationParams{}, api_errors.ErrInternalError
 	}
 
+	authData := auth.GetAuthData()
+
+	var officeID, organizationID *int64
+	var isOrganizationOrganic *bool
+	if authData.OrganizationContext != nil {
+		officeID = &authData.OrganizationContext.OfficeID
+		organizationID = &authData.OrganizationContext.OrganizationID
+		isOrganizationOrganic = &authData.OrganizationContext.IsOrganic
+	}
+
 	return reservation.CreateReservationParams{
-		UserID:              userID,
-		BrokerReservationID: confirmationNumber,
-		Broker:              string(offer.Broker),
-		SupplierCode:        offer.SupplierCode,
-		CarDetails:          &offerCarDetails,
-		PlanInclusions:      offer.PlanInclusions,
-		PickupDate:          dbadapters.DateToString(offer.PickupDate),
-		DropoffDate:         dbadapters.DateToString(offer.DropoffDate),
-		RentalDays:          int(offer.RentalDays),
-		DriverTitle:         p.DriverTitle,
-		DriverFirstName:     p.DriverFirstName,
-		DriverLastName:      p.DriverLastName,
-		DriverAge:           driverAge,
-		CountryCode:         offer.CountryCode,
-		CurrencyCode:        offer.CurrencyCode,
-		CurrencyRate:        dbadapters.NumericToFloat64(offer.CurrencyRate),
-		PurchasePrice:       dbadapters.NumericToFloat64(offer.PurchasePrice),
-		MarkupPercentage:    dbadapters.NumericToFloat64(offer.MarkupPercentage),
-		DiscountPercentage:  0,
-		BrokerErpPrice:      dbadapters.NumericToFloat64(offer.BrokerErpPrice),
-		BtErpPrice:          int(offer.BtErpPrice),
-		PickupTime:          offer.PickupTime,
-		DropoffTime:         offer.DropoffTime,
-		PickupLocationName:  offer.PickupLocation,
-		DropoffLocationName: offer.DropoffLocation,
+		UserID:                userID,
+		OfficeID:              officeID,
+		OrganizationID:        organizationID,
+		AdminRefID:            authData.AdminRefID,
+		IsOrganizationOrganic: isOrganizationOrganic,
+		BrokerReservationID:   confirmationNumber,
+		Broker:                string(offer.Broker),
+		SupplierCode:          offer.SupplierCode,
+		CarDetails:            &offerCarDetails,
+		PlanInclusions:        offer.PlanInclusions,
+		PickupDate:            dbadapters.DateToString(offer.PickupDate),
+		DropoffDate:           dbadapters.DateToString(offer.DropoffDate),
+		RentalDays:            int(offer.RentalDays),
+		DriverTitle:           p.DriverTitle,
+		DriverFirstName:       p.DriverFirstName,
+		DriverLastName:        p.DriverLastName,
+		DriverAge:             driverAge,
+		CountryCode:           offer.CountryCode,
+		CurrencyCode:          offer.CurrencyCode,
+		CurrencyRate:          dbadapters.NumericToFloat64(offer.CurrencyRate),
+		PurchasePrice:         dbadapters.NumericToFloat64(offer.PurchasePrice),
+		MarkupPercentage:      dbadapters.NumericToFloat64(offer.MarkupPercentage),
+		DiscountPercentage:    0,
+		BrokerErpPrice:        dbadapters.NumericToFloat64(offer.BrokerErpPrice),
+		BtErpPrice:            int(offer.BtErpPrice),
+		PickupTime:            offer.PickupTime,
+		DropoffTime:           offer.DropoffTime,
+		PickupLocationName:    offer.PickupLocation,
+		DropoffLocationName:   offer.DropoffLocation,
 	}, nil
 }
 

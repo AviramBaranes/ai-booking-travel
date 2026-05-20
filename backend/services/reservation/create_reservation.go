@@ -28,6 +28,7 @@ type CreateReservationParams struct {
 	OfficeID              *int64             `json:"officeId,omitempty" validate:"omitempty"`
 	OrganizationID        *int64             `json:"organizationId,omitempty" validate:"omitempty"`
 	IsOrganizationOrganic *bool              `json:"isOrganizationOrganic,omitempty" validate:"omitempty"`
+	AdminRefID            *int64             `json:"adminRefId,omitempty" validate:"omitempty"`
 	BrokerReservationID   string             `json:"brokerReservationId" validate:"required,notblank"`
 	Broker                string             `json:"broker" validate:"required,oneof=flex hertz"`
 	SupplierCode          string             `json:"supplierCode" validate:"required,notblank"`
@@ -79,6 +80,7 @@ func (s *Service) CreateReservation(ctx context.Context, p CreateReservationPara
 		OfficeID:              p.OfficeID,
 		OrganizationID:        p.OrganizationID,
 		IsOrganizationOrganic: p.IsOrganizationOrganic,
+		AdminRefID:            p.AdminRefID,
 		BrokerReservationID:   p.BrokerReservationID,
 		Broker:                db.Broker(p.Broker),
 		SupplierCode:          p.SupplierCode,

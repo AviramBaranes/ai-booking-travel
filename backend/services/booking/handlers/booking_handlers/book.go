@@ -113,6 +113,7 @@ func (s *BookingService) buildCreateReservationParams(
 		UserID:                authData.UserID,
 		OfficeID:              officeID,
 		OrganizationID:        organizationID,
+		AdminRefID:            authData.AdminRefID,
 		IsOrganizationOrganic: isOrganizationOrganic,
 		BrokerReservationID:   confirmationNumber,
 		Broker:                string(plan.Broker),

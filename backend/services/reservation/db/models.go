@@ -153,6 +153,7 @@ type Reservation struct {
 	OfficeID              *int64
 	OrganizationID        *int64
 	IsOrganizationOrganic *bool
+	AdminRefID            *int64
 	BrokerReservationID   string
 	ReservationStatus     ReservationStatus
 	PaymentStatus         PaymentStatus

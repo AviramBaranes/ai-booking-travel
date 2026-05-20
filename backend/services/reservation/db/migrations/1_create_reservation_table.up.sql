@@ -11,6 +11,7 @@ CREATE TABLE
         office_id BIGINT,
         organization_id BIGINT,
         is_organization_organic BOOLEAN,
+        admin_ref_id BIGINT,
         broker_reservation_id TEXT NOT NULL,
         reservation_status reservation_status NOT NULL DEFAULT 'booked',
         payment_status payment_status NOT NULL DEFAULT 'unpaid',
