@@ -9,7 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 const polin = localFont({
   src: [
     { path: "../../fonts/Polin-Regular.otf", weight: "400" },
-    { path: "../../fonts/Polin-SemiBold.otf", weight: "600" },
+    { path: "../../fonts/Polin-Semibold.otf", weight: "600" },
     { path: "../../fonts/Polin-Bold.otf", weight: "700" },
     { path: "../../fonts/Polin-Black.otf", weight: "900" },
   ],
