@@ -74,3 +74,8 @@ WHERE id = sqlc.arg(id)::BIGINT;
 SELECT is_organic, icount_client_id
 FROM organizations
 WHERE id = sqlc.arg(id)::BIGINT;
+
+-- name: GetOrganizationNamesByIDs :many
+SELECT id, name
+FROM organizations
+WHERE id = ANY(sqlc.arg(ids)::BIGINT[]);

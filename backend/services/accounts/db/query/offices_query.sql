@@ -73,3 +73,8 @@ SELECT o.icount_client_id, o.organization_id, org.is_organic
 FROM offices o
 JOIN organizations org ON org.id = o.organization_id
 WHERE o.id = sqlc.arg(id)::BIGINT;
+
+-- name: GetOfficeNamesByIDs :many
+SELECT id, name
+FROM offices
+WHERE id = ANY(sqlc.arg(ids)::BIGINT[]);

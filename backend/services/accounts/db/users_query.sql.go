@@ -409,6 +409,38 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phoneNumber *string) (User
 	return i, err
 }
 
+const getUserNamesByIDs = `-- name: GetUserNamesByIDs :many
+SELECT id, first_name, last_name
+FROM users
+WHERE id = ANY($1::BIGINT[])
+`
+
+type GetUserNamesByIDsRow struct {
+	ID        int64
+	FirstName string
+	LastName  string
+}
+
+func (q *Queries) GetUserNamesByIDs(ctx context.Context, ids []int64) ([]GetUserNamesByIDsRow, error) {
+	rows, err := q.db.Query(ctx, getUserNamesByIDs, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserNamesByIDsRow
+	for rows.Next() {
+		var i GetUserNamesByIDsRow
+		if err := rows.Scan(&i.ID, &i.FirstName, &i.LastName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAdminsEmails = `-- name: ListAdminsEmails :many
 SELECT email
 FROM users

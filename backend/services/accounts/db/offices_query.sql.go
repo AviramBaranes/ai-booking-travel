@@ -119,6 +119,37 @@ func (q *Queries) GetOfficeIcountClientID(ctx context.Context, id int64) (*int32
 	return icount_client_id, err
 }
 
+const getOfficeNamesByIDs = `-- name: GetOfficeNamesByIDs :many
+SELECT id, name
+FROM offices
+WHERE id = ANY($1::BIGINT[])
+`
+
+type GetOfficeNamesByIDsRow struct {
+	ID   int64
+	Name string
+}
+
+func (q *Queries) GetOfficeNamesByIDs(ctx context.Context, ids []int64) ([]GetOfficeNamesByIDsRow, error) {
+	rows, err := q.db.Query(ctx, getOfficeNamesByIDs, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetOfficeNamesByIDsRow
+	for rows.Next() {
+		var i GetOfficeNamesByIDsRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listInorganicOffices = `-- name: ListInorganicOffices :many
 SELECT
     o.id, o.name

@@ -85,6 +85,11 @@ SELECT email
 FROM users
 WHERE role = 'admin';
 
+-- name: GetUserNamesByIDs :many
+SELECT id, first_name, last_name
+FROM users
+WHERE id = ANY(sqlc.arg(ids)::BIGINT[]);
+
 -- name: UpdateUser :one
 UPDATE users
 SET

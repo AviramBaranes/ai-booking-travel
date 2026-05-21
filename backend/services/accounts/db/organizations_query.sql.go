@@ -110,6 +110,37 @@ func (q *Queries) GetOrganizationIcountClientID(ctx context.Context, id int64) (
 	return icount_client_id, err
 }
 
+const getOrganizationNamesByIDs = `-- name: GetOrganizationNamesByIDs :many
+SELECT id, name
+FROM organizations
+WHERE id = ANY($1::BIGINT[])
+`
+
+type GetOrganizationNamesByIDsRow struct {
+	ID   int64
+	Name string
+}
+
+func (q *Queries) GetOrganizationNamesByIDs(ctx context.Context, ids []int64) ([]GetOrganizationNamesByIDsRow, error) {
+	rows, err := q.db.Query(ctx, getOrganizationNamesByIDs, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetOrganizationNamesByIDsRow
+	for rows.Next() {
+		var i GetOrganizationNamesByIDsRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listOrganicOrganizations = `-- name: ListOrganicOrganizations :many
 SELECT
     id,name
