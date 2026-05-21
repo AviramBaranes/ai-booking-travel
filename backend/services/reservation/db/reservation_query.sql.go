@@ -122,6 +122,62 @@ func (q *Queries) CountReservationsByUser(ctx context.Context, arg CountReservat
 	return total, err
 }
 
+const countReservationsReport = `-- name: CountReservationsReport :one
+SELECT COUNT(*)::BIGINT AS total
+FROM reservations
+WHERE
+    ($1::DATE IS NULL OR pickup_date >= $1::DATE)
+    AND ($2::DATE IS NULL OR pickup_date <= $2::DATE)
+    AND ($3::TIMESTAMPTZ IS NULL OR created_at >= $3::TIMESTAMPTZ)
+    AND ($4::TIMESTAMPTZ IS NULL OR created_at <= $4::TIMESTAMPTZ)
+    AND ($5::TIMESTAMPTZ IS NULL OR vouchered_at >= $5::TIMESTAMPTZ)
+    AND ($6::TIMESTAMPTZ IS NULL OR vouchered_at <= $6::TIMESTAMPTZ)
+    AND ($7::reservation_status IS NULL OR reservation_status = $7::reservation_status)
+    AND ($8::broker IS NULL OR broker = $8::broker)
+    AND ($9::TEXT IS NULL OR supplier_code = $9::TEXT)
+    AND ($10::BIGINT IS NULL OR organization_id = $10::BIGINT)
+    AND ($11::BIGINT IS NULL OR office_id = $11::BIGINT)
+    AND ($12::BIGINT IS NULL OR user_id = $12::BIGINT)
+    AND (NOT $13::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+`
+
+type CountReservationsReportParams struct {
+	PickupDateFrom  pgtype.Date
+	PickupDateTo    pgtype.Date
+	CreatedDateFrom pgtype.Timestamptz
+	CreatedDateTo   pgtype.Timestamptz
+	VoucheredAtFrom pgtype.Timestamptz
+	VoucheredAtTo   pgtype.Timestamptz
+	Status          NullReservationStatus
+	Broker          NullBroker
+	SupplierCode    *string
+	OrganizationID  *int64
+	OfficeID        *int64
+	AgentID         *int64
+	IsBusiness      bool
+}
+
+func (q *Queries) CountReservationsReport(ctx context.Context, arg CountReservationsReportParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countReservationsReport,
+		arg.PickupDateFrom,
+		arg.PickupDateTo,
+		arg.CreatedDateFrom,
+		arg.CreatedDateTo,
+		arg.VoucheredAtFrom,
+		arg.VoucheredAtTo,
+		arg.Status,
+		arg.Broker,
+		arg.SupplierCode,
+		arg.OrganizationID,
+		arg.OfficeID,
+		arg.AgentID,
+		arg.IsBusiness,
+	)
+	var total int64
+	err := row.Scan(&total)
+	return total, err
+}
+
 const getOpenReservationsPickingUpWithinWeek = `-- name: GetOpenReservationsPickingUpWithinWeek :many
 SELECT
     id,
@@ -635,6 +691,121 @@ func (q *Queries) ListReservationsByUser(ctx context.Context, arg ListReservatio
 			&i.DriverLastName,
 			&i.ReservationStatus,
 			&i.TotalPrice,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listReservationsReport = `-- name: ListReservationsReport :many
+SELECT id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, broker_reservation_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, country_code, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, discount_percentage, bt_erp_price, vat_percentage, total_price, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, driver_title, driver_first_name, driver_last_name, driver_age, pickup_location_name, dropoff_location_name, voucher_number, vouchered_at, created_at, updated_at
+FROM reservations
+WHERE
+    ($1::DATE IS NULL OR pickup_date >= $1::DATE)
+    AND ($2::DATE IS NULL OR pickup_date <= $2::DATE)
+    AND ($3::TIMESTAMPTZ IS NULL OR created_at >= $3::TIMESTAMPTZ)
+    AND ($4::TIMESTAMPTZ IS NULL OR created_at <= $4::TIMESTAMPTZ)
+    AND ($5::TIMESTAMPTZ IS NULL OR vouchered_at >= $5::TIMESTAMPTZ)
+    AND ($6::TIMESTAMPTZ IS NULL OR vouchered_at <= $6::TIMESTAMPTZ)
+    AND ($7::reservation_status IS NULL OR reservation_status = $7::reservation_status)
+    AND ($8::broker IS NULL OR broker = $8::broker)
+    AND ($9::TEXT IS NULL OR supplier_code = $9::TEXT)
+    AND ($10::BIGINT IS NULL OR organization_id = $10::BIGINT)
+    AND ($11::BIGINT IS NULL OR office_id = $11::BIGINT)
+    AND ($12::BIGINT IS NULL OR user_id = $12::BIGINT)
+    AND (NOT $13::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+ORDER BY created_at DESC
+LIMIT  $15::BIGINT
+OFFSET $14::BIGINT
+`
+
+type ListReservationsReportParams struct {
+	PickupDateFrom  pgtype.Date
+	PickupDateTo    pgtype.Date
+	CreatedDateFrom pgtype.Timestamptz
+	CreatedDateTo   pgtype.Timestamptz
+	VoucheredAtFrom pgtype.Timestamptz
+	VoucheredAtTo   pgtype.Timestamptz
+	Status          NullReservationStatus
+	Broker          NullBroker
+	SupplierCode    *string
+	OrganizationID  *int64
+	OfficeID        *int64
+	AgentID         *int64
+	IsBusiness      bool
+	PageOffset      int64
+	PageSize        int64
+}
+
+func (q *Queries) ListReservationsReport(ctx context.Context, arg ListReservationsReportParams) ([]Reservation, error) {
+	rows, err := q.db.Query(ctx, listReservationsReport,
+		arg.PickupDateFrom,
+		arg.PickupDateTo,
+		arg.CreatedDateFrom,
+		arg.CreatedDateTo,
+		arg.VoucheredAtFrom,
+		arg.VoucheredAtTo,
+		arg.Status,
+		arg.Broker,
+		arg.SupplierCode,
+		arg.OrganizationID,
+		arg.OfficeID,
+		arg.AgentID,
+		arg.IsBusiness,
+		arg.PageOffset,
+		arg.PageSize,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Reservation
+	for rows.Next() {
+		var i Reservation
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.OfficeID,
+			&i.OrganizationID,
+			&i.IsOrganizationOrganic,
+			&i.AdminRefID,
+			&i.BrokerReservationID,
+			&i.ReservationStatus,
+			&i.PaymentStatus,
+			&i.Broker,
+			&i.SupplierCode,
+			&i.CarDetails,
+			&i.PlanInclusions,
+			&i.CountryCode,
+			&i.CurrencyCode,
+			&i.CurrencyRate,
+			&i.PurchasePrice,
+			&i.MarkupPercentage,
+			&i.BrokerErpPrice,
+			&i.DiscountPercentage,
+			&i.BtErpPrice,
+			&i.VatPercentage,
+			&i.TotalPrice,
+			&i.PickupDate,
+			&i.DropoffDate,
+			&i.PickupTime,
+			&i.DropoffTime,
+			&i.RentalDays,
+			&i.DriverTitle,
+			&i.DriverFirstName,
+			&i.DriverLastName,
+			&i.DriverAge,
+			&i.PickupLocationName,
+			&i.DropoffLocationName,
+			&i.VoucherNumber,
+			&i.VoucheredAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

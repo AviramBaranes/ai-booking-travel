@@ -200,6 +200,45 @@ updated_at = CURRENT_TIMESTAMP
 WHERE id = ANY(@ids::BIGINT[])
 AND payment_status IN ('unpaid', 'refund_pending');
 
+-- name: ListReservationsReport :many
+SELECT *
+FROM reservations
+WHERE
+    (sqlc.narg(pickup_date_from)::DATE IS NULL OR pickup_date >= sqlc.narg(pickup_date_from)::DATE)
+    AND (sqlc.narg(pickup_date_to)::DATE IS NULL OR pickup_date <= sqlc.narg(pickup_date_to)::DATE)
+    AND (sqlc.narg(created_date_from)::TIMESTAMPTZ IS NULL OR created_at >= sqlc.narg(created_date_from)::TIMESTAMPTZ)
+    AND (sqlc.narg(created_date_to)::TIMESTAMPTZ IS NULL OR created_at <= sqlc.narg(created_date_to)::TIMESTAMPTZ)
+    AND (sqlc.narg(vouchered_at_from)::TIMESTAMPTZ IS NULL OR vouchered_at >= sqlc.narg(vouchered_at_from)::TIMESTAMPTZ)
+    AND (sqlc.narg(vouchered_at_to)::TIMESTAMPTZ IS NULL OR vouchered_at <= sqlc.narg(vouchered_at_to)::TIMESTAMPTZ)
+    AND (sqlc.narg(status)::reservation_status IS NULL OR reservation_status = sqlc.narg(status)::reservation_status)
+    AND (sqlc.narg(broker)::broker IS NULL OR broker = sqlc.narg(broker)::broker)
+    AND (sqlc.narg(supplier_code)::TEXT IS NULL OR supplier_code = sqlc.narg(supplier_code)::TEXT)
+    AND (sqlc.narg(organization_id)::BIGINT IS NULL OR organization_id = sqlc.narg(organization_id)::BIGINT)
+    AND (sqlc.narg(office_id)::BIGINT IS NULL OR office_id = sqlc.narg(office_id)::BIGINT)
+    AND (sqlc.narg(agent_id)::BIGINT IS NULL OR user_id = sqlc.narg(agent_id)::BIGINT)
+    AND (NOT sqlc.arg(is_business)::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+ORDER BY created_at DESC
+LIMIT  sqlc.arg(page_size)::BIGINT
+OFFSET sqlc.arg(page_offset)::BIGINT;
+
+-- name: CountReservationsReport :one
+SELECT COUNT(*)::BIGINT AS total
+FROM reservations
+WHERE
+    (sqlc.narg(pickup_date_from)::DATE IS NULL OR pickup_date >= sqlc.narg(pickup_date_from)::DATE)
+    AND (sqlc.narg(pickup_date_to)::DATE IS NULL OR pickup_date <= sqlc.narg(pickup_date_to)::DATE)
+    AND (sqlc.narg(created_date_from)::TIMESTAMPTZ IS NULL OR created_at >= sqlc.narg(created_date_from)::TIMESTAMPTZ)
+    AND (sqlc.narg(created_date_to)::TIMESTAMPTZ IS NULL OR created_at <= sqlc.narg(created_date_to)::TIMESTAMPTZ)
+    AND (sqlc.narg(vouchered_at_from)::TIMESTAMPTZ IS NULL OR vouchered_at >= sqlc.narg(vouchered_at_from)::TIMESTAMPTZ)
+    AND (sqlc.narg(vouchered_at_to)::TIMESTAMPTZ IS NULL OR vouchered_at <= sqlc.narg(vouchered_at_to)::TIMESTAMPTZ)
+    AND (sqlc.narg(status)::reservation_status IS NULL OR reservation_status = sqlc.narg(status)::reservation_status)
+    AND (sqlc.narg(broker)::broker IS NULL OR broker = sqlc.narg(broker)::broker)
+    AND (sqlc.narg(supplier_code)::TEXT IS NULL OR supplier_code = sqlc.narg(supplier_code)::TEXT)
+    AND (sqlc.narg(organization_id)::BIGINT IS NULL OR organization_id = sqlc.narg(organization_id)::BIGINT)
+    AND (sqlc.narg(office_id)::BIGINT IS NULL OR office_id = sqlc.narg(office_id)::BIGINT)
+    AND (sqlc.narg(agent_id)::BIGINT IS NULL OR user_id = sqlc.narg(agent_id)::BIGINT)
+    AND (NOT sqlc.arg(is_business)::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL));
+
 -- name: GetOpenReservationsPickingUpWithinWeek :many
 SELECT
     id,

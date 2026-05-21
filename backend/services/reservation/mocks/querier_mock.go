@@ -85,6 +85,21 @@ func (mr *MockQuerierMockRecorder) CountReservationsByUser(ctx, arg any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountReservationsByUser", reflect.TypeOf((*MockQuerier)(nil).CountReservationsByUser), ctx, arg)
 }
 
+// CountReservationsReport mocks base method.
+func (m *MockQuerier) CountReservationsReport(ctx context.Context, arg db.CountReservationsReportParams) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountReservationsReport", ctx, arg)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountReservationsReport indicates an expected call of CountReservationsReport.
+func (mr *MockQuerierMockRecorder) CountReservationsReport(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountReservationsReport", reflect.TypeOf((*MockQuerier)(nil).CountReservationsReport), ctx, arg)
+}
+
 // GetOpenReservationsPickingUpWithinWeek mocks base method.
 func (m *MockQuerier) GetOpenReservationsPickingUpWithinWeek(ctx context.Context) ([]db.GetOpenReservationsPickingUpWithinWeekRow, error) {
 	m.ctrl.T.Helper()
@@ -188,6 +203,21 @@ func (m *MockQuerier) ListReservationsByUser(ctx context.Context, arg db.ListRes
 func (mr *MockQuerierMockRecorder) ListReservationsByUser(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListReservationsByUser", reflect.TypeOf((*MockQuerier)(nil).ListReservationsByUser), ctx, arg)
+}
+
+// ListReservationsReport mocks base method.
+func (m *MockQuerier) ListReservationsReport(ctx context.Context, arg db.ListReservationsReportParams) ([]db.Reservation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListReservationsReport", ctx, arg)
+	ret0, _ := ret[0].([]db.Reservation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListReservationsReport indicates an expected call of ListReservationsReport.
+func (mr *MockQuerierMockRecorder) ListReservationsReport(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListReservationsReport", reflect.TypeOf((*MockQuerier)(nil).ListReservationsReport), ctx, arg)
 }
 
 // ResolveReservationsPayment mocks base method.

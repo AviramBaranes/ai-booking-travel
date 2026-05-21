@@ -12,6 +12,7 @@ type Querier interface {
 	ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) (Reservation, error)
 	CancelReservation(ctx context.Context, id int64) error
 	CountReservationsByUser(ctx context.Context, arg CountReservationsByUserParams) (int64, error)
+	CountReservationsReport(ctx context.Context, arg CountReservationsReportParams) (int64, error)
 	GetOpenReservationsPickingUpWithinWeek(ctx context.Context) ([]GetOpenReservationsPickingUpWithinWeekRow, error)
 	GetOutboxByTopic(ctx context.Context, topic string) ([]Outbox, error)
 	GetPaymentPendingReservations(ctx context.Context) ([]GetPaymentPendingReservationsRow, error)
@@ -19,6 +20,7 @@ type Querier interface {
 	GetReservationByID(ctx context.Context, id int64) (Reservation, error)
 	InsertReservation(ctx context.Context, arg InsertReservationParams) (int64, error)
 	ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error)
+	ListReservationsReport(ctx context.Context, arg ListReservationsReportParams) ([]Reservation, error)
 	ResolveReservationsPayment(ctx context.Context, ids []int64) error
 }
 
