@@ -15,7 +15,8 @@ import {
   Coins,
   MapPin,
   CalendarCheck,
-  BarChart3,
+  TrendingUp,
+  Banknote,
   Languages,
   Landmark,
 } from "lucide-react";
@@ -34,8 +35,9 @@ const navItems = [
   { label: "מטבעות", href: "/admin/currencies", icon: Coins },
   { label: "מיקומים", href: "/admin/locations", icon: MapPin },
   { label: "תרגומים", href: "/admin/translations", icon: Languages },
-  { label: "הזמנות", href: "/admin/bookings", icon: CalendarCheck },
-  { label: "דוחות", href: "/admin/reports", icon: BarChart3 },
+  { label: "דוח הזמנות עסקי", href: "/admin/reports/reservations", icon: CalendarCheck },
+  { label: "דוח רווחיות", href: "/admin/reports/profitability", icon: TrendingUp },
+  { label: "דוח גבייה", href: "/admin/reports/collections", icon: Banknote },
 ];
 
 export default function AdminShell({

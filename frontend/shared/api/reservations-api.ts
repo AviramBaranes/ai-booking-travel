@@ -34,3 +34,19 @@ export function listOpenReservations(
     client.reservation.ListOpenReservationsByBillingEntity(params),
   );
 }
+
+export function businessReservationReport(params: reservation.ReportParams) {
+  return withErrorHandler((client) =>
+    client.reservation.GetBusinessReport(params),
+  );
+}
+
+export function profitabilityReport(params: reservation.ReportParams) {
+  return withErrorHandler((client) =>
+    client.reservation.GetProfitReport(params),
+  );
+}
+
+export function collectionsReport() {
+  return withErrorHandler((client) => client.reservation.GetBusinessesBalancesReport());
+}

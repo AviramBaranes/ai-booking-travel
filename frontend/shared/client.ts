@@ -823,6 +823,8 @@ export namespace reservation {
         voucher: string
     }
 
+    export type BillingEntity = string
+
     /**
      * BillingReservation is a reservation summary tailored for accountant billing workflows.
      */
@@ -839,6 +841,57 @@ export namespace reservation {
         currencyCode: string
         createdAt: string
         pickupDate: string
+    }
+
+    export interface BusinessReportResponse {
+        reservations: BusinessReservationReportRow[]
+        total: number
+    }
+
+    export interface BusinessReservationReportRow {
+        reservationId: number
+        brokerReservationId: string
+        status: string
+        organizationName: string
+        officeName: string
+        agentName: string
+        adminName: string
+        brokerName: string
+        supplierName: string
+        countryCode: string
+        pickupDate: string
+        dropoffDate: string
+        rentalDays: number
+        driverName: string
+        currencyCode: string
+        currencyRate: number
+        carSellPriceWithBrokerERP: number
+        carSellPriceWithBrokerERPInILS: number
+        btERPPrice: number
+        btERPPriceInILS: number
+        totalPrice: number
+        totalPriceInILS: number
+        voucherNumber: string
+        voucheredAt: string
+        createdAt: string
+    }
+
+    export interface BusinessesBalancesReportResponse {
+        businesses: BusinessesBalancesReportRow[]
+        total: number
+    }
+
+    export interface BusinessesBalancesReportRow {
+        billingEntityType: BillingEntity
+        billingEntityId: number
+        billingEntityName: string
+        openReservationsCount: number
+        totalOpenBalance: number
+        paymentPendingReservationsCount: number
+        totalPaymentPendingBalance: number
+        refundPendingReservationsCount: number
+        totalRefundPendingBalance: number
+        totalBalance: number
     }
 
     /**
@@ -909,6 +962,35 @@ export namespace reservation {
         total: number
     }
 
+    export interface ProfitReportResponse {
+        reservations: ProfitReportRow[]
+        total: number
+    }
+
+    export interface ProfitReportRow {
+        purchasePrice: number
+        purchasePriceInILS: number
+        profit: number
+        profitInILS: number
+    }
+
+    export interface ReportParams {
+        Page: number
+        PickupDateFrom?: string
+        PickupDateTo?: string
+        CreatedDateFrom?: string
+        CreatedDateTo?: string
+        VoucheredAtFrom?: string
+        VoucheredAtTo?: string
+        Status?: string
+        Broker?: string
+        Supplier?: string
+        OrganizationID?: number
+        OfficeID?: number
+        AgentID?: number
+        IsBusiness?: boolean
+    }
+
     export interface ReservationSummary {
         id: number
         brokerReservationId: string
@@ -930,6 +1012,9 @@ export namespace reservation {
             this.baseClient = baseClient
             this.ApplyVoucher = this.ApplyVoucher.bind(this)
             this.CancelReservation = this.CancelReservation.bind(this)
+            this.GetBusinessReport = this.GetBusinessReport.bind(this)
+            this.GetBusinessesBalancesReport = this.GetBusinessesBalancesReport.bind(this)
+            this.GetProfitReport = this.GetProfitReport.bind(this)
             this.GetReservation = this.GetReservation.bind(this)
             this.ListOpenReservationsByBillingEntity = this.ListOpenReservationsByBillingEntity.bind(this)
             this.ListReservations = this.ListReservations.bind(this)
@@ -944,6 +1029,60 @@ export namespace reservation {
 
         public async CancelReservation(id: number): Promise<void> {
             await this.baseClient.callTypedAPI("POST", `/api/reservation/${encodeURIComponent(id)}/cancel`)
+        }
+
+        public async GetBusinessReport(params: ReportParams): Promise<BusinessReportResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                agentId:         params.AgentID === undefined ? undefined : String(params.AgentID),
+                broker:          params.Broker,
+                createdDateFrom: params.CreatedDateFrom,
+                createdDateTo:   params.CreatedDateTo,
+                isBusiness:      params.IsBusiness === undefined ? undefined : String(params.IsBusiness),
+                officeId:        params.OfficeID === undefined ? undefined : String(params.OfficeID),
+                organizationId:  params.OrganizationID === undefined ? undefined : String(params.OrganizationID),
+                page:            String(params.Page),
+                pickupDateFrom:  params.PickupDateFrom,
+                pickupDateTo:    params.PickupDateTo,
+                status:          params.Status,
+                supplier:        params.Supplier,
+                voucheredAtFrom: params.VoucheredAtFrom,
+                voucheredAtTo:   params.VoucheredAtTo,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/reports/business`, undefined, {query})
+            return await resp.json() as BusinessReportResponse
+        }
+
+        public async GetBusinessesBalancesReport(): Promise<BusinessesBalancesReportResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/reports/businesses-balances`)
+            return await resp.json() as BusinessesBalancesReportResponse
+        }
+
+        public async GetProfitReport(params: ReportParams): Promise<ProfitReportResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                agentId:         params.AgentID === undefined ? undefined : String(params.AgentID),
+                broker:          params.Broker,
+                createdDateFrom: params.CreatedDateFrom,
+                createdDateTo:   params.CreatedDateTo,
+                isBusiness:      params.IsBusiness === undefined ? undefined : String(params.IsBusiness),
+                officeId:        params.OfficeID === undefined ? undefined : String(params.OfficeID),
+                organizationId:  params.OrganizationID === undefined ? undefined : String(params.OrganizationID),
+                page:            String(params.Page),
+                pickupDateFrom:  params.PickupDateFrom,
+                pickupDateTo:    params.PickupDateTo,
+                status:          params.Status,
+                supplier:        params.Supplier,
+                voucheredAtFrom: params.VoucheredAtFrom,
+                voucheredAtTo:   params.VoucheredAtTo,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/reports/profit`, undefined, {query})
+            return await resp.json() as ProfitReportResponse
         }
 
         public async GetReservation(id: number): Promise<GetReservationResponse> {
