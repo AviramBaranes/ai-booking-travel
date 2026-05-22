@@ -610,6 +610,98 @@ func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationPa
 	return id, err
 }
 
+const listBusinessesBalancesReport = `-- name: ListBusinessesBalancesReport :many
+WITH billing_reservations AS (
+    SELECT
+        CASE
+            WHEN is_organization_organic = TRUE THEN 'organization'
+            ELSE 'office'
+        END::TEXT AS billing_entity_type,
+        CASE
+            WHEN is_organization_organic = TRUE THEN organization_id
+            ELSE office_id
+        END::BIGINT AS billing_entity_id,
+        reservation_status,
+        payment_status,
+        (total_price::NUMERIC * currency_rate)::DOUBLE PRECISION AS balance
+    FROM reservations
+    WHERE
+        (
+            is_organization_organic = TRUE
+            AND organization_id IS NOT NULL
+        )
+    OR
+        (
+            is_organization_organic = FALSE
+            AND office_id IS NOT NULL
+        )
+)
+SELECT
+    billing_entity_type,
+    billing_entity_id,
+    COUNT(*) FILTER (WHERE reservation_status = 'booked')::BIGINT AS open_reservations_count,
+    COALESCE(SUM(balance) FILTER (WHERE reservation_status = 'booked'), 0)::DOUBLE PRECISION AS total_open_balance,
+    COUNT(*) FILTER (WHERE reservation_status = 'vouchered' AND payment_status = 'unpaid')::BIGINT AS payment_pending_reservations_count,
+    COALESCE(SUM(balance) FILTER (WHERE reservation_status = 'vouchered' AND payment_status = 'unpaid'), 0)::DOUBLE PRECISION AS total_payment_pending_balance,
+    COUNT(*) FILTER (WHERE reservation_status = 'canceled' AND payment_status = 'refund_pending')::BIGINT AS refund_pending_reservations_count,
+    COALESCE(SUM(balance) FILTER (WHERE reservation_status = 'canceled' AND payment_status = 'refund_pending'), 0)::DOUBLE PRECISION AS total_refund_pending_balance,
+    (
+        COALESCE(SUM(balance) FILTER (WHERE reservation_status = 'booked' OR (reservation_status = 'vouchered' AND payment_status = 'unpaid')), 0)::DOUBLE PRECISION
+            - COALESCE(SUM(balance) FILTER (WHERE reservation_status = 'canceled' AND payment_status = 'refund_pending'), 0)::DOUBLE PRECISION
+    )::DOUBLE PRECISION AS total_balance
+FROM billing_reservations
+GROUP BY billing_entity_type, billing_entity_id
+HAVING
+    COUNT(*) FILTER (WHERE reservation_status = 'booked') > 0
+OR
+    COUNT(*) FILTER (WHERE reservation_status = 'vouchered' AND payment_status = 'unpaid') > 0
+OR
+    COUNT(*) FILTER (WHERE reservation_status = 'canceled' AND payment_status = 'refund_pending') > 0
+ORDER BY billing_entity_type, billing_entity_id
+`
+
+type ListBusinessesBalancesReportRow struct {
+	BillingEntityType               string
+	BillingEntityID                 int64
+	OpenReservationsCount           int64
+	TotalOpenBalance                float64
+	PaymentPendingReservationsCount int64
+	TotalPaymentPendingBalance      float64
+	RefundPendingReservationsCount  int64
+	TotalRefundPendingBalance       float64
+	TotalBalance                    float64
+}
+
+func (q *Queries) ListBusinessesBalancesReport(ctx context.Context) ([]ListBusinessesBalancesReportRow, error) {
+	rows, err := q.db.Query(ctx, listBusinessesBalancesReport)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListBusinessesBalancesReportRow
+	for rows.Next() {
+		var i ListBusinessesBalancesReportRow
+		if err := rows.Scan(
+			&i.BillingEntityType,
+			&i.BillingEntityID,
+			&i.OpenReservationsCount,
+			&i.TotalOpenBalance,
+			&i.PaymentPendingReservationsCount,
+			&i.TotalPaymentPendingBalance,
+			&i.RefundPendingReservationsCount,
+			&i.TotalRefundPendingBalance,
+			&i.TotalBalance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listReservationsByUser = `-- name: ListReservationsByUser :many
 SELECT
     id,
