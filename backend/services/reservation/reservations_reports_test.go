@@ -10,6 +10,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts"
+	"encore.app/services/reservation/db"
 	"encore.dev/beta/auth"
 )
 
@@ -26,6 +27,11 @@ type businessReportSeed struct {
 	agentB    *accounts.CreateAgentResponse
 	bookingB  string
 	supplierB string
+}
+
+type businessesBalancesReportSeed struct {
+	organicOrg      *accounts.OrganizationResponse
+	inorganicOffice *accounts.OfficeResponse
 }
 
 func adminAuthContext(userID int64) context.Context {
@@ -207,6 +213,59 @@ func TestGetProfitReport(t *testing.T) {
 	})
 }
 
+func TestGetBusinessesBalancesReport(t *testing.T) {
+	ctx := adminAuthContext(900003)
+	query := testQuerier()
+	s := &Service{query: query}
+	seed := seedBusinessesBalancesReportData(t, ctx, s)
+
+	t.Run("returns billing entity names and balances", func(t *testing.T) {
+		resp, err := GetBusinessesBalancesReport(ctx)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.Total < 2 {
+			t.Fatalf("expected at least 2 businesses, got %d", resp.Total)
+		}
+
+		organicRow := requireBusinessesBalanceRow(t, resp.Businesses, BillingEntityBusiness, seed.organicOrg.ID)
+		if organicRow.BillingEntityName != seed.organicOrg.Name {
+			t.Fatalf("expected organic billing entity name %q, got %q", seed.organicOrg.Name, organicRow.BillingEntityName)
+		}
+		if organicRow.OpenReservationsCount != 1 {
+			t.Fatalf("expected organic open count 1, got %d", organicRow.OpenReservationsCount)
+		}
+		assertFloatEqual(t, organicRow.TotalOpenBalance, 648)
+		if organicRow.PaymentPendingReservationsCount != 1 {
+			t.Fatalf("expected organic payment pending count 1, got %d", organicRow.PaymentPendingReservationsCount)
+		}
+		assertFloatEqual(t, organicRow.TotalPaymentPendingBalance, 231)
+		if organicRow.RefundPendingReservationsCount != 1 {
+			t.Fatalf("expected organic refund pending count 1, got %d", organicRow.RefundPendingReservationsCount)
+		}
+		assertFloatEqual(t, organicRow.TotalRefundPendingBalance, 240)
+		assertFloatEqual(t, organicRow.TotalBalance, 639)
+
+		inorganicOfficeRow := requireBusinessesBalanceRow(t, resp.Businesses, BillingEntityOffice, seed.inorganicOffice.ID)
+		if inorganicOfficeRow.BillingEntityName != seed.inorganicOffice.Name {
+			t.Fatalf("expected inorganic office billing entity name %q, got %q", seed.inorganicOffice.Name, inorganicOfficeRow.BillingEntityName)
+		}
+		if inorganicOfficeRow.OpenReservationsCount != 1 {
+			t.Fatalf("expected inorganic office open count 1, got %d", inorganicOfficeRow.OpenReservationsCount)
+		}
+		assertFloatEqual(t, inorganicOfficeRow.TotalOpenBalance, 220)
+		if inorganicOfficeRow.PaymentPendingReservationsCount != 1 {
+			t.Fatalf("expected inorganic office payment pending count 1, got %d", inorganicOfficeRow.PaymentPendingReservationsCount)
+		}
+		assertFloatEqual(t, inorganicOfficeRow.TotalPaymentPendingBalance, 220)
+		if inorganicOfficeRow.RefundPendingReservationsCount != 1 {
+			t.Fatalf("expected inorganic office refund pending count 1, got %d", inorganicOfficeRow.RefundPendingReservationsCount)
+		}
+		assertFloatEqual(t, inorganicOfficeRow.TotalRefundPendingBalance, 165)
+		assertFloatEqual(t, inorganicOfficeRow.TotalBalance, 275)
+	})
+}
+
 func seedBusinessReportData(t *testing.T, ctx context.Context, s *Service) businessReportSeed {
 	t.Helper()
 	unique := time.Now().UnixNano()
@@ -280,6 +339,108 @@ func seedBusinessReportData(t *testing.T, ctx context.Context, s *Service) busin
 	}
 }
 
+func seedBusinessesBalancesReportData(t *testing.T, ctx context.Context, s *Service) businessesBalancesReportSeed {
+	t.Helper()
+	unique := time.Now().UnixNano()
+
+	organicOrg := createBusinessesBalancesOrg(t, ctx, fmt.Sprintf("Balances Organic Org %d", unique), true, int32(200))
+	organicOffice := createBusinessReportOffice(t, ctx, organicOrg.ID, fmt.Sprintf("Balances Organic Office %d", unique))
+	organicAgent := createBusinessReportAgent(t, ctx, organicOffice.ID, "BalancesOrganic", fmt.Sprintf("balances_organic_%d@test.com", unique), unique%100000000)
+	organic := true
+
+	seedReservation(t, ctx, s, organicAgent.ID, func(p *CreateReservationParams) {
+		p.BrokerReservationID = fmt.Sprintf("BALANCES-ORG-OPEN-%d", unique)
+		p.OfficeID = &organicOffice.ID
+		p.OrganizationID = &organicOrg.ID
+		p.IsOrganizationOrganic = &organic
+		p.CurrencyRate = 4
+		p.PurchasePrice = 100
+		p.MarkupPercentage = 10
+		p.BrokerErpPrice = 20
+		p.BtErpPrice = 30
+		p.DiscountPercentage = 0
+	})
+
+	organicVoucheredID := seedReservation(t, ctx, s, organicAgent.ID, func(p *CreateReservationParams) {
+		p.BrokerReservationID = fmt.Sprintf("BALANCES-ORG-VOUCHERED-%d", unique)
+		p.OfficeID = &organicOffice.ID
+		p.OrganizationID = &organicOrg.ID
+		p.IsOrganizationOrganic = &organic
+		p.CurrencyRate = 3
+		p.PurchasePrice = 50
+		p.MarkupPercentage = 20
+		p.BrokerErpPrice = 10
+		p.BtErpPrice = 5
+		p.DiscountPercentage = 0
+	})
+	applyVoucherForTest(t, ctx, s, organicVoucheredID, organicAgent.ID, fmt.Sprintf("BALANCES-ORG-VN-%d", unique))
+
+	organicCanceledID := seedReservation(t, ctx, s, organicAgent.ID, func(p *CreateReservationParams) {
+		p.BrokerReservationID = fmt.Sprintf("BALANCES-ORG-CANCELED-%d", unique)
+		p.OfficeID = &organicOffice.ID
+		p.OrganizationID = &organicOrg.ID
+		p.IsOrganizationOrganic = &organic
+		p.CurrencyRate = 2
+		p.PurchasePrice = 80
+		p.MarkupPercentage = 25
+		p.BrokerErpPrice = 0
+		p.BtErpPrice = 20
+		p.DiscountPercentage = 0
+	})
+	cancelReservationForTest(t, ctx, s, organicCanceledID)
+
+	inorganicOrg := createBusinessesBalancesOrg(t, ctx, fmt.Sprintf("Balances Inorganic Org %d", unique), false, 0)
+	inorganicOffice := createBusinessesBalancesOffice(t, ctx, inorganicOrg.ID, fmt.Sprintf("Balances Inorganic Office %d", unique), int32(300))
+	inorganicAgent := createBusinessReportAgent(t, ctx, inorganicOffice.ID, "BalancesInorganic", fmt.Sprintf("balances_inorganic_%d@test.com", unique), (unique+1)%100000000)
+	inorganic := false
+
+	seedReservation(t, ctx, s, inorganicAgent.ID, func(p *CreateReservationParams) {
+		p.BrokerReservationID = fmt.Sprintf("BALANCES-OFFICE-OPEN-%d", unique)
+		p.OfficeID = &inorganicOffice.ID
+		p.OrganizationID = &inorganicOrg.ID
+		p.IsOrganizationOrganic = &inorganic
+		p.CurrencyRate = 2
+		p.PurchasePrice = 100
+		p.MarkupPercentage = 10
+		p.BrokerErpPrice = 0
+		p.BtErpPrice = 0
+		p.DiscountPercentage = 0
+	})
+
+	inorganicVoucheredID := seedReservation(t, ctx, s, inorganicAgent.ID, func(p *CreateReservationParams) {
+		p.BrokerReservationID = fmt.Sprintf("BALANCES-OFFICE-VOUCHERED-%d", unique)
+		p.OfficeID = &inorganicOffice.ID
+		p.OrganizationID = &inorganicOrg.ID
+		p.IsOrganizationOrganic = &inorganic
+		p.CurrencyRate = 1
+		p.PurchasePrice = 200
+		p.MarkupPercentage = 10
+		p.BrokerErpPrice = 0
+		p.BtErpPrice = 0
+		p.DiscountPercentage = 0
+	})
+	applyVoucherForTest(t, ctx, s, inorganicVoucheredID, inorganicAgent.ID, fmt.Sprintf("BALANCES-OFFICE-VN-%d", unique))
+
+	inorganicCanceledID := seedReservation(t, ctx, s, inorganicAgent.ID, func(p *CreateReservationParams) {
+		p.BrokerReservationID = fmt.Sprintf("BALANCES-OFFICE-CANCELED-%d", unique)
+		p.OfficeID = &inorganicOffice.ID
+		p.OrganizationID = &inorganicOrg.ID
+		p.IsOrganizationOrganic = &inorganic
+		p.CurrencyRate = 5
+		p.PurchasePrice = 30
+		p.MarkupPercentage = 10
+		p.BrokerErpPrice = 0
+		p.BtErpPrice = 0
+		p.DiscountPercentage = 0
+	})
+	cancelReservationForTest(t, ctx, s, inorganicCanceledID)
+
+	return businessesBalancesReportSeed{
+		organicOrg:      organicOrg,
+		inorganicOffice: inorganicOffice,
+	}
+}
+
 func createBusinessReportOrg(t *testing.T, ctx context.Context, name string, icountClientID int32) *accounts.OrganizationResponse {
 	t.Helper()
 	org, err := accounts.CreateOrganization(ctx, accounts.CreateOrganizationParams{
@@ -293,11 +454,41 @@ func createBusinessReportOrg(t *testing.T, ctx context.Context, name string, ico
 	return org
 }
 
+func createBusinessesBalancesOrg(t *testing.T, ctx context.Context, name string, isOrganic bool, icountClientID int32) *accounts.OrganizationResponse {
+	t.Helper()
+	var icountClientIDPtr *int32
+	if isOrganic {
+		icountClientIDPtr = &icountClientID
+	}
+	org, err := accounts.CreateOrganization(ctx, accounts.CreateOrganizationParams{
+		Name:           name,
+		IsOrganic:      isOrganic,
+		IcountClientID: icountClientIDPtr,
+	})
+	if err != nil {
+		t.Fatalf("failed to create organization: %v", err)
+	}
+	return org
+}
+
 func createBusinessReportOffice(t *testing.T, ctx context.Context, orgID int64, name string) *accounts.OfficeResponse {
 	t.Helper()
 	office, err := accounts.CreateOffice(ctx, accounts.CreateOfficeParams{
 		Name:           name,
 		OrganizationID: orgID,
+	})
+	if err != nil {
+		t.Fatalf("failed to create office: %v", err)
+	}
+	return office
+}
+
+func createBusinessesBalancesOffice(t *testing.T, ctx context.Context, orgID int64, name string, icountClientID int32) *accounts.OfficeResponse {
+	t.Helper()
+	office, err := accounts.CreateOffice(ctx, accounts.CreateOfficeParams{
+		Name:           name,
+		OrganizationID: orgID,
+		IcountClientID: &icountClientID,
 	})
 	if err != nil {
 		t.Fatalf("failed to create office: %v", err)
@@ -357,6 +548,31 @@ func assertBusinessReportBookings(t *testing.T, ctx context.Context, params Repo
 			t.Fatalf("expected booking %q in report response", booking)
 		}
 	}
+}
+
+func applyVoucherForTest(t *testing.T, ctx context.Context, s *Service, reservationID int64, userID int64, voucherNumber string) {
+	t.Helper()
+	if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: reservationID, UserID: userID, VoucherNumber: &voucherNumber}); err != nil {
+		t.Fatalf("failed to apply voucher: %v", err)
+	}
+}
+
+func cancelReservationForTest(t *testing.T, ctx context.Context, s *Service, reservationID int64) {
+	t.Helper()
+	if err := s.query.CancelReservation(ctx, reservationID); err != nil {
+		t.Fatalf("failed to cancel reservation: %v", err)
+	}
+}
+
+func requireBusinessesBalanceRow(t *testing.T, rows []BusinessesBalancesReportRow, entityType BillingEntity, entityID int64) BusinessesBalancesReportRow {
+	t.Helper()
+	for _, row := range rows {
+		if row.BillingEntityType == entityType && row.BillingEntityID == entityID {
+			return row
+		}
+	}
+	t.Fatalf("expected businesses balances row for %s %d", entityType, entityID)
+	return BusinessesBalancesReportRow{}
 }
 
 func assertFloatEqual(t *testing.T, got, want float64) {
