@@ -2,6 +2,9 @@ package accounts
 
 import (
 	"encore.app/services/accounts/db"
+	lookup "encore.app/services/accounts/handlers/lookup"
+	office "encore.app/services/accounts/handlers/office"
+	organization "encore.app/services/accounts/handlers/organization"
 	user "encore.app/services/accounts/handlers/user"
 	"encore.dev/storage/sqldb"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -30,3 +33,14 @@ func initService() (*Service, error) {
 type GetUserEmailParams = user.GetUserEmailParams
 type ListAdminsEmailsResponse = user.ListAdminsEmailsResponse
 type GetAgentsResponse = user.GetAgentsResponse
+type AccountName = lookup.AccountName
+type GetAccountsLookupParams = lookup.GetAccountsLookupParams
+type GetAccountsLookupResponse = lookup.GetAccountsLookupResponse
+type CreateOrganizationParams = organization.CreateOrganizationParams
+type OrganizationResponse = organization.OrganizationResponse
+type CreateOfficeParams = office.CreateOfficeParams
+type OfficeResponse = office.OfficeResponse
+type CreateAgentParams = user.CreateAgentParams
+type CreateAgentResponse = user.CreateAgentResponse
+type CreateAdminParams = user.CreateAdminParams
+type CreateAdminResponse = user.CreateAdminResponse

@@ -11,7 +11,6 @@ import (
 	"encore.app/internal/pricing"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
-	"encore.app/services/accounts/handlers/lookup"
 	"encore.app/services/reservation/db"
 	"encore.dev/rlog"
 )
@@ -59,6 +58,7 @@ type accountsSet struct {
 	userIDs         map[int64]struct{}
 }
 
+// encore:api auth tag:admin method=GET path=/reports/business
 func (s *Service) GetBusinessReport(ctx context.Context, p ReportParams) (*BusinessReportResponse, error) {
 	rows, total, err := s.getReports(ctx, p, true)
 	if err != nil {
@@ -66,7 +66,7 @@ func (s *Service) GetBusinessReport(ctx context.Context, p ReportParams) (*Busin
 	}
 
 	accountsSet := buildAccountsSet(rows)
-	accountsLookup, err := accounts.GetAccountsLookup(ctx, lookup.GetAccountsLookupParams{
+	accountsLookup, err := accounts.GetAccountsLookup(ctx, accounts.GetAccountsLookupParams{
 		OrganizationIDs: idsFromSet(accountsSet.organizationIDs),
 		OfficeIDs:       idsFromSet(accountsSet.officeIDs),
 		UserIDs:         idsFromSet(accountsSet.userIDs),
@@ -108,7 +108,7 @@ func buildAccountsSet(reservations []db.Reservation) accountsSet {
 	}
 }
 
-func buildBusinessReportRows(reservations []db.Reservation, accountsLookup *lookup.GetAccountsLookupResponse) ([]BusinessReservationReportRow, error) {
+func buildBusinessReportRows(reservations []db.Reservation, accountsLookup *accounts.GetAccountsLookupResponse) ([]BusinessReservationReportRow, error) {
 	organizationNames := namesByID(accountsLookup.Organizations)
 	officeNames := namesByID(accountsLookup.Offices)
 	userNames := namesByID(accountsLookup.Users)
@@ -168,7 +168,7 @@ func calculateCarSellPriceWithBrokerERP(reservation db.Reservation) float64 {
 	return pricing.ApplyMarkup(purchasePrice, markupPercentage) + pricing.ApplyMarkup(brokerERPPrice, markupPercentage)
 }
 
-func namesByID(rows []lookup.AccountName) map[int64]string {
+func namesByID(rows []accounts.AccountName) map[int64]string {
 	names := make(map[int64]string, len(rows))
 	for _, row := range rows {
 		names[row.ID] = row.Name

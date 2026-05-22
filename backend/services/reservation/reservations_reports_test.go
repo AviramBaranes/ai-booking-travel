@@ -1,0 +1,367 @@
+package reservation
+
+import (
+	"context"
+	"fmt"
+	"math"
+	"strconv"
+	"testing"
+	"time"
+
+	"encore.app/internal/api_errors"
+	"encore.app/services/accounts"
+	"encore.dev/beta/auth"
+)
+
+type businessReportSeed struct {
+	orgA      *accounts.OrganizationResponse
+	officeA   *accounts.OfficeResponse
+	agentA    *accounts.CreateAgentResponse
+	admin     *accounts.CreateAdminResponse
+	bookingA  string
+	supplierA string
+
+	orgB      *accounts.OrganizationResponse
+	officeB   *accounts.OfficeResponse
+	agentB    *accounts.CreateAgentResponse
+	bookingB  string
+	supplierB string
+}
+
+func adminAuthContext(userID int64) context.Context {
+	uid := auth.UID(strconv.FormatInt(userID, 10))
+	return auth.WithContext(context.Background(), uid, &accounts.AuthData{
+		UserID: userID,
+		Role:   accounts.UserRoleAdmin,
+	})
+}
+
+func TestGetBusinessReport(t *testing.T) {
+	t.Run("validation rejects zero page", func(t *testing.T) {
+		api_errors.AssertApiError(t, invalidValueErr("page"), ReportParams{Page: 0}.Validate())
+	})
+
+	t.Run("validation accepts valid params", func(t *testing.T) {
+		if err := (ReportParams{Page: 1}).Validate(); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+
+	ctx := adminAuthContext(900001)
+	query := testQuerier()
+	s := &Service{query: query}
+	seed := seedBusinessReportData(t, ctx, s)
+	baseParams := ReportParams{
+		Page:           1,
+		PickupDateFrom: "2099-01-01",
+		PickupDateTo:   "2099-12-31",
+	}
+
+	t.Run("returns account names and price fields", func(t *testing.T) {
+		params := baseParams
+		params.Supplier = seed.supplierA
+
+		resp, err := GetBusinessReport(ctx, params)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.Total != 1 {
+			t.Fatalf("expected total 1, got %d", resp.Total)
+		}
+		if len(resp.Reservations) != 1 {
+			t.Fatalf("expected 1 reservation, got %d", len(resp.Reservations))
+		}
+
+		row := resp.Reservations[0]
+		if row.BrokerReservationID != seed.bookingA {
+			t.Fatalf("expected booking %q, got %q", seed.bookingA, row.BrokerReservationID)
+		}
+		if row.OrganizationName != seed.orgA.Name {
+			t.Fatalf("expected organization name %q, got %q", seed.orgA.Name, row.OrganizationName)
+		}
+		if row.OfficeName != seed.officeA.Name {
+			t.Fatalf("expected office name %q, got %q", seed.officeA.Name, row.OfficeName)
+		}
+		if row.AgentName != "Report AgentA" {
+			t.Fatalf("expected agent name %q, got %q", "Report AgentA", row.AgentName)
+		}
+		if row.AdminName == nil || *row.AdminName != "Report Admin" {
+			t.Fatalf("expected admin name %q, got %v", "Report Admin", row.AdminName)
+		}
+		if row.DriverName != "Ms Alice Report" {
+			t.Fatalf("expected driver name %q, got %q", "Ms Alice Report", row.DriverName)
+		}
+		if row.SupplierName != "Hertz" {
+			t.Fatalf("expected supplier name %q, got %q", "Hertz", row.SupplierName)
+		}
+		assertFloatEqual(t, row.CurrencyRate, 4)                     // seeded USD-to-ILS rate
+		assertFloatEqual(t, row.CarSellPriceWithBrokerERP, 132)      // (100 purchase + 20 broker ERP) with 10% markup
+		assertFloatEqual(t, row.CarSellPriceWithBrokerERPInILS, 528) // 132 * currency rate 4
+		assertFloatEqual(t, row.BtERPPrice, 30)                      // seeded BT ERP fee
+		assertFloatEqual(t, row.BtERPPriceInILS, 120)                // 30 * currency rate 4
+		assertFloatEqual(t, row.TotalPrice, 162)                     // 132 sell price + 30 BT ERP, no discount
+		assertFloatEqual(t, row.TotalPriceInILS, 648)                // 162 * currency rate 4
+	})
+
+	t.Run("filters by organization", func(t *testing.T) {
+		params := baseParams
+		params.OrganizationID = seed.orgA.ID
+		params.Supplier = seed.supplierA
+		assertBusinessReportBookings(t, ctx, params, seed.bookingA)
+	})
+
+	t.Run("filters by office", func(t *testing.T) {
+		params := baseParams
+		params.OfficeID = seed.officeA.ID
+		params.Supplier = seed.supplierA
+		assertBusinessReportBookings(t, ctx, params, seed.bookingA)
+	})
+
+	t.Run("filters by agent", func(t *testing.T) {
+		params := baseParams
+		params.AgentID = seed.agentA.ID
+		params.Supplier = seed.supplierA
+		assertBusinessReportBookings(t, ctx, params, seed.bookingA)
+	})
+
+	t.Run("filters by broker", func(t *testing.T) {
+		params := baseParams
+		params.Broker = "hertz"
+		params.Supplier = seed.supplierB
+		assertBusinessReportBookings(t, ctx, params, seed.bookingB)
+	})
+
+	t.Run("filters by status", func(t *testing.T) {
+		params := baseParams
+		params.Status = "canceled"
+		params.Supplier = seed.supplierB
+		assertBusinessReportBookings(t, ctx, params, seed.bookingB)
+	})
+
+	t.Run("filters by pickup date range", func(t *testing.T) {
+		params := ReportParams{
+			Page:           1,
+			PickupDateFrom: "2099-02-01",
+			PickupDateTo:   "2099-02-28",
+			Supplier:       seed.supplierB,
+		}
+		assertBusinessReportBookings(t, ctx, params, seed.bookingB)
+	})
+
+	t.Run("non-matching supplier returns empty", func(t *testing.T) {
+		params := baseParams
+		params.Supplier = fmt.Sprintf("missing_supplier_%d", time.Now().UnixNano())
+
+		resp, err := GetBusinessReport(ctx, params)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.Total != 0 {
+			t.Fatalf("expected total 0, got %d", resp.Total)
+		}
+		if len(resp.Reservations) != 0 {
+			t.Fatalf("expected 0 reservations, got %d", len(resp.Reservations))
+		}
+	})
+}
+
+func TestGetProfitReport(t *testing.T) {
+	ctx := adminAuthContext(900002)
+	query := testQuerier()
+	s := &Service{query: query}
+	seed := seedBusinessReportData(t, ctx, s)
+
+	t.Run("returns shared report fields and profit fields", func(t *testing.T) {
+		resp, err := GetProfitReport(ctx, ReportParams{
+			Page:           1,
+			PickupDateFrom: "2099-01-01",
+			PickupDateTo:   "2099-12-31",
+			Supplier:       seed.supplierA,
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.Total != 1 {
+			t.Fatalf("expected total 1, got %d", resp.Total)
+		}
+		if len(resp.Reservations) != 1 {
+			t.Fatalf("expected 1 reservation, got %d", len(resp.Reservations))
+		}
+
+		row := resp.Reservations[0]
+		if row.BrokerReservationID != seed.bookingA {
+			t.Fatalf("expected booking %q, got %q", seed.bookingA, row.BrokerReservationID)
+		}
+		if row.OrganizationName != seed.orgA.Name {
+			t.Fatalf("expected organization name %q, got %q", seed.orgA.Name, row.OrganizationName)
+		}
+		if row.OfficeName != seed.officeA.Name {
+			t.Fatalf("expected office name %q, got %q", seed.officeA.Name, row.OfficeName)
+		}
+		assertFloatEqual(t, row.CarSellPriceWithBrokerERP, 132)      // (100 purchase + 20 broker ERP) with 10% markup
+		assertFloatEqual(t, row.CarSellPriceWithBrokerERPInILS, 528) // 132 * currency rate 4
+		assertFloatEqual(t, row.PurchasePrice, 120)                  // 100 purchase + 20 broker ERP
+		assertFloatEqual(t, row.PurchasePriceInILS, 480)             // 120 * currency rate 4
+		assertFloatEqual(t, row.Profit, 12)                          // 132 sell price - 120 purchase price
+		assertFloatEqual(t, row.ProfitInILS, 48)                     // 12 * currency rate 4
+	})
+}
+
+func seedBusinessReportData(t *testing.T, ctx context.Context, s *Service) businessReportSeed {
+	t.Helper()
+	unique := time.Now().UnixNano()
+	icountClientID := int32(100)
+
+	orgA := createBusinessReportOrg(t, ctx, fmt.Sprintf("Report Org A %d", unique), icountClientID)
+	officeA := createBusinessReportOffice(t, ctx, orgA.ID, fmt.Sprintf("Report Office A %d", unique))
+	agentA := createBusinessReportAgent(t, ctx, officeA.ID, "AgentA", fmt.Sprintf("report_agent_a_%d@test.com", unique), unique%100000000)
+	admin := createBusinessReportAdmin(t, ctx, fmt.Sprintf("report_admin_%d@test.com", unique))
+
+	orgB := createBusinessReportOrg(t, ctx, fmt.Sprintf("Report Org B %d", unique), icountClientID+1)
+	officeB := createBusinessReportOffice(t, ctx, orgB.ID, fmt.Sprintf("Report Office B %d", unique))
+	agentB := createBusinessReportAgent(t, ctx, officeB.ID, "AgentB", fmt.Sprintf("report_agent_b_%d@test.com", unique), (unique+1)%100000000)
+
+	bookingA := fmt.Sprintf("REPORT-A-%d", unique)
+	supplierA := fmt.Sprintf("REPORT-SUP-A-%d", unique)
+	adminID := admin.ID
+	isOrgAOrganic := orgA.IsOrganic
+	seedReservation(t, ctx, s, agentA.ID, func(p *CreateReservationParams) {
+		p.BrokerReservationID = bookingA
+		p.OfficeID = &officeA.ID
+		p.OrganizationID = &orgA.ID
+		p.IsOrganizationOrganic = &isOrgAOrganic
+		p.AdminRefID = &adminID
+		p.Broker = "flex"
+		p.SupplierCode = supplierA
+		p.PickupDate = "2099-01-10"
+		p.DropoffDate = "2099-01-14"
+		p.DriverTitle = "Ms"
+		p.DriverFirstName = "Alice"
+		p.DriverLastName = "Report"
+		p.CurrencyRate = 4
+		p.PurchasePrice = 100
+		p.MarkupPercentage = 10
+		p.BrokerErpPrice = 20
+		p.BtErpPrice = 30
+		p.DiscountPercentage = 0
+	})
+
+	bookingB := fmt.Sprintf("REPORT-B-%d", unique)
+	supplierB := fmt.Sprintf("REPORT-SUP-B-%d", unique)
+	isOrgBOrganic := orgB.IsOrganic
+	reservationBID := seedReservation(t, ctx, s, agentB.ID, func(p *CreateReservationParams) {
+		p.BrokerReservationID = bookingB
+		p.OfficeID = &officeB.ID
+		p.OrganizationID = &orgB.ID
+		p.IsOrganizationOrganic = &isOrgBOrganic
+		p.Broker = "hertz"
+		p.SupplierCode = supplierB
+		p.PickupDate = "2099-02-10"
+		p.DropoffDate = "2099-02-15"
+		p.DriverFirstName = "Bob"
+		p.DriverLastName = "Report"
+	})
+	if err := s.query.CancelReservation(ctx, reservationBID); err != nil {
+		t.Fatalf("failed to cancel seeded reservation: %v", err)
+	}
+
+	return businessReportSeed{
+		orgA:      orgA,
+		officeA:   officeA,
+		agentA:    agentA,
+		admin:     admin,
+		bookingA:  bookingA,
+		supplierA: supplierA,
+		orgB:      orgB,
+		officeB:   officeB,
+		agentB:    agentB,
+		bookingB:  bookingB,
+		supplierB: supplierB,
+	}
+}
+
+func createBusinessReportOrg(t *testing.T, ctx context.Context, name string, icountClientID int32) *accounts.OrganizationResponse {
+	t.Helper()
+	org, err := accounts.CreateOrganization(ctx, accounts.CreateOrganizationParams{
+		Name:           name,
+		IsOrganic:      true,
+		IcountClientID: &icountClientID,
+	})
+	if err != nil {
+		t.Fatalf("failed to create organization: %v", err)
+	}
+	return org
+}
+
+func createBusinessReportOffice(t *testing.T, ctx context.Context, orgID int64, name string) *accounts.OfficeResponse {
+	t.Helper()
+	office, err := accounts.CreateOffice(ctx, accounts.CreateOfficeParams{
+		Name:           name,
+		OrganizationID: orgID,
+	})
+	if err != nil {
+		t.Fatalf("failed to create office: %v", err)
+	}
+	return office
+}
+
+func createBusinessReportAgent(t *testing.T, ctx context.Context, officeID int64, lastName string, email string, phoneSuffix int64) *accounts.CreateAgentResponse {
+	t.Helper()
+	agent, err := accounts.CreateAgent(ctx, accounts.CreateAgentParams{
+		FirstName:   "Report",
+		LastName:    lastName,
+		Email:       email,
+		Password:    "ValidPass123!",
+		PhoneNumber: fmt.Sprintf("05%08d", phoneSuffix),
+		OfficeID:    officeID,
+	})
+	if err != nil {
+		t.Fatalf("failed to create agent: %v", err)
+	}
+	return agent
+}
+
+func createBusinessReportAdmin(t *testing.T, ctx context.Context, email string) *accounts.CreateAdminResponse {
+	t.Helper()
+	admin, err := accounts.CreateAdmin(ctx, accounts.CreateAdminParams{
+		FirstName: "Report",
+		LastName:  "Admin",
+		Email:     email,
+		Password:  "ValidPass123!",
+	})
+	if err != nil {
+		t.Fatalf("failed to create admin: %v", err)
+	}
+	return admin
+}
+
+func assertBusinessReportBookings(t *testing.T, ctx context.Context, params ReportParams, wantBookings ...string) {
+	t.Helper()
+	resp, err := GetBusinessReport(ctx, params)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if resp.Total != int64(len(wantBookings)) {
+		t.Fatalf("expected total %d, got %d", len(wantBookings), resp.Total)
+	}
+	if len(resp.Reservations) != len(wantBookings) {
+		t.Fatalf("expected %d reservations, got %d", len(wantBookings), len(resp.Reservations))
+	}
+
+	got := make(map[string]bool, len(resp.Reservations))
+	for _, row := range resp.Reservations {
+		got[row.BrokerReservationID] = true
+	}
+	for _, booking := range wantBookings {
+		if !got[booking] {
+			t.Fatalf("expected booking %q in report response", booking)
+		}
+	}
+}
+
+func assertFloatEqual(t *testing.T, got, want float64) {
+	t.Helper()
+	if math.Abs(got-want) > 0.0001 {
+		t.Fatalf("expected %.4f, got %.4f", want, got)
+	}
+}

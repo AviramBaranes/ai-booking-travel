@@ -28,7 +28,6 @@ func invalidValueErr(field string) error {
 
 const (
 	allowedDelta = time.Second
-	testEmailTpl = "loginuser_%d@example.com"
 )
 
 var (
@@ -80,7 +79,7 @@ func assertRefreshClaims(t *testing.T, claims *jwt.RefreshTokenClaims, userID in
 
 // generateTestEmail creates a unique email for each test run.
 func generateTestEmail() string {
-	return fmt.Sprintf(testEmailTpl, time.Now().UnixNano())
+	return fmt.Sprintf("loginuser_%d_%d@example.com", time.Now().UnixNano(), emailCounter.Add(1))
 }
 
 // assertAccessClaims verifies core access token claims.
@@ -135,6 +134,7 @@ func registerAdmin(ctx context.Context, email, password string) (*user.CreateAdm
 
 var nameCounter atomic.Int64
 var phoneCounter atomic.Int64
+var emailCounter atomic.Int64
 
 func randomName() string {
 	return fmt.Sprintf("name_%d_%d", time.Now().UnixNano(), nameCounter.Add(1))
