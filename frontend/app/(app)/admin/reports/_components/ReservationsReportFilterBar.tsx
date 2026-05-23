@@ -31,9 +31,14 @@ export type ReservationReportFilterKey =
 
 export type ReservationReportFilters = Record<ReservationReportFilterKey, string>;
 
+const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
+export type ReportPageSize = (typeof PAGE_SIZE_OPTIONS)[number];
+
 interface ReservationsReportFilterBarProps {
   initialFilters: ReservationReportFilters;
   onSubmit: (filters: ReservationReportFilters) => void;
+  pageSize: ReportPageSize;
+  onPageSizeChange: (size: ReportPageSize) => void;
 }
 
 export const emptyReservationReportFilters: ReservationReportFilters = {
@@ -94,6 +99,8 @@ function entityUpdate(entity: ReportAccountEntity | null) {
 export function ReservationsReportFilterBar({
   initialFilters,
   onSubmit,
+  pageSize,
+  onPageSizeChange,
 }: ReservationsReportFilterBarProps) {
   const [filters, setFilters] = useState(initialFilters);
   const entity = useMemo(() => selectedEntity(filters), [filters]);
@@ -176,6 +183,22 @@ export function ReservationsReportFilterBar({
           value={entity}
           onChange={(nextEntity) => updateFilters(entityUpdate(nextEntity))}
         />
+      </div>
+      <div className="min-w-28">
+        <label className="block text-xs text-gray-500 mb-1">שורות לעמוד</label>
+        <select
+          className={inputClass}
+          value={pageSize}
+          onChange={(event) =>
+            onPageSizeChange(Number(event.target.value) as ReportPageSize)
+          }
+        >
+          {PAGE_SIZE_OPTIONS.map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="flex gap-2">
         <Button type="submit" className="h-9 bg-navy px-5 hover:bg-dark-navy">

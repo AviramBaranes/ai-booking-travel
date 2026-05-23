@@ -13,6 +13,7 @@ import (
 
 type ReportParams struct {
 	Page            int32  `query:"page" validate:"required,gte=1"`
+	PageSize        int64  `query:"pageSize" validate:"required,gte=1"`
 	PickupDateFrom  string `query:"pickupDateFrom,omitempty" encore:"optional"`
 	PickupDateTo    string `query:"pickupDateTo,omitempty" encore:"optional"`
 	CreatedDateFrom string `query:"createdDateFrom,omitempty" encore:"optional"`
@@ -27,8 +28,6 @@ type ReportParams struct {
 	AgentID         int64  `query:"agentId,omitempty" encore:"optional"`
 	IsBusiness      bool   `query:"isBusiness,omitempty" encore:"optional"`
 }
-
-const reportPageSize int64 = 50
 
 func nilIfZero(v int64) *int64 {
 	if v == 0 {
@@ -60,7 +59,7 @@ func timestamptzFromString(s string) pgtype.Timestamptz {
 }
 
 func (s *Service) getReports(ctx context.Context, p ReportParams, isBusiness bool) ([]db.Reservation, int64, error) {
-	offset := int64(p.Page-1) * reportPageSize
+	offset := int64(p.Page-1) * p.PageSize
 
 	queryParams := db.ListReservationsReportParams{
 		PickupDateFrom:  dbadapters.DateFromString(p.PickupDateFrom),
@@ -76,7 +75,7 @@ func (s *Service) getReports(ctx context.Context, p ReportParams, isBusiness boo
 		OfficeID:        nilIfZero(p.OfficeID),
 		AgentID:         nilIfZero(p.AgentID),
 		IsBusiness:      isBusiness,
-		PageSize:        reportPageSize,
+		PageSize:        p.PageSize,
 		PageOffset:      offset,
 	}
 

@@ -15,9 +15,8 @@ import {
   ReservationReportFilterKey,
   ReservationReportFilters,
   ReservationsReportFilterBar,
+  ReportPageSize,
 } from "../_components/ReservationsReportFilterBar";
-
-const pageSize = 1;
 
 const statusLabels: Record<string, string> = {
   booked: "הוזמן",
@@ -47,10 +46,12 @@ function toNumber(value: string) {
 
 function buildRequest(
   page: number,
+  pageSize: number,
   filters: ReservationReportFilters,
 ): reservation.ReportParams {
   return {
     Page: page,
+    PageSize: pageSize,
     PickupDateFrom: filters.pickupFrom || undefined,
     PickupDateTo: filters.pickupTo || undefined,
     CreatedDateFrom: filters.createdFrom || undefined,
@@ -298,6 +299,7 @@ const columns: ReportColumn[] = [
 
 export default function ReservationsReportTable() {
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<ReportPageSize>(25);
   const [filters, setFilters] = useUrlFilters<ReservationReportFilterKey>([
     ...RESERVATION_REPORT_FILTER_KEYS,
   ]);
@@ -307,8 +309,8 @@ export default function ReservationsReportTable() {
   ).join("|");
 
   const reportQuery = useQuery({
-    queryKey: ["reservations-report", page, filterSignature],
-    queryFn: () => businessReservationReport(buildRequest(page, filters)),
+    queryKey: ["reservations-report", page, pageSize, filterSignature],
+    queryFn: () => businessReservationReport(buildRequest(page, pageSize, filters)),
     placeholderData: keepPreviousData,
   });
 
@@ -328,6 +330,11 @@ export default function ReservationsReportTable() {
     setFilters(nextFilters);
   }
 
+  function handlePageSizeChange(nextSize: ReportPageSize) {
+    setPageSize(nextSize);
+    setPage(1);
+  }
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
       <div className="border-b border-gray-200 bg-gray-50/80 px-4 py-3">
@@ -335,6 +342,8 @@ export default function ReservationsReportTable() {
           key={filterSignature}
           initialFilters={filters}
           onSubmit={handleFilterSubmit}
+          pageSize={pageSize}
+          onPageSizeChange={handlePageSizeChange}
         />
       </div>
 
