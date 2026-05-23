@@ -114,11 +114,14 @@ func TestCancelReservation(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to fetch reservation: %v", err)
 		}
+
 		if got.ReservationStatus != string(db.ReservationStatusCanceled) {
 			t.Fatalf("expected reservation_status %q, got %q", db.ReservationStatusCanceled, got.ReservationStatus)
 		}
-		if got.PaymentStatus != string(db.PaymentStatusRefundPending) {
-			t.Fatalf("expected payment_status %q, got %q", db.PaymentStatusRefundPending, got.PaymentStatus)
+
+		// payment status not changed if status was unpaid.
+		if got.PaymentStatus != string(db.PaymentStatusUnpaid) {
+			t.Fatalf("expected payment_status %q, got %q", db.PaymentStatusUnpaid, got.PaymentStatus)
 		}
 
 		// And an outbox row must have been written in the same transaction.
@@ -137,6 +140,46 @@ func TestCancelReservation(t *testing.T) {
 		}
 		if ev.LastName != params.DriverLastName {
 			t.Fatalf("expected event LastName %q, got %q", params.DriverLastName, ev.LastName)
+		}
+	})
+
+	t.Run("vouchered paid reservation is marked as refund_pending on cancellation", func(t *testing.T) {
+		const userID int64 = 1006
+		params := validCreateReservationParams()
+		params.UserID = userID
+		params.PickupDate = futurePickup()
+		params.DropoffDate = time.Now().Add(35 * 24 * time.Hour).Format("2006-01-02")
+		res, err := CreateReservation(ctx, *params)
+		if err != nil {
+			t.Fatalf("failed to create reservation: %v", err)
+		}
+
+		authCtx := authContext(userID)
+		if err := ApplyVoucher(authCtx, res.ID, ApplyVoucherParams{
+			Voucher: "VOUCHER_123",
+		}); err != nil {
+			t.Fatalf("failed to apply voucher: %v", err)
+		}
+
+		// Make reservation paid.
+		if err := ResolveReservations(ctx, ResolveReservationsParams{IDs: []int64{res.ID}}); err != nil {
+			t.Fatalf("failed to resolve reservation: %v", err)
+		}
+
+		if err := CancelReservation(authCtx, res.ID); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		// Reservation status must be updated (transaction committed).
+		got, err := GetReservation(authCtx, res.ID)
+		if err != nil {
+			t.Fatalf("failed to fetch reservation: %v", err)
+		}
+		if got.ReservationStatus != string(db.ReservationStatusCanceled) {
+			t.Fatalf("expected reservation_status %q, got %q", db.ReservationStatusCanceled, got.ReservationStatus)
+		}
+		if got.PaymentStatus != string(db.PaymentStatusRefundPending) {
+			t.Fatalf("expected payment_status %q, got %q", db.PaymentStatusRefundPending, got.PaymentStatus)
 		}
 	})
 }

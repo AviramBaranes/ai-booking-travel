@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	dbadapters "encore.app/internal/db_adapters"
-	"encore.app/services/reservation/db"
 )
 
 func TestGetOpenReservations(t *testing.T) {
@@ -84,14 +83,16 @@ func TestGetOpenReservations(t *testing.T) {
 
 		// Transition reservation states via the existing sqlc-generated queries.
 		voucherNumber := "VCH-12345"
-		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{
-			ID:            vouchID,
-			UserID:        userID,
-			VoucherNumber: &voucherNumber,
+		authCtx := authContext(userID)
+		if err := ApplyVoucher(authCtx, vouchID, ApplyVoucherParams{
+			Voucher: voucherNumber,
 		}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
-		if err := s.query.CancelReservation(ctx, cancID); err != nil {
+		if err := ResolveReservations(authCtx, ResolveReservationsParams{IDs: []int64{cancID}}); err != nil {
+			t.Fatalf("failed to resolve reservation: %v", err)
+		}
+		if err := CancelReservation(authCtx, cancID); err != nil {
 			t.Fatalf("failed to cancel reservation: %v", err)
 		}
 

@@ -119,8 +119,11 @@ RETURNING *;
 -- name: CancelReservation :exec
 UPDATE reservations
 SET
+    payment_status = CASE
+        WHEN payment_status = 'paid' THEN 'refund_pending'
+        ELSE payment_status
+    END,
     reservation_status = 'canceled',
-    payment_status = 'refund_pending',
     updated_at = CURRENT_TIMESTAMP
 WHERE
     id = $1;

@@ -566,6 +566,9 @@ func applyVoucherForTest(t *testing.T, ctx context.Context, s *Service, reservat
 
 func cancelReservationForTest(t *testing.T, ctx context.Context, s *Service, reservationID int64) {
 	t.Helper()
+	if err := s.query.ResolveReservationsPayment(ctx, []int64{reservationID}); err != nil {
+		t.Fatalf("failed to resolve reservation payment: %v", err)
+	}
 	if err := s.query.CancelReservation(ctx, reservationID); err != nil {
 		t.Fatalf("failed to cancel reservation: %v", err)
 	}
