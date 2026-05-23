@@ -44,11 +44,15 @@ func adminAuthContext(userID int64) context.Context {
 
 func TestGetBusinessReport(t *testing.T) {
 	t.Run("validation rejects zero page", func(t *testing.T) {
-		api_errors.AssertApiError(t, invalidValueErr("page"), ReportParams{Page: 0}.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("page"), ReportParams{Page: 0, PageSize: 25}.Validate())
+	})
+
+	t.Run("validation rejects zero page size", func(t *testing.T) {
+		api_errors.AssertApiError(t, invalidValueErr("pageSize"), ReportParams{PageSize: 0, Page: 1}.Validate())
 	})
 
 	t.Run("validation accepts valid params", func(t *testing.T) {
-		if err := (ReportParams{Page: 1}).Validate(); err != nil {
+		if err := (ReportParams{Page: 1, PageSize: 25}).Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 	})
@@ -59,6 +63,7 @@ func TestGetBusinessReport(t *testing.T) {
 	seed := seedBusinessReportData(t, ctx, s)
 	baseParams := ReportParams{
 		Page:           1,
+		PageSize:       25,
 		PickupDateFrom: "2099-01-01",
 		PickupDateTo:   "2099-12-31",
 	}
@@ -150,6 +155,7 @@ func TestGetBusinessReport(t *testing.T) {
 			PickupDateFrom: "2099-02-01",
 			PickupDateTo:   "2099-02-28",
 			Supplier:       seed.supplierB,
+			PageSize:       25,
 		}
 		assertBusinessReportBookings(t, ctx, params, seed.bookingB)
 	})
@@ -180,6 +186,7 @@ func TestGetProfitReport(t *testing.T) {
 	t.Run("returns shared report fields and profit fields", func(t *testing.T) {
 		resp, err := GetProfitReport(ctx, ReportParams{
 			Page:           1,
+			PageSize:       25,
 			PickupDateFrom: "2099-01-01",
 			PickupDateTo:   "2099-12-31",
 			Supplier:       seed.supplierA,
