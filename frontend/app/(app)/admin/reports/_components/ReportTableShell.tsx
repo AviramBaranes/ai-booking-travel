@@ -104,7 +104,7 @@ export function ReportTableShell<T extends { reservationId: number }>({
                       "whitespace-nowrap px-3 py-3 align-middle",
                       column.className,
                       column.headerClassName,
-                      "!font-bold",
+                      "font-bold",
                     )}
                   >
                     {column.label}
