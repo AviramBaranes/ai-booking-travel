@@ -16,7 +16,8 @@ UPDATE reservations
 SET 
     reservation_status = 'vouchered',
     voucher_number = $3,
-    vouchered_at = CURRENT_TIMESTAMP
+    vouchered_at = CURRENT_TIMESTAMP,
+    currency_rate = $4
 WHERE 
 id = $1
 AND
@@ -28,10 +29,16 @@ type ApplyVoucherParams struct {
 	ID            int64
 	UserID        int64
 	VoucherNumber *string
+	CurrencyRate  pgtype.Numeric
 }
 
 func (q *Queries) ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) (Reservation, error) {
-	row := q.db.QueryRow(ctx, applyVoucher, arg.ID, arg.UserID, arg.VoucherNumber)
+	row := q.db.QueryRow(ctx, applyVoucher,
+		arg.ID,
+		arg.UserID,
+		arg.VoucherNumber,
+		arg.CurrencyRate,
+	)
 	var i Reservation
 	err := row.Scan(
 		&i.ID,
@@ -470,6 +477,19 @@ func (q *Queries) GetReservationByID(ctx context.Context, id int64) (Reservation
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getReservationCurrencyCode = `-- name: GetReservationCurrencyCode :one
+SELECT currency_code
+FROM reservations
+WHERE id = $1
+`
+
+func (q *Queries) GetReservationCurrencyCode(ctx context.Context, id int64) (string, error) {
+	row := q.db.QueryRow(ctx, getReservationCurrencyCode, id)
+	var currency_code string
+	err := row.Scan(&currency_code)
+	return currency_code, err
 }
 
 const insertReservation = `-- name: InsertReservation :one

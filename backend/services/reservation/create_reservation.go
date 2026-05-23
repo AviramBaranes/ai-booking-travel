@@ -12,15 +12,8 @@ import (
 	"encore.app/internal/validation"
 	"encore.app/services/notifications"
 	"encore.app/services/reservation/db"
-	"encore.dev/config"
 	"encore.dev/rlog"
 )
-
-type ReservationCfg struct {
-	VAT config.Float64
-}
-
-var cfg = config.Load[*ReservationCfg]()
 
 // CreateReservationParams defines the parameters required to create a reservation.
 type CreateReservationParams struct {

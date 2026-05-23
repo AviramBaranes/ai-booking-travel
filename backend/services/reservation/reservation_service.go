@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"encore.app/services/reservation/db"
+	"encore.dev/config"
 	"encore.dev/pubsub"
 	"encore.dev/storage/sqldb"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -22,6 +23,19 @@ var reservationsDB = sqldb.NewDatabase("reservations", sqldb.DatabaseConfig{
 })
 var pgxdb *pgxpool.Pool
 var query *db.Queries
+
+type ReservationCfg struct {
+	VAT config.Float64
+
+	Icount icountConfig
+}
+
+type icountConfig struct {
+	CID  config.String
+	User config.String
+}
+
+var cfg = config.Load[*ReservationCfg]()
 
 func initService() (*Service, error) {
 	pgxdb = sqldb.Driver[*pgxpool.Pool](reservationsDB)

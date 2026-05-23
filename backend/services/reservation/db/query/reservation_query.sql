@@ -109,12 +109,18 @@ UPDATE reservations
 SET 
     reservation_status = 'vouchered',
     voucher_number = $3,
-    vouchered_at = CURRENT_TIMESTAMP
+    vouchered_at = CURRENT_TIMESTAMP,
+    currency_rate = $4
 WHERE 
 id = $1
 AND
 user_id = $2
 RETURNING *;
+
+-- name: GetReservationCurrencyCode :one
+SELECT currency_code
+FROM reservations
+WHERE id = $1;
 
 -- name: CancelReservation :exec
 UPDATE reservations
