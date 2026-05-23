@@ -59,7 +59,7 @@ type SeedReservationsResponse struct {
 //
 //encore:api private
 func (s *Service) SeedReservations(ctx context.Context) (*SeedReservationsResponse, error) {
-	sourceIDs := []int64{1, 4}
+	sourceIDs := []int64{1, 2, 3, 4}
 
 	// Fetch source reservations
 	var sources []db.Reservation
@@ -103,33 +103,37 @@ func (s *Service) SeedReservations(ctx context.Context) (*SeedReservationsRespon
 		brokerResID := src.BrokerReservationID + "FAKE"
 
 		id, err := s.query.InsertReservation(ctx, db.InsertReservationParams{
-			UserID:              src.UserID,
-			BrokerReservationID: brokerResID,
-			Broker:              src.Broker,
-			SupplierCode:        src.SupplierCode,
-			CarDetails:          src.CarDetails,
-			PlanInclusions:      src.PlanInclusions,
-			CountryCode:         src.CountryCode,
-			CurrencyCode:        src.CurrencyCode,
-			CurrencyRate:        src.CurrencyRate,
-			PurchasePrice:       src.PurchasePrice,
-			MarkupPercentage:    src.MarkupPercentage,
-			DiscountPercentage:  src.DiscountPercentage,
-			BrokerErpPrice:      src.BrokerErpPrice,
-			BtErpPrice:          src.BtErpPrice,
-			VatPercentage:       src.VatPercentage,
-			TotalPrice:          src.TotalPrice,
-			PickupDate:          dbadapters.DateFromString(pickupDate.Format("2006-01-02")),
-			DropoffDate:         dbadapters.DateFromString(dropoffDate.Format("2006-01-02")),
-			PickupTime:          src.PickupTime,
-			DropoffTime:         src.DropoffTime,
-			RentalDays:          int32(rentalDays),
-			DriverTitle:         name.Title,
-			DriverFirstName:     name.FirstName,
-			DriverLastName:      name.LastName,
-			DriverAge:           src.DriverAge,
-			PickupLocationName:  src.PickupLocationName,
-			DropoffLocationName: src.DropoffLocationName,
+			UserID:                src.UserID,
+			BrokerReservationID:   brokerResID,
+			OfficeID:              src.OfficeID,
+			OrganizationID:        src.OrganizationID,
+			IsOrganizationOrganic: src.IsOrganizationOrganic,
+			AdminRefID:            src.AdminRefID,
+			Broker:                src.Broker,
+			SupplierCode:          src.SupplierCode,
+			CarDetails:            src.CarDetails,
+			PlanInclusions:        src.PlanInclusions,
+			CountryCode:           src.CountryCode,
+			CurrencyCode:          src.CurrencyCode,
+			CurrencyRate:          src.CurrencyRate,
+			PurchasePrice:         src.PurchasePrice,
+			MarkupPercentage:      src.MarkupPercentage,
+			DiscountPercentage:    src.DiscountPercentage,
+			BrokerErpPrice:        src.BrokerErpPrice,
+			BtErpPrice:            src.BtErpPrice,
+			VatPercentage:         src.VatPercentage,
+			TotalPrice:            src.TotalPrice,
+			PickupDate:            dbadapters.DateFromString(pickupDate.Format("2006-01-02")),
+			DropoffDate:           dbadapters.DateFromString(dropoffDate.Format("2006-01-02")),
+			PickupTime:            src.PickupTime,
+			DropoffTime:           src.DropoffTime,
+			RentalDays:            int32(rentalDays),
+			DriverTitle:           name.Title,
+			DriverFirstName:       name.FirstName,
+			DriverLastName:        name.LastName,
+			DriverAge:             src.DriverAge,
+			PickupLocationName:    src.PickupLocationName,
+			DropoffLocationName:   src.DropoffLocationName,
 		})
 		if err != nil {
 			rlog.Error("failed to insert seed reservation", "index", i, "error", err)
