@@ -33,8 +33,8 @@ export const Admins: CollectionConfig = {
             payloadUser = await payload.create({
               collection: "admins",
               data: {
-                userId: session.user.id.toString(),
-                username: session.user.username,
+                userId: session.user.id,
+                username: session.user.firstName + " " + session.user.lastName,
                 email: "",
               },
               draft: false,
