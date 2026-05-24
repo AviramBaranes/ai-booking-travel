@@ -1,4 +1,4 @@
-package reservation
+package actions
 
 import (
 	"context"
@@ -11,8 +11,7 @@ type ResolveReservationsParams struct {
 	IDs []int64 `json:"ids" validate:"required,min=1"`
 }
 
-// encore:api private
-func (s *Service) ResolveReservations(ctx context.Context, p ResolveReservationsParams) error {
+func (s *ActionService) ResolveReservations(ctx context.Context, p ResolveReservationsParams) error {
 	err := s.query.ResolveReservationsPayment(ctx, p.IDs)
 	if err != nil {
 		rlog.Error("failed to resolve reservations", "error", err, "reservation_ids", p.IDs)

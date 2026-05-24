@@ -1,4 +1,4 @@
-package reservation
+package actions
 
 import (
 	"context"
@@ -19,7 +19,7 @@ import (
 	"encore.dev/rlog"
 )
 
-// ApplyVoucherParams is the request payload type for the apply voucher EP
+// ApplyVoucherParams is the request payload type for the apply voucher EP.
 type ApplyVoucherParams struct {
 	Voucher string `json:"voucher" validate:"required,notblank"`
 }
@@ -28,10 +28,7 @@ func (r ApplyVoucherParams) Validate() error {
 	return validation.ValidateStruct(r)
 }
 
-// ApplyVoucher is the EP for applying a voucher on an agent order
-//
-// encore:api auth method=POST path=/reservations/:id/voucher tag:agent
-func (s *Service) ApplyVoucher(ctx context.Context, id int64, p ApplyVoucherParams) error {
+func (s *ActionService) ApplyVoucher(ctx context.Context, id int64, p ApplyVoucherParams) error {
 	authData := auth.Data().(*accounts.AuthData)
 
 	currencyRate, err := s.getCurrencyRate(ctx, id)
@@ -148,7 +145,7 @@ func toVoucherData(reservation db.Reservation) (*broker.VoucherData, error) {
 }
 
 // getCurrencyRate retrieves the currency code for the reservation and fetches the corresponding exchange rate from Icount.
-func (s *Service) getCurrencyRate(ctx context.Context, reservationID int64) (float64, error) {
+func (s *ActionService) getCurrencyRate(ctx context.Context, reservationID int64) (float64, error) {
 	currencyCode, err := s.query.GetReservationCurrencyCode(ctx, reservationID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
@@ -158,7 +155,7 @@ func (s *Service) getCurrencyRate(ctx context.Context, reservationID int64) (flo
 		return 0, api_errors.ErrInternalError
 	}
 
-	ic := icount.NewIcount(cfg.Icount.CID(), cfg.Icount.User())
+	ic := icount.NewIcount(s.cfg.IcountCID, s.cfg.IcountUser)
 	resp, err := ic.FetchCurrencies()
 	if err != nil {
 		rlog.Error("fetching currency rates from icount", "error", err)

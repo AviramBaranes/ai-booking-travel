@@ -6,6 +6,10 @@ import (
 	"encore.app/services/reservation/db"
 )
 
+// cancellationWindowHours is the number of hours before pickup within which a
+// reservation cannot be cancelled. Must match the value in handlers/actions.
+const cancellationWindowHours = 48
+
 func nullStatusFromString(s string) db.NullReservationStatus {
 	if s == "" {
 		return db.NullReservationStatus{}

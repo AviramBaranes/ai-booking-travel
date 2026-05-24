@@ -1,4 +1,4 @@
-package reservation
+package actions
 
 import (
 	"context"
@@ -51,14 +51,13 @@ var fakeNames = []nameEntry{
 	{"Ms", "Diana", "Green"},
 }
 
+// SeedReservationsResponse is the response returned after seeding reservations.
 type SeedReservationsResponse struct {
 	CreatedIDs []int64 `json:"createdIds"`
 }
 
 // SeedReservations creates 30 fake reservations based on reservations 1-4.
-//
-//encore:api private
-func (s *Service) SeedReservations(ctx context.Context) (*SeedReservationsResponse, error) {
+func (s *ActionService) SeedReservations(ctx context.Context) (*SeedReservationsResponse, error) {
 	sourceIDs := []int64{1, 2, 3, 4}
 
 	// Fetch source reservations

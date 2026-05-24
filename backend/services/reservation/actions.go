@@ -7,6 +7,7 @@ import (
 
 	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/notifications"
+	actions "encore.app/services/reservation/handlers/actions"
 	"encore.dev/cron"
 	"encore.dev/rlog"
 )
@@ -17,7 +18,35 @@ var _ = cron.NewJob("alert-open-reservations", cron.JobConfig{
 	Endpoint: AlertOpenReservations,
 })
 
-//encore:api private
+func (s *Service) newActionService() *actions.ActionService {
+	return actions.NewActionService(s.query, s.pool, s.cancellationTopic, actions.Config{
+		VAT:        cfg.VAT(),
+		IcountCID:  cfg.Icount.CID(),
+		IcountUser: cfg.Icount.User(),
+	})
+}
+
+// encore:api private
+func (s *Service) CreateReservation(ctx context.Context, p actions.CreateReservationParams) (*actions.CreateReservationResponse, error) {
+	return s.newActionService().CreateReservation(ctx, p)
+}
+
+// encore:api auth method=POST path=/api/reservation/:id/cancel tag:agent
+func (s *Service) CancelReservation(ctx context.Context, id int64) error {
+	return s.newActionService().CancelReservation(ctx, id)
+}
+
+// encore:api auth method=POST path=/reservations/:id/voucher tag:agent
+func (s *Service) ApplyVoucher(ctx context.Context, id int64, p actions.ApplyVoucherParams) error {
+	return s.newActionService().ApplyVoucher(ctx, id, p)
+}
+
+// encore:api private
+func (s *Service) ResolveReservations(ctx context.Context, p actions.ResolveReservationsParams) error {
+	return s.newActionService().ResolveReservations(ctx, p)
+}
+
+// encore:api private
 func (s *Service) AlertOpenReservations(ctx context.Context) error {
 	reservations, err := s.query.GetOpenReservationsPickingUpWithinWeek(ctx)
 	if err != nil {
@@ -50,4 +79,9 @@ func (s *Service) AlertOpenReservations(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// encore:api private
+func (s *Service) SeedReservations(ctx context.Context) (*actions.SeedReservationsResponse, error) {
+	return s.newActionService().SeedReservations(ctx)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"encore.app/services/reservation/db"
+	actions "encore.app/services/reservation/handlers/actions"
 	queries "encore.app/services/reservation/handlers/queries"
 	"encore.dev/config"
 	"encore.dev/pubsub"
@@ -23,17 +24,32 @@ type BillingReservation = queries.BillingReservation
 type ListOpenReservationsByBillingEntityResponse = queries.ListOpenReservationsByBillingEntityResponse
 type CurrencyGroup = queries.CurrencyGroup
 
+// --- Actions type aliases ---
+
+type BookingCancellationEvent = actions.BookingCancellationEvent
+type CreateReservationParams = actions.CreateReservationParams
+type CreateReservationResponse = actions.CreateReservationResponse
+type ApplyVoucherParams = actions.ApplyVoucherParams
+type ResolveReservationsParams = actions.ResolveReservationsParams
+type SeedReservationsResponse = actions.SeedReservationsResponse
+
 // --- Error re-exports ---
 
 var ErrInvalidBillingEntity = queries.ErrInvalidBillingEntity
 var ErrOfficeInOrganicOrg = queries.ErrOfficeInOrganicOrg
 var ErrOrgIsInorganic = queries.ErrOrgIsInorganic
+var ErrCancellationWindowExceeded = actions.ErrCancellationWindowExceeded
+
+// BookingCancellationEvents is a pub/sub topic that publishes events whenever a reservation is canceled.
+var BookingCancellationEvents = pubsub.NewTopic[*actions.BookingCancellationEvent]("booking-cancellation-events", pubsub.TopicConfig{
+	DeliveryGuarantee: pubsub.AtLeastOnce,
+})
 
 // encore:service
 type Service struct {
 	query             db.Querier
 	pool              *pgxpool.Pool
-	cancellationTopic pubsub.Publisher[*BookingCancellationEvent]
+	cancellationTopic pubsub.Publisher[*actions.BookingCancellationEvent]
 }
 
 var reservationsDB = sqldb.NewDatabase("reservations", sqldb.DatabaseConfig{
@@ -59,7 +75,7 @@ func initService() (*Service, error) {
 	pgxdb = sqldb.Driver[*pgxpool.Pool](reservationsDB)
 	query = db.New(pgxdb)
 
-	cancellationTopic := pubsub.TopicRef[pubsub.Publisher[*BookingCancellationEvent]](BookingCancellationEvents)
+	cancellationTopic := pubsub.TopicRef[pubsub.Publisher[*actions.BookingCancellationEvent]](BookingCancellationEvents)
 
 	relay := outbox.NewRelay(outbox.SQLDBStore(reservationsDB))
 	outbox.RegisterTopic(relay, cancellationTopic)

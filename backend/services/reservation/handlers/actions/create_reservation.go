@@ -1,4 +1,4 @@
-package reservation
+package actions
 
 import (
 	"context"
@@ -58,8 +58,7 @@ type CreateReservationResponse struct {
 	ID int64 `json:"id"`
 }
 
-// encore:api private
-func (s *Service) CreateReservation(ctx context.Context, p CreateReservationParams) (*CreateReservationResponse, error) {
+func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservationParams) (*CreateReservationResponse, error) {
 	carDetailsJSON, err := json.Marshal(p.CarDetails)
 	if err != nil {
 		rlog.Error("failed to marshal reservation car details", "error", err)
@@ -87,7 +86,7 @@ func (s *Service) CreateReservation(ctx context.Context, p CreateReservationPara
 		DiscountPercentage:    int32(p.DiscountPercentage),
 		BrokerErpPrice:        dbadapters.NumericFromFloat64(p.BrokerErpPrice),
 		BtErpPrice:            int32(p.BtErpPrice),
-		VatPercentage:         dbadapters.NumericFromFloat64(cfg.VAT()),
+		VatPercentage:         dbadapters.NumericFromFloat64(s.cfg.VAT),
 		TotalPrice:            int32(totalPrice),
 		PickupDate:            dbadapters.DateFromString(p.PickupDate),
 		DropoffDate:           dbadapters.DateFromString(p.DropoffDate),

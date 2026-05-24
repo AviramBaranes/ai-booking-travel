@@ -1,4 +1,4 @@
-package reservation
+package actions
 
 import (
 	"context"
@@ -12,24 +12,27 @@ import (
 	"encore.app/services/notifications"
 	"encore.app/services/reservation/db"
 	"encore.dev/beta/errs"
-	"encore.dev/pubsub"
 	"encore.dev/rlog"
 	"github.com/jackc/pgx/v5"
 	"x.encore.dev/infra/pubsub/outbox"
 )
 
-const (
-	cancellationWindowHours = 48
-)
+const cancellationWindowHours = 48
 
-var (
-	ErrCancellationWindowExceeded = api_errors.NewErrorWithDetail(errs.FailedPrecondition, "cancellation window exceeded", api_errors.ErrorDetails{
-		Code: api_errors.CancellationWindowExceeded,
-	})
-)
+var ErrCancellationWindowExceeded = api_errors.NewErrorWithDetail(errs.FailedPrecondition, "cancellation window exceeded", api_errors.ErrorDetails{
+	Code: api_errors.CancellationWindowExceeded,
+})
 
-// encore:api auth method=POST path=/api/reservation/:id/cancel tag:agent
-func (s *Service) CancelReservation(ctx context.Context, id int64) error {
+// BookingCancellationEvent represents the details of a reservation cancellation event.
+type BookingCancellationEvent struct {
+	ReservationID       int64
+	Broker              db.Broker
+	BrokerReservationID string
+	LastName            string
+	SupplierCode        string
+}
+
+func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
 	reservation, err := s.query.GetReservationByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
@@ -96,17 +99,3 @@ func canCancel(reservation db.Reservation) bool {
 	cancellationDeadline := pickupDateTime.Add(-cancellationWindowHours * time.Hour)
 	return time.Now().Before(cancellationDeadline)
 }
-
-// BookingCancellationEvent represents the details of a reservation cancellation event.
-type BookingCancellationEvent struct {
-	ReservationID       int64
-	Broker              db.Broker
-	BrokerReservationID string
-	LastName            string
-	SupplierCode        string
-}
-
-// BookingCancellationEvents is a pub/sub topic that publishes events whenever a reservation is canceled.
-var BookingCancellationEvents = pubsub.NewTopic[*BookingCancellationEvent]("booking-cancellation-events", pubsub.TopicConfig{
-	DeliveryGuarantee: pubsub.AtLeastOnce,
-})
