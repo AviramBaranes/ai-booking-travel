@@ -1,4 +1,4 @@
-package reservation
+package queries
 
 import (
 	"context"
@@ -14,15 +14,13 @@ import (
 
 var (
 	ErrInvalidBillingEntity = api_errors.NewValidationError("Invalid billing entity: exactly one of office_id or org_id must be provided")
-	// ErrOfficeInOrganicOrg is returned when trying to fetch reservations by office for an office
-	// that belongs to an organic organization — organic orgs are billed at the org level, not office level.
+
 	ErrOfficeInOrganicOrg = api_errors.NewErrorWithDetail(
 		errs.FailedPrecondition,
 		"This office belongs to an organic organization; fetch reservations at the organization level instead",
 		api_errors.ErrorDetails{Code: api_errors.CodeOfficeInOrganicOrg},
 	)
-	// ErrOrgIsInorganic is returned when trying to fetch reservations by org for an inorganic organization —
-	// inorganic orgs are billed per office, so the accountant must specify an office.
+
 	ErrOrgIsInorganic = api_errors.NewErrorWithDetail(
 		errs.FailedPrecondition,
 		"This organization is inorganic; fetch reservations at the office level instead",
@@ -41,7 +39,6 @@ func (r *ListOpenReservationsByBillingEntityParams) Validate() error {
 	if (r.OfficeID == 0 && r.OrgID == 0) || (r.OfficeID != 0 && r.OrgID != 0) {
 		return ErrInvalidBillingEntity
 	}
-
 	return nil
 }
 
@@ -75,9 +72,7 @@ type CurrencyGroup struct {
 
 // ListOpenReservationsByBillingEntity returns all unpaid/refund-pending reservations
 // for a given billing unit (an organic organization or an office of an inorganic organization).
-//
-//encore:api auth method=GET path=/reservations-for-billing tag:accountant
-func (s *Service) ListOpenReservationsByBillingEntity(ctx context.Context, p *ListOpenReservationsByBillingEntityParams) (*ListOpenReservationsByBillingEntityResponse, error) {
+func (s *QueryService) ListOpenReservationsByBillingEntity(ctx context.Context, p *ListOpenReservationsByBillingEntityParams) (*ListOpenReservationsByBillingEntityResponse, error) {
 	var officeID, orgID *int64
 	if p.OfficeID != 0 {
 		officeID = &p.OfficeID

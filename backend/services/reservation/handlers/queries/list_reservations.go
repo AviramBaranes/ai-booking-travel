@@ -1,4 +1,4 @@
-package reservation
+package queries
 
 import (
 	"context"
@@ -46,8 +46,7 @@ type ListReservationsResponse struct {
 
 const listReservationsLimit int64 = 8
 
-// encore:api auth method=GET path=/reservations
-func (s Service) ListReservations(ctx context.Context, p ListReservationsParams) (*ListReservationsResponse, error) {
+func (s *QueryService) ListReservations(ctx context.Context, p ListReservationsParams) (*ListReservationsResponse, error) {
 	rows, err := s.listReservationsByUser(ctx, p)
 	if err != nil {
 		return nil, err
@@ -63,8 +62,7 @@ func (s Service) ListReservations(ctx context.Context, p ListReservationsParams)
 	return &ListReservationsResponse{Reservations: reservations, Total: total}, nil
 }
 
-// listReservationsByUser returns a paginated list of reservations for a given user, ordered by creation date descending.
-func (s Service) listReservationsByUser(ctx context.Context, p ListReservationsParams) ([]db.ListReservationsByUserRow, error) {
+func (s *QueryService) listReservationsByUser(ctx context.Context, p ListReservationsParams) ([]db.ListReservationsByUserRow, error) {
 	authData := accounts.GetAuthData()
 	offset := int64(p.Page-1) * listReservationsLimit
 
@@ -90,8 +88,7 @@ func (s Service) listReservationsByUser(ctx context.Context, p ListReservationsP
 	return rows, nil
 }
 
-// countReservationsByUser returns the total number of reservations for a given user, optionally filtered by various criteria.
-func (s Service) countReservationsByUser(ctx context.Context, p ListReservationsParams) (int64, error) {
+func (s *QueryService) countReservationsByUser(ctx context.Context, p ListReservationsParams) (int64, error) {
 	authData := accounts.GetAuthData()
 
 	count, err := s.query.CountReservationsByUser(ctx, db.CountReservationsByUserParams{
@@ -113,7 +110,6 @@ func (s Service) countReservationsByUser(ctx context.Context, p ListReservations
 	return count, nil
 }
 
-// mapRowsToSummaries maps database rows to reservation summaries.
 func mapRowsToSummaries(rows []db.ListReservationsByUserRow) []ReservationSummary {
 	summaries := make([]ReservationSummary, len(rows))
 	for i, r := range rows {

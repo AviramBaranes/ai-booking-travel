@@ -4,12 +4,30 @@ import (
 	"context"
 
 	"encore.app/services/reservation/db"
+	queries "encore.app/services/reservation/handlers/queries"
 	"encore.dev/config"
 	"encore.dev/pubsub"
 	"encore.dev/storage/sqldb"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"x.encore.dev/infra/pubsub/outbox"
 )
+
+type GetReservationResponse = queries.GetReservationResponse
+type ListReservationsParams = queries.ListReservationsParams
+type ReservationSummary = queries.ReservationSummary
+type ListReservationsResponse = queries.ListReservationsResponse
+type OpenReservation = queries.OpenReservation
+type GetOpenReservationsResponse = queries.GetOpenReservationsResponse
+type ListOpenReservationsByBillingEntityParams = queries.ListOpenReservationsByBillingEntityParams
+type BillingReservation = queries.BillingReservation
+type ListOpenReservationsByBillingEntityResponse = queries.ListOpenReservationsByBillingEntityResponse
+type CurrencyGroup = queries.CurrencyGroup
+
+// --- Error re-exports ---
+
+var ErrInvalidBillingEntity = queries.ErrInvalidBillingEntity
+var ErrOfficeInOrganicOrg = queries.ErrOfficeInOrganicOrg
+var ErrOrgIsInorganic = queries.ErrOrgIsInorganic
 
 // encore:service
 type Service struct {

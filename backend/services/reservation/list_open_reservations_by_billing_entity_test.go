@@ -7,6 +7,7 @@ import (
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/reservation/db"
+	queries "encore.app/services/reservation/handlers/queries"
 )
 
 func TestListOpenReservationsByBillingEntity(t *testing.T) {
@@ -30,6 +31,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		isOrganic := false
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
+		qs := queries.NewQueryService(s.query)
 
 		vn1 := "VCH-OFFICE-1"
 		id1 := seedReservation(t, ctx, s, agent1, func(p *CreateReservationParams) {
@@ -55,7 +57,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
 
-		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OfficeID: officeID})
+		resp, err := qs.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OfficeID: officeID})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -71,6 +73,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		isOrganic := true
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
+		qs := queries.NewQueryService(s.query)
 
 		// Two reservations in USD, one in EUR — exercises multi-currency grouping.
 		vn1 := "VCH-ORG-1"
@@ -109,7 +112,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
 
-		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OrgID: orgID})
+		resp, err := qs.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OrgID: orgID})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -121,6 +124,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		const agent1, agent2 int64 = 30001, 30002
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
+		qs := queries.NewQueryService(s.query)
 
 		// Seed only booked reservations for these agents — they must not appear in open reservations.
 		seedReservation(t, ctx, s, agent1, func(p *CreateReservationParams) {
@@ -130,7 +134,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			p.BrokerReservationID = "BILLING-EMPTY-2"
 		})
 
-		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OfficeID: 30000})
+		resp, err := qs.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OfficeID: 30000})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -149,6 +153,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		isOrganic := true
 		ctx := context.Background()
 		s := &Service{query: testQuerier()}
+		qs := queries.NewQueryService(s.query)
 
 		vn := "VCH-PRICE"
 		id := seedReservation(t, ctx, s, agentID, func(p *CreateReservationParams) {
@@ -167,7 +172,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
 
-		resp, err := s.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OrgID: orgID})
+		resp, err := qs.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OrgID: orgID})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}

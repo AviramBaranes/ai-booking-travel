@@ -1,4 +1,4 @@
-package reservation
+package queries
 
 import (
 	"context"
@@ -43,8 +43,7 @@ type GetReservationResponse struct {
 	CreatedAt           string            `json:"createdAt"`
 }
 
-// encore:api auth method=GET path=/reservations/:id
-func (s *Service) GetReservation(ctx context.Context, id int64) (*GetReservationResponse, error) {
+func (s *QueryService) GetReservation(ctx context.Context, id int64) (*GetReservationResponse, error) {
 	row, err := s.query.GetReservationByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {

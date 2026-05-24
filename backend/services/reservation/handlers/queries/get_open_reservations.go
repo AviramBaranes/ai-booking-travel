@@ -1,4 +1,4 @@
-package reservation
+package queries
 
 import (
 	"context"
@@ -34,8 +34,7 @@ type GetOpenReservationsResponse struct {
 	Reservations []OpenReservation
 }
 
-// encore:api private
-func (s *Service) GetOpenReservations(ctx context.Context) (*GetOpenReservationsResponse, error) {
+func (s *QueryService) GetOpenReservations(ctx context.Context) (*GetOpenReservationsResponse, error) {
 	rows, err := s.query.GetPaymentPendingReservations(ctx)
 	if err != nil {
 		rlog.Error("failed to get open reservations", "error", err)
@@ -47,7 +46,6 @@ func (s *Service) GetOpenReservations(ctx context.Context) (*GetOpenReservations
 	}, nil
 }
 
-// mapRowsToOpenReservations converts a slice of database rows representing payment pending reservations into a slice of OpenReservation structs.
 func mapRowsToOpenReservations(rows []db.GetPaymentPendingReservationsRow) []OpenReservation {
 	reservations := make([]OpenReservation, len(rows))
 	for i, row := range rows {
@@ -76,7 +74,6 @@ func mapRowsToOpenReservations(rows []db.GetPaymentPendingReservationsRow) []Ope
 	return reservations
 }
 
-// getReservationPrices calculates the car price, ERP price, and total price for a reservation based on the provided database row.
 func getReservationPrices(row db.GetPaymentPendingReservationsRow) (carPrice, erpPrice, totalPrice float64) {
 	pp := dbadapters.NumericToFloat64(row.PurchasePrice)
 	mp := dbadapters.NumericToFloat64(row.MarkupPercentage)
@@ -89,7 +86,6 @@ func getReservationPrices(row db.GetPaymentPendingReservationsRow) (carPrice, er
 	return carFullPrice, erpFullPrice, carFullPrice + erpFullPrice
 }
 
-// ptrToString is a helper function that converts a pointer to a string into a string value, returning an empty string if the pointer is nil.
 func ptrToString(s *string) string {
 	if s == nil {
 		return ""
