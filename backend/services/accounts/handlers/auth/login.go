@@ -58,6 +58,8 @@ func (s *AuthService) Login(ctx context.Context, p LoginParams) (*LoginResponse,
 	return &LoginResponse{
 		ID:           user.ID,
 		Role:         user.Role,
+		FirstName:    user.FirstName,
+		LastName:     user.LastName,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		Email:        user.Email,

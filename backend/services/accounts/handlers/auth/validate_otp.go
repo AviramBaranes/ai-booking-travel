@@ -56,6 +56,8 @@ func (s *AuthService) ValidateCustomerLoginOTP(ctx context.Context, params Valid
 	return &LoginResponse{
 		ID:           user.ID,
 		Role:         user.Role,
+		FirstName:    user.FirstName,
+		LastName:     user.LastName,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		Email:        user.Email,

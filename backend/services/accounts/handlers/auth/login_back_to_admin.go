@@ -38,6 +38,8 @@ func (s *AuthService) LoginBackToAdmin(ctx context.Context, adminRefID *int64) (
 
 	return &LoginResponse{
 		ID:           admin.ID,
+		FirstName:    admin.FirstName,
+		LastName:     admin.LastName,
 		Role:         admin.Role,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,

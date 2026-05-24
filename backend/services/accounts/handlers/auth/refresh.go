@@ -60,6 +60,11 @@ func (s *AuthService) RefreshTokens(ctx context.Context, p RefreshTokensParams) 
 	}
 
 	return &LoginResponse{
+		ID:           user.ID,
+		FirstName:    user.FirstName,
+		LastName:     user.LastName,
+		Role:         user.Role,
+		OfficeID:     user.OfficeID,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		Email:        user.Email,

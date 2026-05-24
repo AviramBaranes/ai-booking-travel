@@ -976,7 +976,7 @@ export namespace reservation {
 
     export interface ReportParams {
         Page: number
-        PageSize?: number
+        PageSize: number
         PickupDateFrom?: string
         PickupDateTo?: string
         CreatedDateFrom?: string
@@ -1043,7 +1043,7 @@ export namespace reservation {
                 officeId:        params.OfficeID === undefined ? undefined : String(params.OfficeID),
                 organizationId:  params.OrganizationID === undefined ? undefined : String(params.OrganizationID),
                 page:            String(params.Page),
-                pageSize:        params.PageSize === undefined ? undefined : String(params.PageSize),
+                pageSize:        String(params.PageSize),
                 pickupDateFrom:  params.PickupDateFrom,
                 pickupDateTo:    params.PickupDateTo,
                 status:          params.Status,
@@ -1074,7 +1074,7 @@ export namespace reservation {
                 officeId:        params.OfficeID === undefined ? undefined : String(params.OfficeID),
                 organizationId:  params.OrganizationID === undefined ? undefined : String(params.OrganizationID),
                 page:            String(params.Page),
-                pageSize:        params.PageSize === undefined ? undefined : String(params.PageSize),
+                pageSize:        String(params.PageSize),
                 pickupDateFrom:  params.PickupDateFrom,
                 pickupDateTo:    params.PickupDateTo,
                 status:          params.Status,
@@ -1150,6 +1150,8 @@ export namespace auth {
     export interface LoginResponse {
         id: number
         email: string
+        firstName: string
+        lastName: string
         role: db.UserRole
         accessToken: string
         refreshToken: string

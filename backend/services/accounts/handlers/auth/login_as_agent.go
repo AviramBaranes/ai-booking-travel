@@ -43,6 +43,8 @@ func (s *AuthService) LoginAsAgent(ctx context.Context, params LoginAsAgentParam
 	return &LoginResponse{
 		ID:           agent.ID,
 		Role:         agent.Role,
+		FirstName:    agent.FirstName,
+		LastName:     agent.LastName,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		Email:        agent.Email,

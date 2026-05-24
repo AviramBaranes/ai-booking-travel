@@ -24,6 +24,8 @@ func NewAuthService(query db.Querier) *AuthService {
 type LoginResponse struct {
 	ID           int64       `json:"id"`
 	Email        string      `json:"email,omitempty"`
+	FirstName    string      `json:"firstName"`
+	LastName     string      `json:"lastName"`
 	Role         db.UserRole `json:"role,omitempty"`
 	AccessToken  string      `json:"accessToken"`
 	RefreshToken string      `json:"refreshToken"`
