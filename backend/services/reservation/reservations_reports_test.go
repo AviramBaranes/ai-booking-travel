@@ -559,7 +559,11 @@ func assertBusinessReportBookings(t *testing.T, ctx context.Context, params Repo
 
 func applyVoucherForTest(t *testing.T, ctx context.Context, s *Service, reservationID int64, userID int64, voucherNumber string) {
 	t.Helper()
-	if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: reservationID, UserID: userID, VoucherNumber: &voucherNumber}); err != nil {
+	reserv, err := s.query.GetReservationByID(ctx, reservationID)
+	if err != nil {
+		t.Fatalf("failed to get reservation: %v", err)
+	}
+	if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: reservationID, UserID: userID, VoucherNumber: &voucherNumber, CurrencyRate: reserv.CurrencyRate}); err != nil {
 		t.Fatalf("failed to apply voucher: %v", err)
 	}
 }

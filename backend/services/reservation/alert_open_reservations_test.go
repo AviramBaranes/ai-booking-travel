@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/notifications"
 	"encore.app/services/reservation/db"
 	"encore.dev/et"
@@ -32,6 +33,7 @@ func TestAlertOpenReservations(t *testing.T) {
 		ID:            res1.ID,
 		UserID:        p1.UserID,
 		VoucherNumber: &voucher,
+		CurrencyRate:  dbadapters.NumericFromFloat64(1),
 	}); err != nil {
 		t.Fatalf("apply voucher: %v", err)
 	}
