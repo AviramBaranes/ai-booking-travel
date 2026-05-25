@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { gcsStorage } from "@payloadcms/storage-gcs";
 import {
   FixedToolbarFeature,
   lexicalEditor,
@@ -18,6 +19,30 @@ import { Header } from "./globals/Header";
 import { Footer } from "./globals/Footer";
 import { NotFoundConfig } from "./globals/NotFound";
 import { SuppliersGallery } from "./globals/SupplierGallery";
+
+const storageEnv = process.env.PAYLOAD_STORAGE_ENV ?? "local";
+
+if (!["local", "dev", "prod"].includes(storageEnv)) {
+  throw new Error("PAYLOAD_STORAGE_ENV must be one of: local, dev, prod");
+}
+
+const isGcsStorageEnabled = storageEnv === "dev" || storageEnv === "prod";
+const gcsBucket =
+  storageEnv === "dev"
+    ? process.env.PAYLOAD_GCS_DEV_BUCKET
+    : storageEnv === "prod"
+      ? process.env.PAYLOAD_GCS_PROD_BUCKET
+      : undefined;
+const gcsPrivateKey = process.env.PAYLOAD_GCS_PRIVATE_KEY?.replace(
+  /\\n/g,
+  "\n",
+);
+
+if (isGcsStorageEnabled && !gcsBucket) {
+  throw new Error(
+    `Missing ${storageEnv === "dev" ? "PAYLOAD_GCS_DEV_BUCKET" : "PAYLOAD_GCS_PROD_BUCKET"}`,
+  );
+}
 
 export default buildConfig({
   // If you'd like to use Rich Text, pass your editor here
@@ -65,6 +90,13 @@ export default buildConfig({
         },
       ],
     },
+    livePreview: {
+      url: (doc) => {
+        const url = `${process.env.NEXT_PUBLIC_PAYLOAD_URL}/${doc.locale.code}/${doc.data.slug}?payload_preview=1`;
+        return url;
+      },
+      collections: ["pages"],
+    },
   },
 
   routes: {
@@ -92,6 +124,25 @@ export default buildConfig({
       generateTitle: ({ doc }) => doc?.title ?? "",
       generateDescription: ({ doc }) => doc?.excerpt ?? "",
     }),
+    gcsStorage({
+      enabled: isGcsStorageEnabled,
+      collections: {
+        media: {
+          prefix: `${storageEnv}/media`,
+        },
+      },
+      bucket: gcsBucket ?? "local-disabled",
+      options: {
+        projectId: process.env.PAYLOAD_GCS_PROJECT_ID,
+        credentials:
+          process.env.PAYLOAD_GCS_CLIENT_EMAIL && gcsPrivateKey
+            ? {
+                client_email: process.env.PAYLOAD_GCS_CLIENT_EMAIL,
+                private_key: gcsPrivateKey,
+              }
+            : undefined,
+      },
+    }),
   ],
 
   // Your Payload secret - should be a complex and secure string, unguessable
@@ -109,3 +160,4 @@ export default buildConfig({
   // you don't need it!
   sharp,
 });
+

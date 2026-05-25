@@ -1,10 +1,11 @@
-import type { CollectionConfig } from "payload";
+import type { CollectionBeforeChangeHook, CollectionConfig } from "payload";
 import {
   richTextBlock,
   faqBlock,
   sharedSectionRefBlock,
   sidebarSectionBlock,
 } from "../blocks";
+import { Page } from "@/payload-types";
 
 export const Pages: CollectionConfig = {
   slug: "pages",
@@ -17,6 +18,9 @@ export const Pages: CollectionConfig = {
     defaultColumns: ["title", "slug", "template", "_status", "updatedAt"],
   },
   defaultSort: "-updatedAt",
+  hooks: {
+    beforeChange: [generateSlugFromPageTitle()],
+  },
   fields: [
     {
       type: "tabs",
@@ -79,6 +83,11 @@ export const Pages: CollectionConfig = {
           label: "הגדרות",
           fields: [
             {
+              name: "renderTitle",
+              label: "הצג כותרת",
+              type: "checkbox",
+            },
+            {
               name: "includeBgDecorations",
               label: "הצג קישוטי רקע",
               type: "checkbox",
@@ -132,3 +141,28 @@ export const Pages: CollectionConfig = {
     },
   ],
 };
+
+
+function generateSlugFromPageTitle(): CollectionBeforeChangeHook<Page> {
+    return ({ data }) => {
+        if (!("title" in data) || !data.title) {
+            return data;
+        }
+
+        return {
+            ...data,
+            slug: slugify(data.title)
+        };
+    };
+}
+
+export function slugify(text: string): string {
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^\p{L}\p{N}\-]+/gu, '')
+        .replace(/-{2,}/g, '-')
+        .replace(/^-+|-+$/g, '');
+}

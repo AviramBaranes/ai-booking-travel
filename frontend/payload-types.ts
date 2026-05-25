@@ -200,6 +200,7 @@ export interface Page {
   excerpt?: string | null;
   featuredImage?: (number | null) | Media;
   layout?: (RichTextBlock | FAQBlock | SharedSectionRefBlock | SidebarSectionBlock)[] | null;
+  renderTitle?: boolean | null;
   includeBgDecorations?: boolean | null;
   template: 'default' | 'landing' | 'about' | 'faq' | 'legal' | 'help';
   relatedPages?: (number | Page)[] | null;
@@ -561,6 +562,7 @@ export interface PagesSelect<T extends boolean = true> {
         sharedSectionRef?: T | SharedSectionRefBlockSelect<T>;
         sidebarSection?: T | SidebarSectionBlockSelect<T>;
       };
+  renderTitle?: T;
   includeBgDecorations?: T;
   template?: T;
   relatedPages?: T;

@@ -19,16 +19,20 @@ export function BlocksRenderer({
       {blocks?.map((block, index) => {
         switch (block.blockType) {
           case "sidebarSection":
-            return <SidebarSection key={index} block={block} />;
+            return <SidebarSection key={block.id} block={block} />;
           case "faq":
             return (
-              <FAQBlock key={index} data={block} className={faqClassName} />
+              <FAQBlock key={block.id} data={block} className={faqClassName} />
             );
           case "richText":
-            return <RichText key={index} data={block.content} />;
+            return (
+              <section className="w-4/10 mx-auto prose prose-headings:font-bold max-w-none" key={block.id}>
+                <RichText data={block.content} />
+              </section>
+            );
           case "sharedSectionRef":
             return (
-              <SharedSectionWrapper key={index} overrides={block.overrides}>
+              <SharedSectionWrapper key={block.id} overrides={block.overrides}>
                 <SharedSectionRenderer
                   section={
                     block.section as Populated<SharedSectionRefBlock["section"]>
@@ -37,7 +41,7 @@ export function BlocksRenderer({
               </SharedSectionWrapper>
             );
           case "benefits":
-            return <BenefitsBlock key={index} block={block} />;
+            return <BenefitsBlock key={block.id} block={block} />;
         }
       })}
     </>
