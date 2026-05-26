@@ -19,6 +19,9 @@ type TranslationCacher interface {
 	// Exists reports whether the source text exists in the database, regardless of translation status.
 	Exists(sourceText string) bool
 
+	// AddKnown adds a source text to the known set, indicating it exists in the database even if not yet translated.
+	AddKnown(sourceText string)
+
 	// NormalizeSentence replaces numeric tokens with indexed placeholders like {num1}.
 	NormalizeSentence(sentence string) (string, map[string]string)
 

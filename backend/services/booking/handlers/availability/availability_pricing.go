@@ -262,21 +262,19 @@ func (s *AvailabilityService) buildCurrencyMap(ctx context.Context) (map[string]
 // translatePlanDetails translates the plan details using the service's translator, returning the original detail if no translation is found after inserting it to db.
 func (s *AvailabilityService) translatePlanDetails(ctx context.Context, details []string) []string {
 	translatedDetails := make([]string, len(details))
-	localCache := make(map[string]struct{}) // to avoid multiple db calls for the same template within one request
 	for i, detail := range details {
 		template, values := s.tc.NormalizeSentence(detail)
 		if translated, exists := s.tc.GetVerified(template); exists {
 			translatedDetails[i] = s.tc.InsertValuesToSentence(translated, values)
 		} else {
 			translatedDetails[i] = detail
-			_, existsInCache := localCache[template]
-			if !s.tc.Exists(template) && !existsInCache {
+			if !s.tc.Exists(template) {
 				_, err := s.query.InsertBrokerTranslation(ctx, template)
 				if err != nil {
 					rlog.Error("failed to insert missing translation to db", "template", template, "error", err)
 				}
+				s.tc.AddKnown(template)
 			}
-			localCache[template] = struct{}{}
 		}
 	}
 	return translatedDetails

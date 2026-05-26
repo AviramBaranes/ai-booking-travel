@@ -34,6 +34,13 @@ func (c *TranslationCache) Exists(sourceText string) bool {
 	return exists
 }
 
+// AddKnown adds a source text to the known set, indicating it exists in the database even if not yet translated.
+func (c *TranslationCache) AddKnown(sourceText string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.known[sourceText] = struct{}{}
+}
+
 // Replace swaps the in-memory verified and known translation sets in a thread-safe manner.
 func (c *TranslationCache) Replace(newTranslations map[string]string, knownTranslations map[string]struct{}) {
 	c.mu.Lock()
@@ -65,8 +72,6 @@ func (s *Service) refreshTranslations(ctx context.Context) error {
 	for _, sourceText := range knownSourceTexts {
 		knownTranslations[sourceText] = struct{}{}
 	}
-
-	go s.startBackgroundRefresh()
 
 	s.t.Replace(translationMap, knownTranslations)
 	return nil
