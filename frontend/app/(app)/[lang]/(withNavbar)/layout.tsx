@@ -17,7 +17,7 @@ export default async function WithNavbarLayout({
         <BackToAdminBanner />
         <Navbar lang={lang} />
       </div>
-      {children}
+      <div className="flex-1">{children}</div>
       <div className="print:hidden">
         <Footer lang={lang} />
       </div>

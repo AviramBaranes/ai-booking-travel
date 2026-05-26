@@ -7,6 +7,7 @@
     "dev": "next dev --turbopack",
     "build": "next build --webpack",
     "start": "next start",
+    "bs": "pnpm run build && pnpm run start",
     "lint": "eslint",
     "gen": "encore gen client ai-booking-travel-bo22 --output=./shared/client.ts --env=local"
   },
