@@ -92,10 +92,12 @@ export default buildConfig({
     },
     livePreview: {
       url: (doc) => {
-        const url = `${process.env.NEXT_PUBLIC_PAYLOAD_URL}/${doc.locale.code}/${doc.data.slug}?payload_preview=1`;
+        const slug = doc.data.slug ?? "";
+        const url = `${process.env.NEXT_PUBLIC_PAYLOAD_URL}/${doc.locale.code}/${slug}?payload_preview=1`;
         return url;
       },
       collections: ["pages"],
+      globals: ["homepage"],
     },
   },
 

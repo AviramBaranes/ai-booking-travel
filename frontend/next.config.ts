@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
         hostname: "**",
       },
     ],
+    localPatterns: [
+      {
+        pathname: "/api/media/file/**",
+      },
+      {
+        // This allows all standard assets from your public folder (like /logo.png)
+        pathname: "/**",
+      },
+    ],
   },
 };
 
