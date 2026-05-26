@@ -4,7 +4,7 @@ import { authOptions } from "../auth/authOptions";
 import { getLang } from "../lang/lang";
 import { AppError } from "./AppError";
 
-function getBaseURL(): string {
+export function getBaseURL(): string {
   const env = process.env.NEXT_PUBLIC_ENCORE_ENV;
   if (!env || env === "local") return Local;
   return Environment(env);

@@ -5,6 +5,7 @@ import { login, loginWithOTP } from "../api/accounts-api";
 import Client, { BaseURL, Local } from "../client";
 import { auth } from "../client";
 import { JWT } from "next-auth/jwt";
+import { getBaseURL } from "../api/_api";
 
 // Deduplicates concurrent refresh calls for the same refresh token,
 // preventing a race condition where multiple requests all see an expired
@@ -29,7 +30,7 @@ async function doRefreshAccessToken(token: JWT): Promise<JWT> {
   try {
     // Call the backend directly, bypassing withErrorHandler to avoid
     // triggering getServerSession which would re-enter the JWT callback.
-    const client = new Client(Local as BaseURL, {});
+    const client = new Client(getBaseURL());
     const refreshed = await client.accounts.RefreshTokens({
       RefreshToken: token.refreshToken as string,
     });
@@ -79,7 +80,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.agentId || !credentials?.accessToken) return null;
 
-        const client = new Client(Local as BaseURL, {
+        const client = new Client(getBaseURL(), {
           auth: credentials.accessToken,
         });
         const user = await client.accounts.LoginAsAgent({
@@ -100,7 +101,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.accessToken) return null;
 
-        const client = new Client(Local as BaseURL, {
+        const client = new Client(getBaseURL(), {
           auth: credentials.accessToken,
         });
         const user = await client.accounts.LoginBackToAdmin();
