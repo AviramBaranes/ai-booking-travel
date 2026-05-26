@@ -126,6 +126,7 @@ export default buildConfig({
     }),
     gcsStorage({
       enabled: isGcsStorageEnabled,
+      clientUploads: true,
       collections: {
         media: {
           prefix: `${storageEnv}/media`,
@@ -160,4 +161,3 @@ export default buildConfig({
   // you don't need it!
   sharp,
 });
-
