@@ -1,7 +1,7 @@
 import { RichText } from "@payloadcms/richtext-lexical/react";
 import type { SidebarSectionBlock } from "@/payload-types";
 import { SidebarNav } from "./SidebarNav";
-import { slugify } from "@/shared/lang/slugify";
+import { slugify } from "@/shared/utils/slugify";
 
 type SidebarSectionProps = {
   block: SidebarSectionBlock;

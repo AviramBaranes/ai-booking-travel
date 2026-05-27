@@ -1,6 +1,6 @@
 "use client";
 
-import { slugify } from "@/shared/lang/slugify";
+import { slugify } from "@/shared/utils/slugify";
 import { useState, useEffect, useRef } from "react";
 
 type SidebarNavProps = {
