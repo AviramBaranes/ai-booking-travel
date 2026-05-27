@@ -1,5 +1,6 @@
 import type { GlobalConfig } from "payload";
 import { faqBlock, sharedSectionRefBlock, benefitsBlock } from "../blocks";
+import { revalidateOnGlobalChange } from "../hooks/revalidate";
 
 export const Homepage: GlobalConfig = {
   slug: "homepage",
@@ -11,6 +12,9 @@ export const Homepage: GlobalConfig = {
   },
   versions: {
     drafts: true,
+  },
+  hooks: {
+    afterChange: [revalidateOnGlobalChange],
   },
   fields: [
     {

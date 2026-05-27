@@ -1,8 +1,12 @@
 import type { GlobalConfig } from "payload";
+import { revalidateOnGlobalChange } from "../hooks/revalidate";
 
 export const SuppliersGallery: GlobalConfig = {
   slug: "suppliersGallery",
   label: "גלריית ספקים",
+  hooks: {
+    afterChange: [revalidateOnGlobalChange],
+  },
   fields: [
     {
       name: "suppliers",

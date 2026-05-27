@@ -1,4 +1,5 @@
 import type { CollectionConfig, Field } from "payload";
+import { revalidateOnCollectionChange } from "../hooks/revalidate";
 
 const newsletterFields: Field[] = [
   {
@@ -212,6 +213,9 @@ export const SharedSections: CollectionConfig = {
       "אזורים שניתן לשלב בכל עמוד או בדף הבית. עריכה כאן תשתקף בכל מקום שהאזור מוטמע.",
   },
   defaultSort: "internalTitle",
+  hooks: {
+    afterChange: [revalidateOnCollectionChange],
+  },
   versions: {
     drafts: true,
   },

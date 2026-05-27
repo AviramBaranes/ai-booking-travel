@@ -1,8 +1,12 @@
 import type { GlobalConfig } from "payload";
+import { revalidateOnGlobalChange } from "../hooks/revalidate";
 
 export const NotFoundConfig: GlobalConfig = {
   slug: "not-found",
   label: "404 - לא נמצא",
+  hooks: {
+    afterChange: [revalidateOnGlobalChange],
+  },
   fields: [
     {
       name: "title",

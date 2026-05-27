@@ -1,8 +1,12 @@
 import type { GlobalConfig } from "payload";
+import { revalidateOnGlobalChange } from "../hooks/revalidate";
 
 export const Header: GlobalConfig = {
   slug: "header",
   label: "הדר (תפריט עליון)",
+  hooks: {
+    afterChange: [revalidateOnGlobalChange],
+  },
   fields: [
     {
       name: "links",

@@ -6,6 +6,7 @@ import {
   sidebarSectionBlock,
 } from "../blocks";
 import { Page } from "@/payload-types";
+import { revalidateOnCollectionChange } from "../hooks/revalidate";
 
 export const Pages: CollectionConfig = {
   slug: "pages",
@@ -20,6 +21,7 @@ export const Pages: CollectionConfig = {
   defaultSort: "-updatedAt",
   hooks: {
     beforeChange: [generateSlugFromPageTitle()],
+    afterChange: [revalidateOnCollectionChange],
   },
   fields: [
     {
@@ -142,27 +144,26 @@ export const Pages: CollectionConfig = {
   ],
 };
 
-
 function generateSlugFromPageTitle(): CollectionBeforeChangeHook<Page> {
-    return ({ data }) => {
-        if (!("title" in data) || !data.title) {
-            return data;
-        }
+  return ({ data }) => {
+    if (!("title" in data) || !data.title) {
+      return data;
+    }
 
-        return {
-            ...data,
-            slug: slugify(data.title)
-        };
+    return {
+      ...data,
+      slug: slugify(data.title),
     };
+  };
 }
 
 export function slugify(text: string): string {
-    return text
-        .toString()
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '-')
-        .replace(/[^\p{L}\p{N}\-]+/gu, '')
-        .replace(/-{2,}/g, '-')
-        .replace(/^-+|-+$/g, '');
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\p{L}\p{N}\-]+/gu, "")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-+|-+$/g, "");
 }

@@ -1,8 +1,12 @@
 import type { GlobalConfig } from "payload";
+import { revalidateOnGlobalChange } from "../hooks/revalidate";
 
 export const Footer: GlobalConfig = {
   slug: "footer",
   label: "פוטר (תחתית)",
+  hooks: {
+    afterChange: [revalidateOnGlobalChange],
+  },
   fields: [
     // ── Tab 1: First Floor ──
     {

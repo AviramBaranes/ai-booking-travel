@@ -11,6 +11,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
+import { RevalidateButton } from "./RevalidateButton";
 
 export default function AdminNavbar({ hideLinks = false }: { hideLinks?: boolean }) {
   const pathname = usePathname();
@@ -70,14 +71,17 @@ export default function AdminNavbar({ hideLinks = false }: { hideLinks?: boolean
           );
         })}
       </div>
-      <button
-        onClick={() => signOut({ callbackUrl: "/he/" })}
-        style={{ boxSizing: "border-box" }}
-        className="appearance-none bg-transparent border-none p-0 m-0 flex items-center gap-[8px] text-[14px] text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
-      >
-        <LogOut size={16} />
-        התנתק
-      </button>
+      <div className="flex items-center gap-[12px]">
+        <RevalidateButton />
+        <button
+          onClick={() => signOut({ callbackUrl: "/he/" })}
+          style={{ boxSizing: "border-box" }}
+          className="appearance-none bg-transparent border-none p-0 m-0 flex items-center gap-[8px] text-[14px] text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
+        >
+          <LogOut size={16} />
+          התנתק
+        </button>
+      </div>
     </header>
   );
 }
