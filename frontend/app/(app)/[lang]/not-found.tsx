@@ -1,9 +1,8 @@
-import { getLang } from "@/shared/lang/lang";
 import { NotFoundContent } from "@/shared/components/NotFoundContent";
 import { getNotFoundData } from "../not-found";
 
 export default async function NotFound() {
-  const lang = await getLang();
+  const lang = "he"// if using headers pages will become dynamic.
   const notFoundData = await getNotFoundData(lang);
 
   return (

@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { authOptions } from "@/shared/auth/authOptions";
 import { Toaster } from "@/components/ui/sonner";
+import { setRequestLocale } from "next-intl/server";
 
 const polin = localFont({
   src: [
@@ -25,23 +26,13 @@ export default async function LangRootLayout({
   children: React.ReactNode;
   params: Promise<{ lang: string }>;
 }>) {
-  const session = await getServerSession(authOptions);
-  const role = session?.user?.role;
-  const cookieStore = await cookies();
-  const isPayloadPreview = cookieStore.get("payload-preview")?.value === "1";
-  if (!isPayloadPreview) {
-    if (role === "admin") {
-      redirect("/admin/");
-    }
-    if (role === "accountant") {
-      redirect("/accounting/billing");
-    }
-  }
   const { lang } = await params;
 
   if (!["he", "en"].includes(lang)) {
     notFound();
   }
+
+  setRequestLocale(lang);
 
   return (
     <html

@@ -1,9 +1,7 @@
-import { getLang } from "@/shared/lang/lang";
 import { getRequestConfig } from "next-intl/server";
 
-export default getRequestConfig(async () => {
-  // Static for now, we'll change this later
-  const locale = await getLang();
+export default getRequestConfig(async ({ requestLocale }) => {
+  const locale = (await requestLocale) ?? "he";
 
   return {
     locale,

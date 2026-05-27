@@ -3,17 +3,16 @@ import { Populated } from "@/shared/types/payload";
 import Image from "next/image";
 import { SearchForm } from "./SearchForm/SearchForm";
 import { AppProviders } from "../../../_components/providers/AppProviders";
-import { getLang } from "@/shared/lang/lang";
 import { getMessages } from "next-intl/server";
 
 interface Props {
+  lang: string;
   title: string;
   subtitle: string;
   image: Populated<Homepage["featuredImage"]>;
 }
-export async function Hero({ title, subtitle, image }: Props) {
+export async function Hero({ lang, title, subtitle, image }: Props) {
   if (!image?.url) return null;
-  const lang = await getLang();
   const messages = await getMessages({ locale: lang });
 
   return (

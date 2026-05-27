@@ -8,10 +8,17 @@ import { Populated } from "@/shared/types/payload";
 import { Hero } from "./_components/home/Hero";
 import { BlocksRenderer } from "./_components/blocks/BlocksRenderer";
 import { HomepageDecorations } from "./_components/decorations/HomepageDecorations";
+import { SUPPORTED_LANGS } from "@/shared/constants/supported_langs";
 
 type Props = {
   params: Promise<{ lang: string }>;
 };
+
+export const revalidate = 3600;
+export async function generateStaticParams() {
+  const params = SUPPORTED_LANGS.map((locale) => ({ lang: locale }));
+  return params;
+}
 
 const getHomepage = cache(async (lang: string): Promise<Homepage | null> => {
   const payload = await getPayload({ config });
@@ -46,6 +53,7 @@ export default async function Homepage({ params }: Props) {
     <main className="relative overflow-hidden">
       <HomepageDecorations />
       <Hero
+        lang={lang}
         image={image}
         title={homepage.title}
         subtitle={homepage.subtitle ?? ""}

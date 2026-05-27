@@ -9,6 +9,7 @@ import Image from "next/image";
 import { BlocksRenderer } from "../_components/blocks/BlocksRenderer";
 import { PagesDecorations } from "../_components/decorations/PagesDecorations";
 import { RefreshRouteOnSave as PayloadLivePreview } from "../_components/LivePreview/RefreshRouteOnSave";
+import { SUPPORTED_LANGS, SupportedLang } from "@/shared/constants/supported_langs";
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
@@ -20,7 +21,7 @@ const getPage = cache(
     const result = await payload.find({
       collection: "pages",
       where: { slug: { equals: slug } },
-      locale: lang as "he" | "en",
+      locale: lang as SupportedLang,
       draft: false,
       limit: 1,
     });
@@ -28,6 +29,31 @@ const getPage = cache(
     return (result.docs[0] as Page) ?? null;
   },
 );
+
+export const revalidate = 3600;
+export async function generateStaticParams() {
+  const payload = await getPayload({ config });
+  const params = await Promise.all(
+    SUPPORTED_LANGS.map(async (lang) => {
+      const result = await payload.find({
+        collection: "pages",
+        locale: lang,
+        draft: false,
+        limit: 1000,
+        select: {
+          slug: true,
+        },
+      });
+
+      return result.docs.map((page) => ({
+        lang,
+        slug: page.slug,
+      }));
+    }),
+  );
+
+  return params.flat();
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, slug } = await params;
@@ -64,9 +90,7 @@ export default async function SlugPage({ params }: Props) {
         )}
         {page.renderTitle && (
           <div className="w-4/10 mx-auto pb-8">
-            <h3 className="type-h3 mb-4 pb-8 text-navy">
-              {page.title}
-            </h3>
+            <h3 className="type-h3 mb-4 pb-8 text-navy">{page.title}</h3>
             <hr />
           </div>
         )}
