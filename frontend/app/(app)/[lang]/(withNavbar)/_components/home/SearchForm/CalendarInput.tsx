@@ -101,6 +101,7 @@ export function CalendarInput({
               day_button:
                 "text-navy data-[selected-single=true]:bg-brand data-[selected-single=true]:text-white",
             }}
+            className="min-h-75"
             disabled={disabledFn}
           />
         </PopoverContent>

@@ -9,6 +9,7 @@ interface CarDetailsSectionProps {
   carType: string;
   model: string;
   brand: string;
+  isAutomatic: boolean;
 }
 
 export function CarDetailsSection({
@@ -16,6 +17,7 @@ export function CarDetailsSection({
   carType,
   model,
   brand,
+  isAutomatic,
 }: CarDetailsSectionProps) {
   const t = useTranslations("MyAccount.summary");
 
@@ -31,6 +33,7 @@ export function CarDetailsSection({
         value={carType}
       />
       <SummaryRow label={t("labels.model")} value={model} />
+      <SummaryRow label={t("labels.gear")} value={isAutomatic ? t("labels.auto") : t("labels.manual")} />
       <SummaryRow
         label={t("labels.brand")}
         value={brand}

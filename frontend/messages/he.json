@@ -105,8 +105,8 @@
     "ageRange": "גיל הנהג/ת: {ageRange}",
     "agePopoverLabel": "מה גיל הנהג/ת",
     "save": "שמירה",
-    "hasCoupon": "יש לי שובר",
-    "couponPlaceholder": "הזינו שובר",
+    "hasCoupon": "יש לי קוד הנחה",
+    "couponPlaceholder": "הזינו קוד הנחה",
     "pickupLocationPlaceholder": "מהיכן תאספו את הרכב?",
     "dropoffLocationPlaceholder": "לאן תחזירו את הרכב?",
     "pickupDatePlaceholder": "מתי אוספים?",
@@ -247,6 +247,7 @@
         "erpRecommendation": "מומלץ לקחת חבילת כיסוי",
         "orSimilar": "או דומה",
         "auto": "אוטומטי",
+        "manual": "ידני",
         "electric": "חשמלי",
         "ac": "מזגן",
         "shuttlePickup": "איסוף בשאטל",
@@ -267,6 +268,7 @@
   },
   "MyAccount": {
     "summary": {
+      "priceOfferDisclaimer": "המחירים הינם דינמיים ועלולים להשתנות בכל עת",
       "includedIconAlt": "כלול",
       "rentalSummary": {
         "pickupDetails": "פרטי איסוף:",
@@ -279,6 +281,9 @@
         "carType": "קבוצת הרכב:",
         "brand": "חברת השכרה:",
         "model": "דגם מייצג:",
+        "gear": "תיבת הילוכים:",
+        "auto": "אוטומטי",
+        "manual": "ידני",
         "couponDiscount": "הנחה קופון:",
         "fullCoverage": "כיסוי מלא:",
         "totalToPay": "סה\"כ לתשלום:"

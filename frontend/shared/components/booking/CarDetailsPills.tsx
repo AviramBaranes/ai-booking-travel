@@ -1,38 +1,62 @@
 import Image from "next/image";
+import type { ElementType } from "react";
 import { useTranslations } from "next-intl";
 import { Cable, User } from "lucide-react";
 
-import { booking, broker } from "@/shared/client";
+import { broker } from "@/shared/client";
+
+type BookingResultsT = ReturnType<typeof useTranslations<"booking.results">>;
+type CarDetailPillKey =
+  | "seats"
+  | "doors"
+  | "isAutoGear"
+  | "isElectric"
+  | "hasAC"
+  | "bags";
+
+type PillIcon =
+  | { icon: ElementType; imageSrc?: never }
+  | { imageSrc: string; icon?: never };
+
+type PillConfig = PillIcon & {
+  key: CarDetailPillKey;
+  getLabel: (carDetails: broker.CarDetails, t: BookingResultsT) => string | number | null;
+};
 
 const CAR_DETAILS_PILLS = [
   {
     key: "seats",
     icon: User,
+    getLabel: ({ seats }) => (seats > 0 ? seats : null),
   },
   {
     key: "doors",
-    image: "/assets/icons/Doors.svg",
+    imageSrc: "/assets/icons/Doors.svg",
+    getLabel: ({ doors }) => (doors > 0 ? doors : null),
   },
   {
     key: "isAutoGear",
-    image: "/assets/icons/Gear.svg",
-    translationKey: "auto",
+    imageSrc: "/assets/icons/Gear.svg",
+    getLabel: ({ isAutoGear }, t) =>
+      isAutoGear ? t("carDetails.auto") : t("carDetails.manual"),
   },
   {
     key: "isElectric",
     icon: Cable,
-    translationKey: "electric",
+    getLabel: ({ isElectric }, t) =>
+      isElectric ? t("carDetails.electric") : null,
   },
   {
     key: "hasAC",
-    image: "/assets/icons/AC.svg",
-    translationKey: "ac",
+    imageSrc: "/assets/icons/AC.svg",
+    getLabel: ({ hasAC }, t) => (hasAC ? t("carDetails.ac") : null),
   },
   {
     key: "bags",
-    image: "/assets/icons/Bags.svg",
+    imageSrc: "/assets/icons/Bags.svg",
+    getLabel: ({ bags }) => (bags > 0 ? bags : null),
   },
-];
+] satisfies PillConfig[];
 
 export function CarDetailsPills({
   carDetails,
@@ -42,32 +66,32 @@ export function CarDetailsPills({
   const t = useTranslations("booking.results");
   return (
     <div className="flex flex-wrap items-center gap-2 mt-4">
-      {CAR_DETAILS_PILLS.map(({ key, icon: Icon, translationKey, image }) => {
-        const value = carDetails[key as keyof broker.CarDetails];
-        if (!value) return null;
+      {CAR_DETAILS_PILLS.map((config) => {
+          const { key, icon: Icon } = config;
+          const label = config.getLabel(carDetails, t);
+          if (label === null) return null;
 
-        return (
-          <div
-            key={key}
-            className="flex items-center gap-1 bg-[#E7E9F5] px-4 py-1 rounded-full text-sm font-normal"
-          >
-            {Icon ? (
-              <Icon size={16} className="text-black/80" />
-            ) : (
-              <Image
-                src={image}
-                alt={`${key} icon`}
-                width={16}
-                height={16}
-                className="w-4 h-4"
-              />
-            )}
-            <span className="text-navy">
-              {translationKey ? t(`carDetails.${translationKey}`) : value}
-            </span>
-          </div>
-        );
-      })}
+          return (
+            <div
+              key={key}
+              className="flex items-center gap-1 bg-[#E7E9F5] px-4 py-1 rounded-full text-sm font-normal"
+            >
+              {Icon ? (
+                <Icon size={16} className="text-black/80" />
+              ) : (
+                <Image
+                  src={config.imageSrc}
+                  alt={`${key} icon`}
+                  width={16}
+                  height={16}
+                  className="w-4 h-4"
+                />
+              )}
+              <span className="text-navy">{label}</span>
+            </div>
+          );
+        }
+      )}
     </div>
   );
 }

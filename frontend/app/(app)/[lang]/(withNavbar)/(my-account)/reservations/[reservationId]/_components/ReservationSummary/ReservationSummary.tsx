@@ -30,6 +30,7 @@ export function ReservationSummary({
         model={reservation.carDetails.model}
         carType={reservation.carDetails.carType}
         rentalDays={reservation.rentalDays}
+        isAutomatic={reservation.carDetails.isAutoGear}
       />
       <IncludedSection planInclusions={reservation.planInclusions} />
       <CostBreakdownSection

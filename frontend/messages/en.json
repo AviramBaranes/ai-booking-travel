@@ -105,8 +105,8 @@
     "ageRange": "Driver age: {ageRange}",
     "agePopoverLabel": "What is the driver's age?",
     "save": "Save",
-    "hasCoupon": "I have a voucher",
-    "couponPlaceholder": "Enter voucher",
+    "hasCoupon": "I have a coupon",
+    "couponPlaceholder": "Enter coupon code",
     "pickupLocationPlaceholder": "Pick-up location",
     "dropoffLocationPlaceholder": "Drop-off location",
     "pickupDatePlaceholder": "Pick-up date",
@@ -247,6 +247,7 @@
         "erpRecommendation": "Recommended to take a coverage package",
         "orSimilar": "or similar",
         "auto": "Automatic",
+        "manual": "Manual",
         "electric": "Electric",
         "ac": "AC",
         "shuttlePickup": "Shuttle Pickup",
@@ -267,6 +268,7 @@
   },
   "MyAccount": {
     "summary": {
+      "priceOfferDisclaimer": "Prices are dynamic and may change at any time",
       "includedIconAlt": "Included",
       "rentalSummary": {
         "pickupDetails": "Pickup details:",
@@ -279,6 +281,9 @@
         "carType": "Car type:",
         "brand": "Rental company:",
         "model": "Model:",
+        "gear": "Transmission:",
+        "auto": "Automatic",
+        "manual": "Manual",
         "couponDiscount": "Coupon discount:",
         "fullCoverage": "Full coverage:",
         "totalToPay": "Total to pay:"

@@ -29,9 +29,12 @@ export function PriceOfferSummary({ priceOfferId }: { priceOfferId: number }) {
         model={priceOffer.carDetails.model}
         carType={priceOffer.carDetails.carType}
         rentalDays={priceOffer.rentalDays}
+        isAutomatic={priceOffer.carDetails.isAutoGear}
       />
       <IncludedSection planInclusions={priceOffer.planInclusions} />
+
       <CostBreakdownSection
+        showDisclaimer
         priceBefDesc={priceOffer.priceBefDesc}
         discountAmount={0}
         erpPrice={priceOffer.erpPrice}
@@ -41,7 +44,9 @@ export function PriceOfferSummary({ priceOfferId }: { priceOfferId: number }) {
 
       <div className="text-white bg-brand py-3 5 px-5 flex justify-between items-center rounded-xl">
         <span className="type-paragraph">{t("offeredPrice")}</span>
-        <h4 className="type-h4">{formatPrice(priceOffer.offeredPrice, priceOffer.offeredCurrencyCode)}</h4>
+        <h4 className="type-h4">
+          {formatPrice(priceOffer.offeredPrice, priceOffer.offeredCurrencyCode)}
+        </h4>
       </div>
     </div>
   );

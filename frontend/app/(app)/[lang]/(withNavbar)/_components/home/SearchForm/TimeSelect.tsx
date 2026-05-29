@@ -22,8 +22,9 @@ import { SearchFieldHandle } from "./SearchForm";
 const times = Array.from(
   { length: 48 },
   (_, i) =>
-    `${String((6 + Math.floor(i / 2)) % 24).padStart(2, "0")}:${i % 2 ? "30" : "00"}`,
+    `${String((0 + Math.floor(i / 2)) % 24).padStart(2, "0")}:${i % 2 ? "30" : "00"}`,
 );
+const middleTime = times[Math.floor(times.length / 2)];
 
 interface TimeSelectProps {
   placeholder: string;
@@ -102,6 +103,11 @@ export function TimeSelect({
               return (
                 <DropdownMenuItem
                   key={time}
+                  ref={(node) => {
+                    if (time === middleTime) {
+                      node?.scrollIntoView({ block: "center" });
+                    }
+                  }}
                   onClick={() => handleSelect(time)}
                   className="flex items-center justify-between rounded-md px-3 py-3 text-base"
                 >

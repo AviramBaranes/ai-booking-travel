@@ -90,6 +90,7 @@ export function CalendarInputRange({
               setHoverDate(undefined);
               setOpen(false);
             }}
+            className="min-h-75"
             classNames={{
               today: "bg-brand/35",
 
