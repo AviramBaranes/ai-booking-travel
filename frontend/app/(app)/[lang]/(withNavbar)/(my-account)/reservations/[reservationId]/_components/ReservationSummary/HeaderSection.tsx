@@ -33,7 +33,7 @@ export function HeaderSection({
             onClick={() => window.print()}
           >
             <Image
-              src="/assets/icons/printer.svg"
+              src="/assets/icons/Printer.svg"
               alt={t("print")}
               width={24}
               height={24}

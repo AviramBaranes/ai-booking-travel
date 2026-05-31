@@ -34,9 +34,9 @@ export async function Navbar({ lang, isRootLayout = false }: NavbarProps) {
             <Image
               src="/logo.png"
               alt="AIBookingTravel"
-              width={160}
-              height={40}
-              className="w-40 h-10"
+              width={168}
+              height={32}
+              className="object-contain"
               priority
             />
           </Link>
