@@ -41,8 +41,8 @@ export function OtherPlansButton({
   return (
     <>
       <Button
-        variant="outline"
-        className="px-8 py-6 type-paragraph text-navy rounded-lg"
+        variant="brand"
+        className="px-8 py-6 type-paragraph font-bold rounded-lg"
         onClick={() => setOpen(true)}
       >
         {t("otherPlans")}

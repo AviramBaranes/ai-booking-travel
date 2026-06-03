@@ -28,6 +28,10 @@ const PRICE_OFFER_CURRENCIES = [
     code: "EUR",
     symbol: "€",
   },
+  {
+    code: "GBP",
+    symbol: "£",
+  },
 ];
 
 const PRICE_OFFER_STATUSES: PriceOfferStatus[] = ["open", "booked", "declined"];
@@ -138,7 +142,7 @@ export function PriceOfferForm({
 
       {showStatusSelect && (
         <>
-        <Label className="text-sm mt-1">{statusLabel}</Label>
+          <Label className="text-sm mt-1">{statusLabel}</Label>
           <DropdownMenu dir={dir}>
             <DropdownMenuTrigger asChild>
               <Button
@@ -175,7 +179,11 @@ export function PriceOfferForm({
         variant="brand"
         className="font-bold py-6 px-8"
         loading={isPending}
-        disabled={!priceOfferName || price <= 0}
+        disabled={
+          !priceOfferName ||
+          price <= 0 ||
+          !PRICE_OFFER_CURRENCIES.some((c) => c.code === currency)
+        }
       >
         {submitText}
       </Button>

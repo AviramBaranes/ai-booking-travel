@@ -87,6 +87,7 @@ export function PriceOfferDialog({
             <PriceOfferForm
               error={error}
               isPending={isPending}
+              initialCurrency={vehicle?.priceDetails.currency}
               nameInputPlaceholder={t("enterPriceOfferName")}
               priceInputPlaceholder={t("enterPrice")}
               submitText={t("createPriceOffer")}
