@@ -22,7 +22,7 @@ WHERE
 id = $1
 AND
 user_id = $2
-RETURNING id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, broker_reservation_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, country_code, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, discount_percentage, bt_erp_price, vat_percentage, total_price, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, driver_title, driver_first_name, driver_last_name, driver_age, pickup_location_name, dropoff_location_name, voucher_number, vouchered_at, created_at, updated_at
+RETURNING id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, broker_reservation_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, country_code, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, discount_percentage, bt_erp_price, vat_percentage, total_price, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, driver_title, driver_first_name, driver_last_name, driver_age, pickup_location_name, dropoff_location_name, voucher_number, vouchered_at, created_at, updated_at, flight_number, pay_at_pickup
 `
 
 type ApplyVoucherParams struct {
@@ -79,6 +79,8 @@ func (q *Queries) ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) (Res
 		&i.VoucheredAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.FlightNumber,
+		&i.PayAtPickup,
 	)
 	return i, err
 }
@@ -428,7 +430,7 @@ func (q *Queries) GetPaymentPendingReservationsByBillingEntity(ctx context.Conte
 }
 
 const getReservationByID = `-- name: GetReservationByID :one
-SELECT id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, broker_reservation_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, country_code, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, discount_percentage, bt_erp_price, vat_percentage, total_price, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, driver_title, driver_first_name, driver_last_name, driver_age, pickup_location_name, dropoff_location_name, voucher_number, vouchered_at, created_at, updated_at
+SELECT id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, broker_reservation_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, country_code, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, discount_percentage, bt_erp_price, vat_percentage, total_price, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, driver_title, driver_first_name, driver_last_name, driver_age, pickup_location_name, dropoff_location_name, voucher_number, vouchered_at, created_at, updated_at, flight_number, pay_at_pickup
 FROM reservations
 WHERE id = $1
 `
@@ -475,6 +477,8 @@ func (q *Queries) GetReservationByID(ctx context.Context, id int64) (Reservation
 		&i.VoucheredAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.FlightNumber,
+		&i.PayAtPickup,
 	)
 	return i, err
 }
@@ -524,7 +528,9 @@ INSERT INTO reservations (
     driver_last_name,
     driver_age,
     pickup_location_name,
-    dropoff_location_name
+    dropoff_location_name,
+    flight_number,
+    pay_at_pickup
 ) VALUES (
     $1,
     $2,
@@ -556,7 +562,9 @@ INSERT INTO reservations (
     $28,
     $29,
     $30,
-    $31
+    $31,
+    $32,
+    $33
 ) RETURNING id
 `
 
@@ -592,6 +600,8 @@ type InsertReservationParams struct {
 	DriverAge             int32
 	PickupLocationName    string
 	DropoffLocationName   string
+	FlightNumber          *string
+	PayAtPickup           []byte
 }
 
 func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationParams) (int64, error) {
@@ -627,6 +637,8 @@ func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationPa
 		arg.DriverAge,
 		arg.PickupLocationName,
 		arg.DropoffLocationName,
+		arg.FlightNumber,
+		arg.PayAtPickup,
 	)
 	var id int64
 	err := row.Scan(&id)
@@ -818,7 +830,7 @@ func (q *Queries) ListReservationsByUser(ctx context.Context, arg ListReservatio
 }
 
 const listReservationsReport = `-- name: ListReservationsReport :many
-SELECT id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, broker_reservation_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, country_code, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, discount_percentage, bt_erp_price, vat_percentage, total_price, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, driver_title, driver_first_name, driver_last_name, driver_age, pickup_location_name, dropoff_location_name, voucher_number, vouchered_at, created_at, updated_at
+SELECT id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, broker_reservation_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, country_code, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, discount_percentage, bt_erp_price, vat_percentage, total_price, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, driver_title, driver_first_name, driver_last_name, driver_age, pickup_location_name, dropoff_location_name, voucher_number, vouchered_at, created_at, updated_at, flight_number, pay_at_pickup
 FROM reservations
 WHERE
     ($1::DATE IS NULL OR pickup_date >= $1::DATE)
@@ -921,6 +933,8 @@ func (q *Queries) ListReservationsReport(ctx context.Context, arg ListReservatio
 			&i.VoucheredAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.FlightNumber,
+			&i.PayAtPickup,
 		); err != nil {
 			return nil, err
 		}

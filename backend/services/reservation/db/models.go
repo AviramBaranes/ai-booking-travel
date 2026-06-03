@@ -186,4 +186,6 @@ type Reservation struct {
 	VoucheredAt           pgtype.Timestamptz
 	CreatedAt             pgtype.Timestamptz
 	UpdatedAt             pgtype.Timestamptz
+	FlightNumber          *string
+	PayAtPickup           []byte
 }

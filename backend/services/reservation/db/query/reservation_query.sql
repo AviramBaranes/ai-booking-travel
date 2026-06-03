@@ -30,7 +30,9 @@ INSERT INTO reservations (
     driver_last_name,
     driver_age,
     pickup_location_name,
-    dropoff_location_name
+    dropoff_location_name,
+    flight_number,
+    pay_at_pickup
 ) VALUES (
     @user_id,
     @office_id,
@@ -62,7 +64,9 @@ INSERT INTO reservations (
     @driver_last_name,
     @driver_age,
     @pickup_location_name,
-    @dropoff_location_name
+    @dropoff_location_name,
+    @flight_number,
+    @pay_at_pickup
 ) RETURNING id;
 
 -- name: GetReservationByID :one
