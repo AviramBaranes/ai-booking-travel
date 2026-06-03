@@ -27,6 +27,8 @@ type PlanPriceDetails struct {
 	MarkupPercentage       float64           `json:"markupPercentage"`
 	ChargedERPPriceWithVat int               `json:"chargedErpPriceWithVat"`
 	CarDetails             broker.CarDetails `json:"carDetails"`
+	AvailableAddOns        []broker.AddOn    `json:"availableAddOns"`
+	Fees                   broker.Fees       `json:"fees"`
 	Inclusions             []string          `json:"inclusions"`
 }
 

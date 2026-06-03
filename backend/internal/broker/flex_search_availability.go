@@ -108,11 +108,13 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicl
 				LocationType: supplierDetails.PickUpDetails.LocationType,
 			},
 			PriceDetails: PriceDetails{
-				Currency:               c.Currency,
-				DropCharge:             pricing.RoundToInt(c.DropCharge),
-				DropChargeCurrency:     c.DropChargeCurrency,
-				YoungDriverFee:         ydFee,
-				YoungDriverFeeCurrency: ydFeeCurrency,
+				Currency: c.Currency,
+				Fees: Fees{
+					DropCharge:             pricing.RoundToInt(c.DropCharge),
+					DropChargeCurrency:     c.DropChargeCurrency,
+					YoungDriverFee:         ydFee,
+					YoungDriverFeeCurrency: ydFeeCurrency,
+				},
 			},
 		}
 

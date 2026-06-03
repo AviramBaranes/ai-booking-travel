@@ -186,11 +186,13 @@ func (h *Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, 
 				LocationType: locationType,
 			},
 			PriceDetails: PriceDetails{
-				Currency:               chargeDetails.currency,
-				DropCharge:             pricing.RoundToInt(chargeDetails.dropCharge),
-				DropChargeCurrency:     chargeDetails.dropChargeCurrency,
-				YoungDriverFee:         ydFee,
-				YoungDriverFeeCurrency: ydFeeCurrency,
+				Currency: chargeDetails.currency,
+				Fees: Fees{
+					DropCharge:             pricing.RoundToInt(chargeDetails.dropCharge),
+					DropChargeCurrency:     chargeDetails.dropChargeCurrency,
+					YoungDriverFee:         ydFee,
+					YoungDriverFeeCurrency: ydFeeCurrency,
+				},
 			},
 		})
 	}

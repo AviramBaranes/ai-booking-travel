@@ -115,6 +115,8 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				ChargedERPPriceWithVat: p.ChargedErpPriceWithVat,
 				CarDetails:             v.CarDetails,
 				Inclusions:             inclusions,
+				AvailableAddOns:        v.AddOns,
+				Fees:                   v.PriceDetails.Fees,
 			}
 
 			artifacts.plansDetails = append(artifacts.plansDetails, pd)
