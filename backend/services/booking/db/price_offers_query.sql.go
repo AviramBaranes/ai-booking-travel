@@ -58,7 +58,8 @@ INSERT INTO price_offers (
     bt_erp_price,
     total_price,
     offered_currency_code,
-    offered_price
+    offered_price,
+    pay_at_pickup
 ) VALUES (
     $1,
     $2,
@@ -83,10 +84,11 @@ INSERT INTO price_offers (
     $21,
     $22,
     $23,
-    $24,
-    $25
+    $24,    
+    $25,
+    $26
 )
-RETURNING id, reservation_id, token, agent_id, status, name, pickup_location_id, dropoff_location_id, pickup_date, dropoff_date, pickup_time, dropoff_time, driver_age, rental_days, plan_id, broker, rate_qualifier, supplier_code, car_details, plan_inclusions, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, total_price, offered_currency_code, offered_price, renewed_at, created_at, updated_at
+RETURNING id, reservation_id, token, agent_id, status, name, pickup_location_id, dropoff_location_id, pickup_date, dropoff_date, pickup_time, dropoff_time, driver_age, rental_days, plan_id, broker, rate_qualifier, supplier_code, car_details, plan_inclusions, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, total_price, offered_currency_code, offered_price, renewed_at, created_at, updated_at, pay_at_pickup
 `
 
 type CreatePriceOfferParams struct {
@@ -115,6 +117,7 @@ type CreatePriceOfferParams struct {
 	TotalPrice          int32
 	OfferedCurrencyCode string
 	OfferedPrice        int32
+	PayAtPickup         []byte
 }
 
 func (q *Queries) CreatePriceOffer(ctx context.Context, arg CreatePriceOfferParams) (PriceOffer, error) {
@@ -144,6 +147,7 @@ func (q *Queries) CreatePriceOffer(ctx context.Context, arg CreatePriceOfferPara
 		arg.TotalPrice,
 		arg.OfferedCurrencyCode,
 		arg.OfferedPrice,
+		arg.PayAtPickup,
 	)
 	var i PriceOffer
 	err := row.Scan(
@@ -179,13 +183,14 @@ func (q *Queries) CreatePriceOffer(ctx context.Context, arg CreatePriceOfferPara
 		&i.RenewedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PayAtPickup,
 	)
 	return i, err
 }
 
 const getPriceOfferById = `-- name: GetPriceOfferById :one
 SELECT 
-    price_offers.id, price_offers.reservation_id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.dropoff_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.plan_id, price_offers.broker, price_offers.rate_qualifier, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.currency_rate, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.renewed_at, price_offers.created_at, price_offers.updated_at, 
+    price_offers.id, price_offers.reservation_id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.dropoff_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.plan_id, price_offers.broker, price_offers.rate_qualifier, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.currency_rate, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.renewed_at, price_offers.created_at, price_offers.updated_at, price_offers.pay_at_pickup, 
     pl.name AS pickup_location, 
     pl.country_code,
     dl.name AS dropoff_location, 
@@ -237,6 +242,7 @@ type GetPriceOfferByIdRow struct {
 	RenewedAt               pgtype.Timestamptz
 	CreatedAt               pgtype.Timestamptz
 	UpdatedAt               pgtype.Timestamptz
+	PayAtPickup             []byte
 	PickupLocation          string
 	CountryCode             string
 	DropoffLocation         string
@@ -280,6 +286,7 @@ func (q *Queries) GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdPa
 		&i.RenewedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PayAtPickup,
 		&i.PickupLocation,
 		&i.CountryCode,
 		&i.DropoffLocation,
@@ -290,7 +297,7 @@ func (q *Queries) GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdPa
 }
 
 const getPriceOfferByToken = `-- name: GetPriceOfferByToken :one
-SELECT price_offers.id, price_offers.reservation_id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.dropoff_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.plan_id, price_offers.broker, price_offers.rate_qualifier, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.currency_rate, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.renewed_at, price_offers.created_at, price_offers.updated_at , pl.name AS pickup_location, dl.name AS dropoff_location
+SELECT price_offers.id, price_offers.reservation_id, price_offers.token, price_offers.agent_id, price_offers.status, price_offers.name, price_offers.pickup_location_id, price_offers.dropoff_location_id, price_offers.pickup_date, price_offers.dropoff_date, price_offers.pickup_time, price_offers.dropoff_time, price_offers.driver_age, price_offers.rental_days, price_offers.plan_id, price_offers.broker, price_offers.rate_qualifier, price_offers.supplier_code, price_offers.car_details, price_offers.plan_inclusions, price_offers.currency_code, price_offers.currency_rate, price_offers.purchase_price, price_offers.markup_percentage, price_offers.broker_erp_price, price_offers.bt_erp_price, price_offers.total_price, price_offers.offered_currency_code, price_offers.offered_price, price_offers.renewed_at, price_offers.created_at, price_offers.updated_at, price_offers.pay_at_pickup , pl.name AS pickup_location, dl.name AS dropoff_location
 FROM price_offers
     JOIN locations pl ON price_offers.pickup_location_id = pl.id
     JOIN locations dl ON price_offers.dropoff_location_id = dl.id
@@ -330,6 +337,7 @@ type GetPriceOfferByTokenRow struct {
 	RenewedAt           pgtype.Timestamptz
 	CreatedAt           pgtype.Timestamptz
 	UpdatedAt           pgtype.Timestamptz
+	PayAtPickup         []byte
 	PickupLocation      string
 	DropoffLocation     string
 }
@@ -370,6 +378,7 @@ func (q *Queries) GetPriceOfferByToken(ctx context.Context, token pgtype.UUID) (
 		&i.RenewedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PayAtPickup,
 		&i.PickupLocation,
 		&i.DropoffLocation,
 	)

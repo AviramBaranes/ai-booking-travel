@@ -24,7 +24,8 @@ INSERT INTO price_offers (
     bt_erp_price,
     total_price,
     offered_currency_code,
-    offered_price
+    offered_price,
+    pay_at_pickup
 ) VALUES (
     sqlc.arg(agent_id),
     sqlc.arg(name),
@@ -49,8 +50,9 @@ INSERT INTO price_offers (
     sqlc.arg(broker_erp_price),
     sqlc.arg(bt_erp_price),
     sqlc.arg(total_price),
-    sqlc.arg(offered_currency_code),
-    sqlc.arg(offered_price)
+    sqlc.arg(offered_currency_code),    
+    sqlc.arg(offered_price),
+    sqlc.arg(pay_at_pickup)
 )
 RETURNING *;   
 

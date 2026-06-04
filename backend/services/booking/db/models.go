@@ -250,4 +250,5 @@ type PriceOffer struct {
 	RenewedAt           pgtype.Timestamptz
 	CreatedAt           pgtype.Timestamptz
 	UpdatedAt           pgtype.Timestamptz
+	PayAtPickup         []byte
 }
