@@ -175,7 +175,7 @@ WHERE status = 'verified';
 -- 
 -- 
 -- 
-CREATE TYPE offer_status AS ENUM ('open', 'booked', 'declined', 'unavailable');
+CREATE TYPE offer_status AS ENUM ('open', 'booked', 'declined', 'unavailable', 'approved');
 
 CREATE TABLE
     price_offers (
@@ -201,6 +201,7 @@ CREATE TABLE
         supplier_code TEXT NOT NULL,
         car_details JSONB NOT NULL,
         plan_inclusions TEXT[] NOT NULL DEFAULT '{}',
+        pay_at_pickup JSONB NOT NULL DEFAULT '{}'::jsonb,
 
         currency_code TEXT NOT NULL,
         currency_rate NUMERIC(12, 4) NOT NULL,

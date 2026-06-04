@@ -103,6 +103,7 @@ const (
 	OfferStatusBooked      OfferStatus = "booked"
 	OfferStatusDeclined    OfferStatus = "declined"
 	OfferStatusUnavailable OfferStatus = "unavailable"
+	OfferStatusApproved    OfferStatus = "approved"
 )
 
 func (e *OfferStatus) Scan(src interface{}) error {
@@ -238,6 +239,7 @@ type PriceOffer struct {
 	SupplierCode        string
 	CarDetails          []byte
 	PlanInclusions      []string
+	PayAtPickup         []byte
 	CurrencyCode        string
 	CurrencyRate        pgtype.Numeric
 	PurchasePrice       pgtype.Numeric
@@ -250,5 +252,4 @@ type PriceOffer struct {
 	RenewedAt           pgtype.Timestamptz
 	CreatedAt           pgtype.Timestamptz
 	UpdatedAt           pgtype.Timestamptz
-	PayAtPickup         []byte
 }

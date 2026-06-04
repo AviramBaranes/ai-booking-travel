@@ -149,43 +149,43 @@ type Outbox struct {
 
 type Reservation struct {
 	ID                    int64
+	BrokerReservationID   string
 	UserID                int64
 	OfficeID              *int64
 	OrganizationID        *int64
 	IsOrganizationOrganic *bool
 	AdminRefID            *int64
-	BrokerReservationID   string
 	ReservationStatus     ReservationStatus
 	PaymentStatus         PaymentStatus
 	Broker                Broker
 	SupplierCode          string
 	CarDetails            []byte
 	PlanInclusions        []string
-	CountryCode           string
+	PayAtPickup           []byte
 	CurrencyCode          string
 	CurrencyRate          pgtype.Numeric
+	VatPercentage         pgtype.Numeric
 	PurchasePrice         pgtype.Numeric
 	MarkupPercentage      pgtype.Numeric
 	BrokerErpPrice        pgtype.Numeric
-	DiscountPercentage    int32
-	BtErpPrice            int32
-	VatPercentage         pgtype.Numeric
-	TotalPrice            int32
+	BtErpPrice            pgtype.Numeric
+	DiscountPercentage    pgtype.Numeric
+	TotalPrice            pgtype.Numeric
+	FlightNumber          *string
+	CountryCode           string
 	PickupDate            pgtype.Date
 	DropoffDate           pgtype.Date
 	PickupTime            string
 	DropoffTime           string
 	RentalDays            int32
+	PickupLocationName    string
+	DropoffLocationName   string
 	DriverTitle           string
 	DriverFirstName       string
 	DriverLastName        string
 	DriverAge             int32
-	PickupLocationName    string
-	DropoffLocationName   string
 	VoucherNumber         *string
 	VoucheredAt           pgtype.Timestamptz
 	CreatedAt             pgtype.Timestamptz
 	UpdatedAt             pgtype.Timestamptz
-	FlightNumber          *string
-	PayAtPickup           []byte
 }

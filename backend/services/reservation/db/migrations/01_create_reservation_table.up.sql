@@ -7,41 +7,51 @@ CREATE TYPE broker AS ENUM ('flex', 'hertz');
 CREATE TABLE
     reservations (
         id BIGSERIAL PRIMARY KEY,
+        broker_reservation_id TEXT NOT NULL,
+
         user_id BIGINT NOT NULL,
         office_id BIGINT,
         organization_id BIGINT,
         is_organization_organic BOOLEAN,
         admin_ref_id BIGINT,
-        broker_reservation_id TEXT NOT NULL,
+
         reservation_status reservation_status NOT NULL DEFAULT 'booked',
         payment_status payment_status NOT NULL DEFAULT 'unpaid',
+        
         broker broker NOT NULL,
         supplier_code TEXT NOT NULL,
         car_details JSONB NOT NULL,
         plan_inclusions TEXT[] NOT NULL DEFAULT '{}',
-        country_code TEXT NOT NULL,
+        pay_at_pickup JSONB NOT NULL DEFAULT '{}'::jsonb,
+
         currency_code TEXT NOT NULL,
         currency_rate NUMERIC(12, 4) NOT NULL,
+        vat_percentage NUMERIC(5, 2) NOT NULL,
         purchase_price NUMERIC(12, 2) NOT NULL,
         markup_percentage NUMERIC(12, 2) NOT NULL,
         broker_erp_price NUMERIC(12, 2) NOT NULL,
-        discount_percentage INT NOT NULL DEFAULT 0,
-        bt_erp_price INT NOT NULL DEFAULT 0,
-        vat_percentage NUMERIC(5, 2) NOT NULL,
-        total_price INT NOT NULL,
+        bt_erp_price NUMERIC(12, 2) NOT NULL DEFAULT 0,
+        discount_percentage NUMERIC(12, 2) NOT NULL DEFAULT 0,
+        total_price NUMERIC(12, 2) NOT NULL,
+
+        flight_number TEXT,
+        country_code TEXT NOT NULL,
         pickup_date DATE NOT NULL,
         dropoff_date DATE NOT NULL,
         pickup_time TEXT NOT NULL DEFAULT '',
         dropoff_time TEXT NOT NULL DEFAULT '',
         rental_days INT NOT NULL CHECK (rental_days > 0),
+        pickup_location_name TEXT NOT NULL DEFAULT '',
+        dropoff_location_name TEXT NOT NULL DEFAULT '',
+
         driver_title TEXT NOT NULL,
         driver_first_name TEXT NOT NULL,
         driver_last_name TEXT NOT NULL,
         driver_age INT NOT NULL CHECK (driver_age >= 18),
-        pickup_location_name TEXT NOT NULL DEFAULT '',
-        dropoff_location_name TEXT NOT NULL DEFAULT '',
+
         voucher_number TEXT,
         vouchered_at TIMESTAMPTZ,
+
         created_at TIMESTAMPTZ NOT NULL DEFAULT now (),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT now ()
     );
