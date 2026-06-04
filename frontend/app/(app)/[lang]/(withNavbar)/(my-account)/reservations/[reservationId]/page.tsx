@@ -5,11 +5,12 @@ import { ReservationCarCard } from "./_components/ReservationCarCard";
 import { SelectedCarCardSkeleton } from "@/shared/components/booking/SelectedCarCard/SelectedCarCardSkeleton";
 import { getQueryClient } from "@/shared/hooks/getQueryClient";
 import { suppliersGalleryKey } from "@/shared/hooks/useSuppliersGallery";
-import { fetchSuppliersGallery } from "@/shared/server/cms";
+import { fetchAddonsGallery, fetchSuppliersGallery } from "@/shared/server/cms";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { BackButton } from "@/shared/components/booking/BackButton";
 import { ReservationSummary } from "./_components/ReservationSummary/ReservationSummary";
 import { SummarySkeleton } from "@/shared/components/booking/SummarySkeleton";
+import { addonsGalleryKey } from "@/shared/hooks/useAddonsGallery";
 
 export default async function ReservationDetailsPage({
   params,
@@ -24,10 +25,16 @@ export default async function ReservationDetailsPage({
   }
 
   const queryClient = getQueryClient();
-  await queryClient.fetchQuery({
-    queryKey: suppliersGalleryKey,
-    queryFn: fetchSuppliersGallery,
-  });
+  await Promise.all([
+    queryClient.fetchQuery({
+      queryKey: suppliersGalleryKey,
+      queryFn: fetchSuppliersGallery,
+    }),
+    queryClient.fetchQuery({
+      queryKey: addonsGalleryKey,
+      queryFn: fetchAddonsGallery,
+    }),
+  ]);
 
   return (
     <main className="w-2/3 mx-auto pt-4 pb-6 print:w-full">

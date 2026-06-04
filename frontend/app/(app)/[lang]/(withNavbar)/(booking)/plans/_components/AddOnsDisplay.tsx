@@ -56,6 +56,7 @@ export function AddOnsDisplay({
       <h5 className="type-h5 text-navy">{t("title")}</h5>
       <div className="grid grid-cols-3 gap-4 mt-6 ">
         {addons.map((addOn) => {
+          console.log("addOn", addOn);
           const addOnDetails = addOnsGallery.addons?.find(
             (item) => item.addonId === addOn.id.toString(),
           );

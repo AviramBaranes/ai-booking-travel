@@ -1,8 +1,3 @@
-import { availability } from "@/shared/client";
-import { Page } from "@/payload-types";
-import { SelectedCarCard } from "@/shared/components/booking/SelectedCarCard/SelectedCarCard";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -10,17 +5,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { isAppError } from "@/shared/api/AppError";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { ChevronDown } from "lucide-react";
-import Link from "next/link";
-import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellationBadge";
-import { orderFormSchema, OrderFormValues } from "./orderFormSchema";
+import { OrderFormValues } from "./orderFormSchema";
 import { useTranslations } from "next-intl";
-import { Controller, useForm, useFormContext } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
-import { useParams } from "next/navigation";
+import { Controller, useFormContext } from "react-hook-form";
 
 export function BookingForm() {
   const t = useTranslations("booking.orderPage");

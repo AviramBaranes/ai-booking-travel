@@ -816,32 +816,7 @@ export namespace booking {
 }
 
 export namespace reservation {
-    /**
-     * ApplyVoucherParams is the request payload type for the apply voucher EP
-     */
-    export interface ApplyVoucherParams {
-        voucher: string
-    }
-
     export type BillingEntity = string
-
-    /**
-     * BillingReservation is a reservation summary tailored for accountant billing workflows.
-     */
-    export interface BillingReservation {
-        id: number
-        brokerReservationId: string
-        paymentStatus: string
-        reservationStatus: string
-        carPurchasePrice: number
-        carSellingPrice: number
-        erpSellingPrice: number
-        profitOnCar: number
-        totalPrice: number
-        currencyCode: string
-        createdAt: string
-        pickupDate: string
-    }
 
     export interface BusinessReportResponse {
         reservations: BusinessReservationReportRow[]
@@ -894,73 +869,7 @@ export namespace reservation {
         totalBalance: number
     }
 
-    /**
-     * CurrencyGroup is a set of billing reservations sharing the same currency.
-     */
-    export interface CurrencyGroup {
-        currencyCode: string
-        reservations: BillingReservation[]
-    }
-
-    export interface GetReservationResponse {
-        id: number
-        brokerReservationId: string
-        reservationStatus: string
-        paymentStatus: string
-        carDetails: broker.CarDetails
-        planInclusions: string[]
-        currencyCode: string
-        currencyRate: number
-        priceBefDesc: number
-        discountAmount: number
-        erpPrice: number
-        totalPrice: number
-        pickupLocationName: string
-        dropoffLocationName: string
-        pickupDate: string
-        dropoffDate: string
-        pickupTime: string
-        dropoffTime: string
-        rentalDays: number
-        driverTitle: string
-        driverFirstName: string
-        driverLastName: string
-        driverAge: number
-        voucher?: string
-        voucheredAt?: string
-        createdAt: string
-    }
-
-    /**
-     * ListOpenReservationsByBillingEntityParams filters open reservations by a billing unit.
-     * Exactly one of OfficeID or OrgID must be provided.
-     */
-    export interface ListOpenReservationsByBillingEntityParams {
-        OfficeID?: number
-        OrgID?: number
-    }
-
-    /**
-     * ListOpenReservationsByBillingEntityResponse holds the open reservations for a billing unit,
-     * grouped by currency.
-     */
-    export interface ListOpenReservationsByBillingEntityResponse {
-        currencyGroups: CurrencyGroup[]
-    }
-
-    export interface ListReservationsParams {
-        SortBy?: string
-        Name?: string
-        BookingID?: string
-        Status?: string
-        PickupDate?: string
-        Page: number
-    }
-
-    export interface ListReservationsResponse {
-        reservations: ReservationSummary[]
-        total: number
-    }
+    export type PayAtPickup = actions.PayAtPickup
 
     export interface ProfitReportResponse {
         reservations: ProfitReportRow[]
@@ -992,20 +901,6 @@ export namespace reservation {
         IsBusiness?: boolean
     }
 
-    export interface ReservationSummary {
-        id: number
-        brokerReservationId: string
-        createdAt: string
-        countryCode: string
-        pickupDate: string
-        pickupLocationName: string
-        driverTitle: string
-        driverFirstName: string
-        driverLastName: string
-        reservationStatus: string
-        totalPrice: number
-    }
-
     export class ServiceClient {
         private baseClient: BaseClient
 
@@ -1021,10 +916,7 @@ export namespace reservation {
             this.ListReservations = this.ListReservations.bind(this)
         }
 
-        /**
-         * ApplyVoucher is the EP for applying a voucher on an agent order
-         */
-        public async ApplyVoucher(id: number, params: ApplyVoucherParams): Promise<void> {
+        public async ApplyVoucher(id: number, params: actions.ApplyVoucherParams): Promise<void> {
             await this.baseClient.callTypedAPI("POST", `/reservations/${encodeURIComponent(id)}/voucher`, JSON.stringify(params))
         }
 
@@ -1088,17 +980,13 @@ export namespace reservation {
             return await resp.json() as ProfitReportResponse
         }
 
-        public async GetReservation(id: number): Promise<GetReservationResponse> {
+        public async GetReservation(id: number): Promise<queries.GetReservationResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/reservations/${encodeURIComponent(id)}`)
-            return await resp.json() as GetReservationResponse
+            return await resp.json() as queries.GetReservationResponse
         }
 
-        /**
-         * ListOpenReservationsByBillingEntity returns all unpaid/refund-pending reservations
-         * for a given billing unit (an organic organization or an office of an inorganic organization).
-         */
-        public async ListOpenReservationsByBillingEntity(params: ListOpenReservationsByBillingEntityParams): Promise<ListOpenReservationsByBillingEntityResponse> {
+        public async ListOpenReservationsByBillingEntity(params: queries.ListOpenReservationsByBillingEntityParams): Promise<queries.ListOpenReservationsByBillingEntityResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 "office_id": params.OfficeID === undefined ? undefined : String(params.OfficeID),
@@ -1107,10 +995,10 @@ export namespace reservation {
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/reservations-for-billing`, undefined, {query})
-            return await resp.json() as ListOpenReservationsByBillingEntityResponse
+            return await resp.json() as queries.ListOpenReservationsByBillingEntityResponse
         }
 
-        public async ListReservations(params: ListReservationsParams): Promise<ListReservationsResponse> {
+        public async ListReservations(params: queries.ListReservationsParams): Promise<queries.ListReservationsResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
                 bookingId:  params.BookingID,
@@ -1123,8 +1011,29 @@ export namespace reservation {
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/reservations`, undefined, {query})
-            return await resp.json() as ListReservationsResponse
+            return await resp.json() as queries.ListReservationsResponse
         }
+    }
+}
+
+export namespace actions {
+    /**
+     * ApplyVoucherParams is the request payload type for the apply voucher EP.
+     */
+    export interface ApplyVoucherParams {
+        voucher: string
+    }
+
+    export interface PayAtPickup {
+        fees: broker.Fees
+        selectedAddons: SelectedAddon[]
+    }
+
+    export interface SelectedAddon {
+        id: number
+        name: string
+        price: number
+        quantity: number
     }
 }
 
@@ -1306,6 +1215,13 @@ export namespace broker {
         doors: number
     }
 
+    export interface Fees {
+        dropCharge: number
+        dropChargeCurrency: string
+        youngDriverFee: number
+        youngDriverFeeCurrency: string
+    }
+
     /**
      * LocationDetails holds the locationType of a rental location
      */
@@ -1323,10 +1239,6 @@ export namespace broker {
      */
     export interface PriceDetails {
         currency: string
-        dropCharge: number
-        dropChargeCurrency: string
-        youngDriverFee: number
-        youngDriverFeeCurrency: string
     }
 
     /**
@@ -1757,6 +1669,7 @@ export namespace price_offer {
         rentalDays: number
         driverAge: string
         renewedAt: string
+        payAtPickup: reservation.PayAtPickup
         createdAt: string
     }
 
@@ -1780,6 +1693,7 @@ export namespace price_offer {
         pickupTime: string
         dropoffTime: string
         driverAge: string
+        payAtPickup: reservation.PayAtPickup
         createdAt: string
     }
 
@@ -1843,6 +1757,110 @@ export namespace price_offer {
         name?: string
         offeredCurrencyCode?: string
         offeredPrice?: number
+    }
+}
+
+export namespace queries {
+    /**
+     * BillingReservation is a reservation summary tailored for accountant billing workflows.
+     */
+    export interface BillingReservation {
+        id: number
+        brokerReservationId: string
+        paymentStatus: string
+        reservationStatus: string
+        carPurchasePrice: number
+        carSellingPrice: number
+        erpSellingPrice: number
+        profitOnCar: number
+        totalPrice: number
+        currencyCode: string
+        createdAt: string
+        pickupDate: string
+    }
+
+    /**
+     * CurrencyGroup is a set of billing reservations sharing the same currency.
+     */
+    export interface CurrencyGroup {
+        currencyCode: string
+        reservations: BillingReservation[]
+    }
+
+    export interface GetReservationResponse {
+        id: number
+        brokerReservationId: string
+        reservationStatus: string
+        paymentStatus: string
+        carDetails: broker.CarDetails
+        planInclusions: string[]
+        currencyCode: string
+        currencyRate: number
+        priceBefDesc: number
+        discountAmount: number
+        erpPrice: number
+        totalPrice: number
+        payAtPickup: actions.PayAtPickup
+        flightNumber?: string
+        pickupLocationName: string
+        dropoffLocationName: string
+        pickupDate: string
+        dropoffDate: string
+        pickupTime: string
+        dropoffTime: string
+        rentalDays: number
+        driverTitle: string
+        driverFirstName: string
+        driverLastName: string
+        driverAge: number
+        voucher?: string
+        voucheredAt?: string
+        createdAt: string
+    }
+
+    /**
+     * ListOpenReservationsByBillingEntityParams filters open reservations by a billing unit.
+     * Exactly one of OfficeID or OrgID must be provided.
+     */
+    export interface ListOpenReservationsByBillingEntityParams {
+        OfficeID?: number
+        OrgID?: number
+    }
+
+    /**
+     * ListOpenReservationsByBillingEntityResponse holds the open reservations for a billing unit,
+     * grouped by currency.
+     */
+    export interface ListOpenReservationsByBillingEntityResponse {
+        currencyGroups: CurrencyGroup[]
+    }
+
+    export interface ListReservationsParams {
+        SortBy?: string
+        Name?: string
+        BookingID?: string
+        Status?: string
+        PickupDate?: string
+        Page: number
+    }
+
+    export interface ListReservationsResponse {
+        reservations: ReservationSummary[]
+        total: number
+    }
+
+    export interface ReservationSummary {
+        id: number
+        brokerReservationId: string
+        createdAt: string
+        countryCode: string
+        pickupDate: string
+        pickupLocationName: string
+        driverTitle: string
+        driverFirstName: string
+        driverLastName: string
+        reservationStatus: string
+        totalPrice: number
     }
 }
 

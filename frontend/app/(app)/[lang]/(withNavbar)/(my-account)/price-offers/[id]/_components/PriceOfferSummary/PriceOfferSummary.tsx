@@ -8,6 +8,7 @@ import { RentalSummary } from "../../../../_components/RentalSummary";
 import { usePriceOffer } from "../../_hooks/usePriceOffer";
 import { HeaderSection } from "./HeaderSection";
 import { useTranslations } from "next-intl";
+import { PayAtPickupSection } from "../../../../_components/PayAtPickupSection";
 
 export function PriceOfferSummary({ priceOfferId }: { priceOfferId: number }) {
   const t = useTranslations("MyAccount.priceOffer.summary.labels");
@@ -32,6 +33,12 @@ export function PriceOfferSummary({ priceOfferId }: { priceOfferId: number }) {
         isAutomatic={priceOffer.carDetails.isAutoGear}
       />
       <IncludedSection planInclusions={priceOffer.planInclusions} />
+
+      <PayAtPickupSection
+        currency={priceOffer.currencyCode}
+        fees={priceOffer.payAtPickup.fees}
+        selectedAddons={[]}
+      />
 
       <CostBreakdownSection
         showDisclaimer

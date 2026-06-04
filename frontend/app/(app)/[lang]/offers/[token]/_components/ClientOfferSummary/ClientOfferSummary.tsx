@@ -5,6 +5,7 @@ import { CarDetailsSection } from "@/app/(app)/[lang]/(withNavbar)/(my-account)/
 import { IncludedSection } from "@/app/(app)/[lang]/(withNavbar)/(my-account)/_components/IncludedSection";
 import { getTranslations } from "next-intl/server";
 import { formatPrice } from "@/shared/utils/formatPrice";
+import { PayAtPickupSection } from "@/app/(app)/[lang]/(withNavbar)/(my-account)/_components/PayAtPickupSection";
 
 export async function ClientOfferSummary({
   offer,
@@ -35,8 +36,16 @@ export async function ClientOfferSummary({
       />
       <IncludedSection planInclusions={offer.planInclusions} />
 
+      <PayAtPickupSection
+        fees={offer.payAtPickup.fees}
+        selectedAddons={[]}
+        currency={offer.currencyCode}
+      />
+
       <div className="text-white mt-6 bg-brand py-3 5 px-5 flex justify-between items-center rounded-xl">
-        <span className="type-paragraph">{t("priceOffer.summary.labels.totalToPay")}</span>
+        <span className="type-paragraph">
+          {t("priceOffer.summary.labels.totalToPay")}
+        </span>
         <h4 className="type-h4">
           {formatPrice(offer.totalPrice, offer.currencyCode)}
         </h4>

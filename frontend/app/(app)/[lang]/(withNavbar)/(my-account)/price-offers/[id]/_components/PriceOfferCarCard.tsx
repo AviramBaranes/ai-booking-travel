@@ -60,7 +60,6 @@ export function PriceOfferCarCard({ priceOfferId }: { priceOfferId: number }) {
       driverTitle: "" as unknown as "Mr",
       driverFirstName: "",
       driverLastName: "",
-      flightNumber: "",
       termsAccepted: false as unknown as true,
     },
   });

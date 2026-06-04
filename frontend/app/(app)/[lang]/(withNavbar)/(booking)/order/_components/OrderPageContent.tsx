@@ -55,7 +55,6 @@ export function OrderPageContent({ searchRequest }: OrderPageContentProps) {
       driverTitle: "" as unknown as "Mr",
       driverFirstName: "",
       driverLastName: "",
-      flightNumber: "",
       termsAccepted: false as unknown as true,
     },
   });

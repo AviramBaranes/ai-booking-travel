@@ -275,6 +275,12 @@
         "dropoffDetails": "Return details:",
         "stationDetails": "Station details"
       },
+      "payAtPickup": {
+        "title": "Fees payable at the station",
+        "dropCharge": "One-way rental return fee",
+        "youngDriverFee": "Young driver fee",
+        "quantity": "X {quantity}"
+      },
       "labels": {
         "rentalDays": "Rental days:",
         "rentalPrice": "Rental price:",
@@ -286,6 +292,7 @@
         "manual": "Manual",
         "couponDiscount": "Coupon discount:",
         "fullCoverage": "Full coverage:",
+        "flightNumber": "Flight number:",
         "totalToPay": "Total to pay:"
       },
       "sections": {

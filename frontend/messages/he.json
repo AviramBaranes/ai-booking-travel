@@ -275,6 +275,12 @@
         "dropoffDetails": "פרטי החזרה:",
         "stationDetails": "פרטי תחנה"
       },
+      "payAtPickup": {
+        "title": "לתשלום בתחנה",
+        "dropCharge": "דמי החזר להשכרה חד כיוונית",
+        "youngDriverFee": "דמי נהג צעיר",
+        "quantity": "X {quantity}"
+      },
       "labels": {
         "rentalDays": "מספר ימי השכרה:",
         "rentalPrice": "מחיר השכרה:",
@@ -286,6 +292,7 @@
         "manual": "ידני",
         "couponDiscount": "הנחה קופון:",
         "fullCoverage": "כיסוי מלא:",
+        "flightNumber": "מספר טיסה:",
         "totalToPay": "סה\"כ לתשלום:"
       },
       "sections": {

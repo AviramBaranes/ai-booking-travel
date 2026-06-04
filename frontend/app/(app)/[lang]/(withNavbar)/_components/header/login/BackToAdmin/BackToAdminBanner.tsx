@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 
 export function BackToAdminBanner() {
-  const t = useTranslations("backToAdminBanner");
+  const t = useTranslations("BackToAdmin");
   const { data: session } = useSession();
 
   if (!session?.user?.isAdminAsAgent) return null;
