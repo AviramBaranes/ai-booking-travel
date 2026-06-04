@@ -123,8 +123,8 @@ func buildBusinessReportRows(reservations []db.Reservation, accountsLookup *acco
 
 		currencyRate := dbadapters.NumericToFloat64(r.CurrencyRate)
 		carSellPriceWithBrokerERP := calculateCarSellPriceWithBrokerERP(r)
-		btERPPrice := float64(r.BtErpPrice)
-		totalPrice := float64(r.TotalPrice)
+		btERPPrice := dbadapters.NumericToFloat64(r.BtErpPrice)
+		totalPrice := dbadapters.NumericToFloat64(r.TotalPrice)
 		adminName := namePtr(userNames, r.AdminRefID)
 		voucheredAt := optionalString(dbadapters.TimestamptzToString(r.VoucheredAt))
 

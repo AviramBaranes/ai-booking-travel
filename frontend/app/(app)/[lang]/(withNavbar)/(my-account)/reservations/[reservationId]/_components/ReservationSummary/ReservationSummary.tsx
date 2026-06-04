@@ -42,7 +42,7 @@ export function ReservationSummary({
       <PayAtPickupSection
         currency={reservation.currencyCode}
         fees={reservation.payAtPickup.fees}
-        selectedAddons={reservation.payAtPickup.selectedAddons.map((addon) => {
+        selectedAddons={reservation.payAtPickup.selectedAddons?.map((addon) => {
           const addonGalleryItem = addonsGallery.addons?.find(
             (item) => item.addonId === addon.id.toString(),
           );

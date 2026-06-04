@@ -46,9 +46,9 @@ type Plan struct {
 
 // AvailableVehiclesConfig holds markup percentages and ERP day-charge values per broker.
 type AvailableVehiclesConfig struct {
-	HertzErpDayChargeUS config.Int
-	HertzErpDayChargeCA config.Int
-	FlexErpDayCharge    config.Int
+	HertzErpDayChargeUS config.Float64
+	HertzErpDayChargeCA config.Float64
+	FlexErpDayCharge    config.Float64
 	MarkUpGross         config.Float64
 	MarkUpNet           config.Float64
 }
@@ -111,7 +111,7 @@ func (s *AvailabilityService) SearchAvailability(ctx context.Context, p SearchAv
 		return emptySearchAvailabilityResponse(), nil
 	}
 
-	artifacts, err := s.buildAvailabilityArtifacts(ctx, p, locs, rawVehicles, couponDiscount)
+	artifacts, err := s.buildAvailabilityArtifacts(ctx, p, locs, rawVehicles, float64(couponDiscount))
 	if err != nil {
 		return nil, err
 	}

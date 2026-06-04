@@ -21,11 +21,11 @@ type PlanPriceDetails struct {
 	DropoffLocationCode    string            `json:"dropoffLocationCode"`
 	CurrencyCode           string            `json:"currencyCode"`
 	CurrencyRate           float64           `json:"currencyRate"`
-	DiscountPercentage     int               `json:"discountPercentage"`
+	DiscountPercentage     float64           `json:"discountPercentage"`
 	CarPurchasePrice       float64           `json:"carPurchasePrice"`
 	SupplierErpPrice       float64           `json:"supplierErpPrice"`
 	MarkupPercentage       float64           `json:"markupPercentage"`
-	ChargedERPPriceWithVat int               `json:"chargedErpPriceWithVat"`
+	ChargedERPPriceWithVat float64           `json:"chargedErpPriceWithVat"`
 	CarDetails             broker.CarDetails `json:"carDetails"`
 	AvailableAddOns        []broker.AddOn    `json:"availableAddOns"`
 	Fees                   broker.Fees       `json:"fees"`

@@ -173,7 +173,7 @@ type Plan struct {
 	PlanName               string
 	Price                  float64
 	BrokerErpPrice         float64
-	ChargedErpPriceWithVat int
+	ChargedErpPriceWithVat float64
 	PlanInclusions         []string
 	Info                   []string
 	RateQualifier          string

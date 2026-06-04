@@ -49,7 +49,7 @@ type GetAgentPriceOfferResponse struct {
 	CurrencyCode        string                  `json:"currencyCode"`
 	CarFullPrice        int                     `json:"priceBefDesc"`
 	ErpPrice            int                     `json:"erpPrice"`
-	TotalPrice          int32                   `json:"totalPrice"`
+	TotalPrice          int                     `json:"totalPrice"`
 	OfferedCurrencyCode string                  `json:"offeredCurrencyCode"`
 	OfferedPrice        int32                   `json:"offeredPrice"`
 	PickupLocationName  string                  `json:"pickupLocationName"`
@@ -89,7 +89,7 @@ func (s *PriceOfferService) GetClientPriceOffer(ctx context.Context, token strin
 		return nil, api_errors.ErrInternalError
 	}
 
-	isErpIncluded := (float64(row.BtErpPrice) + dbadapters.NumericToFloat64(row.BrokerErpPrice)) > 0
+	isErpIncluded := (dbadapters.NumericToFloat64(row.BtErpPrice) + dbadapters.NumericToFloat64(row.BrokerErpPrice)) > 0
 
 	return &GetPriceOfferResponse{
 		ID:                  row.ID,
@@ -149,7 +149,7 @@ func (s *PriceOfferService) GetAgentPriceOffer(ctx context.Context, id int64) (*
 		CurrencyCode:        row.CurrencyCode,
 		CarFullPrice:        priceDetails.carFullPrice,
 		ErpPrice:            priceDetails.erpPrice,
-		TotalPrice:          row.TotalPrice,
+		TotalPrice:          pricing.RoundToInt(dbadapters.NumericToFloat64(row.TotalPrice)),
 		OfferedCurrencyCode: row.OfferedCurrencyCode,
 		OfferedPrice:        row.OfferedPrice,
 		PickupLocationName:  row.PickupLocation,
@@ -179,7 +179,7 @@ func calculatePriceOfferDetails(offer db.GetPriceOfferByIdRow) priceOfferPriceDe
 	pp := dbadapters.NumericToFloat64(offer.PurchasePrice)
 	mp := dbadapters.NumericToFloat64(offer.MarkupPercentage)
 	bErp := dbadapters.NumericToFloat64(offer.BrokerErpPrice)
-	btErp := float64(offer.BtErpPrice)
+	btErp := dbadapters.NumericToFloat64(offer.BtErpPrice)
 
 	carFullPrice := pricing.RoundToInt(pricing.ApplyMarkup(pp, mp))
 	erpFullPrice := pricing.RoundToInt(pricing.ApplyMarkup(bErp, mp) + btErp)

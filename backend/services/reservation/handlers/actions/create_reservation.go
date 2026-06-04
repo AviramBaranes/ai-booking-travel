@@ -24,7 +24,7 @@ type SelectedAddon struct {
 
 type PayAtPickup struct {
 	Fees           broker.Fees     `json:"fees"`
-	SelectedAddons []SelectedAddon `json:"selectedAddons"`
+	SelectedAddons []SelectedAddon `json:"selectedAddons" encore:"optional"`
 }
 
 // CreateReservationParams defines the parameters required to create a reservation.
@@ -44,9 +44,9 @@ type CreateReservationParams struct {
 	CurrencyRate          float64            `json:"currencyRate" validate:"required,gt=0"`
 	PurchasePrice         float64            `json:"purchasePrice" validate:"required,gt=0"`
 	MarkupPercentage      float64            `json:"markupPercentage" validate:"required,gt=0"`
-	DiscountPercentage    int                `json:"discountPercentage" validate:"gte=0,lte=100"`
+	DiscountPercentage    float64            `json:"discountPercentage" validate:"gte=0,lte=100"`
 	BrokerErpPrice        float64            `json:"brokerErpPrice" validate:"gte=0"`
-	BtErpPrice            int                `json:"btErpPrice" validate:"gte=0"`
+	BtErpPrice            float64            `json:"btErpPrice" validate:"gte=0"`
 	PickupDate            string             `json:"pickupDate" validate:"required,datetime=2006-01-02"`
 	DropoffDate           string             `json:"dropoffDate" validate:"required,datetime=2006-01-02"`
 	PickupTime            string             `json:"pickupTime" validate:"required,notblank"`
@@ -103,11 +103,11 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 		CurrencyRate:          dbadapters.NumericFromFloat64(p.CurrencyRate),
 		PurchasePrice:         dbadapters.NumericFromFloat64(p.PurchasePrice),
 		MarkupPercentage:      dbadapters.NumericFromFloat64(p.MarkupPercentage),
-		DiscountPercentage:    int32(p.DiscountPercentage),
+		DiscountPercentage:    dbadapters.NumericFromFloat64(p.DiscountPercentage),
 		BrokerErpPrice:        dbadapters.NumericFromFloat64(p.BrokerErpPrice),
-		BtErpPrice:            int32(p.BtErpPrice),
+		BtErpPrice:            dbadapters.NumericFromFloat64(p.BtErpPrice),
 		VatPercentage:         dbadapters.NumericFromFloat64(s.cfg.VAT),
-		TotalPrice:            int32(totalPrice),
+		TotalPrice:            dbadapters.NumericFromFloat64(totalPrice),
 		PickupDate:            dbadapters.DateFromString(p.PickupDate),
 		DropoffDate:           dbadapters.DateFromString(p.DropoffDate),
 		PickupTime:            p.PickupTime,

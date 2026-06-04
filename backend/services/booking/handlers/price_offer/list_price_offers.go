@@ -5,6 +5,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
+	"encore.app/internal/pricing"
 	"encore.app/internal/validation"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
@@ -34,7 +35,7 @@ type PriceOfferSummary struct {
 	PickupTime          string `json:"pickupTime"`
 	DropoffTime         string `json:"dropoffTime"`
 	CurrencyCode        string `json:"currencyCode"`
-	TotalPrice          int32  `json:"totalPrice"`
+	TotalPrice          int    `json:"totalPrice"`
 	OfferedCurrencyCode string `json:"offeredCurrencyCode"`
 	OfferedPrice        int32  `json:"offeredPrice"`
 	CreatedAt           string `json:"createdAt"`
@@ -121,7 +122,7 @@ func mapRowsToPriceOfferSummaries(rows []db.ListPriceOffersByAgentRow) []PriceOf
 			PickupTime:          r.PickupTime,
 			DropoffTime:         r.DropoffTime,
 			CurrencyCode:        r.CurrencyCode,
-			TotalPrice:          r.TotalPrice,
+			TotalPrice:          pricing.RoundToInt(dbadapters.NumericToFloat64(r.TotalPrice)),
 			OfferedCurrencyCode: r.OfferedCurrencyCode,
 			OfferedPrice:        r.OfferedPrice,
 			CreatedAt:           dbadapters.TimestamptzToString(r.CreatedAt),

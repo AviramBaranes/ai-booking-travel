@@ -31,7 +31,7 @@ const (
 )
 
 // buildAvailabilityArtifacts applies markup, coupon discounts, and currency data to produce the final response vehicles and plan snapshots.
-func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p SearchAvailabilityParams, locs availabilityLocations, rawVehicles []broker.AvailableVehicle, couponDiscount int) (availabilityArtifacts, error) {
+func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p SearchAvailabilityParams, locs availabilityLocations, rawVehicles []broker.AvailableVehicle, couponDiscount float64) (availabilityArtifacts, error) {
 	artifacts := availabilityArtifacts{
 		availableCars: make([]AvailableVehicle, 0, len(rawVehicles)),
 		plansDetails:  make([]PlanPriceDetails, 0, len(rawVehicles)*2), //most cars have 1-2 plans
@@ -123,13 +123,15 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 
 			carPriceWithMarkup := pricing.ApplyMarkup(p.Price, markupPercentage)
 			erpWithMarkup := pricing.ApplyMarkup(p.BrokerErpPrice, markupPercentage)
+			discountedErp := pricing.CalculateDiscountedPrice(erpWithMarkup, couponDiscount)
+			discountedCarPrice := pricing.CalculateDiscountedPrice(carPriceWithMarkup, couponDiscount) // no discount on charged erp
 			avPlan := Plan{
 				PlanID:         p.PlanID,
 				PlanName:       p.PlanName,
 				FullPrice:      pricing.RoundToInt(carPriceWithMarkup),
-				Discount:       couponDiscount,
-				Price:          pricing.RoundToInt(pricing.CalculateDiscountedPrice(carPriceWithMarkup, couponDiscount)),
-				ErpPrice:       pricing.RoundToInt(pricing.CalculateDiscountedPrice(erpWithMarkup, couponDiscount)) + p.ChargedErpPriceWithVat, // no discount on charged erp
+				Discount:       pricing.RoundToInt(couponDiscount),
+				Price:          pricing.RoundToInt(discountedCarPrice),
+				ErpPrice:       pricing.RoundToInt(discountedErp + p.ChargedErpPriceWithVat), // no discount on charged erp
 				PlanInclusions: inclusions,
 				Info:           info,
 				RateQualifier:  p.RateQualifier,

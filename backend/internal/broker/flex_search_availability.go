@@ -211,8 +211,8 @@ var flexProductMap = map[string]int{
 }
 
 // getInsuranceExtraCost calculates the extra insurance cost based on the number of rental days, using a fixed daily rate.
-func (f *Flex) getInsuranceExtraCost(days int) int {
-	return days * f.erpDayCharge
+func (f *Flex) getInsuranceExtraCost(days int) float64 {
+	return float64(days) * f.erpDayCharge
 }
 
 // getPlans returns the list of plans for a given car

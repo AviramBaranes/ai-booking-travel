@@ -58,8 +58,7 @@ func (s *PriceOfferService) CreatePriceOffer(ctx context.Context, p CreatePriceO
 		return nil, api_errors.ErrInternalError
 	}
 
-	var btErpPrice int
-	var brokerErpPrice float64
+	var brokerErpPrice, btErpPrice float64
 	if p.IncludeERP {
 		btErpPrice = plan.ChargedERPPriceWithVat
 		brokerErpPrice = plan.SupplierErpPrice
@@ -107,8 +106,8 @@ func (s *PriceOfferService) CreatePriceOffer(ctx context.Context, p CreatePriceO
 		PurchasePrice:       dbadapters.NumericFromFloat64(plan.CarPurchasePrice),
 		MarkupPercentage:    dbadapters.NumericFromFloat64(plan.MarkupPercentage),
 		BrokerErpPrice:      dbadapters.NumericFromFloat64(brokerErpPrice),
-		BtErpPrice:          int32(btErpPrice),
-		TotalPrice:          int32(totalPrice),
+		BtErpPrice:          dbadapters.NumericFromFloat64(btErpPrice),
+		TotalPrice:          dbadapters.NumericFromFloat64(totalPrice),
 		OfferedCurrencyCode: p.OfferedCurrencyCode,
 		OfferedPrice:        p.OfferedPrice,
 		PayAtPickup:         payAtPickup,

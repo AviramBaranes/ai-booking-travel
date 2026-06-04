@@ -201,12 +201,12 @@ func (h *Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, 
 }
 
 // getERPPrice returns the ERP surcharge for the market and rental length.
-func (h *Hertz) getERPPrice(dayCount int, countryCode string) int {
+func (h *Hertz) getERPPrice(dayCount int, countryCode string) float64 {
 	if countryCode == "US" {
-		return h.usErpDayCharge * dayCount
+		return h.usErpDayCharge * float64(dayCount)
 	}
 	if countryCode == "CA" {
-		return h.caErpDayCharge * dayCount
+		return h.caErpDayCharge * float64(dayCount)
 	}
 	return 0
 }

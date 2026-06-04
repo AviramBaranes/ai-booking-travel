@@ -73,5 +73,5 @@ func (s *Service) UpdatePriceOffer(ctx context.Context, id int64, p poh.UpdatePr
 }
 
 func isPriceOfferErpIncluded(offer db.GetPriceOfferByIdRow) bool {
-	return offer.BtErpPrice != 0 || dbadapters.NumericToFloat64(offer.BrokerErpPrice) != 0
+	return dbadapters.NumericToFloat64(offer.BtErpPrice) != 0 || dbadapters.NumericToFloat64(offer.BrokerErpPrice) != 0
 }

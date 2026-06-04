@@ -245,8 +245,8 @@ type PriceOffer struct {
 	PurchasePrice       pgtype.Numeric
 	MarkupPercentage    pgtype.Numeric
 	BrokerErpPrice      pgtype.Numeric
-	BtErpPrice          int32
-	TotalPrice          int32
+	BtErpPrice          pgtype.Numeric
+	TotalPrice          pgtype.Numeric
 	OfferedCurrencyCode string
 	OfferedPrice        int32
 	RenewedAt           pgtype.Timestamptz

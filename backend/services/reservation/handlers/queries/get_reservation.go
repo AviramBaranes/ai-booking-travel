@@ -27,7 +27,7 @@ type GetReservationResponse struct {
 	CarFullPrice        int                 `json:"priceBefDesc"`
 	DiscountAmount      int                 `json:"discountAmount"`
 	ErpPrice            int                 `json:"erpPrice"`
-	TotalPrice          int32               `json:"totalPrice"`
+	TotalPrice          int                 `json:"totalPrice"`
 	PayAtPickup         actions.PayAtPickup `json:"payAtPickup"`
 	FlightNumber        *string             `json:"flightNumber,omitempty" encore:"optional"`
 	PickupLocationName  string              `json:"pickupLocationName"`
@@ -82,7 +82,7 @@ func (s *QueryService) GetReservation(ctx context.Context, id int64) (*GetReserv
 		CarFullPrice:        rpd.carFullPrice,
 		ErpPrice:            rpd.erpPrice,
 		DiscountAmount:      rpd.discountAmount,
-		TotalPrice:          row.TotalPrice,
+		TotalPrice:          pricing.RoundToInt(dbadapters.NumericToFloat64(row.TotalPrice)),
 		PayAtPickup:         payAtPickup,
 		FlightNumber:        row.FlightNumber,
 		PickupDate:          dbadapters.DateToString(row.PickupDate),
@@ -114,16 +114,16 @@ func calculatePriceDetails(reservation db.Reservation) reservationPriceDetails {
 	pp := dbadapters.NumericToFloat64(reservation.PurchasePrice)
 	mp := dbadapters.NumericToFloat64(reservation.MarkupPercentage)
 	bErp := dbadapters.NumericToFloat64(reservation.BrokerErpPrice)
-	btErp := float64(reservation.BtErpPrice)
+	btErp := dbadapters.NumericToFloat64(reservation.BtErpPrice)
 
-	carFullPrice := pricing.RoundToInt(pricing.ApplyMarkup(pp, mp))
-	erpFullPrice := pricing.RoundToInt(pricing.ApplyMarkup(bErp, mp) + btErp)
-	discountAmount := (erpFullPrice + carFullPrice) - int(reservation.TotalPrice)
+	carFullPrice := pricing.ApplyMarkup(pp, mp)
+	erpFullPrice := pricing.ApplyMarkup(bErp, mp) + btErp
+	discountAmount := (erpFullPrice + carFullPrice) - dbadapters.NumericToFloat64(reservation.TotalPrice)
 
 	return reservationPriceDetails{
-		carFullPrice:   carFullPrice,
-		erpPrice:       erpFullPrice,
-		discountAmount: discountAmount,
+		carFullPrice:   pricing.RoundToInt(carFullPrice),
+		erpPrice:       pricing.RoundToInt(erpFullPrice),
+		discountAmount: pricing.RoundToInt(discountAmount),
 	}
 }
 

@@ -274,15 +274,15 @@ func TestCreatePriceOffer(t *testing.T) {
 		if string(row.Status) != "open" {
 			t.Errorf("status: got %q, want %q", row.Status, "open")
 		}
-		if row.BtErpPrice != int32(plan.ChargedERPPriceWithVat) {
-			t.Errorf("bt erp price: got %d, want %d", row.BtErpPrice, plan.ChargedERPPriceWithVat)
+		if dbadapters.NumericToFloat64(row.BtErpPrice) != float64(plan.ChargedERPPriceWithVat) {
+			t.Errorf("bt erp price: got %v, want %v", dbadapters.NumericToFloat64(row.BtErpPrice), plan.ChargedERPPriceWithVat)
 		}
 		if dbadapters.NumericToFloat64(row.BrokerErpPrice) == 0 {
 			t.Error("broker erp price should be non-zero when IncludeERP=true")
 		}
-		// Total = round((100*1.5 + 10*1.5) * 0.9) + 15 = round(148.5)+15 = 149+15 = 164
-		if row.TotalPrice != 164 {
-			t.Errorf("total price: got %d, want %d", row.TotalPrice, 164)
+		// Total = (100*1.5 + 10*1.5) * 0.9 + 15 = = 163.5
+		if dbadapters.NumericToFloat64(row.TotalPrice) != 163.5 {
+			t.Errorf("total price: got %v, want %v", dbadapters.NumericToFloat64(row.TotalPrice), 163.5)
 		}
 		if row.PickupLocationID != pickupID {
 			t.Errorf("pickup location id: got %d, want %d", row.PickupLocationID, pickupID)
@@ -308,15 +308,15 @@ func TestCreatePriceOffer(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to fetch created offer: %v", err)
 		}
-		if row.BtErpPrice != 0 {
-			t.Errorf("bt erp price: got %d, want 0", row.BtErpPrice)
+		if dbadapters.NumericToFloat64(row.BtErpPrice) != 0 {
+			t.Errorf("bt erp price: got %v, want 0", dbadapters.NumericToFloat64(row.BtErpPrice))
 		}
 		if dbadapters.NumericToFloat64(row.BrokerErpPrice) != 0 {
 			t.Errorf("broker erp price: got %v, want 0", dbadapters.NumericToFloat64(row.BrokerErpPrice))
 		}
 		// Total = round(100*1.5 * 0.9) = 135.
-		if row.TotalPrice != 135 {
-			t.Errorf("total price: got %d, want 135", row.TotalPrice)
+		if dbadapters.NumericToFloat64(row.TotalPrice) != 135 {
+			t.Errorf("total price: got %v, want 135", dbadapters.NumericToFloat64(row.TotalPrice))
 		}
 	})
 }
@@ -650,11 +650,11 @@ func TestRenewPriceOffer(t *testing.T) {
 		if dbadapters.NumericToFloat64(row.BrokerErpPrice) != 20 {
 			t.Errorf("broker erp price: got %v, want 20", dbadapters.NumericToFloat64(row.BrokerErpPrice))
 		}
-		if row.BtErpPrice != 30 {
-			t.Errorf("bt erp price: got %d, want 30", row.BtErpPrice)
+		if dbadapters.NumericToFloat64(row.BtErpPrice) != 30 {
+			t.Errorf("bt erp price: got %v, want 30", dbadapters.NumericToFloat64(row.BtErpPrice))
 		}
-		if row.TotalPrice != 305 {
-			t.Errorf("total price: got %d, want 305", row.TotalPrice)
+		if dbadapters.NumericToFloat64(row.TotalPrice) != 305 {
+			t.Errorf("total price: got %v, want 305", dbadapters.NumericToFloat64(row.TotalPrice))
 		}
 		if string(row.Status) != "open" {
 			t.Errorf("status: got %q, want open", row.Status)
@@ -691,11 +691,11 @@ func TestRenewPriceOffer(t *testing.T) {
 		if dbadapters.NumericToFloat64(row.BrokerErpPrice) != 0 {
 			t.Errorf("broker erp price: got %v, want 0", dbadapters.NumericToFloat64(row.BrokerErpPrice))
 		}
-		if row.BtErpPrice != 0 {
-			t.Errorf("bt erp price: got %d, want 0", row.BtErpPrice)
+		if dbadapters.NumericToFloat64(row.BtErpPrice) != 0 {
+			t.Errorf("bt erp price: got %v, want 0", dbadapters.NumericToFloat64(row.BtErpPrice))
 		}
-		if row.TotalPrice != 250 {
-			t.Errorf("total price: got %d, want 250", row.TotalPrice)
+		if dbadapters.NumericToFloat64(row.TotalPrice) != 250 {
+			t.Errorf("total price: got %v, want 250", dbadapters.NumericToFloat64(row.TotalPrice))
 		}
 	})
 
@@ -731,8 +731,8 @@ func TestRenewPriceOffer(t *testing.T) {
 		if string(row.Status) != "unavailable" {
 			t.Errorf("status: got %q, want unavailable", row.Status)
 		}
-		if row.TotalPrice != before.TotalPrice {
-			t.Errorf("total price should be unchanged: got %d, want %d", row.TotalPrice, before.TotalPrice)
+		if dbadapters.NumericToFloat64(row.TotalPrice) != dbadapters.NumericToFloat64(before.TotalPrice) {
+			t.Errorf("total price should be unchanged: got %v, want %v", dbadapters.NumericToFloat64(row.TotalPrice), dbadapters.NumericToFloat64(before.TotalPrice))
 		}
 	})
 }

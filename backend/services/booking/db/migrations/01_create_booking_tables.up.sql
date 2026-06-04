@@ -208,8 +208,8 @@ CREATE TABLE
         purchase_price NUMERIC(12, 2) NOT NULL,
         markup_percentage NUMERIC(12, 2) NOT NULL,
         broker_erp_price NUMERIC(12, 2) NOT NULL,
-        bt_erp_price INT NOT NULL,
-        total_price INT NOT NULL,
+        bt_erp_price NUMERIC(12, 2) NOT NULL,
+        total_price NUMERIC(12, 2) NOT NULL,
         offered_currency_code TEXT NOT NULL,
         offered_price INT NOT NULL,
         

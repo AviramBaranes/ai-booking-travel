@@ -89,8 +89,7 @@ func (s *BookingService) buildCreateReservationParams(
 	rentalDays, _ := calculateSnapshotRentalDays(snapshot)
 	driverAge, _ := strconv.Atoi(snapshot.DriverAge)
 
-	var btErpPrice int
-	var brokerErpPrice float64
+	var btErpPrice, brokerErpPrice float64
 	if p.IncludeERP {
 		btErpPrice = plan.ChargedERPPriceWithVat
 		brokerErpPrice = plan.SupplierErpPrice
@@ -132,7 +131,7 @@ func (s *BookingService) buildCreateReservationParams(
 		CurrencyRate:          plan.CurrencyRate,
 		PurchasePrice:         plan.CarPurchasePrice,
 		MarkupPercentage:      plan.MarkupPercentage,
-		DiscountPercentage:    int(plan.DiscountPercentage),
+		DiscountPercentage:    plan.DiscountPercentage,
 		BrokerErpPrice:        brokerErpPrice,
 		BtErpPrice:            btErpPrice,
 		PickupTime:            snapshot.PickupTime,

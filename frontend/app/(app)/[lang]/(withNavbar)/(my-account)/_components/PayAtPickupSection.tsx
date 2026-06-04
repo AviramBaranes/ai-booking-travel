@@ -22,7 +22,7 @@ export function PayAtPickupSection({
   if (
     fees.dropCharge === 0 &&
     fees.youngDriverFee === 0 &&
-    selectedAddons.length === 0
+    (!selectedAddons || selectedAddons.length === 0)
   ) {
     return null;
   }
@@ -43,7 +43,7 @@ export function PayAtPickupSection({
         />
       )}
 
-      {selectedAddons.map((addon) => (
+      {selectedAddons?.map((addon) => (
         <div key={addon.id}>
           <SummaryRow
             label={addon.name}

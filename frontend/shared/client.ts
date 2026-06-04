@@ -1026,7 +1026,7 @@ export namespace actions {
 
     export interface PayAtPickup {
         fees: broker.Fees
-        selectedAddons: SelectedAddon[]
+        selectedAddons?: SelectedAddon[]
     }
 
     export interface SelectedAddon {

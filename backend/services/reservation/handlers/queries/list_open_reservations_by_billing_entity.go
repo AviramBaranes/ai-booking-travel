@@ -157,7 +157,7 @@ func getReservationPriceDetails(row db.GetPaymentPendingReservationsByBillingEnt
 		carPurchasePrice: roundPrice(carPurchasePrice),
 		carSellingPrice:  roundPrice(carSellingPrice),
 		carProfit:        roundPrice(carSellingPrice - carPurchasePrice),
-		erpSellingPrice:  roundPrice(float64(row.BtErpPrice)),
-		totalPrice:       roundPrice(carSellingPrice + float64(row.BtErpPrice)),
+		erpSellingPrice:  dbadapters.NumericToFloat64(row.BtErpPrice),
+		totalPrice:       dbadapters.NumericToFloat64(row.TotalPrice),
 	}
 }

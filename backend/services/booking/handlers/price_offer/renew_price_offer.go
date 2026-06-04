@@ -129,8 +129,7 @@ func (s *PriceOfferService) renewPriceOfferDetails(ctx context.Context, offer db
 		return api_errors.ErrInternalError
 	}
 
-	var btErpPrice int
-	var brokerErpPrice float64
+	var brokerErpPrice, btErpPrice float64
 	if isPriceOfferErpIncluded(offer) {
 		btErpPrice = plan.ChargedERPPriceWithVat
 		brokerErpPrice = plan.SupplierErpPrice
@@ -147,8 +146,8 @@ func (s *PriceOfferService) renewPriceOfferDetails(ctx context.Context, offer db
 		PurchasePrice:    dbadapters.NumericFromFloat64(plan.CarPurchasePrice),
 		MarkupPercentage: dbadapters.NumericFromFloat64(plan.MarkupPercentage),
 		BrokerErpPrice:   dbadapters.NumericFromFloat64(brokerErpPrice),
-		BtErpPrice:       int32(btErpPrice),
-		TotalPrice:       int32(totalPrice),
+		BtErpPrice:       dbadapters.NumericFromFloat64(btErpPrice),
+		TotalPrice:       dbadapters.NumericFromFloat64(totalPrice),
 	})
 	if err != nil {
 		rlog.Error("failed to renew price offer details", "id", offer.ID, "error", err)
@@ -159,5 +158,5 @@ func (s *PriceOfferService) renewPriceOfferDetails(ctx context.Context, offer db
 }
 
 func isPriceOfferErpIncluded(offer db.GetPriceOfferByIdRow) bool {
-	return offer.BtErpPrice != 0 || dbadapters.NumericToFloat64(offer.BrokerErpPrice) != 0
+	return dbadapters.NumericToFloat64(offer.BtErpPrice) != 0 || dbadapters.NumericToFloat64(offer.BrokerErpPrice) != 0
 }

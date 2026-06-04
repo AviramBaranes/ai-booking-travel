@@ -6,6 +6,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
+	"encore.app/internal/pricing"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
@@ -36,7 +37,7 @@ type ReservationSummary struct {
 	DriverFirstName     string `json:"driverFirstName"`
 	DriverLastName      string `json:"driverLastName"`
 	ReservationStatus   string `json:"reservationStatus"`
-	TotalPrice          int32  `json:"totalPrice"`
+	TotalPrice          int    `json:"totalPrice"`
 }
 
 type ListReservationsResponse struct {
@@ -124,7 +125,7 @@ func mapRowsToSummaries(rows []db.ListReservationsByUserRow) []ReservationSummar
 			DriverFirstName:     r.DriverFirstName,
 			DriverLastName:      r.DriverLastName,
 			ReservationStatus:   string(r.ReservationStatus),
-			TotalPrice:          r.TotalPrice,
+			TotalPrice:          pricing.RoundToInt(dbadapters.NumericToFloat64(r.TotalPrice)),
 		}
 	}
 	return summaries

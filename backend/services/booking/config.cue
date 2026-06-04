@@ -1,8 +1,8 @@
 package booking
 
-HertzErpDayChargeUS: 3
-HertzErpDayChargeCA: 7
-FlexErpDayCharge: 3
+HertzErpDayChargeUS: 3.0
+HertzErpDayChargeCA: 7.0
+FlexErpDayCharge: 3.0
 MarkUpGross: 45.0
 MarkUpNet:   25.0
 

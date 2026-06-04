@@ -113,8 +113,8 @@ type CreatePriceOfferParams struct {
 	PurchasePrice       pgtype.Numeric
 	MarkupPercentage    pgtype.Numeric
 	BrokerErpPrice      pgtype.Numeric
-	BtErpPrice          int32
-	TotalPrice          int32
+	BtErpPrice          pgtype.Numeric
+	TotalPrice          pgtype.Numeric
 	OfferedCurrencyCode string
 	OfferedPrice        int32
 	PayAtPickup         []byte
@@ -236,8 +236,8 @@ type GetPriceOfferByIdRow struct {
 	PurchasePrice           pgtype.Numeric
 	MarkupPercentage        pgtype.Numeric
 	BrokerErpPrice          pgtype.Numeric
-	BtErpPrice              int32
-	TotalPrice              int32
+	BtErpPrice              pgtype.Numeric
+	TotalPrice              pgtype.Numeric
 	OfferedCurrencyCode     string
 	OfferedPrice            int32
 	RenewedAt               pgtype.Timestamptz
@@ -331,8 +331,8 @@ type GetPriceOfferByTokenRow struct {
 	PurchasePrice       pgtype.Numeric
 	MarkupPercentage    pgtype.Numeric
 	BrokerErpPrice      pgtype.Numeric
-	BtErpPrice          int32
-	TotalPrice          int32
+	BtErpPrice          pgtype.Numeric
+	TotalPrice          pgtype.Numeric
 	OfferedCurrencyCode string
 	OfferedPrice        int32
 	RenewedAt           pgtype.Timestamptz
@@ -421,7 +421,7 @@ type ListPriceOffersByAgentRow struct {
 	PickupTime          string
 	DropoffTime         string
 	CurrencyCode        string
-	TotalPrice          int32
+	TotalPrice          pgtype.Numeric
 	OfferedCurrencyCode string
 	OfferedPrice        int32
 	CreatedAt           pgtype.Timestamptz
@@ -490,8 +490,8 @@ type RenewPriceOfferDetailsParams struct {
 	PurchasePrice    pgtype.Numeric
 	MarkupPercentage pgtype.Numeric
 	BrokerErpPrice   pgtype.Numeric
-	BtErpPrice       int32
-	TotalPrice       int32
+	BtErpPrice       pgtype.Numeric
+	TotalPrice       pgtype.Numeric
 	ID               int64
 	AgentID          int64
 }

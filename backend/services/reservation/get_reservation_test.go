@@ -113,7 +113,7 @@ func TestGetReservation(t *testing.T) {
 					CarFullPrice:   154,
 					ErpPrice:       15,
 					TotalPrice:     153, // rounding (153.75 - 10% discount) + 15 erp (no discount on bt erp)
-					DiscountAmount: 16,
+					DiscountAmount: 15,
 				},
 			},
 			{
@@ -129,7 +129,7 @@ func TestGetReservation(t *testing.T) {
 					CarFullPrice:   152,
 					ErpPrice:       30,
 					TotalPrice:     166,
-					DiscountAmount: 16,
+					DiscountAmount: 17,
 				},
 			},
 		}

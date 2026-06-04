@@ -129,7 +129,7 @@ func unmarshalPriceOfferCarDetails(offer db.GetPriceOfferByIdRow) (broker.CarDet
 }
 
 func isPriceOfferErpIncluded(offer db.GetPriceOfferByIdRow) bool {
-	return offer.BtErpPrice != 0 || dbadapters.NumericToFloat64(offer.BrokerErpPrice) != 0
+	return dbadapters.NumericToFloat64(offer.BtErpPrice) != 0 || dbadapters.NumericToFloat64(offer.BrokerErpPrice) != 0
 }
 
 func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, p BookPriceOfferParams, offerCarDetails broker.CarDetails) broker.BookingParams {
@@ -207,7 +207,7 @@ func buildPriceOfferReservationRequest(
 		MarkupPercentage:      dbadapters.NumericToFloat64(offer.MarkupPercentage),
 		DiscountPercentage:    0,
 		BrokerErpPrice:        dbadapters.NumericToFloat64(offer.BrokerErpPrice),
-		BtErpPrice:            int(offer.BtErpPrice),
+		BtErpPrice:            dbadapters.NumericToFloat64(offer.BtErpPrice),
 		PickupTime:            offer.PickupTime,
 		DropoffTime:           offer.DropoffTime,
 		PickupLocationName:    offer.PickupLocation,

@@ -78,7 +78,7 @@ func getReservationPrices(row db.GetPaymentPendingReservationsRow) (carPrice, er
 	pp := dbadapters.NumericToFloat64(row.PurchasePrice)
 	mp := dbadapters.NumericToFloat64(row.MarkupPercentage)
 	bErp := dbadapters.NumericToFloat64(row.BrokerErpPrice)
-	btErp := float64(row.BtErpPrice)
+	btErp := dbadapters.NumericToFloat64(row.BtErpPrice)
 
 	carFullPrice := pricing.ApplyMarkup(pp, mp)
 	erpFullPrice := pricing.ApplyMarkup(bErp, mp) + btErp
