@@ -20,11 +20,11 @@ import (
 )
 
 type BookPriceOfferParams struct {
-	PriceOfferID    int64  `json:"priceOfferId" validate:"required"`
-	DriverTitle     string `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Mrs' 'Ms' 'Miss' 'Dr'"`
-	DriverFirstName string `json:"driverFirstName" validate:"required,uppercase_only"`
-	DriverLastName  string `json:"driverLastName" validate:"required,uppercase_only"`
-	FlightNumber    string `json:"flightNumber" encore:"optional"`
+	PriceOfferID    int64   `json:"priceOfferId" validate:"required"`
+	DriverTitle     string  `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Mrs' 'Ms' 'Miss' 'Dr'"`
+	DriverFirstName string  `json:"driverFirstName" validate:"required,uppercase_only"`
+	DriverLastName  string  `json:"driverLastName" validate:"required,uppercase_only"`
+	FlightNumber    *string `json:"flightNumber" encore:"optional"`
 }
 
 func (p BookPriceOfferParams) Validate() error {
@@ -133,6 +133,10 @@ func isPriceOfferErpIncluded(offer db.GetPriceOfferByIdRow) bool {
 }
 
 func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, p BookPriceOfferParams, offerCarDetails broker.CarDetails) broker.BookingParams {
+	var flightNumber string
+	if p.FlightNumber != nil {
+		flightNumber = *p.FlightNumber
+	}
 	return broker.BookingParams{
 		RateQualifier:   offer.RateQualifier,
 		SupplierCode:    offer.SupplierCode,
@@ -145,7 +149,7 @@ func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, p BookPriceOffe
 		DriverTitle:     p.DriverTitle,
 		DriverFirstName: p.DriverFirstName,
 		DriverLastName:  p.DriverLastName,
-		FlightNumber:    p.FlightNumber,
+		FlightNumber:    flightNumber,
 		DriverAge:       offer.DriverAge,
 		PickupDate:      dbadapters.DateToString(offer.PickupDate),
 		DropoffDate:     dbadapters.DateToString(offer.DropoffDate),
@@ -208,6 +212,8 @@ func buildPriceOfferReservationRequest(
 		DropoffTime:           offer.DropoffTime,
 		PickupLocationName:    offer.PickupLocation,
 		DropoffLocationName:   offer.DropoffLocation,
+		FlightNumber:          p.FlightNumber,
+		PayAtPickup:           unmarshalPayAtPickup(offer.PayAtPickup),
 	}, nil
 }
 
@@ -221,4 +227,14 @@ func (s *BookingService) markPriceOfferBooked(ctx context.Context, priceOfferID 
 	if err != nil {
 		rlog.Error("failed to mark price offer as booked", "id", priceOfferID, "reservationID", reservationID, "error", err)
 	}
+}
+
+// unmarshalPayAtPickup unmarshals the PayAtPickup JSON from the database into a struct for the response.
+func unmarshalPayAtPickup(papJson []byte) reservation.PayAtPickup {
+	var pap reservation.PayAtPickup
+	if err := json.Unmarshal(papJson, &pap); err != nil {
+		rlog.Error("failed to unmarshal pay at pickup", "error", err)
+		return reservation.PayAtPickup{}
+	}
+	return pap
 }

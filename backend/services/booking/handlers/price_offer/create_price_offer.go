@@ -12,6 +12,8 @@ import (
 	"encore.app/internal/validation"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
+	"encore.app/services/booking/handlers/availability"
+	"encore.app/services/reservation"
 	"encore.dev/rlog"
 )
 
@@ -77,6 +79,12 @@ func (s *PriceOfferService) CreatePriceOffer(ctx context.Context, p CreatePriceO
 
 	totalPrice := pricing.CalculateTotalPrice(plan.CarPurchasePrice, plan.MarkupPercentage, brokerErpPrice, btErpPrice, plan.DiscountPercentage)
 
+	payAtPickup, err := json.Marshal(reservation.PayAtPickup{Fees: plan.Fees})
+	if err != nil {
+		rlog.Error("failed to marshal pay at pickup", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
 	priceOffer, err := s.query.CreatePriceOffer(ctx, db.CreatePriceOfferParams{
 		AgentID:             authData.UserID,
 		Name:                p.Name,
@@ -103,6 +111,7 @@ func (s *PriceOfferService) CreatePriceOffer(ctx context.Context, p CreatePriceO
 		TotalPrice:          int32(totalPrice),
 		OfferedCurrencyCode: p.OfferedCurrencyCode,
 		OfferedPrice:        p.OfferedPrice,
+		PayAtPickup:         payAtPickup,
 	})
 	if err != nil {
 		return nil, err
@@ -153,11 +162,11 @@ func (s *PriceOfferService) getSnapshot(ctx context.Context, snapshotID int64) (
 }
 
 // findPlan locates the plan matching rateQualifier and supplierCode in the snapshot.
-func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode string) (planDetails, error) {
-	var plans []planDetails
+func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode string) (availability.PlanPriceDetails, error) {
+	var plans []availability.PlanPriceDetails
 	if err := json.Unmarshal(snapshot.Plans, &plans); err != nil {
 		rlog.Error("failed to unmarshal plans JSON", "error", err)
-		return planDetails{}, api_errors.ErrInternalError
+		return availability.PlanPriceDetails{}, api_errors.ErrInternalError
 	}
 
 	for _, plan := range plans {
@@ -165,7 +174,7 @@ func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode st
 			return plan, nil
 		}
 	}
-	return planDetails{}, errPlanNotFound
+	return availability.PlanPriceDetails{}, errPlanNotFound
 }
 
 // calculateRentalDays calculates rental duration from snapshot dates.

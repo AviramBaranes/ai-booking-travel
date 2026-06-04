@@ -10,58 +10,61 @@ import (
 	"encore.app/internal/pricing"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
+	"encore.app/services/reservation"
 	"encore.dev/rlog"
 )
 
 // GetPriceOfferResponse is the public-facing details of a price offer (no internal pricing breakdown).
 type GetPriceOfferResponse struct {
-	ID                  int64             `json:"id"`
-	Status              string            `json:"status"`
-	Name                string            `json:"name"`
-	CarDetails          broker.CarDetails `json:"carDetails"`
-	PlanInclusions      []string          `json:"planInclusions"`
-	IsErpIncluded       bool              `json:"isErpIncluded"`
-	CurrencyCode        string            `json:"currencyCode"`
-	TotalPrice          int32             `json:"totalPrice"`
-	PickupLocationName  string            `json:"pickupLocationName"`
-	DropoffLocationName string            `json:"dropoffLocationName"`
-	PickupDate          string            `json:"pickupDate"`
-	DropoffDate         string            `json:"dropoffDate"`
-	RentalDays          int32             `json:"rentalDays"`
-	PickupTime          string            `json:"pickupTime"`
-	DropoffTime         string            `json:"dropoffTime"`
-	DriverAge           string            `json:"driverAge"`
-	CreatedAt           string            `json:"createdAt"`
+	ID                  int64                   `json:"id"`
+	Status              string                  `json:"status"`
+	Name                string                  `json:"name"`
+	CarDetails          broker.CarDetails       `json:"carDetails"`
+	PlanInclusions      []string                `json:"planInclusions"`
+	IsErpIncluded       bool                    `json:"isErpIncluded"`
+	CurrencyCode        string                  `json:"currencyCode"`
+	TotalPrice          int32                   `json:"totalPrice"`
+	PickupLocationName  string                  `json:"pickupLocationName"`
+	DropoffLocationName string                  `json:"dropoffLocationName"`
+	PickupDate          string                  `json:"pickupDate"`
+	DropoffDate         string                  `json:"dropoffDate"`
+	RentalDays          int32                   `json:"rentalDays"`
+	PickupTime          string                  `json:"pickupTime"`
+	DropoffTime         string                  `json:"dropoffTime"`
+	DriverAge           string                  `json:"driverAge"`
+	PayAtPickup         reservation.PayAtPickup `json:"payAtPickup"`
+	CreatedAt           string                  `json:"createdAt"`
 }
 
 // GetAgentPriceOfferResponse is the agent-facing details of a price offer, including internal pricing.
 type GetAgentPriceOfferResponse struct {
-	ID                  int64             `json:"id"`
-	ReservationID       *int64            `json:"reservationId,omitempty" encore:"optional"`
-	Token               string            `json:"token"`
-	Status              string            `json:"status"`
-	Name                string            `json:"name"`
-	CarDetails          broker.CarDetails `json:"carDetails"`
-	PlanInclusions      []string          `json:"planInclusions"`
-	SupplierCode        string            `json:"supplierCode"`
-	CurrencyCode        string            `json:"currencyCode"`
-	CarFullPrice        int               `json:"priceBefDesc"`
-	ErpPrice            int               `json:"erpPrice"`
-	TotalPrice          int32             `json:"totalPrice"`
-	OfferedCurrencyCode string            `json:"offeredCurrencyCode"`
-	OfferedPrice        int32             `json:"offeredPrice"`
-	PickupLocationName  string            `json:"pickupLocationName"`
-	DropoffLocationName string            `json:"dropoffLocationName"`
-	PickupLocationID    int64             `json:"pickupLocationId"`
-	DropoffLocationID   int64             `json:"dropoffLocationId"`
-	PickupDate          string            `json:"pickupDate"`
-	DropoffDate         string            `json:"dropoffDate"`
-	PickupTime          string            `json:"pickupTime"`
-	DropoffTime         string            `json:"dropoffTime"`
-	RentalDays          int32             `json:"rentalDays"`
-	DriverAge           string            `json:"driverAge"`
-	RenewedAt           string            `json:"renewedAt"`
-	CreatedAt           string            `json:"createdAt"`
+	ID                  int64                   `json:"id"`
+	ReservationID       *int64                  `json:"reservationId,omitempty" encore:"optional"`
+	Token               string                  `json:"token"`
+	Status              string                  `json:"status"`
+	Name                string                  `json:"name"`
+	CarDetails          broker.CarDetails       `json:"carDetails"`
+	PlanInclusions      []string                `json:"planInclusions"`
+	SupplierCode        string                  `json:"supplierCode"`
+	CurrencyCode        string                  `json:"currencyCode"`
+	CarFullPrice        int                     `json:"priceBefDesc"`
+	ErpPrice            int                     `json:"erpPrice"`
+	TotalPrice          int32                   `json:"totalPrice"`
+	OfferedCurrencyCode string                  `json:"offeredCurrencyCode"`
+	OfferedPrice        int32                   `json:"offeredPrice"`
+	PickupLocationName  string                  `json:"pickupLocationName"`
+	DropoffLocationName string                  `json:"dropoffLocationName"`
+	PickupLocationID    int64                   `json:"pickupLocationId"`
+	DropoffLocationID   int64                   `json:"dropoffLocationId"`
+	PickupDate          string                  `json:"pickupDate"`
+	DropoffDate         string                  `json:"dropoffDate"`
+	PickupTime          string                  `json:"pickupTime"`
+	DropoffTime         string                  `json:"dropoffTime"`
+	RentalDays          int32                   `json:"rentalDays"`
+	DriverAge           string                  `json:"driverAge"`
+	RenewedAt           string                  `json:"renewedAt"`
+	PayAtPickup         reservation.PayAtPickup `json:"payAtPickup"`
+	CreatedAt           string                  `json:"createdAt"`
 }
 
 // GetClientPriceOffer retrieves public price offer details by token.
@@ -105,6 +108,7 @@ func (s *PriceOfferService) GetClientPriceOffer(ctx context.Context, token strin
 		PickupTime:          row.PickupTime,
 		DropoffTime:         row.DropoffTime,
 		DriverAge:           row.DriverAge,
+		PayAtPickup:         getPayAtPickup(row.PayAtPickup),
 		CreatedAt:           dbadapters.TimestamptzToString(row.CreatedAt),
 	}, nil
 }
@@ -158,6 +162,7 @@ func (s *PriceOfferService) GetAgentPriceOffer(ctx context.Context, id int64) (*
 		PickupTime:          row.PickupTime,
 		DropoffTime:         row.DropoffTime,
 		DriverAge:           row.DriverAge,
+		PayAtPickup:         getPayAtPickup(row.PayAtPickup),
 		RenewedAt:           dbadapters.TimestamptzToString(row.RenewedAt),
 		CreatedAt:           dbadapters.TimestamptzToString(row.CreatedAt),
 	}, nil
@@ -183,4 +188,14 @@ func calculatePriceOfferDetails(offer db.GetPriceOfferByIdRow) priceOfferPriceDe
 		carFullPrice: carFullPrice,
 		erpPrice:     erpFullPrice,
 	}
+}
+
+// getPayAtPickup unmarshals the PayAtPickup JSON from the database into a struct for the response.
+func getPayAtPickup(papJson []byte) reservation.PayAtPickup {
+	var pap reservation.PayAtPickup
+	if err := json.Unmarshal(papJson, &pap); err != nil {
+		rlog.Error("failed to unmarshal pay at pickup", "error", err)
+		return reservation.PayAtPickup{}
+	}
+	return pap
 }

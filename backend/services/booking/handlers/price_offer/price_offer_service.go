@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
-	"encore.app/internal/broker"
 	"encore.app/services/booking/db"
 	"encore.dev/beta/errs"
 )
@@ -24,26 +23,6 @@ type PriceOfferService struct {
 // searchFn may be nil for operations that do not require availability search.
 func NewPriceOfferService(query db.Querier, searchFn SearchAvailabilityFn) *PriceOfferService {
 	return &PriceOfferService{query: query, searchAvailability: searchFn}
-}
-
-// planDetails is the internal plan representation that mirrors planPriceDetails in the booking package.
-// JSON tags must match exactly so the snapshot bytes can be round-tripped.
-type planDetails struct {
-	PlanID                 int               `json:"planId"`
-	RateQualifier          string            `json:"rateQualifier"`
-	SupplierCode           string            `json:"supplierCode"`
-	Broker                 broker.Name       `json:"broker"`
-	PickupLocationCode     string            `json:"pickupLocationCode"`
-	DropoffLocationCode    string            `json:"dropoffLocationCode"`
-	CurrencyCode           string            `json:"currencyCode"`
-	CurrencyRate           float64           `json:"currencyRate"`
-	DiscountPercentage     int               `json:"discountPercentage"`
-	CarPurchasePrice       float64           `json:"carPurchasePrice"`
-	SupplierErpPrice       float64           `json:"supplierErpPrice"`
-	MarkupPercentage       float64           `json:"markupPercentage"`
-	ChargedERPPriceWithVat int               `json:"chargedErpPriceWithVat"`
-	CarDetails             broker.CarDetails `json:"carDetails"`
-	Inclusions             []string          `json:"inclusions"`
 }
 
 var (
