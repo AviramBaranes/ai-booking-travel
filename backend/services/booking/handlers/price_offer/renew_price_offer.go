@@ -12,6 +12,7 @@ import (
 	"encore.app/internal/pricing"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
+	"encore.app/services/booking/handlers/availability"
 	"encore.dev/rlog"
 )
 
@@ -84,17 +85,17 @@ func (s *PriceOfferService) RenewPriceOffer(ctx context.Context, id int64) (*Ren
 	return &RenewPriceOfferResponse{Found: true}, nil
 }
 
-func findRenewalPlan(snapshot db.AvailablePlansSnapshot, offer db.GetPriceOfferByIdRow) (planDetails, error) {
+func findRenewalPlan(snapshot db.AvailablePlansSnapshot, offer db.GetPriceOfferByIdRow) (availability.PlanPriceDetails, error) {
 	var offerCarDetails broker.CarDetails
 	if err := json.Unmarshal(offer.CarDetails, &offerCarDetails); err != nil {
 		rlog.Error("failed to unmarshal price offer car details", "id", offer.ID, "error", err)
-		return planDetails{}, api_errors.ErrInternalError
+		return availability.PlanPriceDetails{}, api_errors.ErrInternalError
 	}
 
-	var plans []planDetails
+	var plans []availability.PlanPriceDetails
 	if err := json.Unmarshal(snapshot.Plans, &plans); err != nil {
 		rlog.Error("failed to unmarshal plans JSON", "error", err)
-		return planDetails{}, api_errors.ErrInternalError
+		return availability.PlanPriceDetails{}, api_errors.ErrInternalError
 	}
 
 	for _, plan := range plans {
@@ -106,7 +107,7 @@ func findRenewalPlan(snapshot db.AvailablePlansSnapshot, offer db.GetPriceOfferB
 		}
 	}
 
-	return planDetails{}, errPlanNotFound
+	return availability.PlanPriceDetails{}, errPlanNotFound
 }
 
 func (s *PriceOfferService) markRenewedPriceOfferUnavailable(ctx context.Context, offer db.GetPriceOfferByIdRow) (*RenewPriceOfferResponse, error) {
@@ -121,7 +122,7 @@ func (s *PriceOfferService) markRenewedPriceOfferUnavailable(ctx context.Context
 	return &RenewPriceOfferResponse{Found: false}, nil
 }
 
-func (s *PriceOfferService) renewPriceOfferDetails(ctx context.Context, offer db.GetPriceOfferByIdRow, plan planDetails) error {
+func (s *PriceOfferService) renewPriceOfferDetails(ctx context.Context, offer db.GetPriceOfferByIdRow, plan availability.PlanPriceDetails) error {
 	carDetailsJSON, err := json.Marshal(plan.CarDetails)
 	if err != nil {
 		rlog.Error("failed to marshal renewed price offer car details", "id", offer.ID, "error", err)

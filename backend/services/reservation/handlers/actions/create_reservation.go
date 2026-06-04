@@ -23,7 +23,7 @@ type SelectedAddon struct {
 }
 
 type PayAtPickup struct {
-	broker.Fees
+	Fees           broker.Fees     `json:"fees"`
 	SelectedAddons []SelectedAddon `json:"selectedAddons"`
 }
 
@@ -58,7 +58,7 @@ type CreateReservationParams struct {
 	DriverAge             int                `json:"driverAge" validate:"required,gte=18"`
 	PickupLocationName    string             `json:"pickupBrokerLocationId" validate:"required,notblank"`
 	DropoffLocationName   string             `json:"dropoffBrokerLocationId" validate:"required,notblank"`
-	FlightNumber          *string            `json:"flightNumber,omitempty" validate:"omitempty,notblank"`
+	FlightNumber          *string            `json:"flightNumber,omitempty" validate:"omitempty"`
 	PayAtPickup           PayAtPickup        `json:"payAtPickup"`
 }
 

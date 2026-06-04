@@ -173,6 +173,9 @@ func createAddOnMap(suppliers []flexSupplierDetails) map[string][]AddOn {
 	for _, s := range suppliers {
 		addOns := make([]AddOn, 0, len(s.AvailableExtras))
 		for _, e := range s.AvailableExtras {
+			if e.MaxAmount == 0 {
+				continue
+			}
 			addOns = append(addOns, AddOn{
 				ID:              e.ExtraID,
 				Name:            e.Name,

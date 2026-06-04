@@ -29,7 +29,7 @@ type BookParams struct {
 	DriverTitle     string               `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Mrs' 'Ms' 'Miss' 'Dr'"`
 	DriverFirstName string               `json:"driverFirstName" validate:"required,uppercase_only"`
 	DriverLastName  string               `json:"driverLastName" validate:"required,uppercase_only"`
-	FlightNumber    *string              `json:"flightNumber" encore:"optional"`
+	FlightNumber    *string              `json:"flightNumber" encore:"optional" validate:"omitempty"`
 }
 
 func (p BookParams) Validate() error {
@@ -254,7 +254,7 @@ func getPayAtPickup(p BookParams, plan availability.PlanPriceDetails) reservatio
 		Fees: plan.Fees,
 	}
 
-	selectedAddOns := make([]reservation.SelectedAddon, len(p.SelectedAddOns))
+	selectedAddOns := make([]reservation.SelectedAddon, 0, len(p.SelectedAddOns))
 	for _, selected := range p.SelectedAddOns {
 		var addon broker.AddOn
 		for _, planAddOn := range plan.AvailableAddOns {

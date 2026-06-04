@@ -24,7 +24,7 @@ type BookPriceOfferParams struct {
 	DriverTitle     string  `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Mrs' 'Ms' 'Miss' 'Dr'"`
 	DriverFirstName string  `json:"driverFirstName" validate:"required,uppercase_only"`
 	DriverLastName  string  `json:"driverLastName" validate:"required,uppercase_only"`
-	FlightNumber    *string `json:"flightNumber" encore:"optional"`
+	FlightNumber    *string `json:"flightNumber,omitempty" encore:"optional"`
 }
 
 func (p BookPriceOfferParams) Validate() error {
