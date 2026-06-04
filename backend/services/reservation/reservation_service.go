@@ -32,6 +32,8 @@ type CreateReservationResponse = actions.CreateReservationResponse
 type ApplyVoucherParams = actions.ApplyVoucherParams
 type ResolveReservationsParams = actions.ResolveReservationsParams
 type SeedReservationsResponse = actions.SeedReservationsResponse
+type PayAtPickup = actions.PayAtPickup
+type SelectedAddon = actions.SelectedAddon
 
 // --- Error re-exports ---
 

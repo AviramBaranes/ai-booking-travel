@@ -15,6 +15,18 @@ import (
 	"encore.dev/rlog"
 )
 
+type SelectedAddon struct {
+	ID       int    `json:"id"`
+	Name     string `json:"name"`
+	Price    int    `json:"price"`
+	Quantity int    `json:"quantity"`
+}
+
+type PayAtPickup struct {
+	broker.Fees
+	SelectedAddons []SelectedAddon `json:"selectedAddons"`
+}
+
 // CreateReservationParams defines the parameters required to create a reservation.
 type CreateReservationParams struct {
 	UserID                int64              `json:"userId" validate:"required"`
@@ -46,6 +58,8 @@ type CreateReservationParams struct {
 	DriverAge             int                `json:"driverAge" validate:"required,gte=18"`
 	PickupLocationName    string             `json:"pickupBrokerLocationId" validate:"required,notblank"`
 	DropoffLocationName   string             `json:"dropoffBrokerLocationId" validate:"required,notblank"`
+	FlightNumber          *string            `json:"flightNumber,omitempty" validate:"omitempty,notblank"`
+	PayAtPickup           PayAtPickup        `json:"payAtPickup"`
 }
 
 // Validate validates the fields of CreateReservationParams.
@@ -62,6 +76,12 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 	carDetailsJSON, err := json.Marshal(p.CarDetails)
 	if err != nil {
 		rlog.Error("failed to marshal reservation car details", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	payAtPickupJSON, err := json.Marshal(p.PayAtPickup)
+	if err != nil {
+		rlog.Error("failed to marshal reservation pay at pickup details", "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 
@@ -99,6 +119,8 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 		DriverAge:             int32(p.DriverAge),
 		PickupLocationName:    p.PickupLocationName,
 		DropoffLocationName:   p.DropoffLocationName,
+		FlightNumber:          p.FlightNumber,
+		PayAtPickup:           payAtPickupJSON,
 	})
 	if err != nil {
 		rlog.Error("failed to insert reservation", "error", err)

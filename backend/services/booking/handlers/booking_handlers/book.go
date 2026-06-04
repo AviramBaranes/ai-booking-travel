@@ -29,7 +29,7 @@ type BookParams struct {
 	DriverTitle     string               `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Mrs' 'Ms' 'Miss' 'Dr'"`
 	DriverFirstName string               `json:"driverFirstName" validate:"required,uppercase_only"`
 	DriverLastName  string               `json:"driverLastName" validate:"required,uppercase_only"`
-	FlightNumber    string               `json:"flightNumber" encore:"optional"`
+	FlightNumber    *string              `json:"flightNumber" encore:"optional"`
 }
 
 func (p BookParams) Validate() error {
@@ -139,6 +139,8 @@ func (s *BookingService) buildCreateReservationParams(
 		DropoffTime:           snapshot.DropoffTime,
 		PickupLocationName:    pickupLocName,
 		DropoffLocationName:   dropoffLocName,
+		FlightNumber:          p.FlightNumber,
+		PayAtPickup:           getPayAtPickup(p, plan),
 	}
 }
 
@@ -184,6 +186,10 @@ func bookCarAtBroker(snapshot db.AvailablePlansSnapshot, plan availability.PlanP
 		return "", err
 	}
 
+	var flightNumber string
+	if p.FlightNumber != nil {
+		flightNumber = *p.FlightNumber
+	}
 	res, err := b.Book(broker.BookingParams{
 		RateQualifier:   plan.RateQualifier,
 		SupplierCode:    plan.SupplierCode,
@@ -196,7 +202,7 @@ func bookCarAtBroker(snapshot db.AvailablePlansSnapshot, plan availability.PlanP
 		DriverTitle:     p.DriverTitle,
 		DriverFirstName: p.DriverFirstName,
 		DriverLastName:  p.DriverLastName,
-		FlightNumber:    p.FlightNumber,
+		FlightNumber:    flightNumber,
 		DriverAge:       snapshot.DriverAge,
 		PickupDate:      dbadapters.DateToString(snapshot.PickupDate),
 		DropoffDate:     dbadapters.DateToString(snapshot.DropoffDate),
@@ -241,4 +247,31 @@ func (s *BookingService) getLocationsNames(ctx context.Context, pickupBrokerLoca
 	}
 
 	return pickupLoc.Name, dropoffLoc.Name, nil
+}
+
+func getPayAtPickup(p BookParams, plan availability.PlanPriceDetails) reservation.PayAtPickup {
+	pap := reservation.PayAtPickup{
+		Fees: plan.Fees,
+	}
+
+	selectedAddOns := make([]reservation.SelectedAddon, len(p.SelectedAddOns))
+	for _, selected := range p.SelectedAddOns {
+		var addon broker.AddOn
+		for _, planAddOn := range plan.AvailableAddOns {
+			if planAddOn.ID == selected.ID {
+				addon = planAddOn
+				break
+			}
+		}
+
+		selectedAddOns = append(selectedAddOns, reservation.SelectedAddon{
+			ID:       addon.ID,
+			Name:     addon.Name,
+			Price:    addon.Price,
+			Quantity: selected.Quantity,
+		})
+	}
+
+	pap.SelectedAddons = selectedAddOns
+	return pap
 }

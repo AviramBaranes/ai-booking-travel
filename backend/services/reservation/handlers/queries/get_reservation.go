@@ -11,36 +11,39 @@ import (
 	"encore.app/internal/pricing"
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
+	"encore.app/services/reservation/handlers/actions"
 	"encore.dev/rlog"
 )
 
 type GetReservationResponse struct {
-	ID                  int64             `json:"id"`
-	BrokerReservationID string            `json:"brokerReservationId"`
-	ReservationStatus   string            `json:"reservationStatus"`
-	PaymentStatus       string            `json:"paymentStatus"`
-	CarDetails          broker.CarDetails `json:"carDetails"`
-	PlanInclusions      []string          `json:"planInclusions"`
-	CurrencyCode        string            `json:"currencyCode"`
-	CurrencyRate        float64           `json:"currencyRate"`
-	CarFullPrice        int               `json:"priceBefDesc"`
-	DiscountAmount      int               `json:"discountAmount"`
-	ErpPrice            int               `json:"erpPrice"`
-	TotalPrice          int32             `json:"totalPrice"`
-	PickupLocationName  string            `json:"pickupLocationName"`
-	DropoffLocationName string            `json:"dropoffLocationName"`
-	PickupDate          string            `json:"pickupDate"`
-	DropoffDate         string            `json:"dropoffDate"`
-	PickupTime          string            `json:"pickupTime"`
-	DropoffTime         string            `json:"dropoffTime"`
-	RentalDays          int32             `json:"rentalDays"`
-	DriverTitle         string            `json:"driverTitle"`
-	DriverFirstName     string            `json:"driverFirstName"`
-	DriverLastName      string            `json:"driverLastName"`
-	DriverAge           int32             `json:"driverAge"`
-	Voucher             *string           `json:"voucher,omitempty" encore:"optional"`
-	VoucheredAt         *string           `json:"voucheredAt,omitempty" encore:"optional"`
-	CreatedAt           string            `json:"createdAt"`
+	ID                  int64               `json:"id"`
+	BrokerReservationID string              `json:"brokerReservationId"`
+	ReservationStatus   string              `json:"reservationStatus"`
+	PaymentStatus       string              `json:"paymentStatus"`
+	CarDetails          broker.CarDetails   `json:"carDetails"`
+	PlanInclusions      []string            `json:"planInclusions"`
+	CurrencyCode        string              `json:"currencyCode"`
+	CurrencyRate        float64             `json:"currencyRate"`
+	CarFullPrice        int                 `json:"priceBefDesc"`
+	DiscountAmount      int                 `json:"discountAmount"`
+	ErpPrice            int                 `json:"erpPrice"`
+	TotalPrice          int32               `json:"totalPrice"`
+	PayAtPickup         actions.PayAtPickup `json:"payAtPickup"`
+	FlightNumber        *string             `json:"flightNumber,omitempty" encore:"optional"`
+	PickupLocationName  string              `json:"pickupLocationName"`
+	DropoffLocationName string              `json:"dropoffLocationName"`
+	PickupDate          string              `json:"pickupDate"`
+	DropoffDate         string              `json:"dropoffDate"`
+	PickupTime          string              `json:"pickupTime"`
+	DropoffTime         string              `json:"dropoffTime"`
+	RentalDays          int32               `json:"rentalDays"`
+	DriverTitle         string              `json:"driverTitle"`
+	DriverFirstName     string              `json:"driverFirstName"`
+	DriverLastName      string              `json:"driverLastName"`
+	DriverAge           int32               `json:"driverAge"`
+	Voucher             *string             `json:"voucher,omitempty" encore:"optional"`
+	VoucheredAt         *string             `json:"voucheredAt,omitempty" encore:"optional"`
+	CreatedAt           string              `json:"createdAt"`
 }
 
 func (s *QueryService) GetReservation(ctx context.Context, id int64) (*GetReservationResponse, error) {
@@ -58,9 +61,9 @@ func (s *QueryService) GetReservation(ctx context.Context, id int64) (*GetReserv
 		return nil, api_errors.ErrNotFound
 	}
 
-	var carDetails broker.CarDetails
-	if err := json.Unmarshal(row.CarDetails, &carDetails); err != nil {
-		rlog.Error("failed to unmarshal car details", "id", id, "error", err)
+	carDetails, payAtPickup, err := unmarshalJsons(row.CarDetails, row.PayAtPickup)
+	if err != nil {
+		rlog.Error("failed to unmarshal car details or pay at pickup", "id", id, "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 
@@ -80,6 +83,8 @@ func (s *QueryService) GetReservation(ctx context.Context, id int64) (*GetReserv
 		ErpPrice:            rpd.erpPrice,
 		DiscountAmount:      rpd.discountAmount,
 		TotalPrice:          row.TotalPrice,
+		PayAtPickup:         payAtPickup,
+		FlightNumber:        row.FlightNumber,
 		PickupDate:          dbadapters.DateToString(row.PickupDate),
 		DropoffDate:         dbadapters.DateToString(row.DropoffDate),
 		PickupTime:          row.PickupTime,
@@ -120,4 +125,18 @@ func calculatePriceDetails(reservation db.Reservation) reservationPriceDetails {
 		erpPrice:       erpFullPrice,
 		discountAmount: discountAmount,
 	}
+}
+
+func unmarshalJsons(carDetailsJson, payAtPickupJson []byte) (broker.CarDetails, actions.PayAtPickup, error) {
+	var carDetails broker.CarDetails
+	var payAtPickup actions.PayAtPickup
+	if err := json.Unmarshal(carDetailsJson, &carDetails); err != nil {
+		return carDetails, payAtPickup, err
+	}
+
+	if err := json.Unmarshal(payAtPickupJson, &payAtPickup); err != nil {
+		return carDetails, payAtPickup, err
+	}
+
+	return carDetails, payAtPickup, nil
 }
