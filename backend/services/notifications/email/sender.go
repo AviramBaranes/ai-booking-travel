@@ -1,14 +1,25 @@
 package email
 
 import (
+	"bytes"
 	"context"
 	"embed"
+	"encoding/base64"
 	"fmt"
 	"html/template"
 	"io"
 
 	"github.com/wneessen/go-mail"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/gmail/v1"
+	"google.golang.org/api/option"
 )
+
+// Sender delivers a prepared mail message. Implemented by *SMTPSender in
+// production and by fakes in tests.
+type Sender interface {
+	Send(ctx context.Context, msg *mail.Msg) error
+}
 
 //go:embed templates/*.html
 var templatesFS embed.FS
@@ -18,47 +29,57 @@ type Attachment struct {
 	Reader   io.Reader
 }
 
-// Sender delivers a prepared mail message. Implemented by *SMTPSender in
-// production and by fakes in tests.
-type Sender interface {
-	Send(ctx context.Context, msg *mail.Msg) error
+type GmailAPISender struct {
+	srv  *gmail.Service
+	from string
 }
 
-// SMTPSender is the production Sender implementation backed by an SMTP server.
-type SMTPSender struct {
-	client *mail.Client
-	from   string
-}
-
-// NewSender creates a new SMTPSender with the given email credentials and SMTP server information.
-func NewSender(from, password, host string, port int) (*SMTPSender, error) {
-	client, err := mail.NewClient(
-		host,
-		mail.WithPort(port),
-		mail.WithSMTPAuth(mail.SMTPAuthPlain),
-		mail.WithUsername(from),
-		mail.WithPassword(password),
-		mail.WithTLSPolicy(mail.TLSMandatory),
+func NewGmailAPISender(ctx context.Context, serviceAccountJSON, from string) (*GmailAPISender, error) {
+	config, err := google.JWTConfigFromJSON(
+		[]byte(serviceAccountJSON),
+		gmail.GmailSendScope,
 	)
-
 	if err != nil {
-		return nil, fmt.Errorf("creating mail client: %w", err)
+		return nil, fmt.Errorf("parsing service account json: %w", err)
 	}
 
-	return &SMTPSender{
-		client: client,
-		from:   from,
+	config.Subject = from
+
+	client := config.Client(ctx)
+
+	srv, err := gmail.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("creating gmail service: %w", err)
+	}
+
+	return &GmailAPISender{
+		srv:  srv,
+		from: from,
 	}, nil
 }
 
-func (s *SMTPSender) Send(ctx context.Context, msg *mail.Msg) error {
+func (s *GmailAPISender) Send(ctx context.Context, msg *mail.Msg) error {
 	if err := msg.From(s.from); err != nil {
 		return fmt.Errorf("setting sender: %w", err)
 	}
-	return s.client.DialAndSendWithContext(ctx, msg)
+
+	var buf bytes.Buffer
+	if _, err := msg.WriteTo(&buf); err != nil {
+		return fmt.Errorf("building raw email: %w", err)
+	}
+
+	raw := base64.RawURLEncoding.EncodeToString(buf.Bytes())
+
+	_, err := s.srv.Users.Messages.Send("me", &gmail.Message{
+		Raw: raw,
+	}).Context(ctx).Do()
+	if err != nil {
+		return fmt.Errorf("sending gmail message: %w", err)
+	}
+
+	return nil
 }
 
-// SendEmail sends an email using the provided Sender, recipient list, subject, template, and data.
 func SendEmail[T any](ctx context.Context, s Sender, to []string, subject string, t Template[T], data T, attachments []Attachment) error {
 	tmpl, err := template.ParseFS(templatesFS, "templates/"+t.name+".html")
 	if err != nil {
@@ -71,6 +92,7 @@ func SendEmail[T any](ctx context.Context, s Sender, to []string, subject string
 	}
 
 	msg.Subject(subject)
+
 	if err := msg.SetBodyHTMLTemplate(tmpl, data); err != nil {
 		return fmt.Errorf("setting email body: %w", err)
 	}

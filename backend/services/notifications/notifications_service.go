@@ -1,6 +1,8 @@
 package notifications
 
 import (
+	"context"
+
 	"encore.app/internal/pdf"
 	"encore.app/services/notifications/email"
 	"encore.app/services/notifications/sms"
@@ -28,17 +30,17 @@ type Config struct {
 var cfg = config.Load[*Config]()
 
 var secrets struct {
-	emailPassword string
-	smsToken      string
+	GoogleServiceAccountJSON string
+	smsToken                 string
 }
 
 func initService() (*Service, error) {
-	es, err := email.NewSender(
+	es, err := email.NewGmailAPISender(
+		context.Background(),
+		secrets.GoogleServiceAccountJSON,
 		cfg.EmailFrom(),
-		secrets.emailPassword,
-		cfg.EmailHost(),
-		cfg.EmailPort(),
 	)
+	rlog.Info("email sender created", "from", cfg.EmailFrom())
 	if err != nil {
 		rlog.Error("failed to create email sender", "error", err)
 		return nil, err
