@@ -14,6 +14,7 @@ import {
   ReservationReportFilterKey,
   ReservationReportFilters,
   ReservationsReportFilterBar,
+  emptyReservationReportFilters,
   ReportPageSize,
 } from "./ReservationsReportFilterBar";
 import { ReportColumn, buildPageNumbers, buildRequest } from "./reportTableUtils";
@@ -25,6 +26,8 @@ interface ReportTableShellProps<T extends { reservationId: number }> {
     params: reservation.ReportParams,
   ) => Promise<{ reservations: T[]; total: number }>;
   showStatusFilter?: boolean;
+  showFilters?: boolean;
+  fixedFilters?: Partial<ReservationReportFilters>;
 }
 
 export function ReportTableShell<T extends { reservationId: number }>({
@@ -32,20 +35,27 @@ export function ReportTableShell<T extends { reservationId: number }>({
   queryKey,
   queryFn,
   showStatusFilter = true,
+  showFilters = true,
+  fixedFilters,
 }: ReportTableShellProps<T>) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<ReportPageSize>(25);
-  const [filters, setFilters] = useUrlFilters<ReservationReportFilterKey>([
+  const [urlFilters, setUrlFilters] = useUrlFilters<ReservationReportFilterKey>([
     ...RESERVATION_REPORT_FILTER_KEYS,
   ]);
+  const filters = showFilters ? urlFilters : emptyReservationReportFilters;
+  const effectiveFilters = {
+    ...filters,
+    ...fixedFilters,
+  } satisfies ReservationReportFilters;
 
   const filterSignature = RESERVATION_REPORT_FILTER_KEYS.map(
-    (key) => filters[key],
+    (key) => effectiveFilters[key],
   ).join("|");
 
   const reportQuery = useQuery({
     queryKey: [queryKey, page, pageSize, filterSignature],
-    queryFn: () => queryFn(buildRequest(page, pageSize, filters)),
+    queryFn: () => queryFn(buildRequest(page, pageSize, effectiveFilters)),
     placeholderData: keepPreviousData,
   });
 
@@ -62,7 +72,7 @@ export function ReportTableShell<T extends { reservationId: number }>({
 
   function handleFilterSubmit(nextFilters: ReservationReportFilters) {
     setPage(1);
-    setFilters(nextFilters);
+    setUrlFilters(nextFilters);
   }
 
   function handlePageSizeChange(nextSize: ReportPageSize) {
@@ -72,16 +82,18 @@ export function ReportTableShell<T extends { reservationId: number }>({
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-      <div className="border-b border-gray-200 bg-gray-50/80 px-4 py-3">
-        <ReservationsReportFilterBar
-          key={filterSignature}
-          initialFilters={filters}
-          onSubmit={handleFilterSubmit}
-          pageSize={pageSize}
-          onPageSizeChange={handlePageSizeChange}
-          showStatusFilter={showStatusFilter}
-        />
-      </div>
+      {showFilters && (
+        <div className="border-b border-gray-200 bg-gray-50/80 px-4 py-3">
+          <ReservationsReportFilterBar
+            key={filterSignature}
+            initialFilters={filters}
+            onSubmit={handleFilterSubmit}
+            pageSize={pageSize}
+            onPageSizeChange={handlePageSizeChange}
+            showStatusFilter={showStatusFilter}
+          />
+        </div>
+      )}
 
       {reportQuery.isError && (
         <div className="mx-4 mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

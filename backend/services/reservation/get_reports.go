@@ -43,7 +43,7 @@ func nullBrokerFromString(s string) db.NullBroker {
 	return db.NullBroker{Broker: db.Broker(s), Valid: true}
 }
 
-func timestamptzFromString(s string) pgtype.Timestamptz {
+func timestamptzFromString(s string, endOfDay bool) pgtype.Timestamptz {
 	if s == "" {
 		return pgtype.Timestamptz{}
 	}
@@ -53,6 +53,9 @@ func timestamptzFromString(s string) pgtype.Timestamptz {
 		t, err = time.Parse("2006-01-02", s)
 		if err != nil {
 			return pgtype.Timestamptz{}
+		}
+		if endOfDay {
+			t = t.Add(24*time.Hour - time.Nanosecond)
 		}
 	}
 	return dbadapters.DBTime(t)
@@ -64,10 +67,10 @@ func (s *Service) getReports(ctx context.Context, p ReportParams, isBusiness boo
 	queryParams := db.ListReservationsReportParams{
 		PickupDateFrom:  dbadapters.DateFromString(p.PickupDateFrom),
 		PickupDateTo:    dbadapters.DateFromString(p.PickupDateTo),
-		CreatedDateFrom: timestamptzFromString(p.CreatedDateFrom),
-		CreatedDateTo:   timestamptzFromString(p.CreatedDateTo),
-		VoucheredAtFrom: timestamptzFromString(p.VoucheredAtFrom),
-		VoucheredAtTo:   timestamptzFromString(p.VoucheredAtTo),
+		CreatedDateFrom: timestamptzFromString(p.CreatedDateFrom, false),
+		CreatedDateTo:   timestamptzFromString(p.CreatedDateTo, true),
+		VoucheredAtFrom: timestamptzFromString(p.VoucheredAtFrom, false),
+		VoucheredAtTo:   timestamptzFromString(p.VoucheredAtTo, true),
 		Status:          nullStatusFromString(p.Status),
 		Broker:          nullBrokerFromString(p.Broker),
 		SupplierCode:    nilIfEmpty(p.Supplier),
