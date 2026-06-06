@@ -29,7 +29,7 @@ func (s *BookingService) CancelBooking(ctx context.Context, e *reservation.Booki
 			Subject: "Failed to cancel booking",
 			Message: fmt.Sprintf("failed to cancel booking: %s, bookingID: %v, reservationId: %v, error: %v", b.Name(), e.BrokerReservationID, e.ReservationID, err),
 		})
-		return err
+		return nil // return nil to avoid retrying the cancellation, as the failure is likely unrecoverable (e.g. invalid reservation ID or last name)
 	}
 
 	return nil
