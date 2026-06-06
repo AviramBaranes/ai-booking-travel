@@ -41,8 +41,7 @@
     "verified": "מאומת"
   },
   "AuthDropdown": {
-    "helloAgent": "שלום סוכן",
-    "helloCustomer": "שלום לקוח",
+    "greeting": "שלום, {name}",
     "profile": "פרטים אישיים",
     "reservations": "ההזמנות שלי",
     "priceOffers": "הצעות מחיר",

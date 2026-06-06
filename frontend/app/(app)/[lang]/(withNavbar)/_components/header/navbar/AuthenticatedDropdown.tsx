@@ -24,7 +24,6 @@ export function AuthenticatedDropdown() {
   if (!session.data?.user || session.data.user.role === "admin") return null;
 
   const isAgent = session.data.user.role === "agent";
-  const greetingKey = isAgent ? "helloAgent" : "helloCustomer";
 
   const itemBase =
     "flex items-center gap-2 px-4 min-h-[71px] w-full font-medium text-[16px] transition-colors";
@@ -41,7 +40,7 @@ export function AuthenticatedDropdown() {
       <DropdownMenuTrigger asChild>
         <Button size="outline" variant="outline">
           <User className="size-5" />
-          {t(greetingKey)}
+          {t("greeting", { name: session.data.user.firstName })}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -50,7 +49,7 @@ export function AuthenticatedDropdown() {
       >
         {/* Greeting header */}
         <div className="flex items-center gap-2 px-4 min-h-18 w-full border-b border-cars-border font-bold text-[16px] text-navy">
-          {t(greetingKey)}
+          {t("greeting", { name: session.data.user.firstName })}
         </div>
 
         {/* Profile link */}

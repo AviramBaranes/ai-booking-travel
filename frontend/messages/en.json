@@ -41,8 +41,7 @@
     "verified": "Verified"
   },
   "AuthDropdown": {
-    "helloAgent": "Hello, Agent",
-    "helloCustomer": "Hello, Customer",
+    "greeting": "Hello, {name}",
     "profile": "Personal Details",
     "reservations": "My Reservations",
     "priceOffers": "Price Offers",
