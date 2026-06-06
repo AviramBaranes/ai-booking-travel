@@ -23,6 +23,33 @@ var centerAlignment = &excelize.Alignment{Horizontal: "center", Vertical: "cente
 
 func ptr[T any](v T) *T { return &v }
 
+type monthlyReportStyleConfig struct {
+	fillColor string
+	bold      bool
+	numFmt    string
+}
+
+func newMonthlyReportStyle(f *excelize.File, borders []excelize.Border, cfg monthlyReportStyleConfig) (int, error) {
+	style := &excelize.Style{
+		Border:    borders,
+		Alignment: centerAlignment,
+	}
+
+	if cfg.bold {
+		style.Font = &excelize.Font{Bold: true}
+	}
+
+	if cfg.fillColor != "" {
+		style.Fill = excelize.Fill{Type: "pattern", Color: []string{cfg.fillColor}, Pattern: 1}
+	}
+
+	if cfg.numFmt != "" {
+		style.CustomNumFmt = ptr(cfg.numFmt)
+	}
+
+	return f.NewStyle(style)
+}
+
 // Column indexes for the monthly report sheet. Keep in sync with monthlyReportHeaders.
 const (
 	colOfficeName = iota
@@ -118,13 +145,14 @@ func writeMonthlyReportSheet(f *excelize.File, sheetName string, report Report) 
 	styles := cfg.MonthlyReport.Styles
 	borders := cellBorders()
 
-	defaultStyle, err := f.NewStyle(&excelize.Style{
-		Border:       borders,
-		Alignment:    centerAlignment,
-		CustomNumFmt: ptr("0.##"),
-	})
+	defaultStyle, err := newMonthlyReportStyle(f, borders, monthlyReportStyleConfig{numFmt: "0.##"})
 	if err != nil {
 		return fmt.Errorf("failed to create default style %w", err)
+	}
+
+	defaultIntegerStyle, err := newMonthlyReportStyle(f, borders, monthlyReportStyleConfig{numFmt: "0"})
+	if err != nil {
+		return fmt.Errorf("failed to create default integer style %w", err)
 	}
 
 	headerStyle, err := f.NewStyle(&excelize.Style{
@@ -137,22 +165,26 @@ func writeMonthlyReportSheet(f *excelize.File, sheetName string, report Report) 
 		return fmt.Errorf("failed to create header style %w", err)
 	}
 
-	refundStyle, err := f.NewStyle(&excelize.Style{
-		Border:       borders,
-		Fill:         excelize.Fill{Type: "pattern", Color: []string{styles.RefundRowBackgroundColor()}, Pattern: 1},
-		Alignment:    centerAlignment,
-		CustomNumFmt: ptr("0.##"),
+	refundStyle, err := newMonthlyReportStyle(f, borders, monthlyReportStyleConfig{
+		fillColor: styles.RefundRowBackgroundColor(),
+		numFmt:    "0.##",
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create refund style %w", err)
 	}
 
-	totalStyle, err := f.NewStyle(&excelize.Style{
-		Border:       borders,
-		Font:         &excelize.Font{Bold: true},
-		Fill:         excelize.Fill{Type: "pattern", Color: []string{styles.TotalRowBackgroundColor()}, Pattern: 1},
-		Alignment:    centerAlignment,
-		CustomNumFmt: ptr("0.##"),
+	refundIntegerStyle, err := newMonthlyReportStyle(f, borders, monthlyReportStyleConfig{
+		fillColor: styles.RefundRowBackgroundColor(),
+		numFmt:    "0",
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create refund integer style %w", err)
+	}
+
+	totalStyle, err := newMonthlyReportStyle(f, borders, monthlyReportStyleConfig{
+		fillColor: styles.TotalRowBackgroundColor(),
+		bold:      true,
+		numFmt:    "0.##",
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create total style %w", err)
@@ -204,11 +236,22 @@ func writeMonthlyReportSheet(f *excelize.File, sheetName string, report Report) 
 			}
 			endCell := lastCol + fmt.Sprintf("%d", rowNum)
 			rowStyle := defaultStyle
+			integerStyle := defaultIntegerStyle
 			if r.TotalPrice < 0 {
 				rowStyle = refundStyle
+				integerStyle = refundIntegerStyle
 			}
 			if err := f.SetCellStyle(sheetName, startCell, endCell, rowStyle); err != nil {
 				return fmt.Errorf("failed to apply reservation row style %w", err)
+			}
+			for _, col := range []int{colVoucherNumber, colRentalDays} {
+				cell, err := excelize.CoordinatesToCellName(col+1, rowNum)
+				if err != nil {
+					return fmt.Errorf("failed to resolve integer cell %w", err)
+				}
+				if err := f.SetCellStyle(sheetName, cell, cell, integerStyle); err != nil {
+					return fmt.Errorf("failed to apply integer cell style %w", err)
+				}
 			}
 			rowNum++
 		}
