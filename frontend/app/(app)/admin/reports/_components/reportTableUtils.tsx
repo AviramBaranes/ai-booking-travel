@@ -168,7 +168,7 @@ export function makeBaseColumns<
     },
     {
       key: "brokerName",
-      label: "ברוקר",
+      label: "ספק",
       className: "min-w-28",
       render: (row) => (
         <span className="rounded bg-slate-100 px-2 py-1 text-xs font-bold uppercase text-slate-700">
@@ -178,7 +178,7 @@ export function makeBaseColumns<
     },
     {
       key: "supplierName",
-      label: "ספק",
+      label: "מותג",
       className: "min-w-44",
       render: (row) => row.supplierName || "-",
     },

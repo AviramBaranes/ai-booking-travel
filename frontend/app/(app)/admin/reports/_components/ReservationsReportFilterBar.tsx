@@ -39,6 +39,7 @@ interface ReservationsReportFilterBarProps {
   onSubmit: (filters: ReservationReportFilters) => void;
   pageSize: ReportPageSize;
   onPageSizeChange: (size: ReportPageSize) => void;
+ showStatusFilter?: boolean;
 }
 
 export const emptyReservationReportFilters: ReservationReportFilters = {
@@ -101,6 +102,7 @@ export function ReservationsReportFilterBar({
   onSubmit,
   pageSize,
   onPageSizeChange,
+  showStatusFilter = true,
 }: ReservationsReportFilterBarProps) {
   const [filters, setFilters] = useState(initialFilters);
   const entity = useMemo(() => selectedEntity(filters), [filters]);
@@ -145,19 +147,21 @@ export function ReservationsReportFilterBar({
           updateFilters({ voucheredFrom: range.from, voucheredTo: range.to })
         }
       />
-      <div className="min-w-36">
-        <label className="block text-xs text-gray-500 mb-1">סטטוס</label>
-        <select
-          className={inputClass}
-          value={filters.status}
-          onChange={(event) => updateFilters({ status: event.target.value })}
-        >
-          <option value="">הכל</option>
-          <option value="booked">הוזמן</option>
-          <option value="vouchered">הופק שובר</option>
-          <option value="canceled">בוטל</option>
-        </select>
-      </div>
+      {showStatusFilter && (
+        <div className="min-w-36">
+          <label className="block text-xs text-gray-500 mb-1">סטטוס</label>
+          <select
+            className={inputClass}
+            value={filters.status}
+            onChange={(event) => updateFilters({ status: event.target.value })}
+          >
+            <option value="">הכל</option>
+            <option value="booked">הוזמן</option>
+            <option value="vouchered">הופק שובר</option>
+            <option value="canceled">בוטל</option>
+          </select>
+        </div>
+      )}
       <div className="min-w-36">
         <label className="block text-xs text-gray-500 mb-1">ברוקר</label>
         <select

@@ -24,12 +24,14 @@ interface ReportTableShellProps<T extends { reservationId: number }> {
   queryFn: (
     params: reservation.ReportParams,
   ) => Promise<{ reservations: T[]; total: number }>;
+  showStatusFilter?: boolean;
 }
 
 export function ReportTableShell<T extends { reservationId: number }>({
   columns,
   queryKey,
   queryFn,
+  showStatusFilter = true,
 }: ReportTableShellProps<T>) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<ReportPageSize>(25);
@@ -77,6 +79,7 @@ export function ReportTableShell<T extends { reservationId: number }>({
           onSubmit={handleFilterSubmit}
           pageSize={pageSize}
           onPageSizeChange={handlePageSizeChange}
+          showStatusFilter={showStatusFilter}
         />
       </div>
 
