@@ -37,6 +37,18 @@ var CancellationEmailTemplate = Template[CancellationEmailData]{
 	name: "cancellation_email",
 }
 
+type LateCancellationAlertEmailData struct {
+	ReservationID       int64
+	BrokerReservationID string
+	AgentLabel          string
+	OfficeLabel         *string
+	OrganizationLabel   *string
+}
+
+var LateCancellationAlertEmailTemplate = Template[LateCancellationAlertEmailData]{
+	name: "late_cancellation_alert",
+}
+
 type NewOrderEmailData struct {
 	BookingReferenceID string
 	DriverFullName     string

@@ -99,6 +99,7 @@ export function listInorganicOffices() {
 
 // Users
 export function updateUser(id: number, data: user.UpdateUserParams) {
+  if(data.officeId === 0) delete data.officeId; // Avoid sending officeId when it's not set, to prevent validation errors.
   return withErrorHandler((client) => client.accounts.UpdateUser(id, data));
 }
 

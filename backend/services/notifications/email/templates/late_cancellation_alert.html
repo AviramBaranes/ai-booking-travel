@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>התראת ביטול מאוחרת</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f5;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        color: #18181b;
+      }
+      .wrapper {
+        width: 100%;
+        padding: 40px 16px;
+        box-sizing: border-box;
+      }
+      .card {
+        max-width: 560px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      }
+      .header {
+        background-color: #b91c1c;
+        padding: 24px 32px;
+      }
+      .header h1 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .header p {
+        margin: 8px 0 0;
+        color: #fee2e2;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .body {
+        padding: 32px;
+      }
+      .message {
+        background-color: #fef2f2;
+        border: 1px solid #fecaca;
+        border-right: 4px solid #dc2626;
+        border-radius: 4px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        font-size: 15px;
+        line-height: 1.8;
+      }
+      .details {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .details td {
+        padding: 10px 0;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: top;
+        font-size: 14px;
+      }
+      .details td:first-child {
+        width: 180px;
+        color: #71717a;
+        font-weight: 600;
+      }
+      .footer {
+        background-color: #f9f9f9;
+        border-top: 1px solid #f0f0f0;
+        padding: 16px 32px;
+        text-align: center;
+        font-size: 12px;
+        color: #a1a1aa;
+      }
+    </style>
+  </head>
+  <body dir="rtl" style="margin: 0; padding: 0; direction: rtl; text-align: right">
+    <div class="wrapper" dir="rtl" style="width: 100%; padding: 40px 16px; box-sizing: border-box; direction: rtl; text-align: right">
+      <div class="card" dir="rtl" style="max-width: 560px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08); direction: rtl; text-align: right">
+        <div class="header" dir="rtl" style="background-color: #b91c1c; padding: 24px 32px; direction: rtl; text-align: right">
+          <h1>התראת ביטול מאוחרת</h1>
+          <p>בוצע ביטול הזמנה פחות מ-48 שעות לפני מועד האיסוף.</p>
+        </div>
+
+        <div class="body" dir="rtl" style="padding: 32px; direction: rtl; text-align: right">
+          <div class="message" dir="rtl" style="background-color: #fef2f2; border: 1px solid #fecaca; border-right: 4px solid #dc2626; border-radius: 4px; padding: 16px 20px; margin-bottom: 24px; font-size: 15px; line-height: 1.8; direction: rtl; text-align: right">
+            בוצע ביטול הזמנה פחות מ-48 שעות לפני מועד האיסוף. להלן פרטי
+            ההזמנה והשיוך הארגוני לצורך בדיקה ומעקב.
+          </div>
+
+          <table class="details" dir="rtl" style="width: 100%; border-collapse: collapse; direction: rtl; text-align: right">
+            <tr>
+              <td dir="rtl" style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 14px; width: 180px; color: #71717a; font-weight: 600; text-align: right">מזהה הזמנה</td>
+              <td dir="rtl" style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 14px; text-align: right">{{.ReservationID}}</td>
+            </tr>
+            <tr>
+              <td dir="rtl" style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 14px; width: 180px; color: #71717a; font-weight: 600; text-align: right">מזהה הזמנה אצל הברוקר</td>
+              <td dir="rtl" style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 14px; text-align: right">{{.BrokerReservationID}}</td>
+            </tr>
+            <tr>
+              <td dir="rtl" style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 14px; width: 180px; color: #71717a; font-weight: 600; text-align: right">סוכן</td>
+              <td dir="rtl" style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 14px; text-align: right">{{.AgentLabel}}</td>
+            </tr>
+            {{if .OfficeLabel}}
+            <tr>
+              <td dir="rtl" style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 14px; width: 180px; color: #71717a; font-weight: 600; text-align: right">משרד</td>
+              <td dir="rtl" style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 14px; text-align: right">{{.OfficeLabel}}</td>
+            </tr>
+            {{end}}
+            {{if .OrganizationLabel}}
+            <tr>
+              <td dir="rtl" style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 14px; width: 180px; color: #71717a; font-weight: 600; text-align: right">ארגון</td>
+              <td dir="rtl" style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 14px; text-align: right">{{.OrganizationLabel}}</td>
+            </tr>
+            {{end}}
+          </table>
+        </div>
+
+        <div class="footer" dir="rtl" style="background-color: #f9f9f9; border-top: 1px solid #f0f0f0; padding: 16px 32px; text-align: center; font-size: 12px; color: #a1a1aa">AI Booking Travel - Internal Alerts</div>
+      </div>
+    </div>
+  </body>
+</html>

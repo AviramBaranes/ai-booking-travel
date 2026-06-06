@@ -197,6 +197,94 @@ func TestHandleEmailEvent(t *testing.T) {
 		})
 	})
 
+	t.Run("late cancellation alert", func(t *testing.T) {
+		officeID := int64(77)
+		organizationID := int64(88)
+		payload := LateCancellationAlertEmailPayload{
+			ReservationID:       501,
+			BrokerReservationID: "BR-501",
+			AgentID:             42,
+			OfficeID:            &officeID,
+			OrganizationID:      &organizationID,
+		}
+		wantSubject := fmt.Sprintf("בוצע ביטול פחות מ-48 שעות לפני האיסוף - הזמנה %d", payload.ReservationID)
+
+		t.Run("sends to admins with resolved account names in the body", func(t *testing.T) {
+			et.MockEndpoint(accounts.ListAdminsEmails, func(_ context.Context) (*accounts.ListAdminsEmailsResponse, error) {
+				return &accounts.ListAdminsEmailsResponse{Emails: []string{"admin@test.com"}}, nil
+			})
+
+			et.MockEndpoint(accounts.GetAccountsLookup, func(_ context.Context, p accounts.GetAccountsLookupParams) (*accounts.GetAccountsLookupResponse, error) {
+				if len(p.UserIDs) != 1 || p.UserIDs[0] != payload.AgentID {
+					return nil, fmt.Errorf("unexpected user ids: %v", p.UserIDs)
+				}
+				if len(p.OfficeIDs) != 1 || p.OfficeIDs[0] != officeID {
+					return nil, fmt.Errorf("unexpected office ids: %v", p.OfficeIDs)
+				}
+				if len(p.OrganizationIDs) != 1 || p.OrganizationIDs[0] != organizationID {
+					return nil, fmt.Errorf("unexpected organization ids: %v", p.OrganizationIDs)
+				}
+				return &accounts.GetAccountsLookupResponse{
+					Users:         []accounts.AccountName{{ID: payload.AgentID, Name: "Dana Levy"}},
+					Offices:       []accounts.AccountName{{ID: officeID, Name: "Jerusalem Office"}},
+					Organizations: []accounts.AccountName{{ID: organizationID, Name: "Global Rental Org"}},
+				}, nil
+			})
+
+			fake := &fakeEmailSender{}
+			s := &Service{emailSender: fake}
+
+			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeLateCancellationAlert, payload)); err != nil {
+				t.Fatalf("HandleEmailEvent: %v", err)
+			}
+
+			recipients, err := fake.msg.GetRecipients()
+			if err != nil {
+				t.Fatalf("GetRecipients: %v", err)
+			}
+			if len(recipients) != 1 || recipients[0] != "<admin@test.com>" {
+				t.Errorf("recipients = %v, want [<admin@test.com>]", recipients)
+			}
+
+			if got := decodeSubject(t, fake.msg); got != wantSubject {
+				t.Errorf("subject = %q, want %q", got, wantSubject)
+			}
+
+			body := renderBody(t, fake.msg)
+			for _, want := range []string{
+				"501",
+				"BR-501",
+				"42 - Dana Levy",
+				"77 - Jerusalem Office",
+				"88 - Global Rental Org",
+			} {
+				if !strings.Contains(body, want) {
+					t.Errorf("body does not contain %q", want)
+				}
+			}
+		})
+
+		t.Run("returns error when account lookup fails", func(t *testing.T) {
+			et.MockEndpoint(accounts.ListAdminsEmails, func(_ context.Context) (*accounts.ListAdminsEmailsResponse, error) {
+				return &accounts.ListAdminsEmailsResponse{Emails: []string{"admin@test.com"}}, nil
+			})
+
+			et.MockEndpoint(accounts.GetAccountsLookup, func(_ context.Context, _ accounts.GetAccountsLookupParams) (*accounts.GetAccountsLookupResponse, error) {
+				return nil, errors.New("lookup failed")
+			})
+
+			fake := &fakeEmailSender{}
+			s := &Service{emailSender: fake}
+
+			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeLateCancellationAlert, payload)); err == nil {
+				t.Fatal("expected error, got nil")
+			}
+			if fake.msg != nil {
+				t.Error("email should not have been sent")
+			}
+		})
+	})
+
 	t.Run("new order", func(t *testing.T) {
 		payload := NewOrderEmailPayload{
 			UserID:             43,

@@ -14,6 +14,7 @@ type EmailEventType string
 const (
 	EmailEventTypeCriticalError  EmailEventType = "critical_error"
 	EmailEventTypeCancellation   EmailEventType = "cancellation"
+	EmailEventTypeLateCancellationAlert EmailEventType = "late_cancellation_alert"
 	EmailEventTypeNewOrder       EmailEventType = "new_order"
 	EmailEventTypeOpenOrderAlert EmailEventType = "open_order_alert"
 )
@@ -57,6 +58,16 @@ type CancellationEmailPayload struct {
 	UserID             int64  `json:"userId"`
 	BookingReferenceID string `json:"bookingReferenceId"`
 	DriverFullName     string `json:"driverFullName"`
+}
+
+// LateCancellationAlertEmailPayload is the payload for EmailEventTypeLateCancellationAlert.
+// Recipients are resolved dynamically by the subscriber (admin emails).
+type LateCancellationAlertEmailPayload struct {
+	ReservationID       int64  `json:"reservationId"`
+	BrokerReservationID string `json:"brokerReservationId"`
+	AgentID             int64  `json:"agentId"`
+	OfficeID            *int64 `json:"officeId,omitempty"`
+	OrganizationID      *int64 `json:"organizationId,omitempty"`
 }
 
 // NewOrderEmailPayload is the payload for EmailEventTypeNewOrder.

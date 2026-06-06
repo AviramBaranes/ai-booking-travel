@@ -48,9 +48,7 @@ func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
 		return api_errors.ErrNotFound
 	}
 
-	if !canCancel(reservation) {
-		return ErrCancellationWindowExceeded
-	}
+	isLateCancellation := !canCancel(reservation)
 
 	if err := db.WithTx(ctx, s.pool, func(q db.Querier, tx pgx.Tx) error {
 		if err := q.CancelReservation(ctx, id); err != nil {
@@ -83,6 +81,18 @@ func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
 		DriverFullName:     fmt.Sprintf("%s %s %s", reservation.DriverTitle, reservation.DriverFirstName, reservation.DriverLastName),
 	}); err != nil {
 		rlog.Error("failed to publish cancellation email event", "error", err, "reservationId", reservation.ID)
+	}
+
+	if isLateCancellation {
+		if _, err := notifications.PublishEmailEvent(ctx, notifications.EmailEventTypeLateCancellationAlert, notifications.LateCancellationAlertEmailPayload{
+			ReservationID:       reservation.ID,
+			BrokerReservationID: reservation.BrokerReservationID,
+			AgentID:             reservation.UserID,
+			OfficeID:            reservation.OfficeID,
+			OrganizationID:      reservation.OrganizationID,
+		}); err != nil {
+			rlog.Error("failed to publish late cancellation alert email event", "error", err, "reservationId", reservation.ID)
+		}
 	}
 
 	return nil

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	"encore.app/services/notifications"
 	"encore.app/services/reservation/db"
 	"encore.dev/et"
 	"go.uber.org/mock/gomock"
@@ -61,7 +62,7 @@ func TestCancelReservation(t *testing.T) {
 		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
 	})
 
-	t.Run("returns FailedPrecondition when past cancellation window", func(t *testing.T) {
+	t.Run("cancels reservation and emits admin alert when past cancellation window", func(t *testing.T) {
 		const userID int64 = 1003
 		// Pickup tomorrow at noon -> within the 48h cancellation window.
 		pickup := time.Now().Add(24 * time.Hour)
@@ -76,7 +77,39 @@ func TestCancelReservation(t *testing.T) {
 		}
 
 		err = CancelReservation(authContext(userID), res.ID)
-		api_errors.AssertApiError(t, ErrCancellationWindowExceeded, err)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		got, err := GetReservation(authContext(userID), res.ID)
+		if err != nil {
+			t.Fatalf("failed to fetch reservation: %v", err)
+		}
+		if got.ReservationStatus != string(db.ReservationStatusCanceled) {
+			t.Fatalf("expected reservation_status %q, got %q", db.ReservationStatusCanceled, got.ReservationStatus)
+		}
+
+		msgs := et.Topic(notifications.EmailRequestedTopic).PublishedMessages()
+		var alertPayload *notifications.LateCancellationAlertEmailPayload
+		for _, msg := range msgs {
+			if msg.Type != notifications.EmailEventTypeLateCancellationAlert {
+				continue
+			}
+			var payload notifications.LateCancellationAlertEmailPayload
+			if err := json.Unmarshal(msg.Payload, &payload); err != nil {
+				t.Fatalf("unmarshal late cancellation alert payload: %v", err)
+			}
+			if payload.ReservationID == res.ID {
+				alertPayload = &payload
+				break
+			}
+		}
+		if alertPayload == nil {
+			t.Fatalf("expected late cancellation alert for reservation %d, got messages: %v", res.ID, msgs)
+		}
+		if alertPayload.AgentID != userID {
+			t.Fatalf("expected agent id %d, got %d", userID, alertPayload.AgentID)
+		}
 	})
 
 	t.Run("does not enqueue a cancellation event when DB lookup fails", func(t *testing.T) {

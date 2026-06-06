@@ -26,6 +26,8 @@ func (s *Service) HandleEmailEvent(ctx context.Context, event *EmailEvent) error
 		return s.sendCriticalErrorEmail(ctx, event.Payload)
 	case EmailEventTypeCancellation:
 		return s.sendCancellationEmail(ctx, event.Payload)
+	case EmailEventTypeLateCancellationAlert:
+		return s.sendLateCancellationAlertEmail(ctx, event.Payload)
 	case EmailEventTypeNewOrder:
 		return s.sendNewOrderEmail(ctx, event.Payload)
 	case EmailEventTypeOpenOrderAlert:
@@ -93,6 +95,54 @@ func (s *Service) sendCancellationEmail(ctx context.Context, raw json.RawMessage
 	return nil
 }
 
+func (s *Service) sendLateCancellationAlertEmail(ctx context.Context, raw json.RawMessage) error {
+	var p LateCancellationAlertEmailPayload
+	if err := json.Unmarshal(raw, &p); err != nil {
+		return fmt.Errorf("unmarshaling late cancellation alert payload: %w", err)
+	}
+
+	adminEmails, err := accounts.ListAdminsEmails(ctx)
+	if err != nil {
+		rlog.Error("failed to query admin emails for late cancellation alert", "error", err)
+		return err
+	}
+
+	accountsLookup, err := accounts.GetAccountsLookup(ctx, accounts.GetAccountsLookupParams{
+		OrganizationIDs: optionalIDSlice(p.OrganizationID),
+		OfficeIDs:       optionalIDSlice(p.OfficeID),
+		UserIDs:         []int64{p.AgentID},
+	})
+	if err != nil {
+		rlog.Error("failed to resolve account names for late cancellation alert", "error", err, "reservation_id", p.ReservationID)
+		return err
+	}
+
+	userNames := accountNamesByID(accountsLookup.Users)
+	officeNames := accountNamesByID(accountsLookup.Offices)
+	organizationNames := accountNamesByID(accountsLookup.Organizations)
+
+	if err := email.SendEmail(
+		ctx,
+		s.emailSender,
+		adminEmails.Emails,
+		fmt.Sprintf("בוצע ביטול פחות מ-48 שעות לפני האיסוף - הזמנה %d", p.ReservationID),
+		email.LateCancellationAlertEmailTemplate,
+		email.LateCancellationAlertEmailData{
+			ReservationID:       p.ReservationID,
+			BrokerReservationID: p.BrokerReservationID,
+			AgentLabel:          accountLabel(p.AgentID, userNames),
+			OfficeLabel:         optionalAccountLabel(p.OfficeID, officeNames),
+			OrganizationLabel:   optionalAccountLabel(p.OrganizationID, organizationNames),
+		},
+		nil,
+	); err != nil {
+		rlog.Error("failed to send late cancellation alert email", "error", err, "reservation_id", p.ReservationID)
+		return err
+	}
+
+	return nil
+}
+
 func (s *Service) sendNewOrderEmail(ctx context.Context, raw json.RawMessage) error {
 	var p NewOrderEmailPayload
 	if err := json.Unmarshal(raw, &p); err != nil {
@@ -121,6 +171,36 @@ func (s *Service) sendNewOrderEmail(ctx context.Context, raw json.RawMessage) er
 		return err
 	}
 	return nil
+}
+
+func optionalIDSlice(id *int64) []int64 {
+	if id == nil {
+		return nil
+	}
+	return []int64{*id}
+}
+
+func accountNamesByID(rows []accounts.AccountName) map[int64]string {
+	names := make(map[int64]string, len(rows))
+	for _, row := range rows {
+		names[row.ID] = row.Name
+	}
+	return names
+}
+
+func accountLabel(id int64, names map[int64]string) string {
+	if name, ok := names[id]; ok && name != "" {
+		return fmt.Sprintf("%d - %s", id, name)
+	}
+	return fmt.Sprintf("%d", id)
+}
+
+func optionalAccountLabel(id *int64, names map[int64]string) *string {
+	if id == nil {
+		return nil
+	}
+	label := accountLabel(*id, names)
+	return &label
 }
 
 func (s *Service) sendOpenOrderAlertEmail(ctx context.Context, raw json.RawMessage) error {
