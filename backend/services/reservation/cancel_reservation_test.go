@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
-	emailevents "encore.app/internal/email_events"
+	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation/db"
 	"encore.dev/et"
 	"go.uber.org/mock/gomock"

@@ -5,13 +5,14 @@ import (
 	"fmt"
 
 	"encore.app/internal/api_errors"
-	emailevents "encore.app/internal/email_events"
 	"encore.app/internal/icount"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
 	contact "encore.app/services/accounts/handlers/contact"
+	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation"
 	"encore.dev/beta/errs"
+	"encore.dev/pubsub"
 	"encore.dev/rlog"
 )
 
@@ -19,6 +20,7 @@ var (
 	ErrExactlyOneOfOfficeIDOrOrgIDRequired = api_errors.NewValidationError("exactly one of office_id or organization_id must be provided")
 	ErrInvalidReservationID                = api_errors.NewValidationError("one or more provided IDs do not belong to the specified billing entity")
 	ErrMismatchedCurrencies                = api_errors.NewValidationError("all selected reservations must have the same currency")
+	emailRequestedTopic                    = pubsub.TopicRef[pubsub.Publisher[*emailevents.EmailEvent]](emailevents.EmailRequestedTopic)
 )
 
 type BillParams struct {
@@ -102,10 +104,14 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 	})
 	if err != nil {
 		rlog.Error("failed to resolve reservations after successful billing", "error", err, "reservation_ids", p.IDs)
-		emailevents.PublishEmailEvent(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
+		if event, publishErr := emailevents.NewEmailEvent(emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
 			Subject: "Failed to resolve reservations after billing",
 			Message: fmt.Sprintf("failed to resolve reservations after successful billing, reservation_ids: %v, error: %v", p.IDs, err),
-		})
+		}); publishErr != nil {
+			rlog.Error("failed to build critical error email event", "reservation_ids", p.IDs, "error", publishErr)
+		} else if _, publishErr := emailRequestedTopic.Publish(ctx, event); publishErr != nil {
+			rlog.Error("failed to publish critical error email event", "reservation_ids", p.IDs, "error", publishErr)
+		}
 	}
 
 	return resp, nil

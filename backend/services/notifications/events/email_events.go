@@ -1,4 +1,4 @@
-package emailevents
+package events
 
 import (
 	"context"
@@ -32,20 +32,29 @@ var EmailRequestedTopic = pubsub.NewTopic[*EmailEvent]("email-requested", pubsub
 	DeliveryGuarantee: pubsub.AtLeastOnce,
 })
 
+// NewEmailEvent marshals payload into an EmailEvent without publishing it.
+func NewEmailEvent[T any](eventType EmailEventType, payload T) (*EmailEvent, error) {
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("marshaling email event payload: %w", err)
+	}
+
+	return &EmailEvent{
+		Type:    eventType,
+		Payload: raw,
+	}, nil
+}
+
 // PublishEmailEvent marshals payload into an EmailEvent and publishes it.
 // The type parameter T is inferred from the payload argument, keeping call sites type-safe.
 func PublishEmailEvent[T any](ctx context.Context, eventType EmailEventType, payload T) (string, error) {
-	raw, err := json.Marshal(payload)
+	event, err := NewEmailEvent(eventType, payload)
 	if err != nil {
-		return "", fmt.Errorf("marshaling email event payload: %w", err)
+		return "", err
 	}
-	return EmailRequestedTopic.Publish(ctx, &EmailEvent{
-		Type:    eventType,
-		Payload: raw,
-	})
-}
 
-// ---- Per-type payload structs ----
+	return EmailRequestedTopic.Publish(ctx, event)
+}
 
 // CriticalErrorEmailPayload is the payload for EmailEventTypeCriticalError.
 // Recipients are resolved dynamically by the subscriber (admin emails).

@@ -15,9 +15,9 @@ import (
 	"strings"
 	"testing"
 
-	emailevents "encore.app/internal/email_events"
 	"encore.app/services/accounts"
 	accountsuser "encore.app/services/accounts/handlers/user"
+	emailevents "encore.app/services/notifications/events"
 	"encore.dev/et"
 	"github.com/wneessen/go-mail"
 )

@@ -11,15 +11,18 @@ import (
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
-	emailevents "encore.app/internal/email_events"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
+	emailevents "encore.app/services/notifications/events"
+	"encore.dev/pubsub"
 	"encore.dev/rlog"
 )
 
 const (
 	passwordResetTokenExpiry = time.Hour
 )
+
+var emailRequestedTopic = pubsub.TopicRef[pubsub.Publisher[*emailevents.EmailEvent]](emailevents.EmailRequestedTopic)
 
 type SendPasswordResetTokenParams struct {
 	Email string `json:"email" validate:"required,email"`
@@ -62,10 +65,14 @@ func (s *AuthService) SendPasswordResetToken(ctx context.Context, p SendPassword
 		return api_errors.ErrInternalError
 	}
 
-	emailevents.PublishEmailEvent(ctx, emailevents.EmailEventTypePasswordReset, emailevents.PasswordResetEmailPayload{
+	if event, err := emailevents.NewEmailEvent(emailevents.EmailEventTypePasswordReset, emailevents.PasswordResetEmailPayload{
 		Email:     user.Email,
 		TokenHash: rawToken,
-	})
+	}); err != nil {
+		rlog.Error("failed to build password reset email event", "user_id", user.ID, "error", err)
+	} else if _, err := emailRequestedTopic.Publish(ctx, event); err != nil {
+		rlog.Error("failed to publish password reset email event", "user_id", user.ID, "error", err)
+	}
 
 	return nil
 }

@@ -6,9 +6,10 @@ import (
 	"time"
 
 	dbadapters "encore.app/internal/db_adapters"
-	emailevents "encore.app/internal/email_events"
+	emailevents "encore.app/services/notifications/events"
 	actions "encore.app/services/reservation/handlers/actions"
 	"encore.dev/cron"
+	"encore.dev/pubsub"
 	"encore.dev/rlog"
 )
 
@@ -17,6 +18,8 @@ var _ = cron.NewJob("alert-open-reservations", cron.JobConfig{
 	Schedule: "0 7 * * *",
 	Endpoint: AlertOpenReservations,
 })
+
+var emailRequestedTopic = pubsub.TopicRef[pubsub.Publisher[*emailevents.EmailEvent]](emailevents.EmailRequestedTopic)
 
 func (s *Service) newActionService() *actions.ActionService {
 	return actions.NewActionService(s.query, s.pool, s.cancellationTopic, actions.Config{
@@ -63,11 +66,13 @@ func (s *Service) AlertOpenReservations(ctx context.Context) error {
 
 		if time.Until(pickupDateTime) > cancellationWindowHours*time.Hour {
 			// More than 48h until pickup — send open order alert
-			if _, err := emailevents.PublishEmailEvent(ctx, emailevents.EmailEventTypeOpenOrderAlert, emailevents.OpenOrderAlertEmailPayload{
+			if event, err := emailevents.NewEmailEvent(emailevents.EmailEventTypeOpenOrderAlert, emailevents.OpenOrderAlertEmailPayload{
 				UserID:             r.UserID,
 				BookingReferenceID: r.BrokerReservationID,
 				DriverFullName:     fmt.Sprintf("%s %s %s", r.DriverTitle, r.DriverFirstName, r.DriverLastName),
 			}); err != nil {
+				rlog.Error("failed to build open order alert email event", "error", err, "reservationId", r.ID)
+			} else if _, err := emailRequestedTopic.Publish(ctx, event); err != nil {
 				rlog.Error("failed to publish open order alert email", "error", err, "reservationId", r.ID)
 			}
 		} else {

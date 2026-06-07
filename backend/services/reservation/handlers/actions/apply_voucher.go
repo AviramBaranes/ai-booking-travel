@@ -10,11 +10,11 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	dbadapters "encore.app/internal/db_adapters"
-	emailevents "encore.app/internal/email_events"
 	"encore.app/internal/icount"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
 	"encore.app/services/notifications"
+	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation/db"
 	"encore.dev/beta/auth"
 	"encore.dev/rlog"
@@ -76,10 +76,14 @@ func (s *ActionService) ApplyVoucher(ctx context.Context, id int64, p ApplyVouch
 
 // notifyVoucherError publishes a critical error notification when voucher generation or sending fails.
 func notifyVoucherError(ctx context.Context, subject string, id int64, b db.Broker, voucher string, err error) {
-	emailevents.PublishEmailEvent(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
+	if event, publishErr := emailevents.NewEmailEvent(emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
 		Subject: subject,
 		Message: fmt.Sprintf("Reservation %d (broker: %s, voucher: %s): %v", id, b, voucher, err),
-	})
+	}); publishErr != nil {
+		rlog.Error("failed to build critical error email event", "reservationId", id, "error", publishErr)
+	} else if _, publishErr := emailRequestedTopic.Publish(ctx, event); publishErr != nil {
+		rlog.Error("failed to publish critical error email event", "reservationId", id, "error", publishErr)
+	}
 }
 
 // getVoucherProvider returns the appropriate VoucherProvider implementation based on the broker type.

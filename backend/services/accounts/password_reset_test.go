@@ -11,11 +11,11 @@ import (
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
-	emailevents "encore.app/internal/email_events"
 	"encore.app/internal/password"
 	"encore.app/services/accounts/db"
 	ah "encore.app/services/accounts/handlers/auth"
 	user "encore.app/services/accounts/handlers/user"
+	emailevents "encore.app/services/notifications/events"
 	"encore.dev/et"
 )
 

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	dbadapters "encore.app/internal/db_adapters"
-	emailevents "encore.app/internal/email_events"
+	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation/db"
 	"encore.dev/et"
 )

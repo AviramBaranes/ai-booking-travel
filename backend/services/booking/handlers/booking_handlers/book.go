@@ -10,11 +10,11 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	dbadapters "encore.app/internal/db_adapters"
-	emailevents "encore.app/internal/email_events"
 	"encore.app/internal/validation"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
 	availability "encore.app/services/booking/handlers/availability"
+	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation"
 	"encore.dev/rlog"
 )
@@ -64,10 +64,14 @@ func (s *BookingService) Book(ctx context.Context, p BookParams) (*BookResponse,
 	if err != nil {
 		rlog.Error("failed to create reservation after successful booking",
 			"confirmationNumber", confID, "error", err)
-		emailevents.PublishEmailEvent(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
+		if event, publishErr := emailevents.NewEmailEvent(emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
 			Subject: "Reservation creation failed after successful booking",
 			Message: fmt.Sprintf("failed to create reservation after successful booking, confirmationNumber: %s, error: %v", confID, err),
-		})
+		}); publishErr != nil {
+			rlog.Error("failed to build critical error email event", "confirmationNumber", confID, "error", publishErr)
+		} else if _, publishErr := emailRequestedTopic.Publish(ctx, event); publishErr != nil {
+			rlog.Error("failed to publish critical error email event", "confirmationNumber", confID, "error", publishErr)
+		}
 		return nil, errReservationCreationFailed
 	}
 

@@ -8,9 +8,9 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	dbadapters "encore.app/internal/db_adapters"
-	emailevents "encore.app/internal/email_events"
 	"encore.app/internal/pricing"
 	"encore.app/internal/validation"
+	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation/db"
 	"encore.dev/rlog"
 )
@@ -127,11 +127,13 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 		return nil, api_errors.ErrInternalError
 	}
 
-	if _, err := emailevents.PublishEmailEvent(ctx, emailevents.EmailEventTypeNewOrder, emailevents.NewOrderEmailPayload{
+	if event, err := emailevents.NewEmailEvent(emailevents.EmailEventTypeNewOrder, emailevents.NewOrderEmailPayload{
 		UserID:             p.UserID,
 		BookingReferenceID: p.BrokerReservationID,
 		DriverFullName:     fmt.Sprintf("%s %s %s", p.DriverTitle, p.DriverFirstName, p.DriverLastName),
 	}); err != nil {
+		rlog.Error("failed to build new order email event", "error", err, "brokerReservationId", p.BrokerReservationID)
+	} else if _, err := emailRequestedTopic.Publish(ctx, event); err != nil {
 		rlog.Error("failed to publish new order email event", "error", err, "brokerReservationId", p.BrokerReservationID)
 	}
 

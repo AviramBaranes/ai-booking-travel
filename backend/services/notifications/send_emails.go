@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	emailevents "encore.app/internal/email_events"
 	"encore.app/services/accounts"
 	"encore.app/services/notifications/email"
+	emailevents "encore.app/services/notifications/events"
 	"encore.dev/pubsub"
 	"encore.dev/rlog"
 )
