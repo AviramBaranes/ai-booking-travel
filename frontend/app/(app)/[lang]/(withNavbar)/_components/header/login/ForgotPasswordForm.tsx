@@ -81,7 +81,7 @@ export function ForgotPasswordForm({
         className="w-1/3 underline mx-auto"
         onClick={onBackToLogin}
       >
-        חזרה להתחברות
+        {t("agent.backToLogin")}
       </Button>
 
       <Button
@@ -91,7 +91,7 @@ export function ForgotPasswordForm({
         loading={isPending}
         disabled={isPending || !email?.trim()}
       >
-        שלח לינק לאיפוס סיסמה
+        {t("agent.sendPasswordReset")}
       </Button>
     </form>
   );

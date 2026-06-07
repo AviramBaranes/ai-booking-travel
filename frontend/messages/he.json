@@ -67,7 +67,10 @@
       "confirmCode": "אישור קוד",
       "successTitle": "ההתחברות בוצעה בהצלחה!",
       "successMessage": "ברוך הבא! אתם מחוברים כעת.",
-      "continueToSite": "המשך לאתר"
+      "continueToSite": "המשך לאתר",
+      "backToLogin": "חזרה להתחברות",
+      "sendPasswordReset": "שלח לינק לאיפוס סיסמה",
+      "passwordResetSuccess": "קישור לאיפוס סיסמה נשלח בהצלחה"
     },
     "customer": {
       "title": "כניסת לקוח",

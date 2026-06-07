@@ -67,7 +67,10 @@
       "confirmCode": "Confirm code",
       "successTitle": "Login successful!",
       "successMessage": "Welcome! You are now logged in.",
-      "continueToSite": "Continue to site"
+      "continueToSite": "Continue to site",
+      "backToLogin": "Back to login",
+      "sendPasswordReset": "Send password reset link",
+      "passwordResetSuccess": "Password reset link sent successfully"
     },
     "customer": {
       "title": "Customer Login",

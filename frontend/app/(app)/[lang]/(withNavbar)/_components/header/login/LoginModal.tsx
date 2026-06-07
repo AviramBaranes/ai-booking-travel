@@ -177,7 +177,7 @@ export function LoginModal() {
                 onBackToLogin={() => setAgentStep("credentials")}
                 onSuccess={() => {
                   setPasswordResetSuccess(
-                    "Password reset link sent successfully",
+                    t("agent.passwordResetSuccess"),
                   );
                   setAgentStep("credentials");
                 }}
