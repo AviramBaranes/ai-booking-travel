@@ -48,6 +48,11 @@ var (
 		errs.Unauthenticated, "Expired refresh token",
 		api_errors.ErrorDetails{Code: api_errors.CodeExpiredRefreshToken},
 	)
+
+	ErrCustomerPasswordResetNotAllowed = api_errors.NewErrorWithDetail(
+		errs.PermissionDenied, "Password reset is not allowed for customers",
+		api_errors.ErrorDetails{Code: api_errors.CodeCustomerPasswordResetNotAllowed},
+	)
 )
 
 func (s *AuthService) generateTokens(ctx context.Context, data jwt.AccessTokenData) (string, string, error) {

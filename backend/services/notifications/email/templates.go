@@ -66,3 +66,11 @@ type OpenOrderAlertEmailData struct {
 var OpenOrderAlertEmailTemplate = Template[OpenOrderAlertEmailData]{
 	name: "open_order_alert_email",
 }
+
+type PasswordResetEmailData struct {
+	ResetURL string
+}
+
+var PasswordResetEmailTemplate = Template[PasswordResetEmailData]{
+	name: "password_reset_email",
+}

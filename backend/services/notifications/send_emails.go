@@ -32,6 +32,8 @@ func (s *Service) HandleEmailEvent(ctx context.Context, event *EmailEvent) error
 		return s.sendNewOrderEmail(ctx, event.Payload)
 	case EmailEventTypeOpenOrderAlert:
 		return s.sendOpenOrderAlertEmail(ctx, event.Payload)
+	case EmailEventTypePasswordReset:
+		return s.sendPasswordResetEmail(ctx, event.Payload)
 	default:
 		rlog.Error("unknown email event type", "type", event.Type)
 		return fmt.Errorf("unknown email event type: %s", event.Type)
@@ -228,6 +230,28 @@ func (s *Service) sendOpenOrderAlertEmail(ctx context.Context, raw json.RawMessa
 		nil,
 	); err != nil {
 		rlog.Error("failed to send open order alert email", "error", err, "booking_reference_id", p.BookingReferenceID)
+		return err
+	}
+	return nil
+}
+
+func (s *Service) sendPasswordResetEmail(ctx context.Context, raw json.RawMessage) error {
+	var p PasswordResetEmailPayload
+	if err := json.Unmarshal(raw, &p); err != nil {
+		return fmt.Errorf("unmarshaling password reset email payload: %w", err)
+	}
+
+	resetURL := fmt.Sprintf("%s?token=%s", cfg.PasswordResetTokenURL(), p.TokenHash)
+	if err := email.SendEmail(
+		ctx,
+		s.emailSender,
+		[]string{p.Email},
+		"בקשה לאיפוס סיסמה - AI Booking Travel",
+		email.PasswordResetEmailTemplate,
+		email.PasswordResetEmailData{ResetURL: resetURL},
+		nil,
+	); err != nil {
+		rlog.Error("failed to send password reset email", "error", err, "email", p.Email)
 		return err
 	}
 	return nil

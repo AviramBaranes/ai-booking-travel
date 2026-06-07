@@ -12,11 +12,12 @@ import (
 type EmailEventType string
 
 const (
-	EmailEventTypeCriticalError  EmailEventType = "critical_error"
-	EmailEventTypeCancellation   EmailEventType = "cancellation"
+	EmailEventTypeCriticalError         EmailEventType = "critical_error"
+	EmailEventTypeCancellation          EmailEventType = "cancellation"
 	EmailEventTypeLateCancellationAlert EmailEventType = "late_cancellation_alert"
-	EmailEventTypeNewOrder       EmailEventType = "new_order"
-	EmailEventTypeOpenOrderAlert EmailEventType = "open_order_alert"
+	EmailEventTypeNewOrder              EmailEventType = "new_order"
+	EmailEventTypeOpenOrderAlert        EmailEventType = "open_order_alert"
+	EmailEventTypePasswordReset         EmailEventType = "password_reset"
 )
 
 // EmailEvent is the generic envelope published to EmailRequestedTopic.
@@ -82,4 +83,10 @@ type OpenOrderAlertEmailPayload struct {
 	UserID             int64  `json:"userId"`
 	BookingReferenceID string `json:"bookingReferenceId"`
 	DriverFullName     string `json:"driverFullName"`
+}
+
+// PasswordResetEmailPayload is the payload for PasswordResetEmailEventType.
+type PasswordResetEmailPayload struct {
+	Email     string `json:"email"`
+	TokenHash string `json:"tokenHash"`
 }

@@ -19,12 +19,13 @@ type Service struct {
 
 // Config holds the configuration for the notifications service, including email settings.
 type Config struct {
-	EmailFrom     config.String
-	EmailHost     config.String
-	EmailPort     config.Int
-	SMSUsername   config.String
-	SMSSenderName config.String
-	GotenbergURL  config.String
+	EmailFrom             config.String
+	EmailHost             config.String
+	EmailPort             config.Int
+	SMSUsername           config.String
+	SMSSenderName         config.String
+	GotenbergURL          config.String
+	PasswordResetTokenURL config.String
 }
 
 var cfg = config.Load[*Config]()

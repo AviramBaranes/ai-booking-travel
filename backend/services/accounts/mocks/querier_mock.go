@@ -442,6 +442,21 @@ func (mr *MockQuerierMockRecorder) GetUserNamesByIDs(ctx, ids any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserNamesByIDs", reflect.TypeOf((*MockQuerier)(nil).GetUserNamesByIDs), ctx, ids)
 }
 
+// InsertPasswordResetToken mocks base method.
+func (m *MockQuerier) InsertPasswordResetToken(ctx context.Context, arg db.InsertPasswordResetTokenParams) (db.PasswordResetToken, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertPasswordResetToken", ctx, arg)
+	ret0, _ := ret[0].(db.PasswordResetToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InsertPasswordResetToken indicates an expected call of InsertPasswordResetToken.
+func (mr *MockQuerierMockRecorder) InsertPasswordResetToken(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertPasswordResetToken", reflect.TypeOf((*MockQuerier)(nil).InsertPasswordResetToken), ctx, arg)
+}
+
 // ListAdminsEmails mocks base method.
 func (m *MockQuerier) ListAdminsEmails(ctx context.Context) ([]string, error) {
 	m.ctrl.T.Helper()
