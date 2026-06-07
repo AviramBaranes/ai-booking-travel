@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { reservation } from "@/shared/client";
+import { queries } from "@/shared/client";
 import { BillDialog } from "./BillDialog";
 import type { BillingEntity } from "./BillingEntityCombobox";
 
@@ -16,7 +16,7 @@ const CHECKBOX_CLASSES =
 
 interface CurrencyGroupCardProps {
   entity: BillingEntity;
-  group: reservation.CurrencyGroup;
+  group: queries.CurrencyGroup;
 }
 
 export function CurrencyGroupCard({ entity, group }: CurrencyGroupCardProps) {

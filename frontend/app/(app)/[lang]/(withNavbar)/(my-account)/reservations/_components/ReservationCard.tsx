@@ -1,4 +1,4 @@
-import { reservation } from "@/shared/client";
+import { queries, reservation } from "@/shared/client";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -13,7 +13,7 @@ export function ReservationCard({
   reservation,
   refetchReservations,
 }: {
-  reservation: reservation.ReservationSummary;
+  reservation: queries.ReservationSummary;
   refetchReservations: () => void;
 }) {
   const { lang } = useParams();

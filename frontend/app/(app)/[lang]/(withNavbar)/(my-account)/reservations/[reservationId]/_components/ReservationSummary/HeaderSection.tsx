@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { reservation } from "@/shared/client";
+import { queries, reservation } from "@/shared/client";
 import { DeleteReservationButton } from "./DeleteReservationButton";
 import { statusToColor } from "../../../_utils/statusesStyles";
 import { SummaryRow } from "../../../../_components/SummaryRow";
@@ -11,7 +11,7 @@ import { SummaryRow } from "../../../../_components/SummaryRow";
 export function HeaderSection({
   reservation: res,
 }: {
-  reservation: reservation.GetReservationResponse;
+  reservation: queries.GetReservationResponse;
 }) {
   const { lang } = useParams();
   const t = useTranslations("MyAccount.reservation.summary");

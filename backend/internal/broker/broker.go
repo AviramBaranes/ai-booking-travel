@@ -135,7 +135,7 @@ type AvailableVehicle struct {
 
 // PriceDetails represents the pricing details of a rental, including the currency, drop charge, and drop charge currency.
 type PriceDetails struct {
-	Fees
+	Fees     Fees   `json:"fees"`
 	Currency string `json:"currency"`
 }
 

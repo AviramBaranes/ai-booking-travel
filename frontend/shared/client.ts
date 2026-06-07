@@ -1260,6 +1260,7 @@ export namespace broker {
      * PriceDetails represents the pricing details of a rental, including the currency, drop charge, and drop charge currency.
      */
     export interface PriceDetails {
+        fees: Fees
         currency: string
     }
 

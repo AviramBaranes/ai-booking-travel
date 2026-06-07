@@ -8,8 +8,8 @@ export function FeesNote({ vehicle }: { vehicle: availability.AvailableVehicle }
   const { data } = useBookingSettings();
 
   if (
-    !vehicle.priceDetails.dropCharge &&
-    !vehicle.priceDetails.youngDriverFee
+    !vehicle.priceDetails.fees.dropCharge &&
+    !vehicle.priceDetails.fees.youngDriverFee
   ) {
     return null;
   }
@@ -17,20 +17,20 @@ export function FeesNote({ vehicle }: { vehicle: availability.AvailableVehicle }
   return (
     <div className="border border-destructive bg-destructive/15 p-6 flex flex-col gap-4 rounded-lg">
       <h6 className="type-h6 text-navy">{t("feesNoteTitle")}</h6>
-      {!!vehicle.priceDetails.youngDriverFee && (
+      {!!vehicle.priceDetails.fees.youngDriverFee && (
         <FeeDisplay
           title={data.youngDriverTitle}
           content={data.youngDriverContent}
-          amount={vehicle.priceDetails.youngDriverFee}
-          currency={vehicle.priceDetails.youngDriverFeeCurrency}
+          amount={vehicle.priceDetails.fees.youngDriverFee}
+          currency={vehicle.priceDetails.fees.youngDriverFeeCurrency}
         />
       )}
-      {!!vehicle.priceDetails.dropCharge && (
+      {!!vehicle.priceDetails.fees.dropCharge && (
         <FeeDisplay
           title={data.dropoffChargeTitle}
           content={data.dropoffChargeContent}
-          amount={vehicle.priceDetails.dropCharge}
-          currency={vehicle.priceDetails.dropChargeCurrency}
+          amount={vehicle.priceDetails.fees.dropCharge}
+          currency={vehicle.priceDetails.fees.dropChargeCurrency}
         />
       )}
     </div>
