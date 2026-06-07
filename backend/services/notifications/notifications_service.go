@@ -2,12 +2,17 @@ package notifications
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 
 	"encore.app/internal/pdf"
 	"encore.app/services/notifications/email"
 	"encore.app/services/notifications/sms"
+	"encore.dev"
 	"encore.dev/config"
 	"encore.dev/rlog"
+	"google.golang.org/api/idtoken"
+	"google.golang.org/api/option"
 )
 
 // encore:service
@@ -36,8 +41,10 @@ var secrets struct {
 }
 
 func initService() (*Service, error) {
+	ctx := context.Background()
+
 	es, err := email.NewGmailAPISender(
-		context.Background(),
+		ctx,
 		secrets.GoogleServiceAccountJSON,
 		cfg.EmailFrom(),
 	)
@@ -53,9 +60,37 @@ func initService() (*Service, error) {
 		cfg.SMSUsername(),
 	)
 
+	gotenbergClient, err := gotenbergHTTPClient(ctx, cfg.GotenbergURL())
+	if err != nil {
+		rlog.Error("failed to create gotenberg http client", "error", err)
+		return nil, err
+	}
+
 	return &Service{
 		emailSender:  es,
 		smsSender:    ss,
-		pdfConverter: pdf.NewPdfConverter(cfg.GotenbergURL()),
+		pdfConverter: pdf.NewPdfConverterWithHTTPClient(cfg.GotenbergURL(), gotenbergClient),
 	}, nil
+}
+
+func gotenbergHTTPClient(ctx context.Context, audience string) (*http.Client, error) {
+	meta := encore.Meta()
+	if meta.Environment.Type == encore.EnvTest || meta.Environment.Cloud == encore.CloudLocal {
+		return nil, nil
+	}
+
+	if meta.Environment.Cloud != encore.CloudGCP {
+		return idtoken.NewClient(
+			ctx,
+			audience,
+			option.WithAuthCredentialsJSON(option.ServiceAccount, []byte(secrets.GoogleServiceAccountJSON)),
+		)
+	}
+
+	client, err := idtoken.NewClient(ctx, audience)
+	if err != nil {
+		return nil, fmt.Errorf("creating gotenberg identity token client: %w", err)
+	}
+
+	return client, nil
 }

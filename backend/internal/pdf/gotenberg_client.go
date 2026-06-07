@@ -26,9 +26,19 @@ type gotenberg struct {
 
 // NewPdfConverter creates a new PDFConverter that uses Gotenberg for HTML to PDF conversion.
 func NewPdfConverter(baseURL string) PDFConverter {
+	return NewPdfConverterWithHTTPClient(baseURL, nil)
+}
+
+func NewPdfConverterWithHTTPClient(baseURL string, httpClient *http.Client) PDFConverter {
+	if httpClient == nil {
+		httpClient = &http.Client{Timeout: time.Second * 20}
+	} else {
+		httpClient.Timeout = time.Second * 20
+	}
+
 	return &gotenberg{
 		baseURL:    baseURL,
-		httpClient: &http.Client{Timeout: time.Second * 20},
+		httpClient: httpClient,
 	}
 }
 
