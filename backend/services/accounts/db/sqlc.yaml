@@ -7,6 +7,7 @@ sql:
       - "query/organizations_query.sql"
       - "query/offices_query.sql"
       - "query/contacts_query.sql"
+      - "query/password_reset_query.sql"
     schema: "./migrations"
     gen:
       go:

@@ -93,6 +93,14 @@ type Organization struct {
 	UpdatedAt      pgtype.Timestamptz
 }
 
+type PasswordResetToken struct {
+	ID        int64
+	UserID    int64
+	TokenHash string
+	ExpiresAt pgtype.Timestamptz
+	CreatedAt pgtype.Timestamptz
+}
+
 type RefreshToken struct {
 	Jti        string
 	UserID     int64
