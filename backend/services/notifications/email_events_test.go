@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	emailevents "encore.app/internal/email_events"
 	"encore.app/services/accounts"
 	accountsuser "encore.app/services/accounts/handlers/user"
 	"encore.dev/et"
@@ -17,13 +18,13 @@ import (
 )
 
 // makeEmailEvent marshals payload into an EmailEvent for the given event type.
-func makeEmailEvent(t *testing.T, eventType EmailEventType, payload any) *EmailEvent {
+func makeEmailEvent(t *testing.T, eventType emailevents.EmailEventType, payload any) *emailevents.EmailEvent {
 	t.Helper()
 	raw, err := json.Marshal(payload)
 	if err != nil {
 		t.Fatalf("marshal payload: %v", err)
 	}
-	return &EmailEvent{Type: eventType, Payload: raw}
+	return &emailevents.EmailEvent{Type: eventType, Payload: raw}
 }
 
 // decodeSubject MIME-decodes the Subject header from a mail message.
@@ -51,7 +52,7 @@ func TestHandleEmailEvent(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("critical error", func(t *testing.T) {
-		payload := CriticalErrorEmailPayload{
+		payload := emailevents.CriticalErrorEmailPayload{
 			Subject: "DB exploded",
 			Message: "primary node unreachable",
 		}
@@ -66,7 +67,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{}
 			s := &Service{emailSender: fake}
 
-			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeCriticalError, payload)); err != nil {
+			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeCriticalError, payload)); err != nil {
 				t.Fatalf("HandleEmailEvent: %v", err)
 			}
 
@@ -101,7 +102,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{}
 			s := &Service{emailSender: fake}
 
-			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeCriticalError, payload)); err == nil {
+			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeCriticalError, payload)); err == nil {
 				t.Fatal("expected error, got nil")
 			}
 			if fake.msg != nil {
@@ -118,7 +119,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{err: sendErr}
 			s := &Service{emailSender: fake}
 
-			err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeCriticalError, payload))
+			err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeCriticalError, payload))
 			if !errors.Is(err, sendErr) {
 				t.Fatalf("err = %v, want %v", err, sendErr)
 			}
@@ -126,7 +127,7 @@ func TestHandleEmailEvent(t *testing.T) {
 	})
 
 	t.Run("cancellation", func(t *testing.T) {
-		payload := CancellationEmailPayload{
+		payload := emailevents.CancellationEmailPayload{
 			UserID:             42,
 			BookingReferenceID: "GR-001",
 			DriverFullName:     "John Doe",
@@ -144,7 +145,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{}
 			s := &Service{emailSender: fake}
 
-			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeCancellation, payload)); err != nil {
+			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeCancellation, payload)); err != nil {
 				t.Fatalf("HandleEmailEvent: %v", err)
 			}
 
@@ -173,7 +174,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{}
 			s := &Service{emailSender: fake}
 
-			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeCancellation, payload)); err == nil {
+			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeCancellation, payload)); err == nil {
 				t.Fatal("expected error, got nil")
 			}
 			if fake.msg != nil {
@@ -190,7 +191,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{err: sendErr}
 			s := &Service{emailSender: fake}
 
-			err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeCancellation, payload))
+			err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeCancellation, payload))
 			if !errors.Is(err, sendErr) {
 				t.Fatalf("err = %v, want %v", err, sendErr)
 			}
@@ -200,7 +201,7 @@ func TestHandleEmailEvent(t *testing.T) {
 	t.Run("late cancellation alert", func(t *testing.T) {
 		officeID := int64(77)
 		organizationID := int64(88)
-		payload := LateCancellationAlertEmailPayload{
+		payload := emailevents.LateCancellationAlertEmailPayload{
 			ReservationID:       501,
 			BrokerReservationID: "BR-501",
 			AgentID:             42,
@@ -234,7 +235,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{}
 			s := &Service{emailSender: fake}
 
-			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeLateCancellationAlert, payload)); err != nil {
+			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeLateCancellationAlert, payload)); err != nil {
 				t.Fatalf("HandleEmailEvent: %v", err)
 			}
 
@@ -276,7 +277,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{}
 			s := &Service{emailSender: fake}
 
-			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeLateCancellationAlert, payload)); err == nil {
+			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeLateCancellationAlert, payload)); err == nil {
 				t.Fatal("expected error, got nil")
 			}
 			if fake.msg != nil {
@@ -286,7 +287,7 @@ func TestHandleEmailEvent(t *testing.T) {
 	})
 
 	t.Run("new order", func(t *testing.T) {
-		payload := NewOrderEmailPayload{
+		payload := emailevents.NewOrderEmailPayload{
 			UserID:             43,
 			BookingReferenceID: "GR-002",
 			DriverFullName:     "Jane Smith",
@@ -304,7 +305,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{}
 			s := &Service{emailSender: fake}
 
-			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeNewOrder, payload)); err != nil {
+			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeNewOrder, payload)); err != nil {
 				t.Fatalf("HandleEmailEvent: %v", err)
 			}
 
@@ -333,7 +334,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{}
 			s := &Service{emailSender: fake}
 
-			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeNewOrder, payload)); err == nil {
+			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeNewOrder, payload)); err == nil {
 				t.Fatal("expected error, got nil")
 			}
 			if fake.msg != nil {
@@ -350,7 +351,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{err: sendErr}
 			s := &Service{emailSender: fake}
 
-			err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeNewOrder, payload))
+			err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeNewOrder, payload))
 			if !errors.Is(err, sendErr) {
 				t.Fatalf("err = %v, want %v", err, sendErr)
 			}
@@ -358,7 +359,7 @@ func TestHandleEmailEvent(t *testing.T) {
 	})
 
 	t.Run("open order alert", func(t *testing.T) {
-		payload := OpenOrderAlertEmailPayload{
+		payload := emailevents.OpenOrderAlertEmailPayload{
 			UserID:             44,
 			BookingReferenceID: "GR-003",
 			DriverFullName:     "Bob Cohen",
@@ -376,7 +377,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{}
 			s := &Service{emailSender: fake}
 
-			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeOpenOrderAlert, payload)); err != nil {
+			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeOpenOrderAlert, payload)); err != nil {
 				t.Fatalf("HandleEmailEvent: %v", err)
 			}
 
@@ -405,7 +406,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{}
 			s := &Service{emailSender: fake}
 
-			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeOpenOrderAlert, payload)); err == nil {
+			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeOpenOrderAlert, payload)); err == nil {
 				t.Fatal("expected error, got nil")
 			}
 			if fake.msg != nil {
@@ -422,7 +423,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			fake := &fakeEmailSender{err: sendErr}
 			s := &Service{emailSender: fake}
 
-			err := s.HandleEmailEvent(ctx, makeEmailEvent(t, EmailEventTypeOpenOrderAlert, payload))
+			err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeOpenOrderAlert, payload))
 			if !errors.Is(err, sendErr) {
 				t.Fatalf("err = %v, want %v", err, sendErr)
 			}

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
-	"encore.app/services/notifications"
+	emailevents "encore.app/internal/email_events"
 	"encore.app/services/reservation/db"
 	"encore.dev/et"
 	"go.uber.org/mock/gomock"
@@ -89,13 +89,13 @@ func TestCancelReservation(t *testing.T) {
 			t.Fatalf("expected reservation_status %q, got %q", db.ReservationStatusCanceled, got.ReservationStatus)
 		}
 
-		msgs := et.Topic(notifications.EmailRequestedTopic).PublishedMessages()
-		var alertPayload *notifications.LateCancellationAlertEmailPayload
+		msgs := et.Topic(emailevents.EmailRequestedTopic).PublishedMessages()
+		var alertPayload *emailevents.LateCancellationAlertEmailPayload
 		for _, msg := range msgs {
-			if msg.Type != notifications.EmailEventTypeLateCancellationAlert {
+			if msg.Type != emailevents.EmailEventTypeLateCancellationAlert {
 				continue
 			}
-			var payload notifications.LateCancellationAlertEmailPayload
+			var payload emailevents.LateCancellationAlertEmailPayload
 			if err := json.Unmarshal(msg.Payload, &payload); err != nil {
 				t.Fatalf("unmarshal late cancellation alert payload: %v", err)
 			}

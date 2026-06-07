@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"encore.app/internal/api_errors"
+	emailevents "encore.app/internal/email_events"
 	"encore.app/internal/icount"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
 	contact "encore.app/services/accounts/handlers/contact"
-	"encore.app/services/notifications"
 	"encore.app/services/reservation"
 	"encore.dev/beta/errs"
 	"encore.dev/rlog"
@@ -102,7 +102,7 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 	})
 	if err != nil {
 		rlog.Error("failed to resolve reservations after successful billing", "error", err, "reservation_ids", p.IDs)
-		notifications.PublishEmailEvent(ctx, notifications.EmailEventTypeCriticalError, notifications.CriticalErrorEmailPayload{
+		emailevents.PublishEmailEvent(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
 			Subject: "Failed to resolve reservations after billing",
 			Message: fmt.Sprintf("failed to resolve reservations after successful billing, reservation_ids: %v, error: %v", p.IDs, err),
 		})

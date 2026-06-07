@@ -11,10 +11,10 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	dbadapters "encore.app/internal/db_adapters"
+	emailevents "encore.app/internal/email_events"
 	"encore.app/internal/validation"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
-	"encore.app/services/notifications"
 	"encore.app/services/reservation"
 	"encore.dev/rlog"
 )
@@ -53,7 +53,7 @@ func (s *BookingService) BookPriceOffer(ctx context.Context, p BookPriceOfferPar
 	if err != nil {
 		rlog.Error("failed to create reservation after successful booking",
 			"confirmationNumber", bookingRes.ConfirmationNumber, "error", err)
-		notifications.PublishEmailEvent(ctx, notifications.EmailEventTypeCriticalError, notifications.CriticalErrorEmailPayload{
+		emailevents.PublishEmailEvent(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
 			Subject: "Reservation creation failed after successful booking",
 			Message: fmt.Sprintf("failed to create reservation after successful booking, confirmationNumber: %s, error: %v", bookingRes.ConfirmationNumber, err),
 		})

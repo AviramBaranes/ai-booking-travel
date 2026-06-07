@@ -7,7 +7,7 @@ import (
 	"time"
 
 	dbadapters "encore.app/internal/db_adapters"
-	"encore.app/services/notifications"
+	emailevents "encore.app/internal/email_events"
 	"encore.app/services/reservation/db"
 	"encore.dev/et"
 )
@@ -94,11 +94,11 @@ func TestAlertOpenReservations(t *testing.T) {
 	}
 
 	// Assert: case 4 received an open-order-alert email.
-	msgs := et.Topic(notifications.EmailRequestedTopic).PublishedMessages()
-	var alertMsg *notifications.EmailEvent
+	msgs := et.Topic(emailevents.EmailRequestedTopic).PublishedMessages()
+	var alertMsg *emailevents.EmailEvent
 	for _, msg := range msgs {
-		if msg.Type == notifications.EmailEventTypeOpenOrderAlert {
-			var payload notifications.OpenOrderAlertEmailPayload
+		if msg.Type == emailevents.EmailEventTypeOpenOrderAlert {
+			var payload emailevents.OpenOrderAlertEmailPayload
 			if err := json.Unmarshal(msg.Payload, &payload); err != nil {
 				t.Fatalf("unmarshal open order alert payload: %v", err)
 			}
@@ -119,8 +119,8 @@ func TestAlertOpenReservations(t *testing.T) {
 		}
 	}
 	for _, msg := range msgs {
-		if msg.Type == notifications.EmailEventTypeOpenOrderAlert {
-			var payload notifications.OpenOrderAlertEmailPayload
+		if msg.Type == emailevents.EmailEventTypeOpenOrderAlert {
+			var payload emailevents.OpenOrderAlertEmailPayload
 			if err := json.Unmarshal(msg.Payload, &payload); err != nil {
 				continue
 			}

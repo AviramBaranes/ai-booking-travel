@@ -8,8 +8,8 @@ import (
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
+	emailevents "encore.app/internal/email_events"
 	"encore.app/services/accounts"
-	"encore.app/services/notifications"
 	"encore.app/services/reservation/db"
 	"encore.dev/beta/errs"
 	"encore.dev/rlog"
@@ -75,7 +75,7 @@ func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
 		return api_errors.ErrInternalError
 	}
 
-	if _, err := notifications.PublishEmailEvent(ctx, notifications.EmailEventTypeCancellation, notifications.CancellationEmailPayload{
+	if _, err := emailevents.PublishEmailEvent(ctx, emailevents.EmailEventTypeCancellation, emailevents.CancellationEmailPayload{
 		UserID:             reservation.UserID,
 		BookingReferenceID: reservation.BrokerReservationID,
 		DriverFullName:     fmt.Sprintf("%s %s %s", reservation.DriverTitle, reservation.DriverFirstName, reservation.DriverLastName),
@@ -84,7 +84,7 @@ func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
 	}
 
 	if isLateCancellation {
-		if _, err := notifications.PublishEmailEvent(ctx, notifications.EmailEventTypeLateCancellationAlert, notifications.LateCancellationAlertEmailPayload{
+		if _, err := emailevents.PublishEmailEvent(ctx, emailevents.EmailEventTypeLateCancellationAlert, emailevents.LateCancellationAlertEmailPayload{
 			ReservationID:       reservation.ID,
 			BrokerReservationID: reservation.BrokerReservationID,
 			AgentID:             reservation.UserID,

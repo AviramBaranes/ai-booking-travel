@@ -10,6 +10,7 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	dbadapters "encore.app/internal/db_adapters"
+	emailevents "encore.app/internal/email_events"
 	"encore.app/internal/icount"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
@@ -75,7 +76,7 @@ func (s *ActionService) ApplyVoucher(ctx context.Context, id int64, p ApplyVouch
 
 // notifyVoucherError publishes a critical error notification when voucher generation or sending fails.
 func notifyVoucherError(ctx context.Context, subject string, id int64, b db.Broker, voucher string, err error) {
-	notifications.PublishEmailEvent(ctx, notifications.EmailEventTypeCriticalError, notifications.CriticalErrorEmailPayload{
+	emailevents.PublishEmailEvent(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
 		Subject: subject,
 		Message: fmt.Sprintf("Reservation %d (broker: %s, voucher: %s): %v", id, b, voucher, err),
 	})

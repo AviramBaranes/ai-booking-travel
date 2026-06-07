@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	emailevents "encore.app/internal/email_events"
 	"encore.app/services/accounts"
 	"encore.app/services/notifications/email"
 	"encore.dev/pubsub"
@@ -12,27 +13,27 @@ import (
 )
 
 var _ = pubsub.NewSubscription(
-	EmailRequestedTopic,
+	emailevents.EmailRequestedTopic,
 	"send-email",
-	pubsub.SubscriptionConfig[*EmailEvent]{
+	pubsub.SubscriptionConfig[*emailevents.EmailEvent]{
 		Handler: pubsub.MethodHandler((*Service).HandleEmailEvent),
 	},
 )
 
 // HandleEmailEvent dispatches the incoming EmailEvent to the appropriate sender.
-func (s *Service) HandleEmailEvent(ctx context.Context, event *EmailEvent) error {
+func (s *Service) HandleEmailEvent(ctx context.Context, event *emailevents.EmailEvent) error {
 	switch event.Type {
-	case EmailEventTypeCriticalError:
+	case emailevents.EmailEventTypeCriticalError:
 		return s.sendCriticalErrorEmail(ctx, event.Payload)
-	case EmailEventTypeCancellation:
+	case emailevents.EmailEventTypeCancellation:
 		return s.sendCancellationEmail(ctx, event.Payload)
-	case EmailEventTypeLateCancellationAlert:
+	case emailevents.EmailEventTypeLateCancellationAlert:
 		return s.sendLateCancellationAlertEmail(ctx, event.Payload)
-	case EmailEventTypeNewOrder:
+	case emailevents.EmailEventTypeNewOrder:
 		return s.sendNewOrderEmail(ctx, event.Payload)
-	case EmailEventTypeOpenOrderAlert:
+	case emailevents.EmailEventTypeOpenOrderAlert:
 		return s.sendOpenOrderAlertEmail(ctx, event.Payload)
-	case EmailEventTypePasswordReset:
+	case emailevents.EmailEventTypePasswordReset:
 		return s.sendPasswordResetEmail(ctx, event.Payload)
 	default:
 		rlog.Error("unknown email event type", "type", event.Type)
@@ -41,7 +42,7 @@ func (s *Service) HandleEmailEvent(ctx context.Context, event *EmailEvent) error
 }
 
 func (s *Service) sendCriticalErrorEmail(ctx context.Context, raw json.RawMessage) error {
-	var p CriticalErrorEmailPayload
+	var p emailevents.CriticalErrorEmailPayload
 	if err := json.Unmarshal(raw, &p); err != nil {
 		return fmt.Errorf("unmarshaling critical error payload: %w", err)
 	}
@@ -68,7 +69,7 @@ func (s *Service) sendCriticalErrorEmail(ctx context.Context, raw json.RawMessag
 }
 
 func (s *Service) sendCancellationEmail(ctx context.Context, raw json.RawMessage) error {
-	var p CancellationEmailPayload
+	var p emailevents.CancellationEmailPayload
 	if err := json.Unmarshal(raw, &p); err != nil {
 		return fmt.Errorf("unmarshaling cancellation email payload: %w", err)
 	}
@@ -98,7 +99,7 @@ func (s *Service) sendCancellationEmail(ctx context.Context, raw json.RawMessage
 }
 
 func (s *Service) sendLateCancellationAlertEmail(ctx context.Context, raw json.RawMessage) error {
-	var p LateCancellationAlertEmailPayload
+	var p emailevents.LateCancellationAlertEmailPayload
 	if err := json.Unmarshal(raw, &p); err != nil {
 		return fmt.Errorf("unmarshaling late cancellation alert payload: %w", err)
 	}
@@ -146,7 +147,7 @@ func (s *Service) sendLateCancellationAlertEmail(ctx context.Context, raw json.R
 }
 
 func (s *Service) sendNewOrderEmail(ctx context.Context, raw json.RawMessage) error {
-	var p NewOrderEmailPayload
+	var p emailevents.NewOrderEmailPayload
 	if err := json.Unmarshal(raw, &p); err != nil {
 		return fmt.Errorf("unmarshaling new order email payload: %w", err)
 	}
@@ -206,7 +207,7 @@ func optionalAccountLabel(id *int64, names map[int64]string) *string {
 }
 
 func (s *Service) sendOpenOrderAlertEmail(ctx context.Context, raw json.RawMessage) error {
-	var p OpenOrderAlertEmailPayload
+	var p emailevents.OpenOrderAlertEmailPayload
 	if err := json.Unmarshal(raw, &p); err != nil {
 		return fmt.Errorf("unmarshaling open order alert payload: %w", err)
 	}
@@ -236,7 +237,7 @@ func (s *Service) sendOpenOrderAlertEmail(ctx context.Context, raw json.RawMessa
 }
 
 func (s *Service) sendPasswordResetEmail(ctx context.Context, raw json.RawMessage) error {
-	var p PasswordResetEmailPayload
+	var p emailevents.PasswordResetEmailPayload
 	if err := json.Unmarshal(raw, &p); err != nil {
 		return fmt.Errorf("unmarshaling password reset email payload: %w", err)
 	}

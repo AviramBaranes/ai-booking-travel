@@ -6,7 +6,7 @@ import (
 	"time"
 
 	dbadapters "encore.app/internal/db_adapters"
-	"encore.app/services/notifications"
+	emailevents "encore.app/internal/email_events"
 	actions "encore.app/services/reservation/handlers/actions"
 	"encore.dev/cron"
 	"encore.dev/rlog"
@@ -63,7 +63,7 @@ func (s *Service) AlertOpenReservations(ctx context.Context) error {
 
 		if time.Until(pickupDateTime) > cancellationWindowHours*time.Hour {
 			// More than 48h until pickup — send open order alert
-			if _, err := notifications.PublishEmailEvent(ctx, notifications.EmailEventTypeOpenOrderAlert, notifications.OpenOrderAlertEmailPayload{
+			if _, err := emailevents.PublishEmailEvent(ctx, emailevents.EmailEventTypeOpenOrderAlert, emailevents.OpenOrderAlertEmailPayload{
 				UserID:             r.UserID,
 				BookingReferenceID: r.BrokerReservationID,
 				DriverFullName:     fmt.Sprintf("%s %s %s", r.DriverTitle, r.DriverFirstName, r.DriverLastName),
