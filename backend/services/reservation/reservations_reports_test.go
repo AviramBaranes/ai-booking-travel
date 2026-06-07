@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
 	"encore.dev/beta/auth"
@@ -27,6 +28,9 @@ type businessReportSeed struct {
 	agentB    *accounts.CreateAgentResponse
 	bookingB  string
 	supplierB string
+
+	reservationAID int64
+	reservationBID int64
 }
 
 type businessesBalancesReportSeed struct {
@@ -182,6 +186,13 @@ func TestGetProfitReport(t *testing.T) {
 	query := testQuerier()
 	s := &Service{query: query}
 	seed := seedBusinessReportData(t, ctx, s)
+	v := "TEST-VOUCHER"
+	query.ApplyVoucher(ctx, db.ApplyVoucherParams{
+		ID:            seed.reservationAID,
+		UserID:        seed.agentA.ID,
+		VoucherNumber: &v,
+		CurrencyRate:  dbadapters.NumericFromFloat64(4.0),
+	})
 
 	t.Run("returns shared report fields and profit fields", func(t *testing.T) {
 		resp, err := GetProfitReport(ctx, ReportParams{
@@ -291,7 +302,7 @@ func seedBusinessReportData(t *testing.T, ctx context.Context, s *Service) busin
 	supplierA := fmt.Sprintf("REPORT-SUP-A-%d", unique)
 	adminID := admin.ID
 	isOrgAOrganic := orgA.IsOrganic
-	seedReservation(t, ctx, s, agentA.ID, func(p *CreateReservationParams) {
+	reservationAID := seedReservation(t, ctx, s, agentA.ID, func(p *CreateReservationParams) {
 		p.BrokerReservationID = bookingA
 		p.OfficeID = &officeA.ID
 		p.OrganizationID = &orgA.ID
@@ -332,17 +343,19 @@ func seedBusinessReportData(t *testing.T, ctx context.Context, s *Service) busin
 	}
 
 	return businessReportSeed{
-		orgA:      orgA,
-		officeA:   officeA,
-		agentA:    agentA,
-		admin:     admin,
-		bookingA:  bookingA,
-		supplierA: supplierA,
-		orgB:      orgB,
-		officeB:   officeB,
-		agentB:    agentB,
-		bookingB:  bookingB,
-		supplierB: supplierB,
+		orgA:           orgA,
+		officeA:        officeA,
+		agentA:         agentA,
+		admin:          admin,
+		bookingA:       bookingA,
+		supplierA:      supplierA,
+		orgB:           orgB,
+		officeB:        officeB,
+		agentB:         agentB,
+		bookingB:       bookingB,
+		supplierB:      supplierB,
+		reservationAID: reservationAID,
+		reservationBID: reservationBID,
 	}
 }
 
