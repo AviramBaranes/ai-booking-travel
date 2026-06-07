@@ -88,5 +88,5 @@ type OpenOrderAlertEmailPayload struct {
 // PasswordResetEmailPayload is the payload for PasswordResetEmailEventType.
 type PasswordResetEmailPayload struct {
 	Email     string `json:"email"`
-	TokenHash string `json:"tokenHash"`
+	TokenHash string `json:"tokenHash" encore:"sensitive"`
 }

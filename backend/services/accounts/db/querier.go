@@ -21,6 +21,7 @@ type Querier interface {
 	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error)
 	CreateStaffUser(ctx context.Context, arg CreateStaffUserParams) (CreateStaffUserRow, error)
 	DeleteContact(ctx context.Context, id int64) error
+	DeletePasswordResetTokenByID(ctx context.Context, id int64) error
 	DeleteRefreshToken(ctx context.Context, jti string) error
 	DeleteRefreshTokensByUserId(ctx context.Context, userID int64) error
 	DeleteUser(ctx context.Context, id int64) error
@@ -31,6 +32,7 @@ type Querier interface {
 	GetOrganizationBillingState(ctx context.Context, id int64) (GetOrganizationBillingStateRow, error)
 	GetOrganizationIcountClientID(ctx context.Context, id int64) (*int32, error)
 	GetOrganizationNamesByIDs(ctx context.Context, ids []int64) ([]GetOrganizationNamesByIDsRow, error)
+	GetPasswordResetTokenByHash(ctx context.Context, tokenHash string) (PasswordResetToken, error)
 	GetRefreshToken(ctx context.Context, jti string) (RefreshToken, error)
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	GetUserById(ctx context.Context, id int64) (GetUserByIdRow, error)

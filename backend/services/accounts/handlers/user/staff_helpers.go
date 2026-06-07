@@ -22,7 +22,7 @@ type CreateStaffParams struct {
 }
 
 func (p CreateStaffParams) Validate() error {
-	if err := validatePasswordForAPI(p.Password); err != nil {
+	if err := ValidatePasswordForAPI(p.Password); err != nil {
 		return err
 	}
 	return validation.ValidateStruct(p)

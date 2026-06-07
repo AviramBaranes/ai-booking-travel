@@ -11,6 +11,35 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deletePasswordResetTokenByID = `-- name: DeletePasswordResetTokenByID :exec
+DELETE FROM password_reset_tokens
+WHERE id = $1
+`
+
+func (q *Queries) DeletePasswordResetTokenByID(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deletePasswordResetTokenByID, id)
+	return err
+}
+
+const getPasswordResetTokenByHash = `-- name: GetPasswordResetTokenByHash :one
+SELECT id, user_id, token_hash, expires_at, created_at
+FROM password_reset_tokens
+WHERE token_hash = $1
+`
+
+func (q *Queries) GetPasswordResetTokenByHash(ctx context.Context, tokenHash string) (PasswordResetToken, error) {
+	row := q.db.QueryRow(ctx, getPasswordResetTokenByHash, tokenHash)
+	var i PasswordResetToken
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.TokenHash,
+		&i.ExpiresAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const insertPasswordResetToken = `-- name: InsertPasswordResetToken :one
 INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
 VALUES ($1, $2, $3)

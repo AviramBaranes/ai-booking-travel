@@ -220,6 +220,20 @@ func (mr *MockQuerierMockRecorder) DeleteContact(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteContact", reflect.TypeOf((*MockQuerier)(nil).DeleteContact), ctx, id)
 }
 
+// DeletePasswordResetTokenByID mocks base method.
+func (m *MockQuerier) DeletePasswordResetTokenByID(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeletePasswordResetTokenByID", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeletePasswordResetTokenByID indicates an expected call of DeletePasswordResetTokenByID.
+func (mr *MockQuerierMockRecorder) DeletePasswordResetTokenByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePasswordResetTokenByID", reflect.TypeOf((*MockQuerier)(nil).DeletePasswordResetTokenByID), ctx, id)
+}
+
 // DeleteRefreshToken mocks base method.
 func (m *MockQuerier) DeleteRefreshToken(ctx context.Context, jti string) error {
 	m.ctrl.T.Helper()
@@ -365,6 +379,21 @@ func (m *MockQuerier) GetOrganizationNamesByIDs(ctx context.Context, ids []int64
 func (mr *MockQuerierMockRecorder) GetOrganizationNamesByIDs(ctx, ids any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganizationNamesByIDs", reflect.TypeOf((*MockQuerier)(nil).GetOrganizationNamesByIDs), ctx, ids)
+}
+
+// GetPasswordResetTokenByHash mocks base method.
+func (m *MockQuerier) GetPasswordResetTokenByHash(ctx context.Context, tokenHash string) (db.PasswordResetToken, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPasswordResetTokenByHash", ctx, tokenHash)
+	ret0, _ := ret[0].(db.PasswordResetToken)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPasswordResetTokenByHash indicates an expected call of GetPasswordResetTokenByHash.
+func (mr *MockQuerierMockRecorder) GetPasswordResetTokenByHash(ctx, tokenHash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPasswordResetTokenByHash", reflect.TypeOf((*MockQuerier)(nil).GetPasswordResetTokenByHash), ctx, tokenHash)
 }
 
 // GetRefreshToken mocks base method.

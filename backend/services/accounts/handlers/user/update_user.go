@@ -23,7 +23,7 @@ type UpdateUserParams struct {
 
 func (p UpdateUserParams) Validate() error {
 	if p.Password != nil {
-		if err := validatePasswordForAPI(*p.Password); err != nil {
+		if err := ValidatePasswordForAPI(*p.Password); err != nil {
 			return err
 		}
 	}

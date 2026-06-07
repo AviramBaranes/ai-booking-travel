@@ -3,13 +3,15 @@ package auth
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"time"
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
-	"encore.app/internal/password"
+	emailevents "encore.app/internal/email_events"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
 	"encore.dev/rlog"
@@ -47,11 +49,7 @@ func (s *AuthService) SendPasswordResetToken(ctx context.Context, p SendPassword
 		return api_errors.ErrInternalError
 	}
 
-	hashed, err := password.HashPassword(rawToken)
-	if err != nil {
-		rlog.Error("failed to hash password reset token", "error", err)
-		return api_errors.ErrInternalError
-	}
+	hashed := hashPasswordResetToken(rawToken)
 
 	_, err = s.query.InsertPasswordResetToken(ctx, db.InsertPasswordResetTokenParams{
 		UserID:    user.ID,
@@ -64,17 +62,12 @@ func (s *AuthService) SendPasswordResetToken(ctx context.Context, p SendPassword
 		return api_errors.ErrInternalError
 	}
 
-	// TODO: FIX import cycle
-	// notifications.PublishEmailEvent(ctx, notifications.EmailEventTypePasswordReset, notifications.PasswordResetEmailPayload{
-	// 	Email:     user.Email,
-	// 	TokenHash: hashed,
-	// })
+	emailevents.PublishEmailEvent(ctx, emailevents.EmailEventTypePasswordReset, emailevents.PasswordResetEmailPayload{
+		Email:     user.Email,
+		TokenHash: rawToken,
+	})
 
 	return nil
-}
-
-func (s *AuthService) getUserForPasswordReset() {
-
 }
 
 func generatePasswordResetToken() (string, error) {
@@ -84,4 +77,9 @@ func generatePasswordResetToken() (string, error) {
 	}
 
 	return base64.URLEncoding.EncodeToString(b), nil
+}
+
+func hashPasswordResetToken(token string) string {
+	sum := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(sum[:])
 }

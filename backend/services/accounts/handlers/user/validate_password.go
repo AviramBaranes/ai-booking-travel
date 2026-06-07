@@ -43,7 +43,7 @@ var (
 	)
 )
 
-func validatePasswordForAPI(pass string) error {
+func ValidatePasswordForAPI(pass string) error {
 	if err := password.ValidatePassword(pass); err != nil {
 		switch {
 		case errors.Is(err, password.ErrPasswordTooShort):
