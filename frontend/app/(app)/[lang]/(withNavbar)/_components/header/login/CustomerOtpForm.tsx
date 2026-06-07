@@ -140,9 +140,9 @@ export function CustomerOtpForm({ phone, onSuccess }: Props) {
         variant="brand"
         className="w-full py-3.5 h-auto"
         disabled={isPending || otp.length < 6}
+        loading={isPending}
         onClick={handleSubmit}
       >
-        {isPending && <Loading />}
         {t("customer.confirmCode")}
       </Button>
     </div>

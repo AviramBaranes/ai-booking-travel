@@ -16,9 +16,11 @@ import { AgentSuccessScreen } from "./AgentSuccessScreen";
 import { CustomerPhoneForm } from "./CustomerPhoneForm";
 import { CustomerOtpForm } from "./CustomerOtpForm";
 import { useDialogOpenFromQuery } from "./useDialogOpenFromQuery";
+import { ForgotPasswordForm } from "./ForgotPasswordForm";
+import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
 
 type LoginMode = "agent" | "customer";
-type AgentStep = "credentials" | "success";
+type AgentStep = "credentials" | "success" | "passwordReset";
 type CustomerStep = "phone" | "otp";
 
 export function LoginModal() {
@@ -29,6 +31,7 @@ export function LoginModal() {
   const [agentStep, setAgentStep] = useState<AgentStep>("credentials");
   const [customerStep, setCustomerStep] = useState<CustomerStep>("phone");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [passwordResetSuccess, setPasswordResetSuccess] = useState("");
 
   const openDialog = useCallback(() => {
     setOpen(true);
@@ -158,7 +161,27 @@ export function LoginModal() {
             <div className="h-px w-full bg-border-light/50" />
 
             {mode === "agent" && agentStep === "credentials" && (
-              <AgentLoginForm onSuccess={handleAgentSuccess} />
+              <>
+                {passwordResetSuccess && (
+                  <SuccessBadge>{passwordResetSuccess}</SuccessBadge>
+                )}
+                <AgentLoginForm
+                  onSuccess={handleAgentSuccess}
+                  onForgotPassword={() => setAgentStep("passwordReset")}
+                />
+              </>
+            )}
+
+            {agentStep === "passwordReset" && (
+              <ForgotPasswordForm
+                onBackToLogin={() => setAgentStep("credentials")}
+                onSuccess={() => {
+                  setPasswordResetSuccess(
+                    "Password reset link sent successfully",
+                  );
+                  setAgentStep("credentials");
+                }}
+              />
             )}
 
             {mode === "customer" && customerStep === "phone" && (
@@ -166,7 +189,10 @@ export function LoginModal() {
             )}
 
             {mode === "customer" && customerStep === "otp" && (
-              <CustomerOtpForm phone={customerPhone} onSuccess={handleContinueToSite} />
+              <CustomerOtpForm
+                phone={customerPhone}
+                onSuccess={handleContinueToSite}
+              />
             )}
           </>
         )}

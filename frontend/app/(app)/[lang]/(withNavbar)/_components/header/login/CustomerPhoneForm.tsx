@@ -94,7 +94,6 @@ export function CustomerPhoneForm({ onSubmit }: Props) {
         loading={isPending}
         disabled={isPending || !phone?.trim()}
       >
-        {isPending && <Loading />}
         {t("customer.submit")}
       </Button>
     </form>

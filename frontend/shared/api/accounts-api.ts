@@ -116,3 +116,11 @@ export function loginWithOTP(data: auth.ValidateCustomerLoginOTPParams) {
     client.accounts.ValidateCustomerLoginOTP(data),
   );
 }
+
+export function sendPasswordReset(data: auth.SendPasswordResetTokenParams) {
+  return withErrorHandler((client) => client.accounts.RequestPasswordReset(data));
+}
+
+export function resetPassword(data: auth.ResetPasswordParams) {
+  return withErrorHandler((client) => client.accounts.ResetPassword(data));
+}

@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { AlertCircle } from "lucide-react";
-import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -11,12 +10,11 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
-import { Loading } from "@/shared/components/Loading";
+import { sendPasswordReset } from "@/shared/api/accounts-api";
 
 function schema(t: (key: string) => string) {
   return z.object({
     email: z.string().email(t("validation.invalidEmail")),
-    password: z.string().min(1, t("validation.passwordRequired")),
   });
 }
 type FormData = z.infer<ReturnType<typeof schema>>;
@@ -24,12 +22,15 @@ type FormData = z.infer<ReturnType<typeof schema>>;
 const inputClass =
   "h-15 bg-background border-border-light rounded-xl px-6 text-start type-paragraph text-text-secondary placeholder:text-text-secondary focus-visible:border-navy aria-invalid:bg-destructive/10";
 
-interface AgentLoginFormProps {
+interface ForgotPasswordFormProps {
   onSuccess: () => void;
-  onForgotPassword: () => void;
+  onBackToLogin: () => void;
 }
 
-export function AgentLoginForm({ onSuccess,onForgotPassword }: AgentLoginFormProps) {
+export function ForgotPasswordForm({
+  onSuccess,
+  onBackToLogin,
+}: ForgotPasswordFormProps) {
   const t = useTranslations("Login");
   const tError = useTranslations("ApiErrors");
 
@@ -41,16 +42,7 @@ export function AgentLoginForm({ onSuccess,onForgotPassword }: AgentLoginFormPro
   } = useForm<FormData>({ resolver: zodResolver(schema(t)) });
 
   const { mutate, error, isPending } = useMutation({
-    mutationFn: async (data: FormData) => {
-      const result = await signIn("credentials", {
-        redirect: false,
-        email: data.email,
-        password: data.password,
-      });
-      const res = result as { error?: string } | undefined;
-      if (res?.error) throw new Error(res.error ?? "unknown_error");
-      return result;
-    },
+    mutationFn: async (data: FormData) => sendPasswordReset(data),
     onSuccess: () => {
       onSuccess();
     },
@@ -58,7 +50,6 @@ export function AgentLoginForm({ onSuccess,onForgotPassword }: AgentLoginFormPro
 
   const hasError = !!error;
   const email = watch("email");
-  const password = watch("password");
 
   return (
     <form
@@ -76,17 +67,6 @@ export function AgentLoginForm({ onSuccess,onForgotPassword }: AgentLoginFormPro
         <ErrorDisplay>{errors.email?.message}</ErrorDisplay>
       </div>
 
-      <div>
-        <Input
-          type="password"
-          placeholder={t("agent.password")}
-          aria-invalid={hasError || !!errors.password}
-          className={inputClass}
-          {...register("password")}
-        />
-        <ErrorDisplay>{errors.password?.message}</ErrorDisplay>
-      </div>
-
       {hasError && (
         <div role="alert" className="flex items-center gap-1">
           <AlertCircle className="size-3.5 text-destructive shrink-0" />
@@ -96,8 +76,12 @@ export function AgentLoginForm({ onSuccess,onForgotPassword }: AgentLoginFormPro
         </div>
       )}
 
-      <Button variant="ghost" className="w-1/3 underline mx-auto" onClick={onForgotPassword}>
-        איפוס סיסמה
+      <Button
+        variant="ghost"
+        className="w-1/3 underline mx-auto"
+        onClick={onBackToLogin}
+      >
+        חזרה להתחברות
       </Button>
 
       <Button
@@ -105,9 +89,9 @@ export function AgentLoginForm({ onSuccess,onForgotPassword }: AgentLoginFormPro
         variant="brand"
         className="w-full py-3.5 h-auto mt-3"
         loading={isPending}
-        disabled={isPending || !email?.trim() || !password?.trim()}
+        disabled={isPending || !email?.trim()}
       >
-        {t("agent.submit")}
+        שלח לינק לאיפוס סיסמה
       </Button>
     </form>
   );
