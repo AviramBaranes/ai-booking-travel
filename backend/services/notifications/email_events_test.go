@@ -3,10 +3,15 @@ package notifications
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"mime"
+	"mime/multipart"
+	"mime/quotedprintable"
+	netmail "net/mail"
 	"strings"
 	"testing"
 
@@ -45,7 +50,54 @@ func renderBody(t *testing.T, msg *mail.Msg) string {
 	if _, err := msg.WriteTo(&buf); err != nil {
 		t.Fatalf("writing msg: %v", err)
 	}
-	return buf.String()
+
+	parsed, err := netmail.ReadMessage(bytes.NewReader(buf.Bytes()))
+	if err != nil {
+		t.Fatalf("parsing msg: %v", err)
+	}
+
+	mediaType, params, err := mime.ParseMediaType(parsed.Header.Get("Content-Type"))
+	if err == nil && strings.HasPrefix(mediaType, "multipart/") {
+		reader := multipart.NewReader(parsed.Body, params["boundary"])
+		for {
+			part, err := reader.NextPart()
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			if err != nil {
+				t.Fatalf("reading multipart body: %v", err)
+			}
+
+			partMediaType, _, err := mime.ParseMediaType(part.Header.Get("Content-Type"))
+			if err == nil && partMediaType != "text/html" && partMediaType != "text/plain" {
+				continue
+			}
+
+			return decodeBody(t, part.Header.Get("Content-Transfer-Encoding"), part)
+		}
+		t.Fatal("message body part not found")
+	}
+
+	return decodeBody(t, parsed.Header.Get("Content-Transfer-Encoding"), parsed.Body)
+}
+
+func decodeBody(t *testing.T, transferEncoding string, body io.Reader) string {
+	t.Helper()
+
+	decoded := body
+	switch strings.ToLower(strings.TrimSpace(transferEncoding)) {
+	case "base64":
+		decoded = base64.NewDecoder(base64.StdEncoding, body)
+	case "quoted-printable":
+		decoded = quotedprintable.NewReader(body)
+	}
+
+	raw, err := io.ReadAll(decoded)
+	if err != nil {
+		t.Fatalf("reading decoded body: %v", err)
+	}
+
+	return string(raw)
 }
 
 func TestHandleEmailEvent(t *testing.T) {
