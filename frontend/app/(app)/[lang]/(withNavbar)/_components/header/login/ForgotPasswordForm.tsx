@@ -78,6 +78,7 @@ export function ForgotPasswordForm({
 
       <Button
         variant="ghost"
+        type="button"
         className="w-1/3 underline mx-auto"
         onClick={onBackToLogin}
       >

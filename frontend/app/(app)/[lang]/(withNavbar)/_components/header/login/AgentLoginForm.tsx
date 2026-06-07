@@ -29,7 +29,10 @@ interface AgentLoginFormProps {
   onForgotPassword: () => void;
 }
 
-export function AgentLoginForm({ onSuccess,onForgotPassword }: AgentLoginFormProps) {
+export function AgentLoginForm({
+  onSuccess,
+  onForgotPassword,
+}: AgentLoginFormProps) {
   const t = useTranslations("Login");
   const tError = useTranslations("ApiErrors");
 
@@ -96,7 +99,12 @@ export function AgentLoginForm({ onSuccess,onForgotPassword }: AgentLoginFormPro
         </div>
       )}
 
-      <Button variant="ghost" className="w-1/3 underline mx-auto" onClick={onForgotPassword}>
+      <Button
+        type="button"
+        variant="ghost"
+        className="w-1/3 underline mx-auto"
+        onClick={onForgotPassword}
+      >
         איפוס סיסמה
       </Button>
 

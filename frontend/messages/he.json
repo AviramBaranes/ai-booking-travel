@@ -27,7 +27,6 @@
     "invalid_credentials": "אימייל או סיסמה שגויים",
     "invalid_refresh_token": "ההפעלה אינה תקינה, יש להתחבר מחדש",
     "expired_refresh_token": "ההפעלה פגה, יש להתחבר מחדש",
-    "invalid_reset_token": "קישור איפוס הסיסמה אינו תקין או שפג תוקפו",
     "cancellation_window_exceeded": "לא ניתן לבטל הזמנה זו, חלון הביטול חרג",
     "flight_number_required": "מספר טיסה נדרש עבור תחנה זו",
     "organization_organic_requires_icount_client_id": "ארגון אורגני חייב להכיל מזהה לקוח iCount",
@@ -93,6 +92,20 @@
   "LangSwitcher": {
     "he": "עברית",
     "en": "אנגלית"
+  },
+  "PasswordReset": {
+    "title": "איפוס סיסמה",
+    "subtitle": "הקלידו את הסיסמה החדשה מטה",
+    "newPassword": "סיסמה חדשה",
+    "confirmPassword": "אימות סיסמה",
+    "submit": "איפוס סיסמה",
+    "successTitle": "הסיסמה שונתה בהצלחה",
+    "backToHome": "חזרה לדף הבית",
+    "validation": {
+      "passwordRequired": "סיסמה היא חובה",
+      "passwordsMustMatch": "הסיסמאות חייבות להיות תואמות",
+      "invalid_reset_token": "קישור איפוס הסיסמה אינו תקין או שפג תוקפו"
+    }
   },
   "BackToAdmin": {
     "message": "אתה מחובר כסוכן",
