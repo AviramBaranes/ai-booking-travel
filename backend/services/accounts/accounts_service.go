@@ -15,6 +15,8 @@ type Service struct {
 	query db.Querier
 }
 
+// TEMP CHANGE
+
 var accountsDb = sqldb.NewDatabase("accounts", sqldb.DatabaseConfig{
 	Migrations: "./db/migrations/",
 })
