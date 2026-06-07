@@ -2,6 +2,7 @@ package reservation
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"encore.app/internal/api_errors"
@@ -73,7 +74,7 @@ func (s *Service) getReports(ctx context.Context, p ReportParams, isBusiness boo
 		VoucheredAtTo:   timestamptzFromString(p.VoucheredAtTo, true),
 		Status:          nullStatusFromString(p.Status),
 		Broker:          nullBrokerFromString(p.Broker),
-		SupplierCode:    nilIfEmpty(p.Supplier),
+		SupplierCodes:   splitSupplierCodes(p.Supplier),
 		OrganizationID:  nilIfZero(p.OrganizationID),
 		OfficeID:        nilIfZero(p.OfficeID),
 		AgentID:         nilIfZero(p.AgentID),
@@ -97,7 +98,7 @@ func (s *Service) getReports(ctx context.Context, p ReportParams, isBusiness boo
 		VoucheredAtTo:   queryParams.VoucheredAtTo,
 		Status:          queryParams.Status,
 		Broker:          queryParams.Broker,
-		SupplierCode:    queryParams.SupplierCode,
+		SupplierCodes:   queryParams.SupplierCodes,
 		OrganizationID:  queryParams.OrganizationID,
 		OfficeID:        queryParams.OfficeID,
 		AgentID:         queryParams.AgentID,
@@ -111,4 +112,11 @@ func (s *Service) getReports(ctx context.Context, p ReportParams, isBusiness boo
 	}
 
 	return reservations, total, nil
+}
+
+func splitSupplierCodes(s string) []string {
+	if s == "" {
+		return []string{}
+	}
+	return strings.Split(s, ",")
 }

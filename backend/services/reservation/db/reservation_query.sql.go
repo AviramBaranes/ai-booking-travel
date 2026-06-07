@@ -146,7 +146,7 @@ WHERE
     AND ($6::TIMESTAMPTZ IS NULL OR vouchered_at <= $6::TIMESTAMPTZ)
     AND ($7::reservation_status IS NULL OR reservation_status = $7::reservation_status)
     AND ($8::broker IS NULL OR broker = $8::broker)
-    AND ($9::TEXT IS NULL OR supplier_code = $9::TEXT)
+    AND (COALESCE(cardinality($9::TEXT[]), 0) = 0 OR supplier_code = ANY($9::TEXT[]))
     AND ($10::BIGINT IS NULL OR organization_id = $10::BIGINT)
     AND ($11::BIGINT IS NULL OR office_id = $11::BIGINT)
     AND ($12::BIGINT IS NULL OR user_id = $12::BIGINT)
@@ -162,7 +162,7 @@ type CountReservationsReportParams struct {
 	VoucheredAtTo   pgtype.Timestamptz
 	Status          NullReservationStatus
 	Broker          NullBroker
-	SupplierCode    *string
+	SupplierCodes   []string
 	OrganizationID  *int64
 	OfficeID        *int64
 	AgentID         *int64
@@ -179,7 +179,7 @@ func (q *Queries) CountReservationsReport(ctx context.Context, arg CountReservat
 		arg.VoucheredAtTo,
 		arg.Status,
 		arg.Broker,
-		arg.SupplierCode,
+		arg.SupplierCodes,
 		arg.OrganizationID,
 		arg.OfficeID,
 		arg.AgentID,
@@ -841,7 +841,7 @@ WHERE
     AND ($6::TIMESTAMPTZ IS NULL OR vouchered_at <= $6::TIMESTAMPTZ)
     AND ($7::reservation_status IS NULL OR reservation_status = $7::reservation_status)
     AND ($8::broker IS NULL OR broker = $8::broker)
-    AND ($9::TEXT IS NULL OR supplier_code = $9::TEXT)
+    AND (COALESCE(cardinality($9::TEXT[]), 0) = 0 OR supplier_code = ANY($9::TEXT[]))
     AND ($10::BIGINT IS NULL OR organization_id = $10::BIGINT)
     AND ($11::BIGINT IS NULL OR office_id = $11::BIGINT)
     AND ($12::BIGINT IS NULL OR user_id = $12::BIGINT)
@@ -860,7 +860,7 @@ type ListReservationsReportParams struct {
 	VoucheredAtTo   pgtype.Timestamptz
 	Status          NullReservationStatus
 	Broker          NullBroker
-	SupplierCode    *string
+	SupplierCodes   []string
 	OrganizationID  *int64
 	OfficeID        *int64
 	AgentID         *int64
@@ -879,7 +879,7 @@ func (q *Queries) ListReservationsReport(ctx context.Context, arg ListReservatio
 		arg.VoucheredAtTo,
 		arg.Status,
 		arg.Broker,
-		arg.SupplierCode,
+		arg.SupplierCodes,
 		arg.OrganizationID,
 		arg.OfficeID,
 		arg.AgentID,
