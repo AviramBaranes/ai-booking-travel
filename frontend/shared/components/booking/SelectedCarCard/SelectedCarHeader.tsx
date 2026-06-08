@@ -27,7 +27,7 @@ export function SelectedCarHeader({
           alt={carDetails.model}
           width={176}
           height={100}
-          className="w-44 h-25 object-cover"
+          className="w-44 h-25 object-contain"
         />
       </div>
       <div className="flex gap-2 flex-col items-start">
