@@ -72,7 +72,7 @@ func (s *Service) UpdatePriceOffer(ctx context.Context, id int64, p poh.UpdatePr
 
 // ApprovePriceOffer marks a price offer as approved and alerts the agent with the approved offer details.
 //
-// encore:api auth method=POST path=/booking/price-offers/:id/approve tag:agent
+// encore:api public method=POST path=/booking/price-offers/:id/approve
 func (s *Service) ApprovePriceOffer(ctx context.Context, id int64) error {
 	pos := poh.NewPriceOfferService(s.query, nil)
 	return pos.ApprovePriceOffer(ctx, id)

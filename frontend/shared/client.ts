@@ -438,6 +438,7 @@ export namespace booking {
 
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
+            this.ApprovePriceOffer = this.ApprovePriceOffer.bind(this)
             this.Book = this.Book.bind(this)
             this.BookPriceOffer = this.BookPriceOffer.bind(this)
             this.BulkToggleLocations = this.BulkToggleLocations.bind(this)
@@ -473,6 +474,13 @@ export namespace booking {
             this.UpdateHertzMarkupRate = this.UpdateHertzMarkupRate.bind(this)
             this.UpdatePriceOffer = this.UpdatePriceOffer.bind(this)
             this.VerifyBrokerTranslation = this.VerifyBrokerTranslation.bind(this)
+        }
+
+        /**
+         * ApprovePriceOffer marks a price offer as approved and alerts the agent with the approved offer details.
+         */
+        public async ApprovePriceOffer(id: number): Promise<void> {
+            await this.baseClient.callTypedAPI("POST", `/booking/price-offers/${encodeURIComponent(id)}/approve`)
         }
 
         public async Book(params: booking_handlers.BookParams): Promise<booking_handlers.BookResponse> {

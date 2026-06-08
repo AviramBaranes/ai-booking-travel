@@ -387,6 +387,8 @@
     "priceOffer": {
       "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
       "orderCTA": "בצע הזמנה",
+      "clientOrderCTA": "תזמין לי!",
+      "orderApproveSuccess": "הבקשה נשלחה לסוכן שלך ✅ הוא קיבל עדכון שאתה מעוניין להתקדם עם ההצעה ויחזור אליך להשלמת ההזמנה.",
       "orderDialogTitle": "הזמנת הצעה",
       "summary": {
         "title": "סיכום הצעת המחיר:",
@@ -413,7 +415,8 @@
           "open": "פתוח",
           "booked": "הוזמן",
           "declined": "נדחה",
-          "unavailable": "לא זמין"
+          "unavailable": "לא זמין",
+          "approved": "ממתין להזמנה"
         }
       },
       "editDialog": {

@@ -388,7 +388,9 @@
     "priceOffer": {
       "freeCancellation": "Free cancellation up to 48 hours before pickup",
       "orderCTA": "Book",
+      "clientOrderCTA": "Book for me!",
       "orderDialogTitle": "Book Offer",
+      "orderApproveSuccess": "Your request was sent to your agent ✅ They’ve been notified that you’d like to move forward with the offer and will get back to you to complete the booking.",
       "summary": {
         "title": "Price Offer Summary:",
         "clientLink": "Print price offer",
@@ -414,7 +416,8 @@
           "open": "Open",
           "booked": "Booked",
           "declined": "Declined",
-          "unavailable": "Unavailable"
+          "unavailable": "Unavailable",
+          "approved": "Waiting for booking"
         }
       },
       "editDialog": {
