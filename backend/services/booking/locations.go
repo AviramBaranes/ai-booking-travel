@@ -34,9 +34,9 @@ func (s *Service) InsertLocation(ctx context.Context, p location.InsertLocationP
 // InsertFlexLocations fetches all Flex locations from the broker and upserts them.
 //
 // encore:api private method=POST path=/locations/flex
-func (s *Service) InsertFlexLocations(ctx context.Context) error {
+func (s *Service) InsertFlexLocations(ctx context.Context, p location.InsertFlexLocationsParams) error {
 	ls := location.NewLocationService(s.query)
-	return ls.InsertFlexLocations(ctx)
+	return ls.InsertFlexLocations(ctx, p)
 }
 
 // InsertFlexLocationsByCountryCode fetches all Flex locations in a specific country and upserts them.
