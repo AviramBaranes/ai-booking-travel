@@ -2,7 +2,6 @@ package notifications
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"encore.app/internal/pdf"
@@ -96,18 +95,18 @@ func gotenbergHTTPClient(ctx context.Context, audience string) (*http.Client, er
 		return nil, nil
 	}
 
-	if meta.Environment.Cloud != encore.CloudGCP {
-		return idtoken.NewClient(
-			ctx,
-			audience,
-			option.WithAuthCredentialsJSON(option.ServiceAccount, []byte(secrets.GoogleServiceAccountJSON)),
-		)
-	}
+	// if meta.Environment.Cloud != encore.CloudGCP {
+	return idtoken.NewClient(
+		ctx,
+		audience,
+		option.WithAuthCredentialsJSON(option.ServiceAccount, []byte(secrets.GoogleServiceAccountJSON)),
+	)
+	// }
 
-	client, err := idtoken.NewClient(ctx, audience)
-	if err != nil {
-		return nil, fmt.Errorf("creating gotenberg identity token client: %w", err)
-	}
+	// client, err := idtoken.NewClient(ctx, audience)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("creating gotenberg identity token client: %w", err)
+	// }
 
-	return client, nil
+	// return client, nil
 }
