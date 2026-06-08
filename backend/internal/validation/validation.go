@@ -32,7 +32,9 @@ func init() {
 		s := fl.Field().String()
 		for _, r := range s {
 			if r < 'A' || r > 'Z' {
-				return false
+				if r != ' ' {
+					return false
+				}
 			}
 		}
 

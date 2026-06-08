@@ -25,3 +25,8 @@ func (s *Service) GetOpenReservations(ctx context.Context) (*queries.GetOpenRese
 func (s *Service) ListOpenReservationsByBillingEntity(ctx context.Context, p *queries.ListOpenReservationsByBillingEntityParams) (*queries.ListOpenReservationsByBillingEntityResponse, error) {
 	return queries.NewQueryService(s.query).ListOpenReservationsByBillingEntity(ctx, p)
 }
+
+// encore:api auth method=GET path=/full-reservations/:id tag:admin
+func (s *Service) GetFullReservation(ctx context.Context, id int64) (*queries.GetFullReservationResponse, error) {
+	return queries.NewQueryService(s.query).GetFullReservation(ctx, id)
+}

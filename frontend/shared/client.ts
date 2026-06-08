@@ -934,6 +934,7 @@ export namespace reservation {
             this.CancelReservation = this.CancelReservation.bind(this)
             this.GetBusinessReport = this.GetBusinessReport.bind(this)
             this.GetBusinessesBalancesReport = this.GetBusinessesBalancesReport.bind(this)
+            this.GetFullReservation = this.GetFullReservation.bind(this)
             this.GetProfitReport = this.GetProfitReport.bind(this)
             this.GetReservation = this.GetReservation.bind(this)
             this.ListOpenReservationsByBillingEntity = this.ListOpenReservationsByBillingEntity.bind(this)
@@ -978,6 +979,12 @@ export namespace reservation {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/reports/businesses-balances`)
             return await resp.json() as BusinessesBalancesReportResponse
+        }
+
+        public async GetFullReservation(id: number): Promise<queries.GetFullReservationResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/full-reservations/${encodeURIComponent(id)}`)
+            return await resp.json() as queries.GetFullReservationResponse
         }
 
         public async GetProfitReport(params: ReportParams): Promise<ProfitReportResponse> {
@@ -1826,6 +1833,113 @@ export namespace queries {
         reservations: BillingReservation[]
     }
 
+    export interface GetFullReservationResponse {
+        /**
+         * Identity
+         */
+        id: number
+
+        brokerReservationId: string
+        userId: number
+        officeId: number
+        organizationId: number
+        isOrganizationOrganic: boolean
+        adminRefId: number
+        /**
+         * Status
+         */
+        reservationStatus: string
+
+        paymentStatus: string
+        /**
+         * Broker / supplier
+         */
+        broker: string
+
+        supplierCode: string
+        /**
+         * Car details (flattened from JSONB)
+         */
+        model: string
+
+        carGroup: string
+        imageUrl: string
+        supplierName: string
+        carType: string
+        acriss: string
+        hasAC: boolean
+        isAutoGear: boolean
+        isElectric: boolean
+        seats: number
+        bags: number
+        doors: number
+        /**
+         * Plan
+         */
+        planInclusions: string[]
+
+        /**
+         * Pay-at-pickup (flattened from JSONB)
+         */
+        fees: broker.Fees
+
+        selectedAddons: SelectedAddon[]
+        /**
+         * Pricing
+         */
+        currencyCode: string
+
+        currencyRate: number
+        vatPercentage: number
+        purchasePrice: number
+        purchasePriceInILS: number
+        markupPercentage: number
+        carSellPriceWithBrokerERP: number
+        carSellPriceWithBrokerERPInILS: number
+        brokerErpPrice: number
+        btErpPrice: number
+        btErpPriceInILS: number
+        discountPercentage: number
+        totalPrice: number
+        totalPriceInILS: number
+        profit: number
+        profitInILS: number
+        profitPercentage: number
+        /**
+         * Trip details
+         */
+        flightNumber: string
+
+        countryCode: string
+        pickupDate: string
+        dropoffDate: string
+        pickupTime: string
+        dropoffTime: string
+        rentalDays: number
+        pickupLocationName: string
+        dropoffLocationName: string
+        /**
+         * Driver
+         */
+        driverTitle: string
+
+        driverFirstName: string
+        driverLastName: string
+        driverAge: number
+        /**
+         * Voucher
+         */
+        voucherNumber: string
+
+        voucheredAt: string
+        /**
+         * Timestamps
+         */
+        createdAt: string
+
+        updatedAt: string
+    }
+
     export interface GetReservationResponse {
         id: number
         brokerReservationId: string
@@ -1900,6 +2014,13 @@ export namespace queries {
         driverLastName: string
         reservationStatus: string
         totalPrice: number
+    }
+
+    export interface SelectedAddon {
+        id: number
+        name: string
+        price: number
+        quantity: number
     }
 }
 

@@ -23,6 +23,7 @@ import {
   buildRequest,
 } from "./reportTableUtils";
 import { formatPriceFloat } from "@/shared/utils/formatPrice";
+import { ReservationDetailDialog } from "./ReservationDetailDialog";
 
 export type ReportQueryFn<T> = (params: reservation.ReportParams) => Promise<{
   reservations: T[];
@@ -53,6 +54,7 @@ export function ReportTableShell<T extends { reservationId: number }>({
 }: ReportTableShellProps<T>) {
   const [page, setPage] = useState(1);
   const [isExporting, setIsExporting] = useState(false);
+  const [selectedReservationId, setSelectedReservationId] = useState<number | null>(null);
   const [pageSize, setPageSize] = useState<ReportPageSize>(25);
   const [urlFilters, setUrlFilters] = useUrlFilters<ReservationReportFilterKey>(
     [...RESERVATION_REPORT_FILTER_KEYS],
@@ -142,6 +144,11 @@ export function ReportTableShell<T extends { reservationId: number }>({
   }
 
   return (
+    <>
+    <ReservationDetailDialog
+      reservationId={selectedReservationId}
+      onClose={() => setSelectedReservationId(null)}
+    />
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
       {showFilters && (
         <>
@@ -227,7 +234,8 @@ export function ReportTableShell<T extends { reservationId: number }>({
                 rows.map((row) => (
                   <tr
                     key={row.reservationId}
-                    className="bg-white transition-colors odd:bg-white even:bg-slate-50/50 hover:bg-navy/5"
+                    onClick={() => setSelectedReservationId(row.reservationId)}
+                    className="cursor-pointer bg-white transition-colors odd:bg-white even:bg-slate-50/50 hover:bg-navy/5"
                   >
                     {columns.map((column) => (
                       <td
@@ -310,5 +318,6 @@ export function ReportTableShell<T extends { reservationId: number }>({
         )}
       </div>
     </div>
+    </>
   );
 }

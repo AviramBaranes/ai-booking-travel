@@ -48,5 +48,13 @@ export function profitabilityReport(params: reservation.ReportParams) {
 }
 
 export function collectionsReport() {
-  return withErrorHandler((client) => client.reservation.GetBusinessesBalancesReport());
+  return withErrorHandler((client) =>
+    client.reservation.GetBusinessesBalancesReport(),
+  );
+}
+
+export function getFullReservation(reservationId: number) {
+  return withErrorHandler((client) =>
+    client.reservation.GetFullReservation(reservationId),
+  );
 }
