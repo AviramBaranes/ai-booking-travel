@@ -38,7 +38,7 @@ export function ReservationCard({
       >
         <AccountCardLabelValue
           label={tLabels("pickupDate")}
-          value={reservation.pickupDate}
+          value={new Date(reservation.pickupDate).toLocaleDateString(lang)}
         />
         <AccountCardLabelValue
           label={tLabels("pickupLocation")}

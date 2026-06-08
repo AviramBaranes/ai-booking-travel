@@ -27,7 +27,7 @@ export function PriceOfferCard({
       />
       <AccountCardLabelValue
         label={tLabels("pickupDate")}
-        value={priceOffer.pickupDate}
+        value={new Date(priceOffer.pickupDate).toLocaleDateString(lang)}
       />
       <AccountCardLabelValue
         label={tLabels("pickupLocation")}
