@@ -4,6 +4,7 @@ import { Footer } from "./_components/footer/Footer";
 import { BackToAdminBanner } from "./_components/header/login/BackToAdmin/BackToAdminBanner";
 import { getMessages } from "next-intl/server";
 import { AppProviders } from "../_components/providers/AppProviders";
+import { notFound } from "next/navigation";
 
 export default async function WithNavbarLayout({
   children,
@@ -13,6 +14,11 @@ export default async function WithNavbarLayout({
   params: Promise<{ lang: string }>;
 }>) {
   const { lang } = await params;
+
+  if (!["he", "en"].includes(lang)) {
+    notFound();
+  }
+  
   const messages = await getMessages({ locale: lang });
   return (
     <>

@@ -1,71 +1,22 @@
-import Image from "next/image";
-import { getPayload } from "payload";
-import config from "@payload-config";
-import Link from "next/link";
-import { MegaDropdown } from "./MegaDropdown";
-import type { Populated } from "@/shared/types/payload";
 import { AppProviders } from "../../../../_components/providers/AppProviders";
 import { getMessages } from "next-intl/server";
 import { NavbarActions } from "./NavbarActions";
-
-async function getHeaderData(lang: string) {
-  const payload = await getPayload({ config });
-  return payload.findGlobal({
-    slug: "header",
-    locale: lang as "he" | "en",
-    draft: false,
-  });
-}
+import { NavbarLinks } from "./NavbarLinks";
 
 interface NavbarProps {
   lang: string;
-  // When true, hides the login/logout buttons and language switcher. Used 404 page outside of the [lang] path
-  isRootLayout?: boolean;
 }
 
-export async function Navbar({ lang, isRootLayout = false }: NavbarProps) {
-  const headerData = await getHeaderData(lang);
+export async function Navbar({ lang }: NavbarProps) {
   const messages = await getMessages({ locale: lang });
   return (
     <header className="bg-white shadow-card">
       <nav className="mx-auto flex h-20 w-11/12 items-center justify-between px-6">
-        <div className="flex items-center gap-8">
-          <Link href={`/${lang}`}>
-            <Image
-              src="/logo.png"
-              alt="AIBookingTravel"
-              width={168}
-              height={32}
-              className="object-contain"
-              priority
-            />
-          </Link>
+        <NavbarLinks lang={lang} />
 
-          {headerData.links?.map((link) =>
-            link.type === "link" ? (
-              <Link
-                key={link.id}
-                href={`/${lang}/${(link.page as Populated<typeof link.page>)?.slug ?? ""}`}
-                className="type-h6 text-navy"
-              >
-                {link.label}
-              </Link>
-            ) : (
-              <MegaDropdown
-                key={link.id}
-                label={link.megaLabel!}
-                links={link.megaLinks ?? []}
-                lang={lang}
-              />
-            ),
-          )}
-        </div>
-
-        {!isRootLayout && (
-          <AppProviders showDevtools={false} lang={lang} messages={messages}>
-            <NavbarActions />
-          </AppProviders>
-        )}
+        <AppProviders showDevtools={false} lang={lang} messages={messages}>
+          <NavbarActions />
+        </AppProviders>
       </nav>
     </header>
   );

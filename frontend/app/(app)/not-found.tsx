@@ -5,6 +5,7 @@ import { NotFoundContent } from "@/shared/components/NotFoundContent";
 import localFont from "next/font/local";
 import { Navbar } from "./[lang]/(withNavbar)/_components/header/navbar/Navbar";
 import { Footer } from "./[lang]/(withNavbar)/_components/footer/Footer";
+import { NavbarLinks } from "./[lang]/(withNavbar)/_components/header/navbar/NavbarLinks";
 
 const polin = localFont({
   src: [
@@ -38,7 +39,7 @@ export default async function NotFound() {
       className={`h-full antialiased ${polin.variable}`}
     >
       <body>
-        <Navbar lang="he" isRootLayout />
+        <NavbarLinks lang="he" />
         <NotFoundContent
           title={notFoundData.title ?? ""}
           subtitle={notFoundData.subtitle ?? ""}

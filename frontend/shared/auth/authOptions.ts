@@ -2,7 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 import { login, loginWithOTP } from "../api/accounts-api";
-import Client, { BaseURL, Local } from "../client";
+import Client from "../client";
 import { auth } from "../client";
 import { JWT } from "next-auth/jwt";
 import { getBaseURL } from "../api/_api";
