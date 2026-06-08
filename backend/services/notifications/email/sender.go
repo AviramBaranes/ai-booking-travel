@@ -83,7 +83,7 @@ func (s *GmailAPISender) Send(ctx context.Context, msg *mail.Msg) error {
 }
 
 func SendEmail[T any](ctx context.Context, s Sender, to []string, subject string, t Template[T], data T, attachments []Attachment) error {
-	tmpl, err := template.ParseFS(templatesFS, "templates/"+t.name+".html")
+	tmpl, err := template.New(t.name+".html").ParseFS(templatesFS, "templates/"+t.name+".html", "templates/_layout.html")
 	if err != nil {
 		return fmt.Errorf("parsing template: %w", err)
 	}
