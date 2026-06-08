@@ -31,6 +31,7 @@ type Config struct {
 	SMSSenderName         config.String
 	GotenbergURL          config.String
 	PasswordResetTokenURL config.String
+	PriceOfferURL         config.String
 }
 
 var cfg = config.Load[*Config]()

@@ -74,3 +74,15 @@ type PasswordResetEmailData struct {
 var PasswordResetEmailTemplate = Template[PasswordResetEmailData]{
 	name: "password_reset_email",
 }
+
+type PriceOfferApprovedEmailData struct {
+	PriceOfferID   int64
+	PriceOfferName string
+	Price          float64
+	Currency       string
+	URL            string
+}
+
+var PriceOfferApprovedEmailTemplate = Template[PriceOfferApprovedEmailData]{
+	name: "price_offer_approved_email",
+}

@@ -136,3 +136,10 @@ FROM price_offers
 WHERE agent_id = sqlc.arg(agent_id)
   AND (sqlc.narg(status)::offer_status IS NULL OR status = sqlc.narg(status)::offer_status)
   AND (sqlc.narg(name_search)::text IS NULL OR price_offers.name ILIKE '%' || sqlc.narg(name_search)::text || '%');
+
+-- name: ApprovePriceOffer :one
+UPDATE price_offers SET
+    status = 'approved',
+    updated_at = now()
+WHERE id = sqlc.arg(id) AND status = 'open'
+RETURNING *;

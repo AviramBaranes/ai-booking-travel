@@ -11,6 +11,55 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const approvePriceOffer = `-- name: ApprovePriceOffer :one
+UPDATE price_offers SET
+    status = 'approved',
+    updated_at = now()
+WHERE id = $1 AND status = 'open'
+RETURNING id, reservation_id, token, agent_id, status, name, pickup_location_id, dropoff_location_id, pickup_date, dropoff_date, pickup_time, dropoff_time, driver_age, rental_days, plan_id, broker, rate_qualifier, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, total_price, offered_currency_code, offered_price, renewed_at, created_at, updated_at
+`
+
+func (q *Queries) ApprovePriceOffer(ctx context.Context, id int64) (PriceOffer, error) {
+	row := q.db.QueryRow(ctx, approvePriceOffer, id)
+	var i PriceOffer
+	err := row.Scan(
+		&i.ID,
+		&i.ReservationID,
+		&i.Token,
+		&i.AgentID,
+		&i.Status,
+		&i.Name,
+		&i.PickupLocationID,
+		&i.DropoffLocationID,
+		&i.PickupDate,
+		&i.DropoffDate,
+		&i.PickupTime,
+		&i.DropoffTime,
+		&i.DriverAge,
+		&i.RentalDays,
+		&i.PlanID,
+		&i.Broker,
+		&i.RateQualifier,
+		&i.SupplierCode,
+		&i.CarDetails,
+		&i.PlanInclusions,
+		&i.PayAtPickup,
+		&i.CurrencyCode,
+		&i.CurrencyRate,
+		&i.PurchasePrice,
+		&i.MarkupPercentage,
+		&i.BrokerErpPrice,
+		&i.BtErpPrice,
+		&i.TotalPrice,
+		&i.OfferedCurrencyCode,
+		&i.OfferedPrice,
+		&i.RenewedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const countPriceOffersByAgent = `-- name: CountPriceOffersByAgent :one
 SELECT COUNT(*)::BIGINT AS total
 FROM price_offers

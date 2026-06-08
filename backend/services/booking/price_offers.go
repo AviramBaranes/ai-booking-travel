@@ -3,8 +3,6 @@ package booking
 import (
 	"context"
 
-	dbadapters "encore.app/internal/db_adapters"
-	"encore.app/services/booking/db"
 	availability "encore.app/services/booking/handlers/availability"
 	poh "encore.app/services/booking/handlers/price_offer"
 )
@@ -72,6 +70,10 @@ func (s *Service) UpdatePriceOffer(ctx context.Context, id int64, p poh.UpdatePr
 	return pos.UpdatePriceOffer(ctx, id, p)
 }
 
-func isPriceOfferErpIncluded(offer db.GetPriceOfferByIdRow) bool {
-	return dbadapters.NumericToFloat64(offer.BtErpPrice) != 0 || dbadapters.NumericToFloat64(offer.BrokerErpPrice) != 0
+// ApprovePriceOffer marks a price offer as approved and alerts the agent with the approved offer details.
+//
+// encore:api auth method=POST path=/booking/price-offers/:id/approve tag:agent
+func (s *Service) ApprovePriceOffer(ctx context.Context, id int64) error {
+	pos := poh.NewPriceOfferService(s.query, nil)
+	return pos.ApprovePriceOffer(ctx, id)
 }

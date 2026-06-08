@@ -42,6 +42,21 @@ func (m *MockQuerier) EXPECT() *MockQuerierMockRecorder {
 	return m.recorder
 }
 
+// ApprovePriceOffer mocks base method.
+func (m *MockQuerier) ApprovePriceOffer(ctx context.Context, id int64) (db.PriceOffer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ApprovePriceOffer", ctx, id)
+	ret0, _ := ret[0].(db.PriceOffer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ApprovePriceOffer indicates an expected call of ApprovePriceOffer.
+func (mr *MockQuerierMockRecorder) ApprovePriceOffer(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ApprovePriceOffer", reflect.TypeOf((*MockQuerier)(nil).ApprovePriceOffer), ctx, id)
+}
+
 // CheckBrokerTranslationExists mocks base method.
 func (m *MockQuerier) CheckBrokerTranslationExists(ctx context.Context, sourceText string) (int64, error) {
 	m.ctrl.T.Helper()

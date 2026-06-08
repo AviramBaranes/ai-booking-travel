@@ -35,6 +35,8 @@ func (s *Service) HandleEmailEvent(ctx context.Context, event *emailevents.Email
 		return s.sendOpenOrderAlertEmail(ctx, event.Payload)
 	case emailevents.EmailEventTypePasswordReset:
 		return s.sendPasswordResetEmail(ctx, event.Payload)
+	case emailevents.EmailEventPriceOfferApproved:
+		return s.sendPriceOfferApprovedEmail(ctx, event.Payload)
 	default:
 		rlog.Error("unknown email event type", "type", event.Type)
 		return fmt.Errorf("unknown email event type: %s", event.Type)
@@ -253,6 +255,41 @@ func (s *Service) sendPasswordResetEmail(ctx context.Context, raw json.RawMessag
 		nil,
 	); err != nil {
 		rlog.Error("failed to send password reset email", "error", err, "email", p.Email)
+		return err
+	}
+	return nil
+}
+
+func (s *Service) sendPriceOfferApprovedEmail(ctx context.Context, raw json.RawMessage) error {
+	var p emailevents.PriceOfferApprovedEmailPayload
+	if err := json.Unmarshal(raw, &p); err != nil {
+		return fmt.Errorf("unmarshaling price offer approved email payload: %w", err)
+	}
+
+	userEmail, err := accounts.GetUserEmail(ctx, accounts.GetUserEmailParams{UserID: p.AgentID})
+	if err != nil {
+		rlog.Error("failed to resolve recipient for price offer approved email", "error", err, "agent_id", p.AgentID)
+		return err
+	}
+
+	offerURL := fmt.Sprintf("%s/%d", cfg.PriceOfferURL(), p.PriceOfferID)
+
+	if err := email.SendEmail(
+		ctx,
+		s.emailSender,
+		[]string{userEmail.Email},
+		"מחיר הצעה אושר - AI Booking Travel",
+		email.PriceOfferApprovedEmailTemplate,
+		email.PriceOfferApprovedEmailData{
+			PriceOfferID:   p.PriceOfferID,
+			PriceOfferName: p.PriceOfferName,
+			Price:          p.Price,
+			Currency:       p.Currency,
+			URL:            offerURL,
+		},
+		nil,
+	); err != nil {
+		rlog.Error("failed to send price offer approved email", "error", err, "email", userEmail.Email)
 		return err
 	}
 	return nil

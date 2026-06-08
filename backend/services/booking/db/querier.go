@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	ApprovePriceOffer(ctx context.Context, id int64) (PriceOffer, error)
 	CheckBrokerTranslationExists(ctx context.Context, sourceText string) (int64, error)
 	CountAllTranslations(ctx context.Context, arg CountAllTranslationsParams) (int64, error)
 	// Count total rows matching the same filters (for pagination).

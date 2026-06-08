@@ -18,6 +18,7 @@ const (
 	EmailEventTypeNewOrder              EmailEventType = "new_order"
 	EmailEventTypeOpenOrderAlert        EmailEventType = "open_order_alert"
 	EmailEventTypePasswordReset         EmailEventType = "password_reset"
+	EmailEventPriceOfferApproved        EmailEventType = "price_offer_approved"
 )
 
 // EmailEvent is the generic envelope published to EmailRequestedTopic.
@@ -98,4 +99,13 @@ type OpenOrderAlertEmailPayload struct {
 type PasswordResetEmailPayload struct {
 	Email     string `json:"email"`
 	TokenHash string `json:"tokenHash" encore:"sensitive"`
+}
+
+// PriceOfferApprovedEmailPayload is the payload for EmailEventPriceOfferApproved.
+type PriceOfferApprovedEmailPayload struct {
+	AgentID        int64   `json:"agentId"`
+	PriceOfferID   int64   `json:"priceOfferId"`
+	PriceOfferName string  `json:"priceOfferName"`
+	Price          float64 `json:"price"`
+	Currency       string  `json:"currency"`
 }

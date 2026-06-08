@@ -20,3 +20,10 @@ PasswordResetTokenURL: [
 	if #Meta.Environment.Type == "production" { "https://aibookingtravel.com/he/password-reset" },
 	"https://aibookingtravel.com/he/password-reset",
 ][0]
+
+PriceOfferURL: [
+	if #Meta.Environment.Type == "development" && #Meta.Environment.Cloud == "local" { "http://localhost:3000/he/price-offers" },
+	if #Meta.Environment.Name == "staging" { "https://dev.aibookingtravel.com/he/price-offers" },
+	if #Meta.Environment.Type == "production" { "https://aibookingtravel.com/he/price-offers" },
+	"https://aibookingtravel.com/he/price-offers",
+][0]
