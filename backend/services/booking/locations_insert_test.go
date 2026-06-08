@@ -59,7 +59,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b, "")
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -101,7 +101,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b, "")
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -140,7 +140,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b, "")
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -173,14 +173,14 @@ func TestInsertLocations(t *testing.T) {
 
 		// Insert once
 		ls := location.NewLocationService(q)
-		err := ls.InsertLocations(ctx, b)
+		err := ls.InsertLocations(ctx, b, "")
 		if err != nil {
 			t.Fatalf("first insert failed: %v", err)
 		}
 
 		// Insert again — should not error (broker code already exists)
 		b.calls = 0
-		err = ls.InsertLocations(ctx, b)
+		err = ls.InsertLocations(ctx, b, "")
 		if err != nil {
 			t.Fatalf("second insert failed: %v", err)
 		}
@@ -195,7 +195,7 @@ func TestInsertLocations(t *testing.T) {
 			errs: map[string]error{"": errors.New("broker down")},
 		}
 
-		err := location.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b, "")
 		if err == nil {
 			t.Fatal("expected error, got nil")
 		}
@@ -214,7 +214,7 @@ func TestInsertLocations(t *testing.T) {
 			errs: map[string]error{"": errors.New("temporary error")},
 		}
 
-		err := location.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b, "")
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -236,7 +236,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b, "")
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -253,7 +253,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b, "")
 		if err == nil {
 			t.Fatal("expected error for same cursor, got nil")
 		}
@@ -270,7 +270,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b, "")
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -294,7 +294,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b, "")
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -318,7 +318,7 @@ func TestInsertLocations(t *testing.T) {
 			},
 		}
 
-		err := location.NewLocationService(q).InsertLocations(ctx, b)
+		err := location.NewLocationService(q).InsertLocations(ctx, b, "")
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
