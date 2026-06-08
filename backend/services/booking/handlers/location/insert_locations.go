@@ -21,6 +21,25 @@ var (
 	ErrGetFileFromForm    = api_errors.NewValidationError("failed to get file from form data")
 )
 
+// InsertFlexLocationsByCountryCode fetches all Flex locations in a specific country and upserts them into the database.
+func (s *LocationService) InsertFlexLocationsByCountryCode(ctx context.Context, countryCode string) error {
+	flex := broker.NewFlex()
+	page, err := flex.GetLocationsPage(countryCode)
+	if err != nil {
+		rlog.Error("failed to insert Flex locations", "error", err)
+		return api_errors.ErrInternalError
+	}
+
+	if len(page.Locations) > 0 {
+		err = insertBatch(ctx, s.query, page.Locations, flex.Name())
+		if err != nil {
+			rlog.Error("failed to insert Flex locations batch", "error", err)
+			return api_errors.ErrInternalError
+		}
+	}
+	return nil
+}
+
 // InsertFlexLocations fetches all Flex locations from the broker and upserts them into the database.
 func (s *LocationService) InsertFlexLocations(ctx context.Context) error {
 	flex := broker.NewFlex()
