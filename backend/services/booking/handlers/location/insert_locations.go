@@ -40,10 +40,14 @@ func (s *LocationService) InsertFlexLocationsByCountryCode(ctx context.Context, 
 	return nil
 }
 
+type InsertFlexLocationsParams struct {
+	CountryCode string `json:"countryCode"`
+}
+
 // InsertFlexLocations fetches all Flex locations from the broker and upserts them into the database.
-func (s *LocationService) InsertFlexLocations(ctx context.Context) error {
+func (s *LocationService) InsertFlexLocations(ctx context.Context, p InsertFlexLocationsParams) error {
 	flex := broker.NewFlex()
-	err := s.InsertLocations(ctx, flex)
+	err := s.InsertLocations(ctx, flex, p.CountryCode)
 	if err != nil {
 		rlog.Error("failed to insert Flex locations", "error", err)
 		return api_errors.ErrInternalError
@@ -63,7 +67,7 @@ func (s *LocationService) InsertHertzLocations(w http.ResponseWriter, req *http.
 	hertz := broker.NewHertzWithReader(file)
 
 	ctx := req.Context()
-	err = s.InsertLocations(ctx, hertz)
+	err = s.InsertLocations(ctx, hertz, "")
 	if err != nil {
 		rlog.Error("failed to insert locations", "error", err)
 		http.Error(w, "failed to insert locations", http.StatusInternalServerError)
@@ -74,8 +78,7 @@ func (s *LocationService) InsertHertzLocations(w http.ResponseWriter, req *http.
 }
 
 // InsertLocations fetches locations from the given broker and inserts them into the database.
-func (s *LocationService) InsertLocations(ctx context.Context, b broker.LocationSearcher) error {
-	var cursor string
+func (s *LocationService) InsertLocations(ctx context.Context, b broker.LocationSearcher, cursor string) error {
 	skippedCursors := make([]string, 0)
 	for {
 		page, err := b.GetLocationsPage(cursor)
