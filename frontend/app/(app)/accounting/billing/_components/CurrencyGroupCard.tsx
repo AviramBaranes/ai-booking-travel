@@ -17,9 +17,14 @@ const CHECKBOX_CLASSES =
 interface CurrencyGroupCardProps {
   entity: BillingEntity;
   group: queries.CurrencyGroup;
+  showActions?: boolean;
 }
 
-export function CurrencyGroupCard({ entity, group }: CurrencyGroupCardProps) {
+export function CurrencyGroupCard({
+  entity,
+  group,
+  showActions = true,
+}: CurrencyGroupCardProps) {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [dialogOpen, setDialogOpen] = useState(false);
   const tStatus = useTranslations("MyAccount.reservation.summary.status");
@@ -88,40 +93,41 @@ export function CurrencyGroupCard({ entity, group }: CurrencyGroupCardProps) {
                 {" "}
                 • {selectedIds.length} נבחרו
                 {selectedTotal > 0 && (
-                  <>
-                    {" "}
-                    (סה"כ לתשלום: {currencyFormatter.format(selectedTotal)})
-                  </>
+                  <> (סה"כ לתשלום: {currencyFormatter.format(selectedTotal)})</>
                 )}
               </span>
             )}
           </p>
         </div>
-        <Button
-          type="button"
-          variant="brand"
-          className="h-10 px-6"
-          disabled={selectedIds.length === 0}
-          onClick={() => setDialogOpen(true)}
-        >
-          חייב נבחרים
-        </Button>
+        {showActions && (
+          <Button
+            type="button"
+            variant="brand"
+            className="h-10 px-6"
+            disabled={selectedIds.length === 0}
+            onClick={() => setDialogOpen(true)}
+          >
+            חייב נבחרים
+          </Button>
+        )}
       </header>
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <thead className="bg-background text-text-secondary type-label">
             <tr>
-              <th className="px-4 py-3 text-start w-10">
-                <Checkbox
-                  checked={
-                    allChecked ? true : someChecked ? "indeterminate" : false
-                  }
-                  onCheckedChange={toggleAll}
-                  className={CHECKBOX_CLASSES}
-                  aria-label="בחר הכל"
-                />
-              </th>
+              {showActions && (
+                <th className="px-4 py-3 text-start w-10">
+                  <Checkbox
+                    checked={
+                      allChecked ? true : someChecked ? "indeterminate" : false
+                    }
+                    onCheckedChange={toggleAll}
+                    className={CHECKBOX_CLASSES}
+                    aria-label="בחר הכל"
+                  />
+                </th>
+              )}
               <th className="px-4 py-3 text-start whitespace-nowrap">
                 מס׳ הזמנה
               </th>
@@ -169,14 +175,16 @@ export function CurrencyGroupCard({ entity, group }: CurrencyGroupCardProps) {
                       : "hover:bg-background/60")
                   }
                 >
-                  <td className="px-4 py-3">
-                    <Checkbox
-                      checked={checked}
-                      onCheckedChange={() => toggleOne(r.id)}
-                      className={CHECKBOX_CLASSES}
-                      aria-label={`בחר הזמנה ${r.id}`}
-                    />
-                  </td>
+                  {showActions && (
+                    <td className="px-4 py-3">
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={() => toggleOne(r.id)}
+                        className={CHECKBOX_CLASSES}
+                        aria-label={`בחר הזמנה ${r.id}`}
+                      />
+                    </td>
+                  )}
                   <td className="px-4 py-3 whitespace-nowrap text-navy font-medium">
                     {r.id}
                   </td>

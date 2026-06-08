@@ -7,9 +7,10 @@ import type { BillingEntity } from "./BillingEntityCombobox";
 
 interface BillingResultsProps {
   entity: BillingEntity;
+  showActions?: boolean;
 }
 
-export function BillingResults({ entity }: BillingResultsProps) {
+export function BillingResults({ entity, showActions }: BillingResultsProps) {
   const { data } = useSuspenseQuery({
     queryKey: ["open-reservations", entity.kind, entity.id],
     queryFn: () =>
@@ -39,6 +40,7 @@ export function BillingResults({ entity }: BillingResultsProps) {
           key={group.currencyCode}
           entity={entity}
           group={group}
+          showActions={showActions}
         />
       ))}
     </div>

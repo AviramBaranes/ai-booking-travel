@@ -257,9 +257,9 @@ func TestGetBusinessesBalancesReport(t *testing.T) {
 		if organicRow.BillingEntityName != seed.organicOrg.Name {
 			t.Fatalf("expected organic billing entity name %q, got %q", seed.organicOrg.Name, organicRow.BillingEntityName)
 		}
-		assertFloatEqual(t, organicRow.TotalOpenBalanceInDollar, 197)  // 77 (vouchered) + 120 (canceled)
-		assertFloatEqual(t, organicRow.TotalOpenBalanceInEuro, 100)    // EUR vouchered reservation
-		assertFloatEqual(t, organicRow.TotalInOtherCurrency, 180)      // 50 (ILS canceled) * rate 3.6
+		assertFloatEqual(t, organicRow.TotalOpenBalanceInDollar, 197) // 77 (vouchered) + 120 (canceled)
+		assertFloatEqual(t, organicRow.TotalOpenBalanceInEuro, 100)   // EUR vouchered reservation
+		assertFloatEqual(t, organicRow.TotalInOtherCurrency, 180)     // 50 (ILS canceled) * rate 3.6
 
 		// Inorganic office: 2 USD only (vouchered 220 + canceled 33 = 253)
 		inorganicOfficeRow := requireBusinessesBalanceRow(t, resp.Businesses, BillingEntityOffice, seed.inorganicOffice.ID)

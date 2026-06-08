@@ -7,7 +7,7 @@ import {
 } from "./BillingEntityCombobox";
 import { BillingResults } from "./BillingResults";
 
-function ReservationsSkeleton() {
+export function BillingShellSkeleton() {
   return (
     <div className="flex flex-col gap-6">
       {[0, 1].map((i) => (
@@ -40,7 +40,7 @@ export function BillingShell() {
           </p>
         </div>
       ) : (
-        <Suspense key={`${entity.kind}-${entity.id}`} fallback={<ReservationsSkeleton />}>
+        <Suspense key={`${entity.kind}-${entity.id}`} fallback={<BillingShellSkeleton />}>
           <BillingResults entity={entity} />
         </Suspense>
       )}
