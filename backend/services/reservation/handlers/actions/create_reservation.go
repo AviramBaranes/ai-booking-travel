@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
+	"time"
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
@@ -130,10 +132,79 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 	if _, err := emailPublisher.Publish(ctx, emailevents.EmailEventTypeNewOrder, emailevents.NewOrderEmailPayload{
 		UserID:             p.UserID,
 		BookingReferenceID: p.BrokerReservationID,
+		ReservationPDFData: buildReservationPDFData(id, p, totalPrice),
 		DriverFullName:     fmt.Sprintf("%s %s %s", p.DriverTitle, p.DriverFirstName, p.DriverLastName),
 	}); err != nil {
 		rlog.Error("failed to publish new order email event", "error", err, "brokerReservationId", p.BrokerReservationID)
 	}
 
 	return &CreateReservationResponse{ID: id}, nil
+}
+
+func buildReservationPDFData(id int64, p CreateReservationParams, totalPrice float64) emailevents.ReservationPDFData {
+	carPriceWithMarkup := pricing.ApplyMarkup(p.PurchasePrice, p.MarkupPercentage)
+	erpFullPrice := pricing.ApplyMarkup(p.BrokerErpPrice, p.MarkupPercentage) + p.BtErpPrice
+
+	var discountAmount float64
+	if p.DiscountPercentage > 0 {
+		discountAmount = (erpFullPrice + carPriceWithMarkup) - totalPrice
+	}
+
+	addons := make([]emailevents.SelectedAddon, len(p.PayAtPickup.SelectedAddons))
+	for i, addon := range p.PayAtPickup.SelectedAddons {
+		addons[i] = emailevents.SelectedAddon{
+			ID:       addon.ID,
+			Name:     addon.Name,
+			Price:    addon.Price,
+			Quantity: addon.Quantity,
+		}
+	}
+
+	return emailevents.ReservationPDFData{
+		BrokerReservationID: p.BrokerReservationID,
+		CarDetails:          *p.CarDetails,
+		PlanInclusions:      p.PlanInclusions,
+		CurrencyCode:        getCurrencyCode(p.CurrencyCode),
+		CarFullPrice:        int(math.Round(carPriceWithMarkup)),
+		DiscountAmount:      int(math.Round(discountAmount)),
+		ErpPrice:            int(math.Round(erpFullPrice)),
+		TotalPrice:          int(math.Round(totalPrice)),
+		PayAtPickup: emailevents.PayAtPickup{
+			Fees: broker.Fees{
+				DropCharge:             p.PayAtPickup.Fees.DropCharge,
+				DropChargeCurrency:     getCurrencyCode(p.PayAtPickup.Fees.DropChargeCurrency),
+				YoungDriverFee:         p.PayAtPickup.Fees.YoungDriverFee,
+				YoungDriverFeeCurrency: getCurrencyCode(p.PayAtPickup.Fees.YoungDriverFeeCurrency),
+			},
+			SelectedAddons: addons,
+		},
+		FlightNumber:        p.FlightNumber,
+		PickupLocationName:  p.PickupLocationName,
+		DropoffLocationName: p.DropoffLocationName,
+		PickupDate:          p.PickupDate,
+		DropoffDate:         p.DropoffDate,
+		PickupTime:          p.PickupTime,
+		DropoffTime:         p.DropoffTime,
+		RentalDays:          int32(p.RentalDays),
+		DriverTitle:         p.DriverTitle,
+		DriverFirstName:     p.DriverFirstName,
+		DriverLastName:      p.DriverLastName,
+		DriverAge:           int32(p.DriverAge),
+		Voucher:             nil,
+		VoucheredAt:         nil,
+		CreatedAt:           time.Now().Format("02/01/2006 15:04"),
+	}
+}
+
+func getCurrencyCode(currencyCode string) string {
+	switch currencyCode {
+	case "USD":
+		return "$"
+	case "EUR":
+		return "€"
+	case "GBP":
+		return "£"
+	default:
+		return currencyCode
+	}
 }

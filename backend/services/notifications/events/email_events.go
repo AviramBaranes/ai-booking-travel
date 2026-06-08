@@ -89,9 +89,10 @@ type LateCancellationAlertEmailPayload struct {
 
 // NewOrderEmailPayload is the payload for EmailEventTypeNewOrder.
 type NewOrderEmailPayload struct {
-	UserID             int64  `json:"userId"`
-	BookingReferenceID string `json:"bookingReferenceId"`
-	DriverFullName     string `json:"driverFullName"`
+	UserID             int64              `json:"userId"`
+	BookingReferenceID string             `json:"bookingReferenceId"`
+	DriverFullName     string             `json:"driverFullName"`
+	ReservationPDFData ReservationPDFData `json:"reservationPdfData"`
 }
 
 // OpenOrderAlertEmailPayload is the payload for EmailEventTypeOpenOrderAlert.

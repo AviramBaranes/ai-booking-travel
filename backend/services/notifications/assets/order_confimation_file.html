@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>סיכום הזמנה</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 32px;
+        background: #f3f4fb;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        color: #151033;
+        direction: rtl;
+        text-align: right;
+      }
+
+      .page {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+
+      .brand-header {
+        background: linear-gradient(135deg, #0f0043 0%, #1b4f9b 100%);
+        border-radius: 18px;
+        padding: 34px 32px;
+        text-align: center;
+        margin-bottom: 22px;
+        box-shadow: 0 4px 24px rgba(0, 14, 247, 0.08);
+      }
+
+      .brand-logo {
+        height: 48px;
+        width: auto;
+        display: block;
+        margin: 0 auto;
+      }
+
+      .brand-title {
+        margin: 0;
+        color: #ffffff;
+        font-size: 30px;
+        font-weight: 900;
+        line-height: 1.3;
+      }
+
+      .brand-subtitle {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, 0.76);
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .card {
+        background: #ffffff;
+        border: 1px solid #deddec;
+        border-radius: 14px;
+        padding: 26px;
+        margin-bottom: 22px;
+        box-shadow: 0 4px 18px rgba(15, 0, 67, 0.04);
+      }
+
+      .header {
+        display: table;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .header-content {
+        display: table-cell;
+        vertical-align: top;
+        width: 70%;
+      }
+
+      .car-image-wrap {
+        display: table-cell;
+        vertical-align: top;
+        width: 30%;
+        text-align: center;
+        padding-right: 20px;
+      }
+
+      .car-image {
+        max-width: 210px;
+        max-height: 140px;
+        object-fit: contain;
+      }
+
+      .supplier-name {
+        font-size: 15px;
+        margin-bottom: 16px;
+        color: #333333;
+        text-align: center;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 30px;
+        color: #15004c;
+        font-weight: 800;
+      }
+
+      h2 {
+        margin: 0 0 18px;
+        font-size: 24px;
+        color: #15004c;
+        font-weight: 800;
+      }
+
+      h3 {
+        margin: 0 0 14px;
+        font-size: 19px;
+        color: #15004c;
+        font-weight: 800;
+      }
+
+      .status-row {
+        margin-top: 12px;
+        font-size: 15px;
+        line-height: 1.8;
+      }
+
+      .status-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 13px;
+        margin-right: 6px;
+      }
+
+      .status-orange {
+        color: #ff7a16;
+        background: #fff3e8;
+      }
+
+      .status-green {
+        color: #11a76f;
+        background: #eafaf4;
+      }
+
+      .status-gray {
+        color: #555555;
+        background: #eeeeee;
+      }
+
+      .divider {
+        height: 1px;
+        background: #e1e1e8;
+        margin: 22px 0;
+      }
+
+      .grid-2 {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+      }
+
+      .col {
+        display: table-cell;
+        vertical-align: top;
+        width: 50%;
+        padding-left: 18px;
+      }
+
+      .col:last-child {
+        padding-left: 0;
+        padding-right: 18px;
+      }
+
+      .field {
+        margin-bottom: 12px;
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      .label {
+        color: #666a7f;
+        font-weight: 700;
+        margin-bottom: 3px;
+      }
+
+      .value {
+        color: #24263b;
+      }
+
+      .specs {
+        margin-top: 18px;
+      }
+
+      .spec {
+        display: inline-block;
+        padding: 7px 12px;
+        border-radius: 999px;
+        background: #ececf6;
+        color: #24263b;
+        font-size: 13px;
+        margin: 0 0 8px 8px;
+        white-space: nowrap;
+      }
+
+      .check-list {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+      }
+
+      .check-list li {
+        margin-bottom: 11px;
+        font-size: 15px;
+        color: #151033;
+        line-height: 1.5;
+      }
+
+      .check {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        border-radius: 50%;
+        background: #12b981;
+        color: #ffffff;
+        text-align: center;
+        font-size: 12px;
+        margin-left: 8px;
+        font-weight: 700;
+      }
+
+      .price-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+
+      .price-table tr {
+        border-bottom: 1px solid #eeeeee;
+      }
+
+      .price-table tr:last-child {
+        border-bottom: none;
+      }
+
+      .price-table td {
+        padding: 11px 0;
+        vertical-align: top;
+      }
+
+      .price-table td:first-child {
+        color: #5d6074;
+        font-weight: 700;
+        width: 65%;
+      }
+
+      .price-table td:last-child {
+        text-align: left;
+        color: #151033;
+        font-weight: 700;
+        direction: ltr;
+      }
+
+      .total-box {
+        margin-top: 22px;
+        background: #15004c;
+        color: #ffffff;
+        border-radius: 12px;
+        padding: 18px 22px;
+        display: table;
+        width: 100%;
+      }
+
+      .total-label {
+        display: table-cell;
+        font-size: 16px;
+        vertical-align: middle;
+        text-align: right;
+      }
+
+      .total-value {
+        display: table-cell;
+        font-size: 30px;
+        font-weight: 800;
+        vertical-align: middle;
+        text-align: left;
+        direction: ltr;
+      }
+
+      .small-note {
+        font-size: 13px;
+        color: #777b8f;
+        margin-top: 8px;
+        line-height: 1.5;
+      }
+
+      .footer {
+        text-align: center;
+        color: #777b8f;
+        font-size: 13px;
+        margin-top: 24px;
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="brand-header">
+        <img
+          class="brand-logo"
+          src="https://dev.aibookingtravel.com/_next/image?url=%2Flogo-dark.png&w=256&q=75&dpl=dpl_DaDyh9jUn2G8D1hxWL2S7tNEQPjG"
+          alt="AI Booking Travel"
+        />
+      </div>
+
+      <div class="card">
+        <div class="header">
+          <div class="header-content">
+            <h2>פרטי הזמנה</h2>
+
+            <div class="field">
+              <div class="label">שם הנהג:</div>
+              <div class="value">
+                {{.DriverTitle}} {{.DriverFirstName}} {{.DriverLastName}}
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="label">גיל הנהג:</div>
+              <div class="value">{{.DriverAge}}</div>
+            </div>
+
+            <div class="field">
+              <div class="label">מספר הזמנה:</div>
+              <div class="value">{{.BrokerReservationID}}</div>
+            </div>
+
+            <div class="field" style="margin-top: 12px">
+              <div class="label">נרשמה בתאריך:</div>
+              <div class="value">{{.CreatedAt}}</div>
+            </div>
+
+            {{if .FlightNumber}}
+            <div class="field">
+              <div class="label">מספר טיסה:</div>
+              <div class="value">{{.FlightNumber}}</div>
+            </div>
+            {{end}} {{if .Voucher}}
+            <div class="field">
+              <div class="label">שובר:</div>
+              <div class="value">{{.Voucher}}</div>
+            </div>
+            {{end}} {{if .VoucheredAt}}
+            <div class="field">
+              <div class="label">השובר הופק בתאריך:</div>
+              <div class="value">{{.VoucheredAt}}</div>
+            </div>
+            {{end}}
+          </div>
+
+          <div class="car-image-wrap">
+            <div class="supplier-name">{{.CarDetails.SupplierName}}</div>
+
+            {{if .CarDetails.ImageURL}}
+            <img
+              class="car-image"
+              src="{{.CarDetails.ImageURL}}"
+              alt="{{.CarDetails.Model}}"
+            />
+            {{end}}
+
+            <h3 style="margin-top: 18px; text-align: center">
+              {{.CarDetails.Model}}
+            </h3>
+            <div class="value" style="text-align: center">או דומה</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>פרטי השכרה</h2>
+
+        <div class="grid-2">
+          <div class="col">
+            <h3>פרטי איסוף:</h3>
+
+            <div class="field">
+              <div class="label">מיקום:</div>
+              <div class="value">{{.PickupLocationName}}</div>
+            </div>
+
+            <div class="field">
+              <div class="label">תאריך ושעה:</div>
+              <div class="value">{{.PickupTime}} | {{.PickupDate}}</div>
+            </div>
+          </div>
+
+          <div class="col">
+            <h3>פרטי החזרה:</h3>
+
+            <div class="field">
+              <div class="label">מיקום:</div>
+              <div class="value">{{.DropoffLocationName}}</div>
+            </div>
+
+            <div class="field">
+              <div class="label">תאריך ושעה:</div>
+              <div class="value">{{.DropoffTime}} | {{.DropoffDate}}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="field">
+          <div class="label">מספר ימי השכרה:</div>
+          <div class="value">{{.RentalDays}}</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>פירוט הרכב</h2>
+
+        <div class="grid-2">
+          <div class="col">
+            <div class="field">
+              <div class="label">קבוצת הרכב:</div>
+              <div class="value">{{.CarDetails.CarGroup}}</div>
+            </div>
+
+            <div class="field">
+              <div class="label">דגם מייצג:</div>
+              <div class="value">{{.CarDetails.Model}}</div>
+            </div>
+
+            <div class="field">
+              <div class="label">חברת השכרה:</div>
+              <div class="value">{{.CarDetails.SupplierName}}</div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="field">
+              <div class="label">סוג רכב:</div>
+              <div class="value">{{.CarDetails.CarType}}</div>
+            </div>
+
+            <div class="field">
+              <div class="label">קוד ACRISS:</div>
+              <div class="value">{{.CarDetails.Acriss}}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="specs">
+          <span class="spec">{{.CarDetails.Seats}} נוסעים</span>
+          <span class="spec">{{.CarDetails.Doors}} דלתות</span>
+          <span class="spec">{{.CarDetails.Bags}} מזוודות</span>
+
+          {{if .CarDetails.IsAutoGear}}
+          <span class="spec">אוטומטי</span>
+          {{else}}
+          <span class="spec">ידני</span>
+          {{end}} {{if .CarDetails.HasAC}}
+          <span class="spec">מזגן</span>
+          {{end}} {{if .CarDetails.IsElectric}}
+          <span class="spec">חשמלי</span>
+          {{end}}
+        </div>
+      </div>
+
+      {{if .PlanInclusions}}
+      <div class="card">
+        <h2>מה כלול</h2>
+
+        <ul class="check-list">
+          {{range .PlanInclusions}}
+          <li><span class="check">✓</span>{{.}}</li>
+          {{end}}
+        </ul>
+      </div>
+      {{end}}
+
+      <div class="card">
+        <h2>פירוט עלויות</h2>
+
+        <table class="price-table">
+          <tr>
+            <td>מחיר רכב:</td>
+            <td>{{.CurrencyCode}} {{.CarFullPrice}}</td>
+          </tr>
+
+          {{if .DiscountAmount}}
+          <tr>
+            <td>הנחה:</td>
+            <td>-{{.CurrencyCode}} {{.DiscountAmount}}</td>
+          </tr>
+          {{end}} {{if .ErpPrice}}
+          <tr>
+            <td>עלות כיסוי:</td>
+            <td>{{.CurrencyCode}} {{.ErpPrice}}</td>
+          </tr>
+          {{end}}
+        </table>
+
+        <div class="total-box">
+          <div class="total-label">סה״כ לתשלום:</div>
+          <div class="total-value">{{.CurrencyCode}} {{.TotalPrice}}</div>
+        </div>
+      </div>
+
+      {{if or .PayAtPickup.Fees.DropCharge .PayAtPickup.Fees.YoungDriverFee (len
+      .PayAtPickup.SelectedAddons)}}
+      <div class="card">
+        <h2>לתשלום בתחנה</h2>
+
+        <table class="price-table">
+          {{if .PayAtPickup.Fees.DropCharge}}
+          <tr>
+            <td>דמי החזר להשכרה חד־כיוונית:</td>
+            <td>
+              {{.PayAtPickup.Fees.DropChargeCurrency}}
+              {{.PayAtPickup.Fees.DropCharge}}
+            </td>
+          </tr>
+          {{end}} {{if .PayAtPickup.Fees.YoungDriverFee}}
+          <tr>
+            <td>דמי נהג צעיר:</td>
+            <td>
+              {{.PayAtPickup.Fees.YoungDriverFeeCurrency}}
+              {{.PayAtPickup.Fees.YoungDriverFee}}
+            </td>
+          </tr>
+          {{end}} {{range .PayAtPickup.SelectedAddons}}
+          <tr>
+            <td>{{.Name}} × {{.Quantity}}</td>
+            <td>{{$.CurrencyCode}} {{.Price}}</td>
+          </tr>
+          {{end}}
+        </table>
+
+        <div class="small-note">
+          הסכומים המופיעים באזור זה מיועדים לתשלום ישירות בתחנת ההשכרה, בהתאם
+          לתנאי הספק.
+        </div>
+      </div>
+      {{end}}
+
+      <div class="footer">
+        מסמך זה הופק באופן אוטומטי ממערכת AI Booking Travel.<br />
+        פרטי ההזמנה מוצגים כפי שנשמרו במערכת.
+      </div>
+    </div>
+  </body>
+</html>

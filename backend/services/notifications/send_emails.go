@@ -1,9 +1,12 @@
 package notifications
 
 import (
+	"bytes"
 	"context"
+	"embed"
 	"encoding/json"
 	"fmt"
+	"html/template"
 
 	"encore.app/services/accounts"
 	"encore.app/services/notifications/email"
@@ -11,6 +14,21 @@ import (
 	"encore.dev/pubsub"
 	"encore.dev/rlog"
 )
+
+//go:embed assets/order_confimation_file.html
+var orderConfirmationFS embed.FS
+
+func renderOrderConfirmationHTML(data emailevents.ReservationPDFData) (string, error) {
+	tmpl, err := template.New("order_confimation_file.html").ParseFS(orderConfirmationFS, "assets/order_confimation_file.html")
+	if err != nil {
+		return "", fmt.Errorf("parsing order confirmation template: %w", err)
+	}
+	var buf bytes.Buffer
+	if err := tmpl.Execute(&buf, data); err != nil {
+		return "", fmt.Errorf("executing order confirmation template: %w", err)
+	}
+	return buf.String(), nil
+}
 
 var _ = pubsub.NewSubscription(
 	emailevents.EmailRequestedTopic,
@@ -160,6 +178,25 @@ func (s *Service) sendNewOrderEmail(ctx context.Context, raw json.RawMessage) er
 		return err
 	}
 
+	orderHTML, err := renderOrderConfirmationHTML(p.ReservationPDFData)
+	if err != nil {
+		rlog.Error("rendering order confirmation html", "error", err)
+		return fmt.Errorf("rendering order confirmation HTML: %w", err)
+	}
+
+	pdfBytes, err := s.pdfConverter.ConvertHTMLToPDF(orderHTML)
+	if err != nil {
+		rlog.Error("converting order confirmation html to pdf", "error", err, "booking_reference_id", p.BookingReferenceID)
+		return fmt.Errorf("converting order confirmation to PDF: %w", err)
+	}
+
+	attachments := []email.Attachment{
+		{
+			Filename: fmt.Sprintf("order_confirmation_%s.pdf", p.BookingReferenceID),
+			Reader:   bytes.NewReader(pdfBytes),
+		},
+	}
+
 	if err := email.SendEmail(
 		ctx,
 		s.reservationsEmailSender,
@@ -170,7 +207,7 @@ func (s *Service) sendNewOrderEmail(ctx context.Context, raw json.RawMessage) er
 			BookingReferenceID: p.BookingReferenceID,
 			DriverFullName:     p.DriverFullName,
 		},
-		nil,
+		attachments,
 	); err != nil {
 		rlog.Error("failed to send new order email", "error", err, "booking_reference_id", p.BookingReferenceID)
 		return err

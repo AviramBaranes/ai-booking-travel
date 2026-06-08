@@ -27,7 +27,7 @@ export function CarCard({ vehicle, daysCount, searchRequest }: CarCardProps) {
           alt={vehicle.carDetails.model}
           width={176}
           height={100}
-          className="w-44 h-25 object-cover"
+          className="w-44 h-25 object-contain"
         />
       </div>
       <div className="flex flex-col items-start gap-2 my-auto">
