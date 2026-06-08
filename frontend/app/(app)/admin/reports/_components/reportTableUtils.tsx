@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 import { reservation } from "@/shared/client";
-import { formatPrice } from "@/shared/utils/formatPrice";
+import { formatPriceFloat } from "@/shared/utils/formatPrice";
 
 import { ReservationReportFilters } from "./ReservationsReportFilterBar";
 
@@ -55,7 +55,7 @@ export function MoneyCell({
         strong ? "font-bold text-emerald-700" : "text-gray-800",
       )}
     >
-      {formatPrice(value, currency)}
+      {formatPriceFloat(value, currency)}
     </span>
   );
 }
@@ -228,7 +228,7 @@ export function makeBaseColumns<
       key: "carSellPriceWithBrokerERP",
       label: "מחיר רכב",
       className: "min-w-36 tabular-nums",
-      render: (row) => formatPrice(row.carSellPriceWithBrokerERP, row.currencyCode),
+      render: (row) => formatPriceFloat(row.carSellPriceWithBrokerERP, row.currencyCode),
     },
     {
       key: "carSellPriceWithBrokerERPInILS",
@@ -242,7 +242,7 @@ export function makeBaseColumns<
       key: "btERPPrice",
       label: "BT ERP",
       className: "min-w-32 tabular-nums",
-      render: (row) => formatPrice(row.btERPPrice, row.currencyCode),
+      render: (row) => formatPriceFloat(row.btERPPrice, row.currencyCode),
     },
     {
       key: "btERPPriceInILS",
@@ -254,7 +254,7 @@ export function makeBaseColumns<
       key: "totalPrice",
       label: 'סה"כ',
       className: "min-w-36 font-semibold tabular-nums",
-      render: (row) => formatPrice(row.totalPrice, row.currencyCode),
+      render: (row) => formatPriceFloat(row.totalPrice, row.currencyCode),
     },
     {
       key: "totalPriceInILS",

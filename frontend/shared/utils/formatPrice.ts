@@ -6,3 +6,12 @@ export function formatPrice(price: number, currency: string): string {
     maximumFractionDigits: 0,
   }).format(price);
 }
+
+export function formatPriceFloat(price: number, currency: string): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(price);
+}

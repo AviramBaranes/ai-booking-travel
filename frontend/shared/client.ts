@@ -903,6 +903,7 @@ export namespace reservation {
         purchasePriceInILS: number
         profit: number
         profitInILS: number
+        profitPercentage: number
     }
 
     export interface ReportParams {

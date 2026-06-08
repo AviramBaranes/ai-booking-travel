@@ -2,9 +2,12 @@
 
 import { profitabilityReport } from "@/shared/api/reservations-api";
 import { reservation } from "@/shared/client";
-import { formatPrice } from "@/shared/utils/formatPrice";
+import { formatPriceFloat } from "@/shared/utils/formatPrice";
 
-import { ReportTableShell } from "../_components/ReportTableShell";
+import {
+  ReportQueryFn,
+  ReportTableShell,
+} from "../_components/ReportTableShell";
 import {
   makeBaseColumns,
   MoneyCell,
@@ -23,7 +26,7 @@ const profitExtraColumns: ReportColumn<ProfitRow>[] = [
     key: "purchasePrice",
     label: "מחיר קנייה",
     className: "min-w-36 tabular-nums",
-    render: (row) => formatPrice(row.purchasePrice, row.currencyCode),
+    render: (row) => formatPriceFloat(row.purchasePrice, row.currencyCode),
   },
   {
     key: "purchasePriceInILS",
@@ -37,7 +40,7 @@ const profitExtraColumns: ReportColumn<ProfitRow>[] = [
     key: "profit",
     label: "רווח",
     className: "min-w-36 tabular-nums",
-    render: (row) => formatPrice(row.profit, row.currencyCode),
+    render: (row) => formatPriceFloat(row.profit, row.currencyCode),
   },
   {
     key: "profitInILS",
@@ -48,6 +51,12 @@ const profitExtraColumns: ReportColumn<ProfitRow>[] = [
       <MoneyCell value={row.profitInILS} currency="ILS" strong />
     ),
   },
+  {
+    key: "profitPercentage",
+    label: 'אחוז רווח',
+    className: "min-w-32 tabular-nums",
+    render: (row) => `${row.profitPercentage.toFixed(2)}%`,
+  }
 ];
 
 const columns: ReportColumn<ProfitRow>[] = [
@@ -61,11 +70,7 @@ export default function ProfitReportTable() {
       showStatusFilter={false}
       columns={columns}
       queryKey="profit-report"
-      queryFn={
-        profitabilityReport as (
-          params: reservation.ReportParams,
-        ) => Promise<{ reservations: ProfitRow[]; total: number }>
-      }
+      queryFn={profitabilityReport as ReportQueryFn<ProfitRow>}
     />
   );
 }

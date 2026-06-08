@@ -80,12 +80,14 @@ func TestGetBusinessReport(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if resp.Total != 1 {
-			t.Fatalf("expected total 1, got %d", resp.Total)
+		if resp.Count != 1 {
+			t.Fatalf("expected total 1, got %d", resp.Count)
 		}
 		if len(resp.Reservations) != 1 {
 			t.Fatalf("expected 1 reservation, got %d", len(resp.Reservations))
 		}
+
+		assertFloatEqual(t, resp.TotalSales, 648)
 
 		row := resp.Reservations[0]
 		if row.BrokerReservationID != seed.bookingA {
@@ -172,8 +174,8 @@ func TestGetBusinessReport(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if resp.Total != 0 {
-			t.Fatalf("expected total 0, got %d", resp.Total)
+		if resp.Count != 0 {
+			t.Fatalf("expected total 0, got %d", resp.Count)
 		}
 		if len(resp.Reservations) != 0 {
 			t.Fatalf("expected 0 reservations, got %d", len(resp.Reservations))
@@ -205,8 +207,8 @@ func TestGetProfitReport(t *testing.T) {
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
-		if resp.Total != 1 {
-			t.Fatalf("expected total 1, got %d", resp.Total)
+		if resp.Count != 1 {
+			t.Fatalf("expected total 1, got %d", resp.Count)
 		}
 		if len(resp.Reservations) != 1 {
 			t.Fatalf("expected 1 reservation, got %d", len(resp.Reservations))
@@ -226,8 +228,12 @@ func TestGetProfitReport(t *testing.T) {
 		assertFloatEqual(t, row.CarSellPriceWithBrokerERPInILS, 528) // 132 * currency rate 4
 		assertFloatEqual(t, row.PurchasePrice, 120)                  // 100 purchase + 20 broker ERP
 		assertFloatEqual(t, row.PurchasePriceInILS, 480)             // 120 * currency rate 4
-		assertFloatEqual(t, row.Profit, 12)                          // 132 sell price - 120 purchase price
-		assertFloatEqual(t, row.ProfitInILS, 48)                     // 12 * currency rate 4
+		assertFloatEqual(t, row.Profit, 42)                          // 132 sell price - 120 purchase price + 30 bt ERP
+		assertFloatEqual(t, row.ProfitInILS, 168)                    // 42 * currency rate 4
+
+		assertFloatEqual(t, resp.TotalSales, 648)
+		assertFloatEqual(t, resp.TotalProfit, 168)
+		assertFloatEqual(t, resp.ProfitPercentage, (168.0/648.0)*100.0)
 	})
 }
 
@@ -552,8 +558,8 @@ func assertBusinessReportBookings(t *testing.T, ctx context.Context, params Repo
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
-	if resp.Total != int64(len(wantBookings)) {
-		t.Fatalf("expected total %d, got %d", len(wantBookings), resp.Total)
+	if resp.Count != int64(len(wantBookings)) {
+		t.Fatalf("expected total %d, got %d", len(wantBookings), resp.Count)
 	}
 	if len(resp.Reservations) != len(wantBookings) {
 		t.Fatalf("expected %d reservations, got %d", len(wantBookings), len(resp.Reservations))

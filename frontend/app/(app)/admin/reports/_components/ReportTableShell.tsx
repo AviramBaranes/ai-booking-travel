@@ -22,18 +22,20 @@ import {
   buildPageNumbers,
   buildRequest,
 } from "./reportTableUtils";
-import { formatPrice } from "@/shared/utils/formatPrice";
+import { formatPriceFloat } from "@/shared/utils/formatPrice";
 
-interface ReportTableShellProps<T extends { reservationId: number }> {
-  columns: ReportColumn<T>[];
-  queryKey: string;
-  queryFn: (params: reservation.ReportParams) => Promise<{
+export type ReportQueryFn<T> = (params: reservation.ReportParams) => Promise<{
     reservations: T[];
     count: number;
     totalSales: number;
     totalProfit?: number;
     profitPercentage?: number;
-  }>;
+  }>
+
+interface ReportTableShellProps<T extends { reservationId: number }> {
+  columns: ReportColumn<T>[];
+  queryKey: string;
+  queryFn: ReportQueryFn<T>;
   showStatusFilter?: boolean;
   showFilters?: boolean;
   fixedFilters?: Partial<ReservationReportFilters>;
@@ -199,11 +201,11 @@ export function ReportTableShell<T extends { reservationId: number }>({
           </span>
 
           <span className="text-sm text-gray-600">
-            סה"כ מכירות: {formatPrice(totalSales, "ILS")}
+            סה"כ מכירות: {formatPriceFloat(totalSales, "ILS")}
           </span>
           {totalProfit > 0 && (
             <span className="text-sm text-gray-600">
-              סה"כ רווח: {formatPrice(totalProfit, "ILS")} (
+              סה"כ רווח: {formatPriceFloat(totalProfit, "ILS")} (
               {profitPercentage.toFixed(2)}%)
             </span>
           )}

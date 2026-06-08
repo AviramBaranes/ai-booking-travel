@@ -15,6 +15,7 @@ type ProfitReportRow struct {
 	PurchasePriceInILS float64 `json:"purchasePriceInILS"`
 	Profit             float64 `json:"profit"`
 	ProfitInILS        float64 `json:"profitInILS"`
+	ProfitPercentage   float64 `json:"profitPercentage"`
 }
 
 type ProfitReportResponse struct {
@@ -69,8 +70,9 @@ func buildProfitReportRows(reservations []db.Reservation, accountsLookup *accoun
 	rows := make([]ProfitReportRow, 0, len(reservations))
 	for i, r := range reservations {
 		currencyRate := dbadapters.NumericToFloat64(r.CurrencyRate)
+		btErpPrice := dbadapters.NumericToFloat64(r.BtErpPrice)
 		purchasePrice := calculateCarPurchasePriceWithBrokerERP(r)
-		profit := businessRows[i].CarSellPriceWithBrokerERP - purchasePrice
+		profit := businessRows[i].CarSellPriceWithBrokerERP - purchasePrice + btErpPrice
 
 		rows = append(rows, ProfitReportRow{
 			BusinessReservationReportRow: businessRows[i],
@@ -78,6 +80,7 @@ func buildProfitReportRows(reservations []db.Reservation, accountsLookup *accoun
 			PurchasePriceInILS:           purchasePrice * currencyRate,
 			Profit:                       profit,
 			ProfitInILS:                  profit * currencyRate,
+			ProfitPercentage:             (profit / businessRows[i].CarSellPriceWithBrokerERP) * 100,
 		})
 	}
 

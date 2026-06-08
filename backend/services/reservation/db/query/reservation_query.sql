@@ -286,9 +286,9 @@ OFFSET sqlc.arg(page_offset)::BIGINT;
 -- name: CountReservationsReport :one
 SELECT 
 COUNT(*)::BIGINT AS count,
-SUM(total_price * currency_rate)::DOUBLE PRECISION AS total_sales,
-SUM(purchase_price * currency_rate)::DOUBLE PRECISION AS total_car_cost,
-SUM(broker_erp_price * currency_rate)::DOUBLE PRECISION AS total_broker_erp_cost
+COALESCE(SUM(total_price * currency_rate), 0)::DOUBLE PRECISION AS total_sales,
+COALESCE(SUM(purchase_price * currency_rate), 0)::DOUBLE PRECISION AS total_car_cost,
+COALESCE(SUM(broker_erp_price * currency_rate), 0)::DOUBLE PRECISION AS total_broker_erp_cost
 FROM reservations
 WHERE
     (sqlc.narg(pickup_date_from)::DATE IS NULL OR pickup_date >= sqlc.narg(pickup_date_from)::DATE)
