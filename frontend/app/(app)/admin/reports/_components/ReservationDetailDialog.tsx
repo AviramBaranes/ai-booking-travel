@@ -124,7 +124,7 @@ export function ReservationDetailDialog({
 
   return (
     <Dialog open={reservationId != null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[90vh] w-[90vw] !max-w-4xl overflow-y-auto" dir="rtl">
+      <DialogContent className="max-h-[90vh] w-[90vw] max-w-4xl! overflow-y-auto" dir="rtl">
         <DialogHeader>
           <DialogTitle>
             {r ? `הזמנה #${r.id} — ${r.brokerReservationId}` : "פרטי הזמנה"}

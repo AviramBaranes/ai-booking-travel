@@ -17,16 +17,12 @@ const (
 )
 
 type BusinessesBalancesReportRow struct {
-	BillingEntityType               BillingEntity `json:"billingEntityType"`
-	BillingEntityID                 int64         `json:"billingEntityId"`
-	BillingEntityName               string        `json:"billingEntityName"`
-	OpenReservationsCount           int64         `json:"openReservationsCount"`
-	TotalOpenBalance                float64       `json:"totalOpenBalance"`
-	PaymentPendingReservationsCount int64         `json:"paymentPendingReservationsCount"`
-	TotalPaymentPendingBalance      float64       `json:"totalPaymentPendingBalance"`
-	RefundPendingReservationsCount  int64         `json:"refundPendingReservationsCount"`
-	TotalRefundPendingBalance       float64       `json:"totalRefundPendingBalance"`
-	TotalBalance                    float64       `json:"totalBalance"`
+	BillingEntityType        BillingEntity `json:"billingEntityType"`
+	BillingEntityID          int64         `json:"billingEntityId"`
+	BillingEntityName        string        `json:"billingEntityName"`
+	TotalOpenBalanceInEuro   float64       `json:"totalOpenBalanceInEuro"`
+	TotalOpenBalanceInDollar float64       `json:"totalOpenBalanceInDollar"`
+	TotalInOtherCurrency     float64       `json:"totalInOtherCurrency"`
 }
 
 type BusinessesBalancesReportResponse struct {
@@ -89,16 +85,12 @@ func buildBusinessesBalancesReportRows(rows []db.ListBusinessesBalancesReportRow
 		billingEntityType := BillingEntity(row.BillingEntityType)
 
 		businesses = append(businesses, BusinessesBalancesReportRow{
-			BillingEntityType:               billingEntityType,
-			BillingEntityID:                 row.BillingEntityID,
-			BillingEntityName:               billingEntityName(billingEntityType, row.BillingEntityID, organizationNames, officeNames),
-			OpenReservationsCount:           row.OpenReservationsCount,
-			TotalOpenBalance:                row.TotalOpenBalance,
-			PaymentPendingReservationsCount: row.PaymentPendingReservationsCount,
-			TotalPaymentPendingBalance:      row.TotalPaymentPendingBalance,
-			RefundPendingReservationsCount:  row.RefundPendingReservationsCount,
-			TotalRefundPendingBalance:       row.TotalRefundPendingBalance,
-			TotalBalance:                    row.TotalBalance,
+			BillingEntityType:        billingEntityType,
+			BillingEntityID:          row.BillingEntityID,
+			BillingEntityName:        billingEntityName(billingEntityType, row.BillingEntityID, organizationNames, officeNames),
+			TotalOpenBalanceInEuro:   row.TotalEur,
+			TotalOpenBalanceInDollar: row.TotalUsd,
+			TotalInOtherCurrency:     row.TotalOtherConverted,
 		})
 	}
 

@@ -879,13 +879,9 @@ export namespace reservation {
         billingEntityType: BillingEntity
         billingEntityId: number
         billingEntityName: string
-        openReservationsCount: number
-        totalOpenBalance: number
-        paymentPendingReservationsCount: number
-        totalPaymentPendingBalance: number
-        refundPendingReservationsCount: number
-        totalRefundPendingBalance: number
-        totalBalance: number
+        totalOpenBalanceInEuro: number
+        totalOpenBalanceInDollar: number
+        totalInOtherCurrency: number
     }
 
     export type PayAtPickup = actions.PayAtPickup

@@ -243,7 +243,7 @@ func TestGetBusinessesBalancesReport(t *testing.T) {
 	s := &Service{query: query}
 	seed := seedBusinessesBalancesReportData(t, ctx, s)
 
-	t.Run("returns billing entity names and balances", func(t *testing.T) {
+	t.Run("returns billing entity names and currency-bucketed balances", func(t *testing.T) {
 		resp, err := GetBusinessesBalancesReport(ctx)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
@@ -252,41 +252,23 @@ func TestGetBusinessesBalancesReport(t *testing.T) {
 			t.Fatalf("expected at least 2 businesses, got %d", resp.Total)
 		}
 
+		// Organic org: 2 USD (vouchered 77 + canceled 120 = 197), 1 EUR (100), 1 ILS canceled (50 * 3.6 = 180)
 		organicRow := requireBusinessesBalanceRow(t, resp.Businesses, BillingEntityBusiness, seed.organicOrg.ID)
 		if organicRow.BillingEntityName != seed.organicOrg.Name {
 			t.Fatalf("expected organic billing entity name %q, got %q", seed.organicOrg.Name, organicRow.BillingEntityName)
 		}
-		if organicRow.OpenReservationsCount != 1 {
-			t.Fatalf("expected organic open count 1, got %d", organicRow.OpenReservationsCount)
-		}
-		assertFloatEqual(t, organicRow.TotalOpenBalance, 648)
-		if organicRow.PaymentPendingReservationsCount != 1 {
-			t.Fatalf("expected organic payment pending count 1, got %d", organicRow.PaymentPendingReservationsCount)
-		}
-		assertFloatEqual(t, organicRow.TotalPaymentPendingBalance, 231)
-		if organicRow.RefundPendingReservationsCount != 1 {
-			t.Fatalf("expected organic refund pending count 1, got %d", organicRow.RefundPendingReservationsCount)
-		}
-		assertFloatEqual(t, organicRow.TotalRefundPendingBalance, 240)
-		assertFloatEqual(t, organicRow.TotalBalance, 639)
+		assertFloatEqual(t, organicRow.TotalOpenBalanceInDollar, 197)  // 77 (vouchered) + 120 (canceled)
+		assertFloatEqual(t, organicRow.TotalOpenBalanceInEuro, 100)    // EUR vouchered reservation
+		assertFloatEqual(t, organicRow.TotalInOtherCurrency, 180)      // 50 (ILS canceled) * rate 3.6
 
+		// Inorganic office: 2 USD only (vouchered 220 + canceled 33 = 253)
 		inorganicOfficeRow := requireBusinessesBalanceRow(t, resp.Businesses, BillingEntityOffice, seed.inorganicOffice.ID)
 		if inorganicOfficeRow.BillingEntityName != seed.inorganicOffice.Name {
 			t.Fatalf("expected inorganic office billing entity name %q, got %q", seed.inorganicOffice.Name, inorganicOfficeRow.BillingEntityName)
 		}
-		if inorganicOfficeRow.OpenReservationsCount != 1 {
-			t.Fatalf("expected inorganic office open count 1, got %d", inorganicOfficeRow.OpenReservationsCount)
-		}
-		assertFloatEqual(t, inorganicOfficeRow.TotalOpenBalance, 220)
-		if inorganicOfficeRow.PaymentPendingReservationsCount != 1 {
-			t.Fatalf("expected inorganic office payment pending count 1, got %d", inorganicOfficeRow.PaymentPendingReservationsCount)
-		}
-		assertFloatEqual(t, inorganicOfficeRow.TotalPaymentPendingBalance, 220)
-		if inorganicOfficeRow.RefundPendingReservationsCount != 1 {
-			t.Fatalf("expected inorganic office refund pending count 1, got %d", inorganicOfficeRow.RefundPendingReservationsCount)
-		}
-		assertFloatEqual(t, inorganicOfficeRow.TotalRefundPendingBalance, 165)
-		assertFloatEqual(t, inorganicOfficeRow.TotalBalance, 275)
+		assertFloatEqual(t, inorganicOfficeRow.TotalOpenBalanceInDollar, 253) // 220 (vouchered) + 33 (canceled)
+		assertFloatEqual(t, inorganicOfficeRow.TotalOpenBalanceInEuro, 0)
+		assertFloatEqual(t, inorganicOfficeRow.TotalInOtherCurrency, 0)
 	})
 }
 
@@ -414,6 +396,38 @@ func seedBusinessesBalancesReportData(t *testing.T, ctx context.Context, s *Serv
 		p.DiscountPercentage = 0
 	})
 	cancelReservationForTest(t, ctx, s, organicCanceledID)
+
+	// EUR vouchered — exercises total_eur bucket
+	organicEurVoucheredID := seedReservation(t, ctx, s, organicAgent.ID, func(p *CreateReservationParams) {
+		p.BrokerReservationID = fmt.Sprintf("BALANCES-ORG-EUR-%d", unique)
+		p.OfficeID = &organicOffice.ID
+		p.OrganizationID = &organicOrg.ID
+		p.IsOrganizationOrganic = &organic
+		p.CurrencyCode = "EUR"
+		p.CurrencyRate = 1
+		p.PurchasePrice = 100
+		p.MarkupPercentage = 0
+		p.BrokerErpPrice = 0
+		p.BtErpPrice = 0
+		p.DiscountPercentage = 0
+	})
+	applyVoucherForTest(t, ctx, s, organicEurVoucheredID, organicAgent.ID, fmt.Sprintf("BALANCES-ORG-EUR-VN-%d", unique))
+
+	// ILS canceled — exercises total_other_converted bucket (50 * 3.6 = 180)
+	organicIlsCanceledID := seedReservation(t, ctx, s, organicAgent.ID, func(p *CreateReservationParams) {
+		p.BrokerReservationID = fmt.Sprintf("BALANCES-ORG-ILS-%d", unique)
+		p.OfficeID = &organicOffice.ID
+		p.OrganizationID = &organicOrg.ID
+		p.IsOrganizationOrganic = &organic
+		p.CurrencyCode = "ILS"
+		p.CurrencyRate = 3.6
+		p.PurchasePrice = 50
+		p.MarkupPercentage = 0
+		p.BrokerErpPrice = 0
+		p.BtErpPrice = 0
+		p.DiscountPercentage = 0
+	})
+	cancelReservationForTest(t, ctx, s, organicIlsCanceledID)
 
 	inorganicOrg := createBusinessesBalancesOrg(t, ctx, fmt.Sprintf("Balances Inorganic Org %d", unique), false, 0)
 	inorganicOffice := createBusinessesBalancesOffice(t, ctx, inorganicOrg.ID, fmt.Sprintf("Balances Inorganic Office %d", unique), int32(300))

@@ -672,55 +672,39 @@ WITH billing_reservations AS (
             WHEN is_organization_organic = TRUE THEN organization_id
             ELSE office_id
         END::BIGINT AS billing_entity_id,
-        reservation_status,
-        payment_status,
-        (total_price::NUMERIC * currency_rate)::DOUBLE PRECISION AS balance
+        total_price,
+        currency_code,
+        currency_rate
     FROM reservations
     WHERE
         (
-            is_organization_organic = TRUE
-            AND organization_id IS NOT NULL
+            (is_organization_organic = TRUE AND organization_id IS NOT NULL)
+            OR
+            (is_organization_organic = FALSE AND office_id IS NOT NULL)
         )
-    OR
-        (
-            is_organization_organic = FALSE
-            AND office_id IS NOT NULL
+        AND (
+            (reservation_status = 'vouchered' AND payment_status = 'unpaid')
+            OR
+            (reservation_status = 'canceled' AND payment_status = 'refund_pending')
         )
 )
 SELECT
     billing_entity_type,
     billing_entity_id,
-    COUNT(*) FILTER (WHERE reservation_status = 'booked')::BIGINT AS open_reservations_count,
-    COALESCE(SUM(balance) FILTER (WHERE reservation_status = 'booked'), 0)::DOUBLE PRECISION AS total_open_balance,
-    COUNT(*) FILTER (WHERE reservation_status = 'vouchered' AND payment_status = 'unpaid')::BIGINT AS payment_pending_reservations_count,
-    COALESCE(SUM(balance) FILTER (WHERE reservation_status = 'vouchered' AND payment_status = 'unpaid'), 0)::DOUBLE PRECISION AS total_payment_pending_balance,
-    COUNT(*) FILTER (WHERE reservation_status = 'canceled' AND payment_status = 'refund_pending')::BIGINT AS refund_pending_reservations_count,
-    COALESCE(SUM(balance) FILTER (WHERE reservation_status = 'canceled' AND payment_status = 'refund_pending'), 0)::DOUBLE PRECISION AS total_refund_pending_balance,
-    (
-        COALESCE(SUM(balance) FILTER (WHERE reservation_status = 'booked' OR (reservation_status = 'vouchered' AND payment_status = 'unpaid')), 0)::DOUBLE PRECISION
-            - COALESCE(SUM(balance) FILTER (WHERE reservation_status = 'canceled' AND payment_status = 'refund_pending'), 0)::DOUBLE PRECISION
-    )::DOUBLE PRECISION AS total_balance
+    COALESCE(SUM(total_price) FILTER (WHERE currency_code = 'EUR'), 0)::DOUBLE PRECISION AS total_eur,
+    COALESCE(SUM(total_price) FILTER (WHERE currency_code = 'USD'), 0)::DOUBLE PRECISION AS total_usd,
+    COALESCE(SUM(total_price * currency_rate) FILTER (WHERE currency_code NOT IN ('EUR', 'USD')), 0)::DOUBLE PRECISION AS total_other_converted
 FROM billing_reservations
 GROUP BY billing_entity_type, billing_entity_id
-HAVING
-    COUNT(*) FILTER (WHERE reservation_status = 'booked') > 0
-OR
-    COUNT(*) FILTER (WHERE reservation_status = 'vouchered' AND payment_status = 'unpaid') > 0
-OR
-    COUNT(*) FILTER (WHERE reservation_status = 'canceled' AND payment_status = 'refund_pending') > 0
 ORDER BY billing_entity_type, billing_entity_id
 `
 
 type ListBusinessesBalancesReportRow struct {
-	BillingEntityType               string
-	BillingEntityID                 int64
-	OpenReservationsCount           int64
-	TotalOpenBalance                float64
-	PaymentPendingReservationsCount int64
-	TotalPaymentPendingBalance      float64
-	RefundPendingReservationsCount  int64
-	TotalRefundPendingBalance       float64
-	TotalBalance                    float64
+	BillingEntityType   string
+	BillingEntityID     int64
+	TotalEur            float64
+	TotalUsd            float64
+	TotalOtherConverted float64
 }
 
 func (q *Queries) ListBusinessesBalancesReport(ctx context.Context) ([]ListBusinessesBalancesReportRow, error) {
@@ -735,13 +719,9 @@ func (q *Queries) ListBusinessesBalancesReport(ctx context.Context) ([]ListBusin
 		if err := rows.Scan(
 			&i.BillingEntityType,
 			&i.BillingEntityID,
-			&i.OpenReservationsCount,
-			&i.TotalOpenBalance,
-			&i.PaymentPendingReservationsCount,
-			&i.TotalPaymentPendingBalance,
-			&i.RefundPendingReservationsCount,
-			&i.TotalRefundPendingBalance,
-			&i.TotalBalance,
+			&i.TotalEur,
+			&i.TotalUsd,
+			&i.TotalOtherConverted,
 		); err != nil {
 			return nil, err
 		}
