@@ -345,6 +345,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			DriverFullName:     "Jane Smith",
 		}
 		wantSubject := fmt.Sprintf("Attached AI Booking Travel reservation number %s- %s", payload.BookingReferenceID, payload.DriverFullName)
+		fakePDF := &fakePDFConverter{}
 
 		t.Run("sends to resolved user email with correct subject and body", func(t *testing.T) {
 			et.MockEndpoint(accounts.GetUserEmail, func(_ context.Context, p accounts.GetUserEmailParams) (*accountsuser.GetUserEmailResponse, error) {
@@ -355,7 +356,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			})
 
 			fake := &fakeEmailSender{}
-			s := &Service{reservationsEmailSender: fake}
+			s := &Service{reservationsEmailSender: fake, pdfConverter: fakePDF}
 
 			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeNewOrder, payload)); err != nil {
 				t.Fatalf("HandleEmailEvent: %v", err)
@@ -384,7 +385,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			})
 
 			fake := &fakeEmailSender{}
-			s := &Service{reservationsEmailSender: fake}
+			s := &Service{reservationsEmailSender: fake, pdfConverter: fakePDF}
 
 			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeNewOrder, payload)); err == nil {
 				t.Fatal("expected error, got nil")
@@ -401,7 +402,7 @@ func TestHandleEmailEvent(t *testing.T) {
 
 			sendErr := errors.New("smtp boom")
 			fake := &fakeEmailSender{err: sendErr}
-			s := &Service{reservationsEmailSender: fake}
+			s := &Service{reservationsEmailSender: fake, pdfConverter: fakePDF}
 
 			err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeNewOrder, payload))
 			if !errors.Is(err, sendErr) {

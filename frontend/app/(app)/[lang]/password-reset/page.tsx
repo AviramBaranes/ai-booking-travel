@@ -5,6 +5,7 @@ import { PasswordResetForm } from "./_components/PasswordResetForm";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { AppProviders } from "../_components/providers/AppProviders";
+import { Suspense } from "react";
 
 export async function generateStaticParams() {
   const params = SUPPORTED_LANGS.map((locale) => ({ lang: locale }));
@@ -33,7 +34,9 @@ export default async function PasswordResetPage({
           />
         </Link>
         <AppProviders lang={lang} messages={messages}>
+          <Suspense fallback={null}>
           <PasswordResetForm />
+          </Suspense>
         </AppProviders>
       </div>
     </main>

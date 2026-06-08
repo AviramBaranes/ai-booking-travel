@@ -454,7 +454,6 @@ export namespace booking {
             this.GetAgentPriceOffer = this.GetAgentPriceOffer.bind(this)
             this.GetClientPriceOffer = this.GetClientPriceOffer.bind(this)
             this.GetPendingTranslations = this.GetPendingTranslations.bind(this)
-            this.InsertFlexLocations = this.InsertFlexLocations.bind(this)
             this.InsertHertzLocations = this.InsertHertzLocations.bind(this)
             this.InsertLocation = this.InsertLocation.bind(this)
             this.ListBrokerTranslations = this.ListBrokerTranslations.bind(this)
@@ -604,13 +603,6 @@ export namespace booking {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/booking/translations/pending`, undefined, {headers})
             return await resp.json() as translation.GetPendingTranslationsResponse
-        }
-
-        /**
-         * InsertFlexLocations fetches all Flex locations from the broker and upserts them.
-         */
-        public async InsertFlexLocations(): Promise<void> {
-            await this.baseClient.callTypedAPI("POST", `/locations/flex`)
         }
 
         /**

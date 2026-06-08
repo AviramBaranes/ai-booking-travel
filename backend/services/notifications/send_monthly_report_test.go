@@ -26,6 +26,17 @@ func (f *fakeEmailSender) Send(_ context.Context, msg *mail.Msg) error {
 	return f.err
 }
 
+type fakePDFConverter struct {
+	err error
+}
+
+func (f *fakePDFConverter) ConvertHTMLToPDF(_ string) ([]byte, error) {
+	if f.err != nil {
+		return nil, f.err
+	}
+	return []byte("%PDF-fake"), nil
+}
+
 func TestSendMonthlyReport(t *testing.T) {
 	ctx := context.Background()
 

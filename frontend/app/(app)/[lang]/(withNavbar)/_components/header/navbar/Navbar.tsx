@@ -2,6 +2,7 @@ import { AppProviders } from "../../../../_components/providers/AppProviders";
 import { getMessages } from "next-intl/server";
 import { NavbarActions } from "./NavbarActions";
 import { NavbarLinks } from "./NavbarLinks";
+import { Suspense } from "react";
 
 interface NavbarProps {
   lang: string;
@@ -15,7 +16,9 @@ export async function Navbar({ lang }: NavbarProps) {
         <NavbarLinks lang={lang} />
 
         <AppProviders showDevtools={false} lang={lang} messages={messages}>
-          <NavbarActions />
+          <Suspense fallback={null}>
+            <NavbarActions />
+          </Suspense>
         </AppProviders>
       </nav>
     </header>
