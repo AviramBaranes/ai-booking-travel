@@ -135,7 +135,11 @@ func (q *Queries) CountReservationsByUser(ctx context.Context, arg CountReservat
 }
 
 const countReservationsReport = `-- name: CountReservationsReport :one
-SELECT COUNT(*)::BIGINT AS total
+SELECT 
+COUNT(*)::BIGINT AS count,
+SUM(total_price * currency_rate)::DOUBLE PRECISION AS total_sales,
+SUM(purchase_price * currency_rate)::DOUBLE PRECISION AS total_car_cost,
+SUM(broker_erp_price * currency_rate)::DOUBLE PRECISION AS total_broker_erp_cost
 FROM reservations
 WHERE
     ($1::DATE IS NULL OR pickup_date >= $1::DATE)
@@ -169,7 +173,14 @@ type CountReservationsReportParams struct {
 	IsBusiness      bool
 }
 
-func (q *Queries) CountReservationsReport(ctx context.Context, arg CountReservationsReportParams) (int64, error) {
+type CountReservationsReportRow struct {
+	Count              int64
+	TotalSales         float64
+	TotalCarCost       float64
+	TotalBrokerErpCost float64
+}
+
+func (q *Queries) CountReservationsReport(ctx context.Context, arg CountReservationsReportParams) (CountReservationsReportRow, error) {
 	row := q.db.QueryRow(ctx, countReservationsReport,
 		arg.PickupDateFrom,
 		arg.PickupDateTo,
@@ -185,9 +196,14 @@ func (q *Queries) CountReservationsReport(ctx context.Context, arg CountReservat
 		arg.AgentID,
 		arg.IsBusiness,
 	)
-	var total int64
-	err := row.Scan(&total)
-	return total, err
+	var i CountReservationsReportRow
+	err := row.Scan(
+		&i.Count,
+		&i.TotalSales,
+		&i.TotalCarCost,
+		&i.TotalBrokerErpCost,
+	)
+	return i, err
 }
 
 const getOpenReservationsPickingUpWithinWeek = `-- name: GetOpenReservationsPickingUpWithinWeek :many

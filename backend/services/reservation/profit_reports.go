@@ -18,19 +18,22 @@ type ProfitReportRow struct {
 }
 
 type ProfitReportResponse struct {
-	Reservations []ProfitReportRow `json:"reservations"`
-	Total        int64             `json:"total"`
+	Reservations     []ProfitReportRow `json:"reservations"`
+	Count            int64             `json:"count"`
+	TotalSales       float64           `json:"totalSales"`
+	TotalProfit      float64           `json:"totalProfit"`
+	ProfitPercentage float64           `json:"profitPercentage"`
 }
 
 // encore:api auth tag:admin method=GET path=/reports/profit
 func (s *Service) GetProfitReport(ctx context.Context, p ReportParams) (*ProfitReportResponse, error) {
 	p.Status = "vouchered" // profit report only includes booked reservations
-	rows, total, err := s.getReports(ctx, p, true)
+	result, err := s.getReports(ctx, p, true)
 	if err != nil {
 		return nil, err
 	}
 
-	accountsSet := buildAccountsSet(rows)
+	accountsSet := buildAccountsSet(result.Reservations)
 	accountsLookup, err := accounts.GetAccountsLookup(ctx, accounts.GetAccountsLookupParams{
 		OrganizationIDs: idsFromSet(accountsSet.organizationIDs),
 		OfficeIDs:       idsFromSet(accountsSet.officeIDs),
@@ -41,14 +44,19 @@ func (s *Service) GetProfitReport(ctx context.Context, p ReportParams) (*ProfitR
 		return nil, err
 	}
 
-	reservations, err := buildProfitReportRows(rows, accountsLookup)
+	reservations, err := buildProfitReportRows(result.Reservations, accountsLookup)
 	if err != nil {
 		return nil, err
 	}
 
+	totalProfit, profitPercentage := calculateProfit(result)
+
 	return &ProfitReportResponse{
-		Reservations: reservations,
-		Total:        total,
+		Reservations:     reservations,
+		Count:            result.Count,
+		TotalSales:       result.TotalSales,
+		TotalProfit:      totalProfit,
+		ProfitPercentage: profitPercentage,
 	}, nil
 }
 
@@ -78,4 +86,14 @@ func buildProfitReportRows(reservations []db.Reservation, accountsLookup *accoun
 
 func calculateCarPurchasePriceWithBrokerERP(reservation db.Reservation) float64 {
 	return dbadapters.NumericToFloat64(reservation.PurchasePrice) + dbadapters.NumericToFloat64(reservation.BrokerErpPrice)
+}
+
+// calculateProfit calculates total profit and profit percentage based on the report result
+func calculateProfit(result *getReportResult) (totalProfit float64, profitPercentage float64) {
+	totalProfit = result.TotalSales - result.TotalCarCost - result.TotalBrokerErpCost
+	if result.TotalSales > 0 {
+		profitPercentage = (totalProfit / result.TotalSales) * 100
+	}
+
+	return totalProfit, profitPercentage
 }

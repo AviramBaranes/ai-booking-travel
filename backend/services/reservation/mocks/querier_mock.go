@@ -86,10 +86,10 @@ func (mr *MockQuerierMockRecorder) CountReservationsByUser(ctx, arg any) *gomock
 }
 
 // CountReservationsReport mocks base method.
-func (m *MockQuerier) CountReservationsReport(ctx context.Context, arg db.CountReservationsReportParams) (int64, error) {
+func (m *MockQuerier) CountReservationsReport(ctx context.Context, arg db.CountReservationsReportParams) (db.CountReservationsReportRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CountReservationsReport", ctx, arg)
-	ret0, _ := ret[0].(int64)
+	ret0, _ := ret[0].(db.CountReservationsReportRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

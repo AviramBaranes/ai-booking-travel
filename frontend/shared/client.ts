@@ -838,7 +838,8 @@ export namespace reservation {
 
     export interface BusinessReportResponse {
         reservations: BusinessReservationReportRow[]
-        total: number
+        count: number
+        totalSales: number
     }
 
     export interface BusinessReservationReportRow {
@@ -891,7 +892,10 @@ export namespace reservation {
 
     export interface ProfitReportResponse {
         reservations: ProfitReportRow[]
-        total: number
+        count: number
+        totalSales: number
+        totalProfit: number
+        profitPercentage: number
     }
 
     export interface ProfitReportRow {

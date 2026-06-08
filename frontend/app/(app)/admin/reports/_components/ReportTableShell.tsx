@@ -17,14 +17,23 @@ import {
   emptyReservationReportFilters,
   ReportPageSize,
 } from "./ReservationsReportFilterBar";
-import { ReportColumn, buildPageNumbers, buildRequest } from "./reportTableUtils";
+import {
+  ReportColumn,
+  buildPageNumbers,
+  buildRequest,
+} from "./reportTableUtils";
+import { formatPrice } from "@/shared/utils/formatPrice";
 
 interface ReportTableShellProps<T extends { reservationId: number }> {
   columns: ReportColumn<T>[];
   queryKey: string;
-  queryFn: (
-    params: reservation.ReportParams,
-  ) => Promise<{ reservations: T[]; total: number }>;
+  queryFn: (params: reservation.ReportParams) => Promise<{
+    reservations: T[];
+    count: number;
+    totalSales: number;
+    totalProfit?: number;
+    profitPercentage?: number;
+  }>;
   showStatusFilter?: boolean;
   showFilters?: boolean;
   fixedFilters?: Partial<ReservationReportFilters>;
@@ -40,9 +49,9 @@ export function ReportTableShell<T extends { reservationId: number }>({
 }: ReportTableShellProps<T>) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<ReportPageSize>(25);
-  const [urlFilters, setUrlFilters] = useUrlFilters<ReservationReportFilterKey>([
-    ...RESERVATION_REPORT_FILTER_KEYS,
-  ]);
+  const [urlFilters, setUrlFilters] = useUrlFilters<ReservationReportFilterKey>(
+    [...RESERVATION_REPORT_FILTER_KEYS],
+  );
   const filters = showFilters ? urlFilters : emptyReservationReportFilters;
   const effectiveFilters = {
     ...filters,
@@ -60,9 +69,13 @@ export function ReportTableShell<T extends { reservationId: number }>({
   });
 
   const rows = reportQuery.data?.reservations ?? [];
-  const total = reportQuery.data?.total ?? 0;
-  const totalPages = total > 0 ? Math.ceil(total / pageSize) : 0;
-  const isInitialLoading = reportQuery.isLoading && !reportQuery.isPlaceholderData;
+  const count = reportQuery.data?.count ?? 0;
+  const totalSales = reportQuery.data?.totalSales ?? 0;
+  const totalProfit = reportQuery.data?.totalProfit ?? 0;
+  const profitPercentage = reportQuery.data?.profitPercentage ?? 0;
+  const totalPages = count > 0 ? Math.ceil(count / pageSize) : 0;
+  const isInitialLoading =
+    reportQuery.isLoading && !reportQuery.isPlaceholderData;
   const isRefetching = reportQuery.isFetching && !isInitialLoading;
 
   const pageNumbers = useMemo(
@@ -178,11 +191,24 @@ export function ReportTableShell<T extends { reservationId: number }>({
       </div>
 
       <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3">
-        <span className="text-sm text-gray-600">
-          {total > 0
-            ? `עמוד ${page} מתוך ${totalPages} (${total} תוצאות)`
-            : "0 תוצאות"}
-        </span>
+        <div className="flex items-start gap-4">
+          <span className="text-sm text-gray-600">
+            {count > 0
+              ? `עמוד ${page} מתוך ${totalPages} (${count} תוצאות)`
+              : "0 תוצאות"}
+          </span>
+
+          <span className="text-sm text-gray-600">
+            סה"כ מכירות: {formatPrice(totalSales, "ILS")}
+          </span>
+          {totalProfit > 0 && (
+            <span className="text-sm text-gray-600">
+              סה"כ רווח: {formatPrice(totalProfit, "ILS")} (
+              {profitPercentage.toFixed(2)}%)
+            </span>
+          )}
+        </div>
+
         {totalPages > 1 && (
           <div className="flex items-center gap-1">
             <Button

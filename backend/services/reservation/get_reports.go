@@ -62,7 +62,15 @@ func timestamptzFromString(s string, endOfDay bool) pgtype.Timestamptz {
 	return dbadapters.DBTime(t)
 }
 
-func (s *Service) getReports(ctx context.Context, p ReportParams, isBusiness bool) ([]db.Reservation, int64, error) {
+type getReportResult struct {
+	Reservations       []db.Reservation
+	Count              int64
+	TotalSales         float64
+	TotalCarCost       float64
+	TotalBrokerErpCost float64
+}
+
+func (s *Service) getReports(ctx context.Context, p ReportParams, isBusiness bool) (*getReportResult, error) {
 	offset := int64(p.Page-1) * p.PageSize
 
 	queryParams := db.ListReservationsReportParams{
@@ -86,7 +94,7 @@ func (s *Service) getReports(ctx context.Context, p ReportParams, isBusiness boo
 	reservations, err := s.query.ListReservationsReport(ctx, queryParams)
 	if err != nil {
 		rlog.Error("failed to list reservations report", "error", err)
-		return nil, 0, api_errors.ErrInternalError
+		return nil, api_errors.ErrInternalError
 	}
 
 	countParams := db.CountReservationsReportParams{
@@ -108,10 +116,16 @@ func (s *Service) getReports(ctx context.Context, p ReportParams, isBusiness boo
 	total, err := s.query.CountReservationsReport(ctx, countParams)
 	if err != nil {
 		rlog.Error("failed to count reservations report", "error", err)
-		return nil, 0, api_errors.ErrInternalError
+		return nil, api_errors.ErrInternalError
 	}
 
-	return reservations, total, nil
+	return &getReportResult{
+		Reservations:       reservations,
+		Count:              total.Count,
+		TotalSales:         total.TotalSales,
+		TotalCarCost:       total.TotalCarCost,
+		TotalBrokerErpCost: total.TotalBrokerErpCost,
+	}, nil
 }
 
 func splitSupplierCodes(s string) []string {

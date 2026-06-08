@@ -49,7 +49,8 @@ type BusinessReservationReportRow struct {
 
 type BusinessReportResponse struct {
 	Reservations []BusinessReservationReportRow `json:"reservations"`
-	Total        int64                          `json:"total"`
+	Count        int64                          `json:"count"`
+	TotalSales   float64                        `json:"totalSales"`
 }
 
 type accountsSet struct {
@@ -60,12 +61,12 @@ type accountsSet struct {
 
 // encore:api auth tag:admin method=GET path=/reports/business
 func (s *Service) GetBusinessReport(ctx context.Context, p ReportParams) (*BusinessReportResponse, error) {
-	rows, total, err := s.getReports(ctx, p, true)
+	result, err := s.getReports(ctx, p, true)
 	if err != nil {
 		return nil, err
 	}
 
-	accountsSet := buildAccountsSet(rows)
+	accountsSet := buildAccountsSet(result.Reservations)
 	accountsLookup, err := accounts.GetAccountsLookup(ctx, accounts.GetAccountsLookupParams{
 		OrganizationIDs: idsFromSet(accountsSet.organizationIDs),
 		OfficeIDs:       idsFromSet(accountsSet.officeIDs),
@@ -76,14 +77,15 @@ func (s *Service) GetBusinessReport(ctx context.Context, p ReportParams) (*Busin
 		return nil, err
 	}
 
-	reservations, err := buildBusinessReportRows(rows, accountsLookup)
+	reservations, err := buildBusinessReportRows(result.Reservations, accountsLookup)
 	if err != nil {
 		return nil, err
 	}
 
 	return &BusinessReportResponse{
 		Reservations: reservations,
-		Total:        total,
+		Count:        result.Count,
+		TotalSales:   result.TotalSales,
 	}, nil
 }
 
