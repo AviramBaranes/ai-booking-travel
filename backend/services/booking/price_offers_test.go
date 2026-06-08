@@ -15,6 +15,7 @@ import (
 	"encore.app/services/booking/db"
 	availability "encore.app/services/booking/handlers/availability"
 	poh "encore.app/services/booking/handlers/price_offer"
+	emailevents "encore.app/services/notifications/events"
 	"encore.dev/beta/auth"
 	"encore.dev/beta/errs"
 	"encore.dev/et"
@@ -157,7 +158,8 @@ func planNotFoundErr() error {
 		api_errors.ErrorDetails{Code: api_errors.CodePlanNotFound})
 }
 
-func int32Ptr(v int32) *int32 { return &v }
+func int32Ptr(v int32) *int32    { return &v }
+func stringPtr(v string) *string { return &v }
 
 func makePriceOfferRenewable(t *testing.T, q *db.Queries, ctx context.Context, offerID int64, agentID int64) {
 	t.Helper()
@@ -1086,6 +1088,95 @@ func TestUpdatePriceOffer(t *testing.T) {
 		}
 		if row.Name != "Mine" {
 			t.Errorf("name should be unchanged by other agent: got %q, want Mine", row.Name)
+		}
+	})
+}
+
+// --- ApprovePriceOffer ---
+
+func TestApprovePriceOffer(t *testing.T) {
+	const agentID int64 = 200008
+	ctx := priceOfferAuthContext(agentID)
+	q := testQuerier()
+
+	_, pickupCode, _ := seedPriceOfferLocation(t, q, "approve-pickup")
+	_, dropoffCode, _ := seedPriceOfferLocation(t, q, "approve-dropoff")
+	plan := defaultPlan(pickupCode, dropoffCode)
+	snapshotID := seedSnapshot(t, q, []availability.PlanPriceDetails{plan})
+
+	createOffer := func(t *testing.T, name string) *poh.PriceOfferResponse {
+		t.Helper()
+		p := validCreatePriceOfferParams(snapshotID, plan)
+		p.Name = name
+		resp, err := CreatePriceOffer(ctx, p)
+		if err != nil {
+			t.Fatalf("failed to create offer: %v", err)
+		}
+		return resp
+	}
+
+	t.Run("returns 404 for non-existent id", func(t *testing.T) {
+		err := ApprovePriceOffer(ctx, 9999999)
+		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
+	})
+
+	t.Run("returns 404 for offer not in open status", func(t *testing.T) {
+		offer := createOffer(t, "Declined Offer")
+
+		err := UpdatePriceOffer(ctx, offer.ID, poh.UpdatePriceOfferParams{Status: stringPtr("declined")})
+		if err != nil {
+			t.Fatalf("failed to change offer status: %v", err)
+		}
+
+		err = ApprovePriceOffer(ctx, offer.ID)
+		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
+	})
+
+	t.Run("success updates offer and publishes email event", func(t *testing.T) {
+		offer := createOffer(t, "To Approve Offer")
+
+		publishedBefore := len(et.Topic(emailevents.EmailRequestedTopic).PublishedMessages())
+
+		err := ApprovePriceOffer(ctx, offer.ID)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		// Verify DB status
+		row, err := q.GetPriceOfferById(ctx, db.GetPriceOfferByIdParams{
+			ID:      offer.ID,
+			AgentID: agentID,
+		})
+		if err != nil {
+			t.Fatalf("failed to fetch updated offer: %v", err)
+		}
+		if string(row.Status) != "approved" {
+			t.Errorf("expected status 'approved', got %q", row.Status)
+		}
+
+		// Verify pub/sub
+		published := et.Topic(emailevents.EmailRequestedTopic).PublishedMessages()
+		if len(published) != publishedBefore+1 {
+			t.Fatalf("expected one email event, before=%d after=%d", publishedBefore, len(published))
+		}
+
+		last := published[len(published)-1]
+		if last.Type != emailevents.EmailEventPriceOfferApproved {
+			t.Fatalf("expected price offer approved event, got %q", last.Type)
+		}
+
+		var payload emailevents.PriceOfferApprovedEmailPayload
+		if err := json.Unmarshal(last.Payload, &payload); err != nil {
+			t.Fatalf("failed to unmarshal payload: %v", err)
+		}
+		if payload.PriceOfferID != offer.ID {
+			t.Errorf("expected price offer ID %d, got %d", offer.ID, payload.PriceOfferID)
+		}
+		if payload.AgentID != agentID {
+			t.Errorf("expected agent ID %d, got %d", agentID, payload.AgentID)
+		}
+		if payload.PriceOfferName != "To Approve Offer" {
+			t.Errorf("expected offer name %q, got %q", "To Approve Offer", payload.PriceOfferName)
 		}
 	})
 }
