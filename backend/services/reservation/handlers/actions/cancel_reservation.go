@@ -25,6 +25,7 @@ var ErrCancellationWindowExceeded = api_errors.NewErrorWithDetail(errs.FailedPre
 })
 
 var emailRequestedTopic = pubsub.TopicRef[pubsub.Publisher[*emailevents.EmailEvent]](emailevents.EmailRequestedTopic)
+var emailPublisher = emailevents.NewPublisher(emailRequestedTopic)
 
 // BookingCancellationEvent represents the details of a reservation cancellation event.
 type BookingCancellationEvent struct {
@@ -78,26 +79,22 @@ func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
 		return api_errors.ErrInternalError
 	}
 
-	if event, err := emailevents.NewEmailEvent(emailevents.EmailEventTypeCancellation, emailevents.CancellationEmailPayload{
+	if _, err := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCancellation, emailevents.CancellationEmailPayload{
 		UserID:             reservation.UserID,
 		BookingReferenceID: reservation.BrokerReservationID,
 		DriverFullName:     fmt.Sprintf("%s %s %s", reservation.DriverTitle, reservation.DriverFirstName, reservation.DriverLastName),
 	}); err != nil {
-		rlog.Error("failed to build cancellation email event", "error", err, "reservationId", reservation.ID)
-	} else if _, err := emailRequestedTopic.Publish(ctx, event); err != nil {
 		rlog.Error("failed to publish cancellation email event", "error", err, "reservationId", reservation.ID)
 	}
 
 	if isLateCancellation {
-		if event, err := emailevents.NewEmailEvent(emailevents.EmailEventTypeLateCancellationAlert, emailevents.LateCancellationAlertEmailPayload{
+		if _, err := emailPublisher.Publish(ctx, emailevents.EmailEventTypeLateCancellationAlert, emailevents.LateCancellationAlertEmailPayload{
 			ReservationID:       reservation.ID,
 			BrokerReservationID: reservation.BrokerReservationID,
 			AgentID:             reservation.UserID,
 			OfficeID:            reservation.OfficeID,
 			OrganizationID:      reservation.OrganizationID,
 		}); err != nil {
-			rlog.Error("failed to build late cancellation alert email event", "error", err, "reservationId", reservation.ID)
-		} else if _, err := emailRequestedTopic.Publish(ctx, event); err != nil {
 			rlog.Error("failed to publish late cancellation alert email event", "error", err, "reservationId", reservation.ID)
 		}
 	}

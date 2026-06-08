@@ -127,13 +127,11 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 		return nil, api_errors.ErrInternalError
 	}
 
-	if event, err := emailevents.NewEmailEvent(emailevents.EmailEventTypeNewOrder, emailevents.NewOrderEmailPayload{
+	if _, err := emailPublisher.Publish(ctx, emailevents.EmailEventTypeNewOrder, emailevents.NewOrderEmailPayload{
 		UserID:             p.UserID,
 		BookingReferenceID: p.BrokerReservationID,
 		DriverFullName:     fmt.Sprintf("%s %s %s", p.DriverTitle, p.DriverFirstName, p.DriverLastName),
 	}); err != nil {
-		rlog.Error("failed to build new order email event", "error", err, "brokerReservationId", p.BrokerReservationID)
-	} else if _, err := emailRequestedTopic.Publish(ctx, event); err != nil {
 		rlog.Error("failed to publish new order email event", "error", err, "brokerReservationId", p.BrokerReservationID)
 	}
 

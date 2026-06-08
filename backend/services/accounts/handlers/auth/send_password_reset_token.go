@@ -23,6 +23,7 @@ const (
 )
 
 var emailRequestedTopic = pubsub.TopicRef[pubsub.Publisher[*emailevents.EmailEvent]](emailevents.EmailRequestedTopic)
+var emailPublisher = emailevents.NewPublisher(emailRequestedTopic)
 
 type SendPasswordResetTokenParams struct {
 	Email string `json:"email" validate:"required,email"`
@@ -65,12 +66,10 @@ func (s *AuthService) SendPasswordResetToken(ctx context.Context, p SendPassword
 		return api_errors.ErrInternalError
 	}
 
-	if event, err := emailevents.NewEmailEvent(emailevents.EmailEventTypePasswordReset, emailevents.PasswordResetEmailPayload{
+	if _, err := emailPublisher.Publish(ctx, emailevents.EmailEventTypePasswordReset, emailevents.PasswordResetEmailPayload{
 		Email:     user.Email,
 		TokenHash: rawToken,
 	}); err != nil {
-		rlog.Error("failed to build password reset email event", "user_id", user.ID, "error", err)
-	} else if _, err := emailRequestedTopic.Publish(ctx, event); err != nil {
 		rlog.Error("failed to publish password reset email event", "user_id", user.ID, "error", err)
 	}
 

@@ -12,6 +12,7 @@ import (
 )
 
 var emailRequestedTopic = pubsub.TopicRef[pubsub.Publisher[*emailevents.EmailEvent]](emailevents.EmailRequestedTopic)
+var emailPublisher = emailevents.NewPublisher(emailRequestedTopic)
 
 // ApprovePriceOffer changes the status of a price offer to "approved" and notify the agent.
 func (s *PriceOfferService) ApprovePriceOffer(ctx context.Context, id int64) error {
@@ -24,15 +25,13 @@ func (s *PriceOfferService) ApprovePriceOffer(ctx context.Context, id int64) err
 		return api_errors.ErrInternalError
 	}
 
-	if event, err := emailevents.NewEmailEvent(emailevents.EmailEventPriceOfferApproved, emailevents.PriceOfferApprovedEmailPayload{
+	if _, err := emailPublisher.Publish(ctx, emailevents.EmailEventPriceOfferApproved, emailevents.PriceOfferApprovedEmailPayload{
 		PriceOfferID:   id,
 		PriceOfferName: priceOffer.Name,
 		AgentID:        priceOffer.AgentID,
 		Price:          float64(priceOffer.OfferedPrice),
 		Currency:       priceOffer.CurrencyCode,
 	}); err != nil {
-		rlog.Error("failed to build price offer approved email event", "price_offer_id", id, "error", err)
-	} else if _, err := emailRequestedTopic.Publish(ctx, event); err != nil {
 		rlog.Error("failed to publish price offer approved email event", "price_offer_id", id, "error", err)
 	}
 

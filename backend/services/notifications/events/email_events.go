@@ -46,15 +46,21 @@ func NewEmailEvent[T any](eventType EmailEventType, payload T) (*EmailEvent, err
 	}, nil
 }
 
-// PublishEmailEvent marshals payload into an EmailEvent and publishes it.
-// The type parameter T is inferred from the payload argument, keeping call sites type-safe.
-func PublishEmailEvent[T any](ctx context.Context, eventType EmailEventType, payload T) (string, error) {
+type Publisher struct {
+	topic pubsub.Publisher[*EmailEvent]
+}
+
+func NewPublisher(topic pubsub.Publisher[*EmailEvent]) Publisher {
+	return Publisher{topic: topic}
+}
+
+func (p Publisher) Publish(ctx context.Context, eventType EmailEventType, payload any) (string, error) {
 	event, err := NewEmailEvent(eventType, payload)
 	if err != nil {
 		return "", err
 	}
 
-	return EmailRequestedTopic.Publish(ctx, event)
+	return p.topic.Publish(ctx, event)
 }
 
 // CriticalErrorEmailPayload is the payload for EmailEventTypeCriticalError.

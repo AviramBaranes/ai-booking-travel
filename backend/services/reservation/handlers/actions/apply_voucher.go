@@ -76,12 +76,10 @@ func (s *ActionService) ApplyVoucher(ctx context.Context, id int64, p ApplyVouch
 
 // notifyVoucherError publishes a critical error notification when voucher generation or sending fails.
 func notifyVoucherError(ctx context.Context, subject string, id int64, b db.Broker, voucher string, err error) {
-	if event, publishErr := emailevents.NewEmailEvent(emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
+	if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
 		Subject: subject,
 		Message: fmt.Sprintf("Reservation %d (broker: %s, voucher: %s): %v", id, b, voucher, err),
 	}); publishErr != nil {
-		rlog.Error("failed to build critical error email event", "reservationId", id, "error", publishErr)
-	} else if _, publishErr := emailRequestedTopic.Publish(ctx, event); publishErr != nil {
 		rlog.Error("failed to publish critical error email event", "reservationId", id, "error", publishErr)
 	}
 }

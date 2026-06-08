@@ -64,12 +64,10 @@ func (s *BookingService) Book(ctx context.Context, p BookParams) (*BookResponse,
 	if err != nil {
 		rlog.Error("failed to create reservation after successful booking",
 			"confirmationNumber", confID, "error", err)
-		if event, publishErr := emailevents.NewEmailEvent(emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
+		if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
 			Subject: "Reservation creation failed after successful booking",
 			Message: fmt.Sprintf("failed to create reservation after successful booking, confirmationNumber: %s, error: %v", confID, err),
 		}); publishErr != nil {
-			rlog.Error("failed to build critical error email event", "confirmationNumber", confID, "error", publishErr)
-		} else if _, publishErr := emailRequestedTopic.Publish(ctx, event); publishErr != nil {
 			rlog.Error("failed to publish critical error email event", "confirmationNumber", confID, "error", publishErr)
 		}
 		return nil, errReservationCreationFailed

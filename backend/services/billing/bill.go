@@ -21,6 +21,7 @@ var (
 	ErrInvalidReservationID                = api_errors.NewValidationError("one or more provided IDs do not belong to the specified billing entity")
 	ErrMismatchedCurrencies                = api_errors.NewValidationError("all selected reservations must have the same currency")
 	emailRequestedTopic                    = pubsub.TopicRef[pubsub.Publisher[*emailevents.EmailEvent]](emailevents.EmailRequestedTopic)
+	emailPublisher                         = emailevents.NewPublisher(emailRequestedTopic)
 )
 
 type BillParams struct {
@@ -104,12 +105,10 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 	})
 	if err != nil {
 		rlog.Error("failed to resolve reservations after successful billing", "error", err, "reservation_ids", p.IDs)
-		if event, publishErr := emailevents.NewEmailEvent(emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
+		if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
 			Subject: "Failed to resolve reservations after billing",
 			Message: fmt.Sprintf("failed to resolve reservations after successful billing, reservation_ids: %v, error: %v", p.IDs, err),
 		}); publishErr != nil {
-			rlog.Error("failed to build critical error email event", "reservation_ids", p.IDs, "error", publishErr)
-		} else if _, publishErr := emailRequestedTopic.Publish(ctx, event); publishErr != nil {
 			rlog.Error("failed to publish critical error email event", "reservation_ids", p.IDs, "error", publishErr)
 		}
 	}
