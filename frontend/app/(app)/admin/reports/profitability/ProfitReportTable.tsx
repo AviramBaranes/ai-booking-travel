@@ -9,6 +9,7 @@ import {
   ReportTableShell,
 } from "../_components/ReportTableShell";
 import {
+  exportFloat,
   makeBaseColumns,
   MoneyCell,
   ReportColumn,
@@ -27,6 +28,7 @@ const profitExtraColumns: ReportColumn<ProfitRow>[] = [
     label: "מחיר קנייה",
     className: "min-w-36 tabular-nums",
     render: (row) => formatPriceFloat(row.purchasePrice, row.currencyCode),
+    exportValue: (row) => exportFloat(row.purchasePrice),
   },
   {
     key: "purchasePriceInILS",
@@ -35,12 +37,14 @@ const profitExtraColumns: ReportColumn<ProfitRow>[] = [
     render: (row) => (
       <MoneyCell value={row.purchasePriceInILS} currency="ILS" />
     ),
+    exportValue: (row) => exportFloat(row.purchasePriceInILS),
   },
   {
     key: "profit",
     label: "רווח",
     className: "min-w-36 tabular-nums",
     render: (row) => formatPriceFloat(row.profit, row.currencyCode),
+    exportValue: (row) => exportFloat(row.profit),
   },
   {
     key: "profitInILS",
@@ -50,6 +54,7 @@ const profitExtraColumns: ReportColumn<ProfitRow>[] = [
     render: (row) => (
       <MoneyCell value={row.profitInILS} currency="ILS" strong />
     ),
+    exportValue: (row) => exportFloat(row.profitInILS),
   },
   {
     key: "profitPercentage",

@@ -1,6 +1,6 @@
 "use client";
 
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -25,12 +25,12 @@ import {
 import { formatPriceFloat } from "@/shared/utils/formatPrice";
 
 export type ReportQueryFn<T> = (params: reservation.ReportParams) => Promise<{
-    reservations: T[];
-    count: number;
-    totalSales: number;
-    totalProfit?: number;
-    profitPercentage?: number;
-  }>
+  reservations: T[];
+  count: number;
+  totalSales: number;
+  totalProfit?: number;
+  profitPercentage?: number;
+}>;
 
 interface ReportTableShellProps<T extends { reservationId: number }> {
   columns: ReportColumn<T>[];
@@ -39,6 +39,7 @@ interface ReportTableShellProps<T extends { reservationId: number }> {
   showStatusFilter?: boolean;
   showFilters?: boolean;
   fixedFilters?: Partial<ReservationReportFilters>;
+  isProfitReport?: boolean;
 }
 
 export function ReportTableShell<T extends { reservationId: number }>({
@@ -48,8 +49,10 @@ export function ReportTableShell<T extends { reservationId: number }>({
   showStatusFilter = true,
   showFilters = true,
   fixedFilters,
+  isProfitReport = false,
 }: ReportTableShellProps<T>) {
   const [page, setPage] = useState(1);
+  const [isExporting, setIsExporting] = useState(false);
   const [pageSize, setPageSize] = useState<ReportPageSize>(25);
   const [urlFilters, setUrlFilters] = useUrlFilters<ReservationReportFilterKey>(
     [...RESERVATION_REPORT_FILTER_KEYS],
@@ -95,19 +98,72 @@ export function ReportTableShell<T extends { reservationId: number }>({
     setPage(1);
   }
 
+  const { mutateAsync: exportMutate } = useMutation({
+    mutationKey: [queryKey, "export", filterSignature],
+    mutationFn: () =>
+      queryFn(buildRequest(page, pageSize, effectiveFilters, true)),
+  });
+
+  async function handleExport() {
+    setIsExporting(true);
+    const { reservations } = await exportMutate();
+    const headers = columns.map((col) => col.label).join("\t");
+    const rows = reservations
+      .map((row) =>
+        columns
+          .map((col) => {
+            const cell = col.exportValue ? col.exportValue(row) : col.render(row);
+            if (typeof cell === "string" || typeof cell === "number") {
+              return String(cell).replace(/\t/g, " ");
+            }
+            console.log("Unsupported cell type for export:", cell, typeof cell, "in column", col.key);
+            return "";
+          })
+          .join("\t"),
+      )
+      .join("\n");
+    const tsvContent = `${headers}\n${rows}`;
+    const blob = new Blob([tsvContent], { type: "text/tab-separated-values" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const baseName = isProfitReport ? "דוח-רווח" : "דוח-הזמנות";
+    const filtersDisplay = Object.entries(effectiveFilters)
+      .filter(([_, value]) => value)
+      .map(([key, value]) => `${key}-${value}`)
+      .join("-");
+    
+    link.download = `${baseName}-${filtersDisplay}-${Date.now()}.tsv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    setIsExporting(false);
+  }
+
   return (
     <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
       {showFilters && (
-        <div className="border-b border-gray-200 bg-gray-50/80 px-4 py-3">
-          <ReservationsReportFilterBar
-            key={filterSignature}
-            initialFilters={filters}
-            onSubmit={handleFilterSubmit}
-            pageSize={pageSize}
-            onPageSizeChange={handlePageSizeChange}
-            showStatusFilter={showStatusFilter}
-          />
-        </div>
+        <>
+          <Button
+            variant="outline"
+            className="m-4 p-3 font-normal rounded-lg border-navy"
+            onClick={handleExport}
+            loading={isExporting}
+          >
+            ייצוא לאקסל
+          </Button>
+          <div className="border-b border-gray-200 bg-gray-50/80 px-4 py-3">
+            <ReservationsReportFilterBar
+              key={filterSignature}
+              initialFilters={filters}
+              onSubmit={handleFilterSubmit}
+              pageSize={pageSize}
+              onPageSizeChange={handlePageSizeChange}
+              showStatusFilter={showStatusFilter}
+            />
+          </div>
+        </>
       )}
 
       {reportQuery.isError && (

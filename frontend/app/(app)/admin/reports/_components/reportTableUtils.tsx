@@ -12,6 +12,7 @@ export type ReportColumn<T> = {
   className: string;
   headerClassName?: string;
   render: (row: T) => ReactNode;
+  exportValue?: (row: T) => string | number;
 };
 
 const statusLabels: Record<string, string> = {
@@ -96,10 +97,15 @@ function toNumber(value: string): number | undefined {
   return value ? Number(value) : undefined;
 }
 
+export function exportFloat(value: number): number {
+  return Number(value.toFixed(2));
+}
+
 export function buildRequest(
   page: number,
   pageSize: number,
   filters: ReservationReportFilters,
+  isExport = false,
 ): reservation.ReportParams {
   return {
     Page: page,
@@ -117,6 +123,7 @@ export function buildRequest(
     OfficeID: toNumber(filters.officeId),
     AgentID: toNumber(filters.agentId),
     IsBusiness: true,
+    IsExport: isExport,
   };
 }
 
@@ -141,6 +148,7 @@ export function makeBaseColumns<
       label: "סטטוס",
       className: "min-w-32",
       render: (row) => <StatusBadge status={row.status} />,
+      exportValue: (row) => statusLabels[row.status] ?? row.status,
     },
     {
       key: "organizationName",
@@ -175,6 +183,7 @@ export function makeBaseColumns<
           {row.brokerName}
         </span>
       ),
+      exportValue: (row) => row.brokerName,
     },
     {
       key: "supplierName",
@@ -223,12 +232,14 @@ export function makeBaseColumns<
       label: "שער",
       className: "min-w-24 tabular-nums",
       render: (row) => row.currencyRate,
+      exportValue: (row) => Number(row.currencyRate.toFixed(4)),
     },
     {
       key: "carSellPriceWithBrokerERP",
       label: "מחיר רכב",
       className: "min-w-36 tabular-nums",
       render: (row) => formatPriceFloat(row.carSellPriceWithBrokerERP, row.currencyCode),
+      exportValue: (row) => exportFloat(row.carSellPriceWithBrokerERP),
     },
     {
       key: "carSellPriceWithBrokerERPInILS",
@@ -237,24 +248,28 @@ export function makeBaseColumns<
       render: (row) => (
         <MoneyCell value={row.carSellPriceWithBrokerERPInILS} currency="ILS" />
       ),
+      exportValue: (row) => exportFloat(row.carSellPriceWithBrokerERPInILS),
     },
     {
       key: "btERPPrice",
       label: "BT ERP",
       className: "min-w-32 tabular-nums",
       render: (row) => formatPriceFloat(row.btERPPrice, row.currencyCode),
+      exportValue: (row) => exportFloat(row.btERPPrice),
     },
     {
       key: "btERPPriceInILS",
       label: 'BT ERP בש"ח',
       className: "min-w-40",
       render: (row) => <MoneyCell value={row.btERPPriceInILS} currency="ILS" />,
+      exportValue: (row) => exportFloat(row.btERPPriceInILS),
     },
     {
       key: "totalPrice",
       label: 'סה"כ',
       className: "min-w-36 font-semibold tabular-nums",
       render: (row) => formatPriceFloat(row.totalPrice, row.currencyCode),
+      exportValue: (row) => exportFloat(row.totalPrice),
     },
     {
       key: "totalPriceInILS",
@@ -262,6 +277,7 @@ export function makeBaseColumns<
       className: "min-w-44 bg-emerald-50/70",
       headerClassName: "bg-emerald-100/80 text-emerald-900",
       render: (row) => <MoneyCell value={row.totalPriceInILS} currency="ILS" strong />,
+      exportValue: (row) => exportFloat(row.totalPriceInILS),
     },
     {
       key: "voucherNumber",

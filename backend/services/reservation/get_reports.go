@@ -28,6 +28,7 @@ type ReportParams struct {
 	OfficeID        int64  `query:"officeId,omitempty" encore:"optional"`
 	AgentID         int64  `query:"agentId,omitempty" encore:"optional"`
 	IsBusiness      bool   `query:"isBusiness,omitempty" encore:"optional"`
+	IsExport        bool   `query:"isExport,omitempty" encore:"optional"`
 }
 
 func nilIfZero(v int64) *int64 {
@@ -72,6 +73,10 @@ type getReportResult struct {
 
 func (s *Service) getReports(ctx context.Context, p ReportParams, isBusiness bool) (*getReportResult, error) {
 	offset := int64(p.Page-1) * p.PageSize
+	if p.IsExport {
+		offset = 0
+		p.PageSize = 1000000
+	}
 
 	queryParams := db.ListReservationsReportParams{
 		PickupDateFrom:  dbadapters.DateFromString(p.PickupDateFrom),

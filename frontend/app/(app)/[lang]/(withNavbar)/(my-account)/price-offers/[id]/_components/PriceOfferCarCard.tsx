@@ -85,7 +85,7 @@ export function PriceOfferCarCard({ priceOfferId }: { priceOfferId: number }) {
           pickupTime={priceOffer.pickupTime}
           text={t("freeCancellation")}
         />
-        {priceOffer.status === "open" && (
+        {(priceOffer.status === "open" || priceOffer.status === "approved") && (
           <Button
             className="mt-4 type-paragraph font-bold py-6 px-8"
             variant="brand"

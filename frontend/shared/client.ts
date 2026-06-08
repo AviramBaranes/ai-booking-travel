@@ -922,6 +922,7 @@ export namespace reservation {
         OfficeID?: number
         AgentID?: number
         IsBusiness?: boolean
+        IsExport?: boolean
     }
 
     export class ServiceClient {
@@ -955,6 +956,7 @@ export namespace reservation {
                 createdDateFrom: params.CreatedDateFrom,
                 createdDateTo:   params.CreatedDateTo,
                 isBusiness:      params.IsBusiness === undefined ? undefined : String(params.IsBusiness),
+                isExport:        params.IsExport === undefined ? undefined : String(params.IsExport),
                 officeId:        params.OfficeID === undefined ? undefined : String(params.OfficeID),
                 organizationId:  params.OrganizationID === undefined ? undefined : String(params.OrganizationID),
                 page:            String(params.Page),
@@ -986,6 +988,7 @@ export namespace reservation {
                 createdDateFrom: params.CreatedDateFrom,
                 createdDateTo:   params.CreatedDateTo,
                 isBusiness:      params.IsBusiness === undefined ? undefined : String(params.IsBusiness),
+                isExport:        params.IsExport === undefined ? undefined : String(params.IsExport),
                 officeId:        params.OfficeID === undefined ? undefined : String(params.OfficeID),
                 organizationId:  params.OrganizationID === undefined ? undefined : String(params.OrganizationID),
                 page:            String(params.Page),
