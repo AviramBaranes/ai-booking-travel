@@ -48,5 +48,17 @@ export function AuthTokenProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer);
   }, [session, update]);
 
+  if (status === "loading") {
+    return null;
+  }
+
+  if (status === "unauthenticated") {
+    return <>{children}</>;
+  }
+
+  if (!authenticated) {
+    return null;
+  }
+
   return <>{children}</>;
 }
