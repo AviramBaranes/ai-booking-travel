@@ -30,11 +30,12 @@ type Attachment struct {
 }
 
 type GmailAPISender struct {
-	srv  *gmail.Service
-	from string
+	srv      *gmail.Service
+	fromName string
+	from     string
 }
 
-func NewGmailAPISender(ctx context.Context, serviceAccountJSON, from string) (*GmailAPISender, error) {
+func NewGmailAPISender(ctx context.Context, serviceAccountJSON, fromName, from string) (*GmailAPISender, error) {
 	config, err := google.JWTConfigFromJSON(
 		[]byte(serviceAccountJSON),
 		gmail.GmailSendScope,
@@ -53,13 +54,14 @@ func NewGmailAPISender(ctx context.Context, serviceAccountJSON, from string) (*G
 	}
 
 	return &GmailAPISender{
-		srv:  srv,
-		from: from,
+		srv:      srv,
+		fromName: fromName,
+		from:     from,
 	}, nil
 }
 
 func (s *GmailAPISender) Send(ctx context.Context, msg *mail.Msg) error {
-	if err := msg.From(s.from); err != nil {
+	if err := msg.FromFormat(s.fromName, s.from); err != nil {
 		return fmt.Errorf("setting sender: %w", err)
 	}
 

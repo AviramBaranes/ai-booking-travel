@@ -1,8 +1,9 @@
 package notifications
 
-EmailFrom: "accounting@aibookingtravel.com"
-EmailHost: "smtp.gmail.com"
-EmailPort: 587
+AccountsEmailFrom: "accounting@aibookingtravel.com"
+AccountsEmailFromName: "BookingTravel Accounts"
+ReservationsEmailFrom: "reservations@aibookingtravel.com"
+ReservationsEmailFromName: "AI Booking Travel"
 
 SMSUsername: "sogomatic"
 SMSSenderName: "Sogomatic"

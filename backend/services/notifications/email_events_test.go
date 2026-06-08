@@ -117,7 +117,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			})
 
 			fake := &fakeEmailSender{}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeCriticalError, payload)); err != nil {
 				t.Fatalf("HandleEmailEvent: %v", err)
@@ -152,7 +152,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			})
 
 			fake := &fakeEmailSender{}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeCriticalError, payload)); err == nil {
 				t.Fatal("expected error, got nil")
@@ -169,7 +169,7 @@ func TestHandleEmailEvent(t *testing.T) {
 
 			sendErr := errors.New("smtp boom")
 			fake := &fakeEmailSender{err: sendErr}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeCriticalError, payload))
 			if !errors.Is(err, sendErr) {
@@ -195,7 +195,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			})
 
 			fake := &fakeEmailSender{}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeCancellation, payload)); err != nil {
 				t.Fatalf("HandleEmailEvent: %v", err)
@@ -224,7 +224,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			})
 
 			fake := &fakeEmailSender{}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeCancellation, payload)); err == nil {
 				t.Fatal("expected error, got nil")
@@ -241,7 +241,7 @@ func TestHandleEmailEvent(t *testing.T) {
 
 			sendErr := errors.New("smtp boom")
 			fake := &fakeEmailSender{err: sendErr}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeCancellation, payload))
 			if !errors.Is(err, sendErr) {
@@ -285,7 +285,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			})
 
 			fake := &fakeEmailSender{}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeLateCancellationAlert, payload)); err != nil {
 				t.Fatalf("HandleEmailEvent: %v", err)
@@ -327,7 +327,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			})
 
 			fake := &fakeEmailSender{}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeLateCancellationAlert, payload)); err == nil {
 				t.Fatal("expected error, got nil")
@@ -355,7 +355,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			})
 
 			fake := &fakeEmailSender{}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeNewOrder, payload)); err != nil {
 				t.Fatalf("HandleEmailEvent: %v", err)
@@ -384,7 +384,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			})
 
 			fake := &fakeEmailSender{}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeNewOrder, payload)); err == nil {
 				t.Fatal("expected error, got nil")
@@ -401,7 +401,7 @@ func TestHandleEmailEvent(t *testing.T) {
 
 			sendErr := errors.New("smtp boom")
 			fake := &fakeEmailSender{err: sendErr}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeNewOrder, payload))
 			if !errors.Is(err, sendErr) {
@@ -427,7 +427,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			})
 
 			fake := &fakeEmailSender{}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeOpenOrderAlert, payload)); err != nil {
 				t.Fatalf("HandleEmailEvent: %v", err)
@@ -456,7 +456,7 @@ func TestHandleEmailEvent(t *testing.T) {
 			})
 
 			fake := &fakeEmailSender{}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			if err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeOpenOrderAlert, payload)); err == nil {
 				t.Fatal("expected error, got nil")
@@ -473,7 +473,7 @@ func TestHandleEmailEvent(t *testing.T) {
 
 			sendErr := errors.New("smtp boom")
 			fake := &fakeEmailSender{err: sendErr}
-			s := &Service{emailSender: fake}
+			s := &Service{reservationsEmailSender: fake}
 
 			err := s.HandleEmailEvent(ctx, makeEmailEvent(t, emailevents.EmailEventTypeOpenOrderAlert, payload))
 			if !errors.Is(err, sendErr) {

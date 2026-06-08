@@ -54,7 +54,7 @@ func (s *Service) SendVoucher(ctx context.Context, p SendVoucherParams) error {
 
 	return email.SendEmail(
 		ctx,
-		s.emailSender,
+		s.reservationsEmailSender,
 		[]string{p.RecipientEmail},
 		fmt.Sprintf("Attached AI Booking Travel voucher number %s %s", p.BookingReferenceID, p.DriverFullName),
 		email.VoucherEmailTemplate,

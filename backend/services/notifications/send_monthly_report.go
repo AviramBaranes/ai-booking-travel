@@ -38,7 +38,7 @@ func (s *Service) SendMonthlyReport(ctx context.Context, p SendMonthlyReportPara
 
 	return email.SendEmail(
 		ctx,
-		s.emailSender,
+		s.accountsEmailSender,
 		[]string{p.ContactEmail},
 		subject,
 		email.MonthlyReportTemplate,

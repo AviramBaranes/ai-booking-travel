@@ -31,7 +31,7 @@ func TestSendMonthlyReport(t *testing.T) {
 
 	t.Run("returns InvalidArgument when excel base64 fails to decode", func(t *testing.T) {
 		fake := &fakeEmailSender{}
-		s := &Service{emailSender: fake}
+		s := &Service{accountsEmailSender: fake}
 
 		err := s.SendMonthlyReport(ctx, SendMonthlyReportParams{
 			ContactName:  "Alice",
@@ -60,7 +60,7 @@ func TestSendMonthlyReport(t *testing.T) {
 		wantFilename := fmt.Sprintf("monthly_report_%s.xlsx", prevMonth.Format("01-2006"))
 
 		fake := &fakeEmailSender{}
-		s := &Service{emailSender: fake}
+		s := &Service{accountsEmailSender: fake}
 
 		if err := s.SendMonthlyReport(ctx, req); err != nil {
 			t.Fatalf("SendMonthlyReport: %v", err)
@@ -116,7 +116,7 @@ func TestSendMonthlyReport(t *testing.T) {
 	t.Run("propagates email send failure", func(t *testing.T) {
 		sendErr := errors.New("smtp boom")
 		fake := &fakeEmailSender{err: sendErr}
-		s := &Service{emailSender: fake}
+		s := &Service{accountsEmailSender: fake}
 
 		err := s.SendMonthlyReport(ctx, SendMonthlyReportParams{
 			ContactName:  "Alice",

@@ -17,21 +17,23 @@ import (
 
 // encore:service
 type Service struct {
-	emailSender  email.Sender
-	smsSender    sms.Sender
-	pdfConverter pdf.PDFConverter
+	reservationsEmailSender email.Sender
+	accountsEmailSender     email.Sender
+	smsSender               sms.Sender
+	pdfConverter            pdf.PDFConverter
 }
 
 // Config holds the configuration for the notifications service, including email settings.
 type Config struct {
-	EmailFrom             config.String
-	EmailHost             config.String
-	EmailPort             config.Int
-	SMSUsername           config.String
-	SMSSenderName         config.String
-	GotenbergURL          config.String
-	PasswordResetTokenURL config.String
-	PriceOfferURL         config.String
+	AccountsEmailFrom         config.String
+	AccountsEmailFromName     config.String
+	ReservationsEmailFrom     config.String
+	ReservationsEmailFromName config.String
+	SMSUsername               config.String
+	SMSSenderName             config.String
+	GotenbergURL              config.String
+	PasswordResetTokenURL     config.String
+	PriceOfferURL             config.String
 }
 
 var cfg = config.Load[*Config]()
@@ -44,14 +46,27 @@ var secrets struct {
 func initService() (*Service, error) {
 	ctx := context.Background()
 
-	es, err := email.NewGmailAPISender(
+	reservationsSender, err := email.NewGmailAPISender(
 		ctx,
 		secrets.GoogleServiceAccountJSON,
-		cfg.EmailFrom(),
+		cfg.ReservationsEmailFromName(),
+		cfg.ReservationsEmailFrom(),
 	)
-	rlog.Info("email sender created", "from", cfg.EmailFrom())
+	rlog.Info("reservations email sender created", "fromName", cfg.ReservationsEmailFromName(), "from", cfg.ReservationsEmailFrom())
 	if err != nil {
-		rlog.Error("failed to create email sender", "error", err)
+		rlog.Error("failed to create reservations email sender", "error", err)
+		return nil, err
+	}
+
+	accountsSender, err := email.NewGmailAPISender(
+		ctx,
+		secrets.GoogleServiceAccountJSON,
+		cfg.AccountsEmailFromName(),
+		cfg.AccountsEmailFrom(),
+	)
+	rlog.Info("accounts email sender created", "fromName", cfg.AccountsEmailFromName(), "from", cfg.AccountsEmailFrom())
+	if err != nil {
+		rlog.Error("failed to create accounts email sender", "error", err)
 		return nil, err
 	}
 
@@ -68,9 +83,10 @@ func initService() (*Service, error) {
 	}
 
 	return &Service{
-		emailSender:  es,
-		smsSender:    ss,
-		pdfConverter: pdf.NewPdfConverterWithHTTPClient(cfg.GotenbergURL(), gotenbergClient),
+		reservationsEmailSender: reservationsSender,
+		accountsEmailSender:     accountsSender,
+		smsSender:               ss,
+		pdfConverter:            pdf.NewPdfConverterWithHTTPClient(cfg.GotenbergURL(), gotenbergClient),
 	}, nil
 }
 

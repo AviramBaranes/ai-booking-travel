@@ -57,7 +57,7 @@ func (s *Service) sendCriticalErrorEmail(ctx context.Context, raw json.RawMessag
 
 	if err := email.SendEmail(
 		ctx,
-		s.emailSender,
+		s.reservationsEmailSender,
 		adminEmails.Emails,
 		p.Subject,
 		email.CriticalErrorTemplate,
@@ -84,7 +84,7 @@ func (s *Service) sendCancellationEmail(ctx context.Context, raw json.RawMessage
 
 	if err := email.SendEmail(
 		ctx,
-		s.emailSender,
+		s.reservationsEmailSender,
 		[]string{userEmail.Email},
 		fmt.Sprintf("AI Booking Travel reservation number %s- %s has been cancelled", p.BookingReferenceID, p.DriverFullName),
 		email.CancellationEmailTemplate,
@@ -128,7 +128,7 @@ func (s *Service) sendLateCancellationAlertEmail(ctx context.Context, raw json.R
 
 	if err := email.SendEmail(
 		ctx,
-		s.emailSender,
+		s.reservationsEmailSender,
 		adminEmails.Emails,
 		fmt.Sprintf("בוצע ביטול פחות מ-48 שעות לפני האיסוף - הזמנה %d", p.ReservationID),
 		email.LateCancellationAlertEmailTemplate,
@@ -162,7 +162,7 @@ func (s *Service) sendNewOrderEmail(ctx context.Context, raw json.RawMessage) er
 
 	if err := email.SendEmail(
 		ctx,
-		s.emailSender,
+		s.reservationsEmailSender,
 		[]string{userEmail.Email},
 		fmt.Sprintf("Attached AI Booking Travel reservation number %s- %s", p.BookingReferenceID, p.DriverFullName),
 		email.NewOrderEmailTemplate,
@@ -222,7 +222,7 @@ func (s *Service) sendOpenOrderAlertEmail(ctx context.Context, raw json.RawMessa
 
 	if err := email.SendEmail(
 		ctx,
-		s.emailSender,
+		s.reservationsEmailSender,
 		[]string{userEmail.Email},
 		fmt.Sprintf("%s - %s - הזמנה פתוחה מס׳", p.BookingReferenceID, p.DriverFullName),
 		email.OpenOrderAlertEmailTemplate,
@@ -247,7 +247,7 @@ func (s *Service) sendPasswordResetEmail(ctx context.Context, raw json.RawMessag
 	resetURL := fmt.Sprintf("%s?token=%s", cfg.PasswordResetTokenURL(), p.TokenHash)
 	if err := email.SendEmail(
 		ctx,
-		s.emailSender,
+		s.reservationsEmailSender,
 		[]string{p.Email},
 		"בקשה לאיפוס סיסמה - AI Booking Travel",
 		email.PasswordResetEmailTemplate,
@@ -276,7 +276,7 @@ func (s *Service) sendPriceOfferApprovedEmail(ctx context.Context, raw json.RawM
 
 	if err := email.SendEmail(
 		ctx,
-		s.emailSender,
+		s.reservationsEmailSender,
 		[]string{userEmail.Email},
 		"מחיר הצעה אושר - AI Booking Travel",
 		email.PriceOfferApprovedEmailTemplate,
