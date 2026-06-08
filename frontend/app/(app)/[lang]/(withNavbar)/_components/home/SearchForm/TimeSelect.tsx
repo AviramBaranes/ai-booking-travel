@@ -44,6 +44,7 @@ export function TimeSelect({
   const [internalValue, setInternalValue] = useState("");
   const triggerRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+  const hasScrolled = useRef(false);
 
   const currentValue = value ?? internalValue;
 
@@ -71,7 +72,14 @@ export function TimeSelect({
 
   return (
     <div className="w-full flex flex-col">
-      <DropdownMenu modal={false} open={open} onOpenChange={setOpen}>
+      <DropdownMenu
+        modal={false}
+        open={open}
+        onOpenChange={(next) => {
+          if (!next) hasScrolled.current = false;
+          setOpen(next);
+        }}
+      >
         <DropdownMenuTrigger asChild>
           <div ref={triggerRef} className="w-full cursor-pointer">
             <Field>
@@ -104,8 +112,9 @@ export function TimeSelect({
                 <DropdownMenuItem
                   key={time}
                   ref={(node) => {
-                    if (time === middleTime) {
-                      node?.scrollIntoView({ block: "center" });
+                    if (time === middleTime && node && !hasScrolled.current) {
+                      node.scrollIntoView({ block: "center" });
+                      hasScrolled.current = true;
                     }
                   }}
                   onClick={() => handleSelect(time)}
