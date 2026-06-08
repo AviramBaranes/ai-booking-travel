@@ -213,7 +213,10 @@ WITH billing_reservations AS (
             WHEN is_organization_organic = TRUE THEN organization_id
             ELSE office_id
         END::BIGINT AS billing_entity_id,
-        total_price,
+        CASE
+            WHEN reservation_status = 'canceled' AND payment_status = 'refund_pending' THEN -total_price
+            ELSE total_price
+        END AS total_price,
         currency_code,
         currency_rate
     FROM reservations
