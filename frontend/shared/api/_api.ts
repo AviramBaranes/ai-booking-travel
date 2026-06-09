@@ -5,8 +5,14 @@ import { getLang } from "../lang/lang";
 import { AppError } from "./AppError";
 
 export function getBaseURL(): string {
+  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  if (baseURL) return baseURL;
+
   const env = process.env.NEXT_PUBLIC_ENCORE_ENV;
+
   if (!env || env === "local") return Local;
+
   return Environment(env);
 }
 
