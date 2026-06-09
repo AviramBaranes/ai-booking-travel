@@ -41,13 +41,18 @@ export function CarCard({ vehicle, daysCount, searchRequest }: CarCardProps) {
         </div>
         <CarChecks
           checks={[
-            {
-              text:
-                vehicle.locationDetails.locationType === "Shuttle"
-                  ? t(`carDetails.shuttlePickup`)
-                  : t(`carDetails.terminalPickup`),
-              image: "/assets/icons/V.svg",
-            },
+            ...(vehicle.locationDetails.locationType === "Shuttle" ||
+            vehicle.locationDetails.locationType === "Airport"
+              ? [
+                  {
+                    text:
+                      vehicle.locationDetails.locationType === "Shuttle"
+                        ? t(`carDetails.shuttlePickup`)
+                        : t(`carDetails.terminalPickup`),
+                    image: "/assets/icons/V.svg",
+                  },
+                ]
+              : []),
             {
               text: t(`carDetails.erpRecommendation`),
               image: "/assets/icons/stamp.gif",
