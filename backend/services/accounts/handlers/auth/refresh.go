@@ -28,6 +28,7 @@ func (s *AuthService) RefreshTokens(ctx context.Context, p RefreshTokensParams) 
 	savedToken, err := s.query.GetRefreshToken(ctx, claims.ID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
+			rlog.Warn("refresh token not found in database", "token_id", claims.ID)
 			return nil, ErrInvalidRefreshToken
 		}
 		rlog.Error("failed to get refresh token from database", "error", err)
@@ -35,6 +36,7 @@ func (s *AuthService) RefreshTokens(ctx context.Context, p RefreshTokensParams) 
 	}
 
 	if savedToken.ExpiresAt.Time.Before(time.Now()) {
+		rlog.Warn("refresh token has expired", "token_id", claims.ID, "expires_at", savedToken.ExpiresAt)
 		return nil, ErrExpiredRefreshToken
 	}
 
@@ -46,6 +48,7 @@ func (s *AuthService) RefreshTokens(ctx context.Context, p RefreshTokensParams) 
 	user, err := s.query.GetUserById(ctx, claims.UserID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
+			rlog.Warn("user not found", "user_id", claims.UserID)
 			return nil, ErrInvalidRefreshToken
 		}
 		rlog.Error("failed to get user by ID", "user_id", claims.UserID, "error", err)
