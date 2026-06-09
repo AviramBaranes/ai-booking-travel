@@ -53,18 +53,22 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
     <div className="flex gap-4">
       <div className="w-3/4">
         <div className="flex gap-4 mb-6">
-          <div className="w-1/2">
-            <InclusionsDisplay
-              title={t("inclusionsTitle")}
-              inclusions={vehicle.plans[selectedPlan].planInclusions}
-            />
-          </div>
-          <div className="w-1/2">
-            <InclusionsDisplay
-              title={t("rentalTerms")}
-              inclusions={vehicle.plans[selectedPlan].info}
-            />
-          </div>
+          {vehicle.plans[selectedPlan].planInclusions.length > 0 &&(
+            <div className="w-1/2">
+              <InclusionsDisplay
+                title={t("inclusionsTitle")}
+                inclusions={vehicle.plans[selectedPlan].planInclusions}
+              />
+            </div>
+          )}
+          {vehicle.plans[selectedPlan].info.length > 0 && (
+            <div className="w-1/2">
+              <InclusionsDisplay
+                title={t("rentalTerms")}
+                inclusions={vehicle.plans[selectedPlan].info}
+              />
+            </div>
+          )}
         </div>
         <FeesNote vehicle={vehicle} />
         <div className="flex justify-between items-center my-6">

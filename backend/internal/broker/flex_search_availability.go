@@ -16,7 +16,12 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicl
 	form := url.Values{}
 	form.Set("SIPP", "")
 	form.Set("SupplierCode", "")
-	form.Set("ProductID", "1")
+
+	productID := "1"
+	if p.CountryCode == "US" || p.CountryCode == "CA" {
+		productID = "1,3" // Include both "Inclusive" and "Gold" products for US and CA markets
+	}
+	form.Set("ProductID", productID)
 	form.Set("Language", "UK")
 	form.Set("AdditionalParameters", "Timeout=15000")
 	form.Set("PickupLocationID", p.PickupLocation)
@@ -108,7 +113,7 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicl
 			PriceDetails: PriceDetails{
 				Currency: c.Currency,
 				Fees: Fees{
-					DropCharge:             pricing.RoundToInt(c.DropCharge),
+					DropCharge:             pricing.RoundToInt(parseFloat(c.DropCharge)),
 					DropChargeCurrency:     c.DropChargeCurrency,
 					YoungDriverFee:         ydFee,
 					YoungDriverFeeCurrency: ydFeeCurrency,
@@ -224,24 +229,34 @@ func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDet
 		}
 
 		var planInclusions []string
+		inclusionsMap := make(map[string]struct{})
 		for _, inc := range supplierDetails.Inclusions {
 			if inc.Product == p.Product {
 				raw := strings.Split(inc.Inclusion, ";")
 				for _, inclusion := range raw {
 					if trimmed := strings.TrimSpace(inclusion); trimmed != "" {
-						planInclusions = append(planInclusions, trimmed)
+						if _, exists := inclusionsMap[trimmed]; !exists {
+							planInclusions = append(planInclusions, trimmed)
+							inclusionsMap[trimmed] = struct{}{}
+						}
 					}
 				}
 				break
 			}
 		}
 
+		price := parseFloat(p.Price)
+		if price == 0 {
+			rlog.Warn("plan price is zero in CarAvailability response, skipping plan", "car_name", c.Name, "product", p.Product)
+			continue
+		}
+
 		plans = append(plans, Plan{
 			PlanID:                 planID,
 			PlanName:               p.Product,
 			PlanInclusions:         planInclusions,
-			Price:                  p.Price,
-			BrokerErpPrice:         c.ERP,
+			Price:                  price,
+			BrokerErpPrice:         parseFloat(c.ERP),
 			ChargedErpPriceWithVat: f.getInsuranceExtraCost(dayCount),
 			Info:                   c.Information,
 			RateQualifier:          c.RateQualifier,
@@ -291,4 +306,12 @@ func formatDate(dateStr string) string {
 		return dateStr
 	}
 	return parts[2] + "/" + parts[1] + "/" + parts[0]
+}
+
+func parseFloat(s string) float64 {
+	num, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return 0
+	}
+	return num
 }

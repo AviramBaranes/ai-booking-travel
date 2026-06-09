@@ -200,7 +200,9 @@
         "Normal": "Normal",
         "Premium": "Premium",
         "Premium +": "Premium +",
-        "Gold": "Gold"
+        "Gold": "Gold",
+        "Inclusive": "Premium",
+        "Inclusive Additional": "Premium +"
       }
     },
     "erpCheckbox": {

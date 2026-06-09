@@ -199,7 +199,9 @@
         "Normal": "רגיל",
         "Premium": "פרמיום",
         "Premium +": "פרמיום +",
-        "Gold": "זהב"
+        "Gold": "זהב",
+        "Inclusive": "פרמיום",
+        "Inclusive Additional": "פרמיום +"
       }
     },
     "erpCheckbox": {
