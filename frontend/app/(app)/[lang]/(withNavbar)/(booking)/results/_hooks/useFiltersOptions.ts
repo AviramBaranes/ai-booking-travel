@@ -44,7 +44,7 @@ export function useFilterOptions(cars: availability.AvailableVehicle[]) {
       for (const car of cars) {
         const value = getNestedValue(car, filter.filterKey);
         const filterValue = toFilterValue(value);
-        if (filterValue !== null) {
+        if (filterValue !== null && value !== 0) {
           valuesSet.add(filterValue);
         }
       }
