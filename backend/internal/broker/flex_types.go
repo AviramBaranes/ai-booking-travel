@@ -4,6 +4,7 @@ package broker
 type flexCarAvailabilityResponse struct {
 	ReturnCode      int                   `xml:"ReturnCode"`
 	ErrorMessage    string                `xml:"ErrorMessage"`
+	Count           int                   `xml:"Count"`
 	Cars            []flexCar             `xml:"CarSet>Car"`
 	SupplierDetails []flexSupplierDetails `xml:"SupplierInfo>Details"`
 }
