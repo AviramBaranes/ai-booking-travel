@@ -50,10 +50,10 @@ export function OtherPlansButton({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className={`${dialogWidthClass} p-0 bg-background border-none rounded-3xl shadow-[0px_4px_24px_0px_rgba(0,0,0,0.25)] overflow-hidden ring-0`}
+          className={`${dialogWidthClass} p-0 bg-background border-none rounded-3xl shadow-[0px_4px_24px_0px_rgba(0,0,0,0.25)] overflow-scroll ring-0`}
           showCloseButton={false}
         >
-          <div className="flex items-center justify-between px-12 pt-12 pb-0">
+          <div className="flex items-center justify-between px-10 pt-4 pb-0">
             <DialogTitle className="flex items-center gap-4">
               <ShieldCheck className="w-8 h-8 text-success" />
               <span className="type-h5 text-navy">{t("title")}</span>
@@ -67,7 +67,7 @@ export function OtherPlansButton({
           </div>
 
           {/* Divider + Tabs */}
-          <div className="flex flex-col items-center gap-6 px-12">
+          <div className="flex flex-col items-center gap-3 px-12">
             <div className="w-full border-t border-border-light" />
             <div className="flex gap-6 items-center text-[22px] leading-[30.8px] text-brand-blue">
               <button
@@ -107,7 +107,7 @@ export function OtherPlansButton({
                 >
                   <div className="flex flex-col justify-between flex-1 pt-6 px-6">
                     {/* Plan name + inclusions */}
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-2">
                       <h5 className="type-h5 text-navy">
                         {index === plans.length - 1 && (
                           <Crown className="w-6 mb-3 h-6 text-brand inline-block m-2" />
@@ -115,7 +115,7 @@ export function OtherPlansButton({
                         {t(`planNames.${plan.planName}`)}
                       </h5>
 
-                      <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-2">
                         {items.map((item) => (
                           <div key={item} className="flex gap-2.5 items-start">
                             <CircleCheckBig className="w-4 h-4 text-success shrink-0 mt-1.5" />
@@ -128,7 +128,7 @@ export function OtherPlansButton({
                     </div>
 
                     {/* Price section — RTL order: price on the right (first in DOM), label on the left (last in DOM) */}
-                    <div className="flex items-center justify-between mt-8 mb-6">
+                    <div className="flex items-center justify-between mt-2 mb-6">
                       <div className="type-label text-navy text-center flex flex-col items-start">
                         <p>{t("totalToPayLine1")}</p>
                         <p>{t("totalToPayLine2")}</p>
@@ -145,7 +145,7 @@ export function OtherPlansButton({
                   {/* Select button */}
                   <button
                     onClick={() => handleSelectPlan(index)}
-                    className={`flex items-center justify-center gap-3 py-6 px-6 cursor-pointer type-paragraph font-bold w-full ${
+                    className={`flex items-center justify-center gap-3 py-4 cursor-pointer type-paragraph font-bold w-full ${
                       isSelected
                         ? "bg-brand text-white"
                         : "bg-white text-navy shadow-[0px_-4px_8px_0px_rgba(0,0,0,0.08)]"

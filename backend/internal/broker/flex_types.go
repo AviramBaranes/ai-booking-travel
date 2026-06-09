@@ -20,7 +20,7 @@ type flexCar struct {
 	Passenger          string     `xml:"Passenger"`
 	Doors              string     `xml:"Doors"`
 	Currency           string     `xml:"Currency"`
-	TotalCharge        float64    `xml:"TotalCharge"`
+	TotalCharge        string     `xml:"TotalCharge"`
 	Costs              []flexCost `xml:"Costs>Cost"`
 	RateQualifier      string     `xml:"RateQualifier"`
 	IsAirCon           string     `xml:"IsAirCon"`
@@ -29,16 +29,16 @@ type flexCar struct {
 	CarDescription     string     `xml:"CarDescription"`
 	SupplierCode       string     `xml:"SupplierCode"`
 	Supplier           string     `xml:"Supplier"`
-	DropCharge         float64    `xml:"DropCharge"`
+	DropCharge         string     `xml:"DropCharge"`
 	DropChargeCurrency string     `xml:"DropChargeCurrency"`
-	ERP                float64    `xml:"ERP"`
+	ERP                string     `xml:"ERP"`
 	Information        []string   `xml:"Information>string"`
 }
 
 // flexCost is a single cost line item (e.g. base rate, insurance) within a car's pricing breakdown.
 type flexCost struct {
-	Product string  `xml:"Product"`
-	Price   float64 `xml:"Price"`
+	Product string `xml:"Product"`
+	Price   string `xml:"Price"`
 }
 
 // flexSupplierDetails holds supplier-specific info: inclusions, policies, location details, and extras.
