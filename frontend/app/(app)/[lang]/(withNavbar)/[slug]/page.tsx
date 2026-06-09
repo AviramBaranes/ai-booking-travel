@@ -1,4 +1,3 @@
-import { cache } from "react";
 import { notFound } from "next/navigation";
 import { getPayload } from "payload";
 import config from "@payload-config";
@@ -9,26 +8,27 @@ import Image from "next/image";
 import { BlocksRenderer } from "../_components/blocks/BlocksRenderer";
 import { PagesDecorations } from "../_components/decorations/PagesDecorations";
 import { RefreshRouteOnSave as PayloadLivePreview } from "../_components/LivePreview/RefreshRouteOnSave";
-import { SUPPORTED_LANGS, SupportedLang } from "@/shared/constants/supported_langs";
+import {
+  SUPPORTED_LANGS,
+  SupportedLang,
+} from "@/shared/constants/supported_langs";
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
 };
 
-const getPage = cache(
-  async (slug: string, lang: string): Promise<Page | null> => {
-    const payload = await getPayload({ config });
-    const result = await payload.find({
-      collection: "pages",
-      where: { slug: { equals: slug } },
-      locale: lang as SupportedLang,
-      draft: false,
-      limit: 1,
-    });
+const getPage = async (slug: string, lang: string): Promise<Page | null> => {
+  const payload = await getPayload({ config });
+  const result = await payload.find({
+    collection: "pages",
+    where: { slug: { equals: slug } },
+    locale: lang as SupportedLang,
+    draft: false,
+    limit: 1,
+  });
 
-    return (result.docs[0] as Page) ?? null;
-  },
-);
+  return (result.docs[0] as Page) ?? null;
+};
 
 export const revalidate = 3600;
 export async function generateStaticParams() {
