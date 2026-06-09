@@ -108,6 +108,7 @@ func (s *AvailabilityService) SearchAvailability(ctx context.Context, p SearchAv
 	}
 
 	if len(rawVehicles) == 0 {
+		rlog.Info("no available vehicles found for the search criteria")
 		return emptySearchAvailabilityResponse(), nil
 	}
 
@@ -116,6 +117,7 @@ func (s *AvailabilityService) SearchAvailability(ctx context.Context, p SearchAv
 		return nil, err
 	}
 	if len(artifacts.plansDetails) == 0 {
+		rlog.Info("no available vehicles found after processing artifacts")
 		return emptySearchAvailabilityResponse(), nil
 	}
 

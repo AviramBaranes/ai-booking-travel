@@ -238,7 +238,8 @@
         "pickupLocation": {
           "title": "Pickup location",
           "Airport": "Terminal",
-          "Shuttle": "Shuttle service"
+          "Shuttle": "Shuttle service",
+          "City": "City location"
         },
         "transmissionType": {
           "title": "Transmission type",

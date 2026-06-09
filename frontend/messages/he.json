@@ -237,7 +237,8 @@
         "pickupLocation": {
           "title": "מיקום איסוף",
           "Airport": "טרמינל",
-          "Shuttle": "שירות שאטל"
+          "Shuttle": "שירות שאטל",
+          "City": "מיקום בעיר"
         },
         "transmissionType": {
           "title": "תיבת הילוכים",

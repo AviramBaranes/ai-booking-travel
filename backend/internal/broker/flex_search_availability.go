@@ -116,7 +116,8 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicl
 			},
 		}
 
-		if car.LocationDetails.LocationType != "Airport" && car.LocationDetails.LocationType != "Shuttle" {
+		if car.LocationDetails.LocationType != "Airport" && car.LocationDetails.LocationType != "Shuttle" && car.LocationDetails.LocationType != "City" {
+			rlog.Warn("unexpected location type in CarAvailability response, expected 'Airport', 'Shuttle', or 'City'", "location_type", car.LocationDetails.LocationType)
 			continue
 		}
 
