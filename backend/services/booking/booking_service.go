@@ -37,5 +37,7 @@ func initService() (*Service, error) {
 		return nil, err
 	}
 
+	go svc.startBackgroundRefresh()
+
 	return svc, nil
 }
