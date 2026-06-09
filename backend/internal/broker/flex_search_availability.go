@@ -47,10 +47,12 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicl
 		return nil, fmt.Errorf("CarAvailability API returned error code %d with message: %s", resp.ReturnCode, resp.ErrorMessage)
 	}
 
-	if len(resp.Cars) == 0 {
+	if resp.Count == 0 {
 		rlog.Info("no cars found in CarAvailability response", "pickup_location", p.PickupLocation, "dropoff_location", p.DropoffLocation, "pickup_date", p.PickupDate, "dropoff_date", p.DropoffDate)
 		return []AvailableVehicle{}, nil
 	}
+
+	rlog.Info("CarAvailability response", "return_code", resp.ReturnCode, "error_message", resp.ErrorMessage, "car_count", len(resp.Cars), "supplier_details_count", len(resp.SupplierDetails))
 
 	if len(resp.SupplierDetails) == 0 {
 		return []AvailableVehicle{}, fmt.Errorf("no supplier details found in CarAvailability response for pickup_location=%s dropoff_location=%s pickup_date=%s dropoff_date=%s", p.PickupLocation, p.DropoffLocation, p.PickupDate, p.DropoffDate)
@@ -91,11 +93,7 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicl
 			continue
 		}
 
-		carDetails, err := flexCarToBrokerCar(c, s.name)
-		if err != nil {
-			rlog.Warn("failed to convert flex car to broker car details, skipping vehicle", "error", err)
-			continue
-		}
+		carDetails := flexCarToBrokerCar(c, s.name)
 
 		ydFee, ydFeeCurrency := f.getYoungDriverFee(c.Information)
 
@@ -254,20 +252,20 @@ func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDet
 }
 
 // flexCarToBrokerCar converts a flexCar to a CarDetails struct for the broker response.
-func flexCarToBrokerCar(c flexCar, supplierName string) (CarDetails, error) {
+func flexCarToBrokerCar(c flexCar, supplierName string) CarDetails {
 	seats, err := strconv.Atoi(c.Passenger)
 	if err != nil {
-		return CarDetails{}, fmt.Errorf("flexCarToBrokerCar parse seats got %s: %w", c.Passenger, err)
+		rlog.Error("flexCarToBrokerCar parse seats got %s: %v", c.Passenger, err)
 	}
 
 	doors, err := strconv.Atoi(c.Doors)
 	if err != nil {
-		return CarDetails{}, fmt.Errorf("flexCarToBrokerCar parse doors got %s: %w", c.Doors, err)
+		rlog.Error("flexCarToBrokerCar parse doors got %s: %v", c.Doors, err)
 	}
 
 	bags, err := strconv.Atoi(c.Luggage)
 	if err != nil {
-		return CarDetails{}, fmt.Errorf("flexCarToBrokerCar parse bags got %s: %w", c.Luggage, err)
+		rlog.Error("flexCarToBrokerCar parse bags got %s: %v", c.Luggage, err)
 	}
 
 	return CarDetails{
@@ -282,7 +280,7 @@ func flexCarToBrokerCar(c flexCar, supplierName string) (CarDetails, error) {
 		Seats:        seats,
 		Doors:        doors,
 		Bags:         bags,
-	}, nil
+	}
 }
 
 // formatDate formats a date string from "2006-01-02" to "02/01/2006"
