@@ -1,6 +1,5 @@
 "use client";
 
-import { availability } from "@/shared/client";
 import { InclusionsDisplay } from "./InclustionsDisplay";
 import { useSelectedVehicle } from "../_hooks/useSelectedVehicle";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
@@ -21,12 +20,9 @@ import { useMemo, useState } from "react";
 import { ErpDialog } from "./ErpDialog";
 import { FeesNote } from "./FeesNote";
 import { PriceOfferDialog } from "./PriceOfferDialog";
+import { useSearchRequest } from "../../_hooks/useSearchRequest";
 
-interface PlansPageContentProps {
-  searchRequest: availability.SearchAvailabilityParams;
-}
-
-export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
+export function PlansPageContent() {
   const t = useTranslations("booking.plansPage");
   const { lang } = useParams();
   const router = useRouter();
@@ -38,6 +34,8 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
   const setSelectedPlan = useBookingSessionStore((s) => s.setSelectedPlanIndex);
   const setIsErpSelected = useBookingSessionStore((s) => s.setIsErpSelected);
   const setSelectedAddons = useBookingSessionStore((s) => s.setSelectedAddons);
+
+  const { searchRequest } = useSearchRequest();
 
   const vehicle = useSelectedVehicle(searchRequest);
   const { data } = useAvailableCars(searchRequest, { fromCache: true });

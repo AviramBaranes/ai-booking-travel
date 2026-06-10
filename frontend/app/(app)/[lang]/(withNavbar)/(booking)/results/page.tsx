@@ -76,7 +76,7 @@ export default async function ResultsPage({
             showButton
           />
         </div>
-        <ExpiredSearchGate searchRequest={searchRequest}>
+        <ExpiredSearchGate >
           <CarResults searchRequest={searchRequest} />
         </ExpiredSearchGate>
       </HydrationBoundary>

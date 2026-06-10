@@ -18,13 +18,8 @@ export async function fetchBookingSettings() {
 }
 
 let payloadPromise: ReturnType<typeof getPayload> | null = null;
-let initCount = 0;
-
 export function getCachedPayload() {
   if (!payloadPromise) {
-    initCount += 1;
-    console.log(`[Payload] init #${initCount}`);
-
     payloadPromise = getPayload({ config });
   }
 

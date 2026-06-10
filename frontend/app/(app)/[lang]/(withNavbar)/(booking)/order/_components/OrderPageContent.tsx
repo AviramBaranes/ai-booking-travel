@@ -1,6 +1,5 @@
 "use client";
 
-import { availability } from "@/shared/client";
 import { Page } from "@/payload-types";
 import { useSelectedVehicle } from "../../plans/_hooks/useSelectedVehicle";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
@@ -27,17 +26,15 @@ import {
 import { BookingForm } from "@/shared/components/booking/OrderForm/BookingForm";
 import { useMutation } from "@tanstack/react-query";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
+import { useSearchRequest } from "../../_hooks/useSearchRequest";
 
-interface OrderPageContentProps {
-  searchRequest: availability.SearchAvailabilityParams;
-}
-
-export function OrderPageContent({ searchRequest }: OrderPageContentProps) {
+export function OrderPageContent() {
   const t = useTranslations("booking.orderPage");
   const { lang } = useParams();
   const router = useRouter();
   const { data: bookingSettings } = useBookingSettings();
 
+  const { searchRequest } = useSearchRequest();
   const vehicle = useSelectedVehicle(searchRequest);
   const { data } = useAvailableCars(searchRequest, { fromCache: true });
 

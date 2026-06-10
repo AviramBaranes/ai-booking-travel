@@ -7,22 +7,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { availability } from "@/shared/client";
 import { bookingKeys } from "@/shared/hooks/useAvailableCars";
 import { searchRequestToParams } from "../results/searchQuery";
+import { useSearchRequest } from "../_hooks/useSearchRequest";
 
 const REDIRECT_SECONDS = 5;
 const SEARCH_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
 interface ExpiredSearchGateProps {
   children: React.ReactNode;
-  searchRequest: availability.SearchAvailabilityParams;
 }
 
-export function ExpiredSearchGate({
-  children,
-  searchRequest,
-}: ExpiredSearchGateProps) {
+export function ExpiredSearchGate({ children }: ExpiredSearchGateProps) {
   const t = useTranslations("booking.expiredSearch");
   const queryClient = useQueryClient();
   const { lang } = useParams<{ lang: string }>();
@@ -33,6 +29,7 @@ export function ExpiredSearchGate({
   const redirectedRef = useRef(false);
   const pendingRedirectRef = useRef(false);
 
+  const {searchRequest} = useSearchRequest();
   const redirectHref = useMemo(
     () => `/${lang}/results?${searchRequestToParams(searchRequest)}`,
     [lang, searchRequest],

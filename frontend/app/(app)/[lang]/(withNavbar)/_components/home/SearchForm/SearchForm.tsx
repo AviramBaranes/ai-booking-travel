@@ -46,7 +46,6 @@ interface SearchFormProps extends Partial<SearchFormFields> {
   className?: string;
 }
 
-
 export function SearchForm({ className, ...fields }: SearchFormProps) {
   const router = useRouter();
   const { lang } = useParams();
@@ -114,6 +113,10 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
     if (data.couponCode) {
       urlParams.set("cc", data.couponCode);
     }
+
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000);
 
     location.href = `/${lang}/results?${urlParams.toString()}`;
   }
