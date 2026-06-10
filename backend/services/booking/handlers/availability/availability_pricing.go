@@ -57,6 +57,13 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 		return artifacts, api_errors.ErrInternalError
 	}
 
+	spMap := make(map[string]*broker.SupplierInfo)
+	translatedSuppliers := make(map[string]bool)
+	for i, sp := range avResp.SuppliersInfo {
+		spMap[sp.Name] = &avResp.SuppliersInfo[i]
+		translatedSuppliers[sp.Name] = false
+	}
+
 	for i, v := range avResp.AvailableVehicles {
 		mp, ok := markupProviders[v.Broker]
 		if !ok {
@@ -73,16 +80,11 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 		}
 		avPlans := make([]Plan, 0, len(v.Plans))
 
-		spMap := make(map[string]broker.SupplierInfo)
-		for _, sp := range avResp.SuppliersInfo {
-			spMap[sp.Name] = sp
-		}
-
 		for _, p := range v.Plans {
 			sp, ok := spMap[p.SupplierName]
 			if !ok {
 				rlog.Warn("no supplier info found for supplier name, skipping plan details enrichment", "supplierName", p.SupplierName)
-				sp = broker.SupplierInfo{}
+				continue
 			}
 
 			markupPercentage := mp.GetMarkup(isAgent, v.CarDetails.CarGroup, p.SupplierCode)
@@ -102,11 +104,12 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				continue
 			}
 
-			inclusions := sp.PlanInclusions
-			info := p.Info
 			if lang.FromContext(ctx, "en") == "he" {
-				inclusions = s.translatePlanDetails(ctx, inclusions)
-				info = s.translatePlanDetails(ctx, info)
+				if !translatedSuppliers[sp.Name] {
+					sp.PlanInclusions = s.translatePlanDetails(ctx, sp.PlanInclusions)
+					translatedSuppliers[sp.Name] = true
+				}
+				p.Info = s.translatePlanDetails(ctx, p.Info)
 			}
 
 			pd := PlanPriceDetails{
@@ -124,7 +127,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				SupplierErpPrice:       p.BrokerErpPrice,
 				ChargedERPPriceWithVat: p.ChargedErpPriceWithVat,
 				CarDetails:             v.CarDetails,
-				Inclusions:             inclusions,
+				Inclusions:             sp.PlanInclusions,
 				AvailableAddOns:        sp.AddOns,
 				Fees:                   v.PriceDetails.Fees,
 			}
@@ -142,7 +145,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				Discount:      pricing.RoundToInt(couponDiscount),
 				Price:         pricing.RoundToInt(discountedCarPrice),
 				ErpPrice:      pricing.RoundToInt(discountedErp + p.ChargedErpPriceWithVat), // no discount on charged erp
-				Info:          info,
+				Info:          p.Info,
 				RateQualifier: p.RateQualifier,
 				SupplierName:  sp.Name,
 				SupplierCode:  p.SupplierCode,

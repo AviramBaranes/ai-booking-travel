@@ -89,12 +89,6 @@ func (s *Service) startBackgroundRefresh() {
 	}
 }
 
-type numberMatch struct {
-	value string
-	start int
-	end   int
-}
-
 var numberRegex = regexp.MustCompile(`\d+(?:\.\d+)?`)
 var placeholderRegex = regexp.MustCompile(`\{num\d+\}`)
 
