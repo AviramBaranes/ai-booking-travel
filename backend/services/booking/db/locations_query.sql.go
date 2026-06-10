@@ -182,7 +182,12 @@ WHERE EXISTS (
     OR iata ILIKE '%' || $1::text || '%'
     OR city ILIKE '%' || $1::text || '%'
   )
-ORDER BY iata ASC
+ORDER BY 
+  CASE
+    WHEN upper(iata::text) = upper($1::text) THEN 0
+    ELSE 1
+  END,
+  lower(name) ASC
 LIMIT 30
 `
 

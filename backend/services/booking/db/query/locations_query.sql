@@ -49,7 +49,12 @@ WHERE EXISTS (
     OR iata ILIKE '%' || sqlc.arg(search)::text || '%'
     OR city ILIKE '%' || sqlc.arg(search)::text || '%'
   )
-ORDER BY iata ASC
+ORDER BY 
+  CASE
+    WHEN upper(iata::text) = upper(sqlc.arg(search)::text) THEN 0
+    ELSE 1
+  END,
+  lower(name) ASC
 LIMIT 30;
 
 -- name: InsertManyLocation :many
