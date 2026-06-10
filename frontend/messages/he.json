@@ -204,6 +204,28 @@
         "Inclusive Additional": "פרמיום +"
       }
     },
+    "infoDialog": {
+      "importantInfo": "תנאים ומידע חשוב",
+      "terms": "תנאי השכרה",
+      "pickupDetails": "פרטי איסוף",
+      "dropoffDetails": "פרטי החזרה",
+      "station": {
+        "address": "כתובת",
+        "locationInfo": "מידע על המיקום",
+        "phone": "טלפון",
+        "openingHours": "שעות פעילות",
+        "closed": "סגור",
+        "days": {
+          "Sunday": "ראשון",
+          "Monday": "שני",
+          "Tuesday": "שלישי",
+          "Wednesday": "רביעי",
+          "Thursday": "חמישי",
+          "Friday": "שישי",
+          "Saturday": "שבת"
+        }
+      }
+    },
     "erpCheckbox": {
       "title": "אנחנו ממליצים את הכיסויים הבאים:",
       "readMore": "למידע נוסף",

@@ -1,12 +1,11 @@
 import Image from "next/image";
-import { getPayload } from "payload";
-import config from "@payload-config";
 import Link from "next/link";
 import { MegaDropdown } from "./MegaDropdown";
 import type { Populated } from "@/shared/types/payload";
+import { getCachedPayload } from "@/shared/server/cms";
 
 async function getHeaderData(lang: string) {
-  const payload = await getPayload({ config });
+  const payload = await getCachedPayload();
   return payload.findGlobal({
     slug: "header",
     locale: lang as "he" | "en",

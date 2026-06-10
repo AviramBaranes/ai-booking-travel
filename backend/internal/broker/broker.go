@@ -34,7 +34,13 @@ type LocationSearcher interface {
 // AvailabilitySearcher provides vehicle availability search capabilities for a broker.
 type AvailabilitySearcher interface {
 	Name() Name
-	SearchAvailability(params SearchAvailabilityParams) ([]AvailableVehicle, error)
+	SearchAvailability(params SearchAvailabilityParams) (*AvailabilityResponse, error)
+}
+
+// AvailabilityResponse is the response structure for the AvailabilitySearcher interface
+type AvailabilityResponse struct {
+	AvailableVehicles []AvailableVehicle
+	SuppliersInfo     []SupplierInfo
 }
 
 // Booker provides booking capabilities for a broker.
@@ -128,7 +134,6 @@ type AvailableVehicle struct {
 	Broker          Name
 	CarDetails      CarDetails
 	Plans           []Plan
-	AddOns          []AddOn
 	LocationDetails LocationDetails
 	PriceDetails    PriceDetails
 }
@@ -174,9 +179,9 @@ type Plan struct {
 	Price                  float64
 	BrokerErpPrice         float64
 	ChargedErpPriceWithVat float64
-	PlanInclusions         []string
 	Info                   []string
 	RateQualifier          string
+	SupplierName           string
 	SupplierCode           string
 }
 
@@ -188,6 +193,37 @@ type AddOn struct {
 	Currency        string `json:"currency"`
 	AllowedQuantity int    `json:"allowedQuantity"`
 	Period          string `json:"period"`
+}
+
+// SupplierInfo represents information about a supplier, including its name, code, and any additional details.
+type SupplierInfo struct {
+	Name               string                   `json:"name"`
+	AddOns             []AddOn                  `json:"addOns"`
+	PlanInclusions     []string                 `json:"inclusions"`
+	TermsAndConditions []TermsAndConditionsItem `json:"termsAndConditions"`
+	PickupDetails      StationInfo              `json:"pickupDetails"`
+	DropoffDetails     StationInfo              `json:"dropoffDetails"`
+}
+
+// StationInfo represents information about a rental station, including its location info, address, phone number, and opening hours.
+type StationInfo struct {
+	LocationInfo string             `json:"locationInfo"`
+	Address      string             `json:"address"`
+	PhoneNumber  string             `json:"phoneNumber"`
+	OpeningHours []OpeningHoursItem `json:"openingHours"`
+}
+
+// OpeningHoursItem represents the opening hours for a specific day, including the day of the week and the opening and closing times.
+type OpeningHoursItem struct {
+	Day       string `json:"day"`
+	OpenTime  string `json:"openTime"`
+	CloseTime string `json:"closeTime"`
+}
+
+// TermsAndConditionsItem represents a single term or condition associated with a supplier, including its title and HTML content.
+type TermsAndConditionsItem struct {
+	Title       string `json:"title"`
+	HtmlContent string `json:"htmlContent"`
 }
 
 // BookingResponse represents the response received after booking a rental

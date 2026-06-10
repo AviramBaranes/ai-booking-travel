@@ -8,8 +8,9 @@ import (
 	"encore.dev/rlog"
 )
 
-func searchAvailabilityAcrossBrokers(cfg *AvailableVehiclesConfig, p SearchAvailabilityParams, locs availabilityLocations) ([]broker.AvailableVehicle, error) {
+func searchAvailabilityAcrossBrokers(cfg *AvailableVehiclesConfig, p SearchAvailabilityParams, locs availabilityLocations) (*broker.AvailabilityResponse, error) {
 	vs := make([]broker.AvailableVehicle, 0)
+	si := make([]broker.SupplierInfo, 0)
 	var (
 		wg       sync.WaitGroup
 		mu       sync.Mutex
@@ -39,7 +40,8 @@ func searchAvailabilityAcrossBrokers(cfg *AvailableVehiclesConfig, p SearchAvail
 			}
 
 			mu.Lock()
-			vs = append(vs, result...)
+			vs = append(vs, result.AvailableVehicles...)
+			si = append(si, result.SuppliersInfo...)
 			mu.Unlock()
 		}(loc, bn)
 	}
@@ -54,11 +56,14 @@ func searchAvailabilityAcrossBrokers(cfg *AvailableVehiclesConfig, p SearchAvail
 		rlog.Warn("search availability across brokers completed with partial results due to some errors", "error", firstErr)
 	}
 
-	return vs, nil
+	return &broker.AvailabilityResponse{
+		AvailableVehicles: vs,
+		SuppliersInfo:     si,
+	}, nil
 }
 
 // searchCars calls the given broker to search for available vehicles with the supplied location and date parameters.
-func searchCars(b broker.AvailabilitySearcher, params SearchAvailabilityParams, plID, dlID, countryCode string) ([]broker.AvailableVehicle, error) {
+func searchCars(b broker.AvailabilitySearcher, params SearchAvailabilityParams, plID, dlID, countryCode string) (*broker.AvailabilityResponse, error) {
 	vs, err := b.SearchAvailability(broker.SearchAvailabilityParams{
 		CountryCode:     countryCode,
 		PickupLocation:  plID,

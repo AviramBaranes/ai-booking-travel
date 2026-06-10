@@ -18,20 +18,22 @@ export default async function WithNavbarLayout({
   if (!["he", "en"].includes(lang)) {
     notFound();
   }
-  
+
   const messages = await getMessages({ locale: lang });
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <div className="print:hidden sticky top-0 z-40">
         <AppProviders lang={lang} messages={messages}>
           <BackToAdminBanner />
         </AppProviders>
         <Navbar lang={lang} />
       </div>
-      <div className="flex-1">{children}</div>
+
+      <main className="flex-1">{children}</main>
+
       <div className="print:hidden">
         <Footer lang={lang} />
       </div>
-    </>
+    </div>
   );
 }

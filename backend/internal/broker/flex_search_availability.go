@@ -12,7 +12,7 @@ import (
 )
 
 // SearchAvailability searches for available vehicles based on the provided search parameters. It returns a slice of AvailableVehicle structs containing details about the available vehicles, or an error if the search fails.
-func (f *Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle, error) {
+func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResponse, error) {
 	form := url.Values{}
 	form.Set("SIPP", "")
 	form.Set("SupplierCode", "")
@@ -54,16 +54,15 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicl
 
 	if resp.Count == 0 {
 		rlog.Info("no cars found in CarAvailability response", "pickup_location", p.PickupLocation, "dropoff_location", p.DropoffLocation, "pickup_date", p.PickupDate, "dropoff_date", p.DropoffDate)
-		return []AvailableVehicle{}, nil
+		return &AvailabilityResponse{}, nil
 	}
 
 	rlog.Info("CarAvailability response", "return_code", resp.ReturnCode, "error_message", resp.ErrorMessage, "car_count", len(resp.Cars), "supplier_details_count", len(resp.SupplierDetails))
 
 	if len(resp.SupplierDetails) == 0 {
-		return []AvailableVehicle{}, fmt.Errorf("no supplier details found in CarAvailability response for pickup_location=%s dropoff_location=%s pickup_date=%s dropoff_date=%s", p.PickupLocation, p.DropoffLocation, p.PickupDate, p.DropoffDate)
+		return &AvailabilityResponse{}, fmt.Errorf("no supplier details found in CarAvailability response for pickup_location=%s dropoff_location=%s pickup_date=%s dropoff_date=%s", p.PickupLocation, p.DropoffLocation, p.PickupDate, p.DropoffDate)
 	}
 
-	addOnsMap := createAddOnMap(resp.SupplierDetails)
 	supplierDetailsMap := createSupplierMap(resp.SupplierDetails)
 
 	carsMap := make(map[string]AvailableVehicle)
@@ -78,11 +77,6 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicl
 		if !ok {
 			rlog.Warn("no supplier details found for supplier in CarAvailability response, using empty details", "supplier_name", s.name)
 			continue
-		}
-
-		addOns, ok := addOnsMap[s.name]
-		if !ok {
-			addOns = []AddOn{}
 		}
 
 		plans := f.getPlans(c, dayCount, supplierDetails)
@@ -106,7 +100,6 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicl
 			Broker:     BrokerFlex,
 			CarDetails: carDetails,
 			Plans:      plans,
-			AddOns:     addOns,
 			LocationDetails: LocationDetails{
 				LocationType: supplierDetails.PickUpDetails.LocationType,
 			},
@@ -134,7 +127,10 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicl
 		out = append(out, car)
 	}
 
-	return out, nil
+	return &AvailabilityResponse{
+		AvailableVehicles: out,
+		SuppliersInfo:     f.parseSupplierDetails(resp.SupplierDetails),
+	}, nil
 }
 
 // getYoungDriverFee returns the young driver fee and its currency for the given driver age, rental length, and market.
@@ -171,28 +167,24 @@ func (f *Flex) getYoungDriverFee(info []string) (int, string) {
 	return 0, ""
 }
 
-// createAddOnMap returns a map of supplier name to addOn slice
-func createAddOnMap(suppliers []flexSupplierDetails) map[string][]AddOn {
-	addOnMap := make(map[string][]AddOn)
-	for _, s := range suppliers {
-		addOns := make([]AddOn, 0, len(s.AvailableExtras))
-		for _, e := range s.AvailableExtras {
-			if e.MaxAmount == 0 {
-				continue
-			}
-			addOns = append(addOns, AddOn{
-				ID:              e.ExtraID,
-				Name:            e.Name,
-				Price:           int(e.Price),
-				AllowedQuantity: e.MaxAmount,
-				Period:          e.Period,
-				Currency:        e.Currency,
-			})
+// parseAddons returns a map of supplier name to addOn slice
+func parseAddons(s flexSupplierDetails) []AddOn {
+	addOns := make([]AddOn, 0, len(s.AvailableExtras))
+	for _, e := range s.AvailableExtras {
+		if e.MaxAmount == 0 {
+			continue
 		}
-		addOnMap[s.Supplier] = addOns
+		addOns = append(addOns, AddOn{
+			ID:              e.ExtraID,
+			Name:            e.Name,
+			Price:           int(e.Price),
+			AllowedQuantity: e.MaxAmount,
+			Period:          e.Period,
+			Currency:        e.Currency,
+		})
 	}
 
-	return addOnMap
+	return addOns
 }
 
 // createSupplierMap maps Flex supplierInfo by name
@@ -228,23 +220,6 @@ func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDet
 			planID = 1
 		}
 
-		var planInclusions []string
-		inclusionsMap := make(map[string]struct{})
-		for _, inc := range supplierDetails.Inclusions {
-			if inc.Product == p.Product {
-				raw := strings.Split(inc.Inclusion, ";")
-				for _, inclusion := range raw {
-					if trimmed := strings.TrimSpace(inclusion); trimmed != "" {
-						if _, exists := inclusionsMap[trimmed]; !exists {
-							planInclusions = append(planInclusions, trimmed)
-							inclusionsMap[trimmed] = struct{}{}
-						}
-					}
-				}
-				break
-			}
-		}
-
 		price := parseFloat(p.Price)
 		if price == 0 {
 			rlog.Warn("plan price is zero in CarAvailability response, skipping plan", "car_name", c.Name, "product", p.Product)
@@ -254,12 +229,12 @@ func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDet
 		plans = append(plans, Plan{
 			PlanID:                 planID,
 			PlanName:               p.Product,
-			PlanInclusions:         planInclusions,
 			Price:                  price,
 			BrokerErpPrice:         parseFloat(c.ERP),
 			ChargedErpPriceWithVat: f.getInsuranceExtraCost(dayCount),
 			Info:                   c.Information,
 			RateQualifier:          c.RateQualifier,
+			SupplierName:           supplierDetails.Supplier,
 			SupplierCode:           c.SupplierCode,
 		})
 	}
@@ -269,20 +244,9 @@ func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDet
 
 // flexCarToBrokerCar converts a flexCar to a CarDetails struct for the broker response.
 func flexCarToBrokerCar(c flexCar, supplierName string) CarDetails {
-	seats, err := strconv.Atoi(c.Passenger)
-	if err != nil {
-		rlog.Error("flexCarToBrokerCar parse seats got %s: %v", c.Passenger, err)
-	}
-
-	doors, err := strconv.Atoi(c.Doors)
-	if err != nil {
-		rlog.Error("flexCarToBrokerCar parse doors got %s: %v", c.Doors, err)
-	}
-
-	bags, err := strconv.Atoi(c.Luggage)
-	if err != nil {
-		rlog.Error("flexCarToBrokerCar parse bags got %s: %v", c.Luggage, err)
-	}
+	seats, _ := strconv.Atoi(c.Passenger)
+	doors, _ := strconv.Atoi(c.Doors)
+	bags, _ := strconv.Atoi(c.Luggage)
 
 	return CarDetails{
 		Model:        normalizeModelName(c.Name),
@@ -314,4 +278,77 @@ func parseFloat(s string) float64 {
 		return 0
 	}
 	return num
+}
+
+func (f *Flex) parseSupplierDetails(supplierDetails []flexSupplierDetails) []SupplierInfo {
+	supplierInfo := make([]SupplierInfo, 0, len(supplierDetails))
+	for _, s := range supplierDetails {
+		supplierInfo = append(supplierInfo, SupplierInfo{
+			Name:               s.Supplier,
+			AddOns:             parseAddons(s),
+			PlanInclusions:     f.parseInclusions(s),
+			TermsAndConditions: f.parseTerms(s.Terms),
+			PickupDetails:      f.parseStation(s.PickUpDetails),
+			DropoffDetails:     f.parseStation(s.DropOffDetails),
+		})
+	}
+	return supplierInfo
+}
+
+func (f *Flex) parseInclusions(s flexSupplierDetails) []string {
+	var planInclusions []string
+	inclusionsMap := make(map[string]struct{})
+	for _, inc := range s.Inclusions {
+		raw := strings.Split(inc.Inclusion, ";")
+		for _, inclusion := range raw {
+			if trimmed := strings.TrimSpace(inclusion); trimmed != "" {
+				if _, exists := inclusionsMap[trimmed]; !exists {
+					planInclusions = append(planInclusions, trimmed)
+					inclusionsMap[trimmed] = struct{}{}
+				}
+			}
+		}
+	}
+
+	return planInclusions
+}
+
+func (f *Flex) parseTerms(terms []flexTerms) []TermsAndConditionsItem {
+	parsedTerms := make([]TermsAndConditionsItem, 0, len(terms))
+	for _, t := range terms {
+		parsedTerms = append(parsedTerms, TermsAndConditionsItem{
+			Title:       t.Header,
+			HtmlContent: t.Paragraph,
+		})
+	}
+
+	return parsedTerms
+}
+
+func (f *Flex) parseStation(d flexLocationDetails) StationInfo {
+	address := d.Address1
+	if d.Address2 != "" {
+		address += ", " + d.Address2
+	}
+	if d.Address3 != "" {
+		address += ", " + d.Address3
+	}
+	return StationInfo{
+		LocationInfo: d.LocationInformation,
+		Address:      address,
+		PhoneNumber:  d.Phone,
+		OpeningHours: parseOpeningHours(d.OpeningHours),
+	}
+}
+
+func parseOpeningHours(oh flexOpeningHours) []OpeningHoursItem {
+	return []OpeningHoursItem{
+		{Day: "Sunday", OpenTime: oh.SunOpen, CloseTime: oh.SunClose},
+		{Day: "Monday", OpenTime: oh.MonOpen, CloseTime: oh.MonClose},
+		{Day: "Tuesday", OpenTime: oh.TueOpen, CloseTime: oh.TueClose},
+		{Day: "Wednesday", OpenTime: oh.WedOpen, CloseTime: oh.WedClose},
+		{Day: "Thursday", OpenTime: oh.ThuOpen, CloseTime: oh.ThuClose},
+		{Day: "Friday", OpenTime: oh.FriOpen, CloseTime: oh.FriClose},
+		{Day: "Saturday", OpenTime: oh.SatOpen, CloseTime: oh.SatClose},
+	}
 }

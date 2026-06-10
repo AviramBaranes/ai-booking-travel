@@ -18,7 +18,7 @@ type hertzRequestParams struct {
 }
 
 // SearchAvailability fetches and merges Hertz vehicle availability results.
-func (h *Hertz) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehicle, error) {
+func (h *Hertz) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResponse, error) {
 	dayCount, err := CalculateDaysCount(p.PickupDate, p.PickupTime, p.DropoffDate, p.DropoffTime)
 	if err != nil {
 		return nil, fmt.Errorf("calculate days count %w", err)
@@ -110,7 +110,9 @@ func (h *Hertz) SearchAvailability(p SearchAvailabilityParams) ([]AvailableVehic
 		out = append(out, v)
 	}
 
-	return out, nil
+	return &AvailabilityResponse{
+		AvailableVehicles: out,
+	}, nil
 }
 
 const (
@@ -121,7 +123,7 @@ const (
 func (h *Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, resp hertzCarAvailabilityResponse, brandID hertzBrand, planName string, dayCount int) []AvailableVehicle {
 	availableVehicles := make([]AvailableVehicle, 0, len(resp.Cars))
 
-	inclusions := getPlanInclusions(p.CountryCode, planName)
+	// inclusions := getPlanInclusions(p.CountryCode, planName)
 	locationType := "Shuttle"
 	if resp.LocationType == "1" {
 		locationType = "Airport"
@@ -172,9 +174,9 @@ func (h *Hertz) mapHertzResponseToAvailableVehicles(p SearchAvailabilityParams, 
 			},
 			Plans: []Plan{
 				{
-					PlanName:               planName,
-					Price:                  chargeDetails.price,
-					PlanInclusions:         inclusions,
+					PlanName: planName,
+					Price:    chargeDetails.price,
+					// PlanInclusions:         inclusions,
 					Info:                   info,
 					BrokerErpPrice:         0,
 					ChargedErpPriceWithVat: h.getERPPrice(dayCount, p.CountryCode),

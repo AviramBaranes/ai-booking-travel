@@ -31,10 +31,10 @@ const (
 )
 
 // buildAvailabilityArtifacts applies markup, coupon discounts, and currency data to produce the final response vehicles and plan snapshots.
-func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p SearchAvailabilityParams, locs availabilityLocations, rawVehicles []broker.AvailableVehicle, couponDiscount float64) (availabilityArtifacts, error) {
+func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p SearchAvailabilityParams, locs availabilityLocations, avResp *broker.AvailabilityResponse, couponDiscount float64) (availabilityArtifacts, error) {
 	artifacts := availabilityArtifacts{
-		availableCars: make([]AvailableVehicle, 0, len(rawVehicles)),
-		plansDetails:  make([]PlanPriceDetails, 0, len(rawVehicles)*2), //most cars have 1-2 plans
+		availableCars: make([]AvailableVehicle, 0, len(avResp.AvailableVehicles)),
+		plansDetails:  make([]PlanPriceDetails, 0, len(avResp.AvailableVehicles)*2), //most cars have 1-2 plans
 	}
 
 	daysCount, err := broker.CalculateDaysCount(p.PickupDate, p.PickupTime, p.DropoffDate, p.DropoffTime)
@@ -43,7 +43,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 		return artifacts, api_errors.ErrInternalError
 	}
 
-	markupProviders, err := s.getMarkupProviderMap(ctx, locs, daysCount, p.PickupDate, extractCarGroups(rawVehicles))
+	markupProviders, err := s.getMarkupProviderMap(ctx, locs, daysCount, p.PickupDate, extractCarGroups(avResp.AvailableVehicles))
 	if err != nil {
 		rlog.Error("failed to get markup provider map", "error", err)
 		return artifacts, api_errors.ErrInternalError
@@ -57,7 +57,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 		return artifacts, api_errors.ErrInternalError
 	}
 
-	for i, v := range rawVehicles {
+	for i, v := range avResp.AvailableVehicles {
 		mp, ok := markupProviders[v.Broker]
 		if !ok {
 			rlog.Warn("no markup provider found for broker, skipping applying markup", "broker", v.Broker)
@@ -68,13 +68,23 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 			ID:              i,
 			CarDetails:      v.CarDetails,
 			Broker:          v.Broker,
-			AddOns:          v.AddOns,
 			LocationDetails: v.LocationDetails,
 			PriceDetails:    v.PriceDetails,
 		}
 		avPlans := make([]Plan, 0, len(v.Plans))
 
+		spMap := make(map[string]broker.SupplierInfo)
+		for _, sp := range avResp.SuppliersInfo {
+			spMap[sp.Name] = sp
+		}
+
 		for _, p := range v.Plans {
+			sp, ok := spMap[p.SupplierName]
+			if !ok {
+				rlog.Warn("no supplier info found for supplier name, skipping plan details enrichment", "supplierName", p.SupplierName)
+				sp = broker.SupplierInfo{}
+			}
+
 			markupPercentage := mp.GetMarkup(isAgent, v.CarDetails.CarGroup, p.SupplierCode)
 			if markupPercentage <= 0 {
 				rlog.Warn("calculated car price with markup is less than or equal to 0, skipping plan", "carGroup", v.CarDetails.CarGroup, "brand", p.SupplierCode)
@@ -92,7 +102,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				continue
 			}
 
-			inclusions := p.PlanInclusions
+			inclusions := sp.PlanInclusions
 			info := p.Info
 			if lang.FromContext(ctx, "en") == "he" {
 				inclusions = s.translatePlanDetails(ctx, inclusions)
@@ -115,7 +125,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				ChargedERPPriceWithVat: p.ChargedErpPriceWithVat,
 				CarDetails:             v.CarDetails,
 				Inclusions:             inclusions,
-				AvailableAddOns:        v.AddOns,
+				AvailableAddOns:        sp.AddOns,
 				Fees:                   v.PriceDetails.Fees,
 			}
 
@@ -126,16 +136,16 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 			discountedErp := pricing.CalculateDiscountedPrice(erpWithMarkup, couponDiscount)
 			discountedCarPrice := pricing.CalculateDiscountedPrice(carPriceWithMarkup, couponDiscount) // no discount on charged erp
 			avPlan := Plan{
-				PlanID:         p.PlanID,
-				PlanName:       p.PlanName,
-				FullPrice:      pricing.RoundToInt(carPriceWithMarkup),
-				Discount:       pricing.RoundToInt(couponDiscount),
-				Price:          pricing.RoundToInt(discountedCarPrice),
-				ErpPrice:       pricing.RoundToInt(discountedErp + p.ChargedErpPriceWithVat), // no discount on charged erp
-				PlanInclusions: inclusions,
-				Info:           info,
-				RateQualifier:  p.RateQualifier,
-				SupplierCode:   p.SupplierCode,
+				PlanID:        p.PlanID,
+				PlanName:      p.PlanName,
+				FullPrice:     pricing.RoundToInt(carPriceWithMarkup),
+				Discount:      pricing.RoundToInt(couponDiscount),
+				Price:         pricing.RoundToInt(discountedCarPrice),
+				ErpPrice:      pricing.RoundToInt(discountedErp + p.ChargedErpPriceWithVat), // no discount on charged erp
+				Info:          info,
+				RateQualifier: p.RateQualifier,
+				SupplierName:  sp.Name,
+				SupplierCode:  p.SupplierCode,
 			}
 			avPlans = append(avPlans, avPlan)
 		}

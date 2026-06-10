@@ -1133,7 +1133,6 @@ export namespace availability {
         broker: broker.Name
         carDetails: broker.CarDetails
         plans: Plan[]
-        addOns: broker.AddOn[]
         locationDetails: broker.LocationDetails
         priceDetails: broker.PriceDetails
         signals?: BookingSignals
@@ -1158,9 +1157,9 @@ export namespace availability {
         discount: number
         price: number
         erpPrice: number
-        planInclusions: string[]
         info: string[]
         rateQualifier: string
+        supplierName: string
         supplierCode: string
     }
 
@@ -1187,6 +1186,7 @@ export namespace availability {
         dropoffLocationName: string
         daysCount: number
         availableVehicles: AvailableVehicle[]
+        suppliersInfo: broker.SupplierInfo[]
     }
 }
 
@@ -1268,6 +1268,15 @@ export namespace broker {
     export type Name = string
 
     /**
+     * OpeningHoursItem represents the opening hours for a specific day, including the day of the week and the opening and closing times.
+     */
+    export interface OpeningHoursItem {
+        day: string
+        openTime: string
+        closeTime: string
+    }
+
+    /**
      * PriceDetails represents the pricing details of a rental, including the currency, drop charge, and drop charge currency.
      */
     export interface PriceDetails {
@@ -1281,6 +1290,36 @@ export namespace broker {
     export interface SelectAddOn {
         id: number
         quantity: number
+    }
+
+    /**
+     * StationInfo represents information about a rental station, including its location info, address, phone number, and opening hours.
+     */
+    export interface StationInfo {
+        locationInfo: string
+        address: string
+        phoneNumber: string
+        openingHours: OpeningHoursItem[]
+    }
+
+    /**
+     * SupplierInfo represents information about a supplier, including its name, code, and any additional details.
+     */
+    export interface SupplierInfo {
+        name: string
+        addOns: AddOn[]
+        inclusions: string[]
+        termsAndConditions: TermsAndConditionsItem[]
+        pickupDetails: StationInfo
+        dropoffDetails: StationInfo
+    }
+
+    /**
+     * TermsAndConditionsItem represents a single term or condition associated with a supplier, including its title and HTML content.
+     */
+    export interface TermsAndConditionsItem {
+        title: string
+        htmlContent: string
     }
 }
 

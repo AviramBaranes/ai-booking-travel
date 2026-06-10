@@ -1,15 +1,14 @@
-import { getPayload } from "payload";
-import config from "@payload-config";
 import { FooterFirstFloor } from "./FirstFloor";
 import { FooterSecondFloor } from "./SecondFloor";
 import { FooterThirdFloor } from "./ThirdFloor";
+import { getCachedPayload } from "@/shared/server/cms";
 
 interface FooterProps {
   lang: string;
 }
 
 async function getFooterContent(lang: string) {
-  const payload = await getPayload({ config });
+  const payload = await getCachedPayload();
   const footerContent = await payload.findGlobal({
     slug: "footer",
     locale: lang as "he" | "en",
