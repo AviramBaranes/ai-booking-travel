@@ -2,7 +2,6 @@ package accounts
 
 import (
 	"context"
-	"errors"
 	"strconv"
 	"testing"
 	"time"
@@ -100,11 +99,6 @@ func TestRefreshTokens(t *testing.T) {
 				ExpiresAt: dbadapters.DBTime(time.Now().Add(time.Hour)),
 			}, nil)
 
-		// DeleteRefreshToken is called before GetUserById
-		q.EXPECT().
-			DeleteRefreshToken(gomock.Any(), jti).
-			Return(nil)
-
 		q.EXPECT().
 			GetUserById(gomock.Any(), int64(999999)).
 			Return(db.GetUserByIdRow{}, db.ErrNoRows)
@@ -171,11 +165,9 @@ func TestRefreshTokens(t *testing.T) {
 			t.Error("refresh token already expired")
 		}
 
-		// Verify old refresh token is deleted
-		if _, err := query.GetRefreshToken(ctx, origClaims.ID); err == nil {
-			t.Error("old refresh token still exists in DB")
-		} else if !errors.Is(err, db.ErrNoRows) {
-			t.Errorf("expected ErrNoRows for old token, got %v", err)
+		// Verify old refresh token is NOT deleted
+		if _, err := query.GetRefreshToken(ctx, origClaims.ID); err != nil {
+			t.Error("old refresh token deleted")
 		}
 
 		// Verify new refresh token is in DB

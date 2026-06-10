@@ -40,11 +40,6 @@ func (s *AuthService) RefreshTokens(ctx context.Context, p RefreshTokensParams) 
 		return nil, ErrExpiredRefreshToken
 	}
 
-	if err := s.query.DeleteRefreshToken(ctx, claims.ID); err != nil {
-		rlog.Error("failed to delete refresh token from database", "error", err)
-		return nil, api_errors.ErrInternalError
-	}
-
 	user, err := s.query.GetUserById(ctx, claims.UserID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
