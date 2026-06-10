@@ -99,7 +99,6 @@ export function OtherPlansButton({
                 (s) => s.name === plan.supplierName
               );
 
-              console.log("supplier info", suppliersInfo, plan.supplierName, supplier);
               const items =
                 activeTab === "terms" ? plan.info : supplier?.inclusions ?? [];
 

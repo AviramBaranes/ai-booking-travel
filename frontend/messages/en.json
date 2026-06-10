@@ -205,6 +205,28 @@
         "Inclusive Additional": "Premium +"
       }
     },
+    "infoDialog": {
+      "importantInfo": "Terms & Important Info",
+      "terms": "Rental Terms",
+      "pickupDetails": "Pickup Details",
+      "dropoffDetails": "Drop-off Details",
+      "station": {
+        "address": "Address",
+        "locationInfo": "Location Info",
+        "phone": "Phone",
+        "openingHours": "Opening Hours",
+        "closed": "Closed",
+        "days": {
+          "Sunday": "Sunday",
+          "Monday": "Monday",
+          "Tuesday": "Tuesday",
+          "Wednesday": "Wednesday",
+          "Thursday": "Thursday",
+          "Friday": "Friday",
+          "Saturday": "Saturday"
+        }
+      }
+    },
     "erpCheckbox": {
       "title": "We recommend the following coverages:",
       "readMore": "More information",

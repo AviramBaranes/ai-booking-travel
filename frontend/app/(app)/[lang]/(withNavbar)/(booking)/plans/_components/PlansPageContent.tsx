@@ -96,7 +96,11 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
                 daysCount={data?.daysCount ?? 0}
               />
             )}
-            <ImportantInfoButton />
+            <ImportantInfoButton
+              plans={vehicle.plans}
+              suppliersInfo={data?.suppliersInfo ?? []}
+              selectedPlanIndex={selectedPlan}
+            />
           </div>
           {vehicle.signals && (
             <div className="flex items-center gap-2">
