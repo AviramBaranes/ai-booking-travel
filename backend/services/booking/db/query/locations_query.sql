@@ -34,29 +34,6 @@ DO UPDATE SET
   updated_at   = now()
 RETURNING id;
 
--- name: SearchLocations :many
-SELECT *
-FROM locations
-WHERE EXISTS (
-    SELECT 1 
-    FROM location_broker_codes lbc 
-    WHERE lbc.location_id = locations.id 
-      AND lbc.enabled = TRUE
-  )
-  AND (
-    name ILIKE '%' || sqlc.arg(search)::text || '%'
-    OR country ILIKE '%' || sqlc.arg(search)::text || '%'
-    OR iata ILIKE '%' || sqlc.arg(search)::text || '%'
-    OR city ILIKE '%' || sqlc.arg(search)::text || '%'
-  )
-ORDER BY 
-  CASE
-    WHEN upper(iata::text) = upper(sqlc.arg(search)::text) THEN 0
-    ELSE 1
-  END,
-  lower(name) ASC
-LIMIT 30;
-
 -- name: InsertManyLocation :many
 INSERT INTO locations (country, country_code, city, name, iata)
 SELECT
@@ -95,3 +72,62 @@ LIMIT 1;
 -- name: DeleteLocationByID :exec
 DELETE FROM locations
 WHERE id = sqlc.arg(id);
+
+-- name: SearchLocations :many
+SELECT
+    l.id,
+    l.country,
+    l.country_code,
+    l.city,
+    l.name,
+    l.iata,
+    l.created_at,
+    l.updated_at
+FROM locations l
+WHERE EXISTS (
+    SELECT 1
+    FROM location_broker_codes lbc
+    WHERE lbc.location_id = l.id
+      AND lbc.enabled = TRUE
+)
+AND (
+    l.name ILIKE '%' || sqlc.arg(search)::text || '%'
+    OR l.country ILIKE '%' || sqlc.arg(search)::text || '%'
+    OR l.iata ILIKE '%' || sqlc.arg(search)::text || '%'
+    OR l.city ILIKE '%' || sqlc.arg(search)::text || '%'
+    OR EXISTS (
+        SELECT 1
+        FROM locations_common_names lcn
+        WHERE lcn.location_id = l.id
+          AND lcn.common_name ILIKE '%' || sqlc.arg(search)::text || '%'
+    )
+)
+ORDER BY
+  CASE
+    WHEN upper(l.iata::text) = upper(sqlc.arg(search)::text) THEN 0
+
+    WHEN lower(l.name) = lower(sqlc.arg(search)::text) THEN 1
+    WHEN lower(coalesce(l.city, '')) = lower(sqlc.arg(search)::text) THEN 2
+    WHEN lower(l.country) = lower(sqlc.arg(search)::text) THEN 3
+
+    WHEN EXISTS (
+        SELECT 1
+        FROM locations_common_names lcn
+        WHERE lcn.location_id = l.id
+          AND lower(lcn.common_name) = lower(sqlc.arg(search)::text)
+    ) THEN 4
+
+    WHEN l.name ILIKE sqlc.arg(search)::text || '%' THEN 5
+    WHEN coalesce(l.city, '') ILIKE sqlc.arg(search)::text || '%' THEN 6
+
+    WHEN EXISTS (
+        SELECT 1
+        FROM locations_common_names lcn
+        WHERE lcn.location_id = l.id
+          AND lcn.common_name ILIKE sqlc.arg(search)::text || '%'
+    ) THEN 7
+
+    ELSE 8
+  END,
+  lower(l.name) ASC
+LIMIT 30;

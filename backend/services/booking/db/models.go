@@ -218,6 +218,14 @@ type LocationBrokerCode struct {
 	UpdatedAt        pgtype.Timestamptz
 }
 
+type LocationsCommonName struct {
+	ID         int64
+	LocationID int64
+	CommonName string
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
+}
+
 type PriceOffer struct {
 	ID                  int64
 	ReservationID       *int64

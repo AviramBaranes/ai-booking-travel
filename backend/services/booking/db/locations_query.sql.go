@@ -168,26 +168,62 @@ func (q *Queries) InsertManyLocation(ctx context.Context, arg InsertManyLocation
 }
 
 const searchLocations = `-- name: SearchLocations :many
-SELECT id, country, country_code, city, name, iata, created_at, updated_at
-FROM locations
+SELECT
+    l.id,
+    l.country,
+    l.country_code,
+    l.city,
+    l.name,
+    l.iata,
+    l.created_at,
+    l.updated_at
+FROM locations l
 WHERE EXISTS (
-    SELECT 1 
-    FROM location_broker_codes lbc 
-    WHERE lbc.location_id = locations.id 
+    SELECT 1
+    FROM location_broker_codes lbc
+    WHERE lbc.location_id = l.id
       AND lbc.enabled = TRUE
-  )
-  AND (
-    name ILIKE '%' || $1::text || '%'
-    OR country ILIKE '%' || $1::text || '%'
-    OR iata ILIKE '%' || $1::text || '%'
-    OR city ILIKE '%' || $1::text || '%'
-  )
-ORDER BY 
+)
+AND (
+    l.name ILIKE '%' || $1::text || '%'
+    OR l.country ILIKE '%' || $1::text || '%'
+    OR l.iata ILIKE '%' || $1::text || '%'
+    OR l.city ILIKE '%' || $1::text || '%'
+    OR EXISTS (
+        SELECT 1
+        FROM locations_common_names lcn
+        WHERE lcn.location_id = l.id
+          AND lcn.common_name ILIKE '%' || $1::text || '%'
+    )
+)
+ORDER BY
   CASE
-    WHEN upper(iata::text) = upper($1::text) THEN 0
-    ELSE 1
+    WHEN upper(l.iata::text) = upper($1::text) THEN 0
+
+    WHEN lower(l.name) = lower($1::text) THEN 1
+    WHEN lower(coalesce(l.city, '')) = lower($1::text) THEN 2
+    WHEN lower(l.country) = lower($1::text) THEN 3
+
+    WHEN EXISTS (
+        SELECT 1
+        FROM locations_common_names lcn
+        WHERE lcn.location_id = l.id
+          AND lower(lcn.common_name) = lower($1::text)
+    ) THEN 4
+
+    WHEN l.name ILIKE $1::text || '%' THEN 5
+    WHEN coalesce(l.city, '') ILIKE $1::text || '%' THEN 6
+
+    WHEN EXISTS (
+        SELECT 1
+        FROM locations_common_names lcn
+        WHERE lcn.location_id = l.id
+          AND lcn.common_name ILIKE $1::text || '%'
+    ) THEN 7
+
+    ELSE 8
   END,
-  lower(name) ASC
+  lower(l.name) ASC
 LIMIT 30
 `
 
