@@ -1,11 +1,9 @@
 import "../globals.css";
-import { getPayload } from "payload";
-import config from "@payload-config";
 import { NotFoundContent } from "@/shared/components/NotFoundContent";
 import localFont from "next/font/local";
-import { Navbar } from "./[lang]/(withNavbar)/_components/header/navbar/Navbar";
 import { Footer } from "./[lang]/(withNavbar)/_components/footer/Footer";
 import { NavbarLinks } from "./[lang]/(withNavbar)/_components/header/navbar/NavbarLinks";
+import { getCachedPayload } from "@/shared/server/cms";
 
 const polin = localFont({
   src: [
@@ -19,7 +17,7 @@ const polin = localFont({
 });
 
 export async function getNotFoundData(lang: string) {
-  const payload = await getPayload({ config });
+  const payload = await getCachedPayload();
   const notFoundData = await payload.findGlobal({
     slug: "not-found",
     locale: lang as "he" | "en",

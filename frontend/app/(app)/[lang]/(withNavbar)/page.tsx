@@ -1,7 +1,5 @@
-import config from "@payload-config";
 import type { Homepage } from "@/payload-types";
 import { Metadata } from "next";
-import { getPayload } from "payload";
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { Populated } from "@/shared/types/payload";
@@ -9,6 +7,7 @@ import { Hero } from "./_components/home/Hero";
 import { BlocksRenderer } from "./_components/blocks/BlocksRenderer";
 import { HomepageDecorations } from "./_components/decorations/HomepageDecorations";
 import { SUPPORTED_LANGS } from "@/shared/constants/supported_langs";
+import { getCachedPayload } from "@/shared/server/cms";
 
 type Props = {
   params: Promise<{ lang: string }>;
@@ -21,7 +20,7 @@ export async function generateStaticParams() {
 }
 
 const getHomepage = cache(async (lang: string): Promise<Homepage | null> => {
-  const payload = await getPayload({ config });
+  const payload = await getCachedPayload();
   const result = await payload.findGlobal({
     slug: "homepage",
     locale: lang as "he" | "en",

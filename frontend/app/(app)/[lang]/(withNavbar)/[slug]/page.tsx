@@ -1,6 +1,4 @@
 import { notFound } from "next/navigation";
-import { getPayload } from "payload";
-import config from "@payload-config";
 import type { Metadata } from "next";
 import type { Page } from "@/payload-types";
 import type { Populated } from "@/shared/types/payload";
@@ -12,13 +10,14 @@ import {
   SUPPORTED_LANGS,
   SupportedLang,
 } from "@/shared/constants/supported_langs";
+import { getCachedPayload } from "@/shared/server/cms";
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
 };
 
 const getPage = async (slug: string, lang: string): Promise<Page | null> => {
-  const payload = await getPayload({ config });
+  const payload = await getCachedPayload();
   const result = await payload.find({
     collection: "pages",
     where: { slug: { equals: slug } },
@@ -32,7 +31,7 @@ const getPage = async (slug: string, lang: string): Promise<Page | null> => {
 
 export const revalidate = 3600;
 export async function generateStaticParams() {
-  const payload = await getPayload({ config });
+  const payload = await getCachedPayload();
   const params = await Promise.all(
     SUPPORTED_LANGS.map(async (lang) => {
       const result = await payload.find({
