@@ -17,7 +17,6 @@ type AvailableVehicle struct {
 	Broker          broker.Name            `json:"broker"`
 	CarDetails      broker.CarDetails      `json:"carDetails"`
 	Plans           []Plan                 `json:"plans"`
-	AddOns          []broker.AddOn         `json:"addOns"`
 	LocationDetails broker.LocationDetails `json:"locationDetails"`
 	PriceDetails    broker.PriceDetails    `json:"priceDetails"`
 	Signals         *BookingSignals        `json:"signals,omitempty" encore:"optional"`
@@ -32,16 +31,16 @@ type BookingSignals struct {
 
 // Plan represents a rental plan, including its ID, name, description, full price, discount, and other pricing details.
 type Plan struct {
-	PlanID         int      `json:"planId"`
-	PlanName       string   `json:"planName"`
-	FullPrice      int      `json:"fullPrice"`
-	Discount       int      `json:"discount"`
-	Price          int      `json:"price"`
-	ErpPrice       int      `json:"erpPrice"`
-	PlanInclusions []string `json:"planInclusions"`
-	Info           []string `json:"info"`
-	RateQualifier  string   `json:"rateQualifier"`
-	SupplierCode   string   `json:"supplierCode"`
+	PlanID        int      `json:"planId"`
+	PlanName      string   `json:"planName"`
+	FullPrice     int      `json:"fullPrice"`
+	Discount      int      `json:"discount"`
+	Price         int      `json:"price"`
+	ErpPrice      int      `json:"erpPrice"`
+	Info          []string `json:"info"`
+	RateQualifier string   `json:"rateQualifier"`
+	SupplierName  string   `json:"supplierName"`
+	SupplierCode  string   `json:"supplierCode"`
 }
 
 // AvailableVehiclesConfig holds markup percentages and ERP day-charge values per broker.
@@ -72,11 +71,12 @@ func (p SearchAvailabilityParams) Validate() error {
 
 // SearchAvailabilityResponse represents the response for searching availability of vehicles.
 type SearchAvailabilityResponse struct {
-	SnapshotID          int64              `json:"snapshotId"`
-	PickupLocationName  string             `json:"pickupLocationName"`
-	DropoffLocationName string             `json:"dropoffLocationName"`
-	DaysCount           int                `json:"daysCount"`
-	AvailableVehicles   []AvailableVehicle `json:"availableVehicles"`
+	SnapshotID          int64                 `json:"snapshotId"`
+	PickupLocationName  string                `json:"pickupLocationName"`
+	DropoffLocationName string                `json:"dropoffLocationName"`
+	DaysCount           int                   `json:"daysCount"`
+	AvailableVehicles   []AvailableVehicle    `json:"availableVehicles"`
+	SuppliersInfo       []broker.SupplierInfo `json:"suppliersInfo"`
 }
 
 // SearchAvailability handles the http request for searching availability of vehicles.
@@ -102,17 +102,17 @@ func (s *AvailabilityService) SearchAvailability(ctx context.Context, p SearchAv
 		}
 	}
 
-	rawVehicles, err := searchAvailabilityAcrossBrokers(s.cfg, p, locs)
+	resp, err := searchAvailabilityAcrossBrokers(s.cfg, p, locs)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(rawVehicles) == 0 {
+	if len(resp.AvailableVehicles) == 0 {
 		rlog.Info("no available vehicles found for the search criteria")
 		return emptySearchAvailabilityResponse(), nil
 	}
 
-	artifacts, err := s.buildAvailabilityArtifacts(ctx, p, locs, rawVehicles, float64(couponDiscount))
+	artifacts, err := s.buildAvailabilityArtifacts(ctx, p, locs, resp, float64(couponDiscount))
 	if err != nil {
 		return nil, err
 	}
@@ -135,10 +135,11 @@ func (s *AvailabilityService) SearchAvailability(ctx context.Context, p SearchAv
 		DropoffLocationName: extractDropoffLocationName(locs),
 		DaysCount:           dayCount,
 		AvailableVehicles:   artifacts.availableCars,
+		SuppliersInfo:       resp.SuppliersInfo,
 	}, nil
 }
 
 // emptySearchAvailabilityResponse returns an empty SearchAvailabilityResponse with no available vehicles.
 func emptySearchAvailabilityResponse() *SearchAvailabilityResponse {
-	return &SearchAvailabilityResponse{AvailableVehicles: []AvailableVehicle{}}
+	return &SearchAvailabilityResponse{AvailableVehicles: []AvailableVehicle{}, SuppliersInfo: []broker.SupplierInfo{}}
 }

@@ -19,8 +19,8 @@ export default async function LoadingPage() {
   const t = await getTranslations("ResultsPage");
   return (
     <div className="text-center">
-      <p className="mt-40">{t("loadingMessage")}</p>
-      <hr className="w-1/12 mx-auto bg-[#336CAE] h-1 rounded border-none mt-3" />
+      {/* <p className="mt-40">{t("loadingMessage")}</p>
+      <hr className="w-1/12 mx-auto bg-[#336CAE] h-1 rounded border-none mt-3" /> */}
 
       <div className="mt-5 self-stretch text-center justify-start text-indigo-950 text-5xl font-black leading-12">
         {t("loadingTitle")}

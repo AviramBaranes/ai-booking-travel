@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { availability } from "@/shared/client";
+import { availability, broker } from "@/shared/client";
 import { formatPrice } from "@/shared/utils/formatPrice";
 import { CircleCheckBig, Circle, ShieldCheck, X, Crown } from "lucide-react";
 import { RentalPriceForDays } from "@/shared/components/booking/RentalPriceForDays";
 
 interface OtherPlansButtonProps {
   plans: availability.Plan[];
+  suppliersInfo: broker.SupplierInfo[];
   selectedPlan: number;
   onSelectPlan: (index: number) => void;
   currency: string;
@@ -19,6 +20,7 @@ interface OtherPlansButtonProps {
 
 export function OtherPlansButton({
   plans,
+  suppliersInfo,
   selectedPlan,
   onSelectPlan,
   currency,
@@ -93,8 +95,13 @@ export function OtherPlansButton({
           <div className="flex gap-6 items-stretch justify-center px-12 pb-6">
             {plans.map((plan, index) => {
               const isSelected = index === selectedPlan;
+              const supplier = suppliersInfo.find(
+                (s) => s.name === plan.supplierName
+              );
+
+              console.log("supplier info", suppliersInfo, plan.supplierName, supplier);
               const items =
-                activeTab === "terms" ? plan.info : plan.planInclusions;
+                activeTab === "terms" ? plan.info : supplier?.inclusions ?? [];
 
               return (
                 <div

@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import { useSearchParams, useRouter } from "next/navigation";
 import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellationBadge";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ErpDialog } from "./ErpDialog";
 import { FeesNote } from "./FeesNote";
 import { PriceOfferDialog } from "./PriceOfferDialog";
@@ -45,6 +45,19 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
   const [isErpDialogOpen, setIsErpDialogOpen] = useState(false);
   const [isPriceOfferDialogOpen, setIsPriceOfferDialogOpen] = useState(false);
 
+  const { addOns, planInclusions } = useMemo(() => {
+    if (!data) {
+      return { planInclusions: [], addOns: [] };
+    }
+    const supplier = data.suppliersInfo.find(
+      (s) => s.name === vehicle?.plans[selectedPlan].supplierName,
+    );
+    return {
+      planInclusions: supplier?.inclusions ?? [],
+      addOns: supplier?.addOns ?? [],
+    };
+  }, [data]);
+
   if (!vehicle) {
     return <Loading />;
   }
@@ -53,11 +66,11 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
     <div className="flex gap-4">
       <div className="w-3/4">
         <div className="flex gap-4 mb-6">
-          {vehicle.plans[selectedPlan].planInclusions.length > 0 &&(
+          {planInclusions.length > 0 && (
             <div className="w-1/2">
               <InclusionsDisplay
                 title={t("inclusionsTitle")}
-                inclusions={vehicle.plans[selectedPlan].planInclusions}
+                inclusions={planInclusions}
               />
             </div>
           )}
@@ -76,6 +89,7 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
             {vehicle.plans.length > 1 && (
               <OtherPlansButton
                 plans={vehicle.plans}
+                suppliersInfo={data?.suppliersInfo ?? []}
                 selectedPlan={selectedPlan}
                 onSelectPlan={setSelectedPlan}
                 currency={vehicle.priceDetails.currency}
@@ -101,11 +115,11 @@ export function PlansPageContent({ searchRequest }: PlansPageContentProps) {
           selectedPlan={selectedPlan}
           daysCount={data?.daysCount ?? 0}
         />
-        {!!vehicle.addOns?.length && (
+        {!!addOns.length && (
           <>
             <hr className="mt-10 mb-6" />
             <AddOnsDisplay
-              addons={vehicle.addOns}
+              addons={addOns}
               selectedAddons={selectedAddons}
               setSelectedAddons={setSelectedAddons}
             />

@@ -32,15 +32,15 @@ export function useDevFilters() {
         return false;
       }
 
-      const addOnsCount = car.addOns?.length ?? 0;
+      // const addOnsCount = car.plans.reduce((count, plan) => , 0);
 
-      if (addOnsFilter === "has" && addOnsCount === 0) {
-        return false;
-      }
+      // if (addOnsFilter === "has" && addOnsCount === 0) {
+      //   return false;
+      // }
 
-      if (addOnsFilter === "not" && addOnsCount > 0) {
-        return false;
-      }
+      // if (addOnsFilter === "not" && addOnsCount > 0) {
+      //   return false;
+      // }
 
       return true;
     };
