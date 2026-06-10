@@ -29,7 +29,7 @@ export default async function WithNavbarLayout({
         <Navbar lang={lang} />
       </div>
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 min-h-[70vh]">{children}</main>
 
       <div className="print:hidden">
         <Footer lang={lang} />

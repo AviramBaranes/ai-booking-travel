@@ -1,4 +1,4 @@
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,16 +16,14 @@ const languages = [
 ];
 
 export function LangSwitcher({ lang }: { lang: string }) {
-  const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const t = useTranslations("LangSwitcher");
   const dir = useDirection();
 
   function handleSelect(newLang: string) {
-    const rest = pathname.replace(/^\/[^/]+/, "");
-    const query = searchParams.toString();
-    router.push(`/${newLang}${rest}${query ? `?${query}` : ""}`);
+    const href = location.href;
+    const newPathname = href.replace(`/${lang}`, `/${newLang}`);
+    router.push(newPathname);
   }
 
   const current = languages.find((l) => l.code === lang);
