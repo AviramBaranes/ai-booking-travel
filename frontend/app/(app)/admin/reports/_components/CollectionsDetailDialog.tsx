@@ -26,7 +26,7 @@ export function CollectionsDetailDialog({
           key={`${entity?.kind}-${entity?.id}`}
           fallback={<BillingShellSkeleton />}
         >
-          {entity && <BillingResults entity={entity} showActions={false} />}
+          {entity && <BillingResults entity={entity} />}
         </Suspense>
       </DialogContent>
     </Dialog>

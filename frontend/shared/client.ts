@@ -405,6 +405,7 @@ export namespace accounts {
 export namespace billing {
     export interface BillParams {
         ids: number[]
+        "skip_invoice_creation"?: boolean
         "total_paid": number
         "transfer_date": string
         "office_id"?: number

@@ -17,7 +17,7 @@ export default async function AccountingRootLayout({
     redirect("/he/");
   }
 
-  if (session.user?.role !== "accountant") {
+  if (!["accountant", "admin"].includes(session.user?.role)) {
     redirect("/he/");
   }
 
