@@ -9,6 +9,7 @@ import (
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/reservation/db"
+	"encore.dev"
 	"encore.dev/rlog"
 )
 
@@ -58,6 +59,11 @@ type SeedReservationsResponse struct {
 
 // SeedReservations creates 30 fake reservations based on reservations 1-4.
 func (s *ActionService) SeedReservations(ctx context.Context) (*SeedReservationsResponse, error) {
+	meta := encore.Meta()
+	if meta.Environment.Type != encore.EnvTest || meta.Environment.Cloud != encore.CloudLocal {
+		return nil, nil
+	}
+
 	sourceIDs := []int64{1, 2, 3, 4}
 
 	// Fetch source reservations

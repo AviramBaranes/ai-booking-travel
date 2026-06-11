@@ -4,10 +4,6 @@ import (
 	"encore.app/services/booking/db"
 )
 
-var secrets struct {
-	translationToken string
-}
-
 type TranslationService struct {
 	query db.Querier
 }

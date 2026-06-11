@@ -10,6 +10,7 @@ sql:
       - "query/available_plans_snapshots_query.sql"
       - "query/broker_translations_query.sql"
       - "query/price_offers_query.sql"
+      - "query/location_aliases_query.sql"
     schema: "./migrations"
     gen:
       go:

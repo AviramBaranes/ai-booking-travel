@@ -53,17 +53,19 @@ type Querier interface {
 	InsertLocation(ctx context.Context, arg InsertLocationParams) (Location, error)
 	InsertLocationBrokerCode(ctx context.Context, arg InsertLocationBrokerCodeParams) (LocationBrokerCode, error)
 	InsertManyLocation(ctx context.Context, arg InsertManyLocationParams) ([]int64, error)
+	InsertManyLocationAliases(ctx context.Context, arg InsertManyLocationAliasesParams) error
 	ListAllTranslations(ctx context.Context, arg ListAllTranslationsParams) ([]BrokerTranslation, error)
 	ListCoupons(ctx context.Context) ([]Coupon, error)
 	ListCurrencies(ctx context.Context) ([]Currency, error)
 	// Admin listing with pagination, optional filtering, and sorting.
 	ListHertzMarkupRates(ctx context.Context, arg ListHertzMarkupRatesParams) ([]HertzMarkupRate, error)
 	ListLocationBrokerCodesWithLocation(ctx context.Context, arg ListLocationBrokerCodesWithLocationParams) ([]ListLocationBrokerCodesWithLocationRow, error)
+	ListLocationsWithoutAliases(ctx context.Context, name *string) ([]ListLocationsWithoutAliasesRow, error)
 	ListPendingTranslations(ctx context.Context) ([]BrokerTranslation, error)
 	ListPriceOffersByAgent(ctx context.Context, arg ListPriceOffersByAgentParams) ([]ListPriceOffersByAgentRow, error)
 	RenewPriceOfferDetails(ctx context.Context, arg RenewPriceOfferDetailsParams) error
 	RenewPriceOfferUnavailable(ctx context.Context, arg RenewPriceOfferUnavailableParams) error
-	SearchLocations(ctx context.Context, search string) ([]Location, error)
+	SearchLocations(ctx context.Context, arg SearchLocationsParams) ([]SearchLocationsRow, error)
 	SetPriceOfferRenewedAt(ctx context.Context, arg SetPriceOfferRenewedAtParams) error
 	TranslatePendingTranslation(ctx context.Context, arg TranslatePendingTranslationParams) error
 	UpdateBrokerTranslation(ctx context.Context, arg UpdateBrokerTranslationParams) error

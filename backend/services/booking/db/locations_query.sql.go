@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const deleteLocationByID = `-- name: DeleteLocationByID :exec
@@ -167,17 +169,63 @@ func (q *Queries) InsertManyLocation(ctx context.Context, arg InsertManyLocation
 	return items, nil
 }
 
+const listLocationsWithoutAliases = `-- name: ListLocationsWithoutAliases :many
+SELECT l.id, l.name, l.iata
+FROM locations l
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM location_aliases la
+    WHERE la.location_id = l.id
+)
+AND ($1::text IS NULL OR l.name ILIKE '%' || $1::text || '%')
+LIMIT 100
+`
+
+type ListLocationsWithoutAliasesRow struct {
+	ID   int64
+	Name string
+	Iata *string
+}
+
+func (q *Queries) ListLocationsWithoutAliases(ctx context.Context, name *string) ([]ListLocationsWithoutAliasesRow, error) {
+	rows, err := q.db.Query(ctx, listLocationsWithoutAliases, name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListLocationsWithoutAliasesRow
+	for rows.Next() {
+		var i ListLocationsWithoutAliasesRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Iata); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const searchLocations = `-- name: SearchLocations :many
 SELECT
     l.id,
     l.country,
     l.country_code,
     l.city,
-    l.name,
+    (CASE
+        WHEN $1::text = 'he'
+            THEN COALESCE(display_name.name, l.name)
+        ELSE l.name
+    END)::text AS name,
     l.iata,
     l.created_at,
     l.updated_at
 FROM locations l
+LEFT JOIN location_aliases display_name
+    ON display_name.location_id = l.id
+   AND display_name.language_code = $1::text
+   AND display_name.type = 'translation'
 WHERE EXISTS (
     SELECT 1
     FROM location_broker_codes lbc
@@ -185,57 +233,94 @@ WHERE EXISTS (
       AND lbc.enabled = TRUE
 )
 AND (
-    l.name ILIKE '%' || $1::text || '%'
-    OR l.country ILIKE '%' || $1::text || '%'
-    OR l.iata ILIKE '%' || $1::text || '%'
-    OR l.city ILIKE '%' || $1::text || '%'
+    l.name ILIKE '%' || $2::text || '%'
+    OR l.country ILIKE '%' || $2::text || '%'
+    OR l.city ILIKE '%' || $2::text || '%'
+    OR l.iata ILIKE '%' || $2::text || '%'
     OR EXISTS (
         SELECT 1
-        FROM locations_common_names lcn
-        WHERE lcn.location_id = l.id
-          AND lcn.common_name ILIKE '%' || $1::text || '%'
+        FROM location_aliases ln
+        WHERE ln.location_id = l.id
+          AND ln.name ILIKE '%' || $2::text || '%'
     )
 )
 ORDER BY
-  CASE
-    WHEN upper(l.iata::text) = upper($1::text) THEN 0
+    CASE
+        -- IATA exact always wins
+        WHEN upper(l.iata::text) = upper($2::text) THEN 0
 
-    WHEN lower(l.name) = lower($1::text) THEN 1
-    WHEN lower(coalesce(l.city, '')) = lower($1::text) THEN 2
-    WHEN lower(l.country) = lower($1::text) THEN 3
+        -- Exact match on returned display name
+        WHEN lower(
+            CASE
+                WHEN $1::text = 'he'
+                    THEN COALESCE(display_name.name, l.name)
+                ELSE l.name
+            END
+        ) = lower($2::text) THEN 1
 
-    WHEN EXISTS (
-        SELECT 1
-        FROM locations_common_names lcn
-        WHERE lcn.location_id = l.id
-          AND lower(lcn.common_name) = lower($1::text)
-    ) THEN 4
+        -- Exact canonical fields
+        WHEN lower(l.name) = lower($2::text) THEN 2
+        WHEN lower(coalesce(l.city, '')) = lower($2::text) THEN 3
+        WHEN lower(l.country) = lower($2::text) THEN 4
 
-    WHEN l.name ILIKE $1::text || '%' THEN 5
-    WHEN coalesce(l.city, '') ILIKE $1::text || '%' THEN 6
+        -- Exact alias/common name/translation/typo, any language
+        WHEN EXISTS (
+            SELECT 1
+            FROM location_aliases la
+            WHERE la.location_id = l.id
+              AND lower(la.name) = lower($2::text)
+        ) THEN 5
 
-    WHEN EXISTS (
-        SELECT 1
-        FROM locations_common_names lcn
-        WHERE lcn.location_id = l.id
-          AND lcn.common_name ILIKE $1::text || '%'
-    ) THEN 7
+        -- Prefix matches
+        WHEN l.name ILIKE $2::text || '%' THEN 6
+        WHEN coalesce(l.city, '') ILIKE $2::text || '%' THEN 7
+        WHEN l.country ILIKE $2::text || '%' THEN 8
 
-    ELSE 8
-  END,
-  lower(l.name) ASC
+        WHEN EXISTS (
+            SELECT 1
+            FROM location_aliases la
+            WHERE la.location_id = l.id
+              AND la.name ILIKE $2::text || '%'
+        ) THEN 9
+
+        -- Contains fallback
+        ELSE 10
+    END,
+    lower(
+        CASE
+            WHEN $1::text = 'he'
+                THEN COALESCE(display_name.name, l.name)
+            ELSE l.name
+        END
+    ) ASC
 LIMIT 30
 `
 
-func (q *Queries) SearchLocations(ctx context.Context, search string) ([]Location, error) {
-	rows, err := q.db.Query(ctx, searchLocations, search)
+type SearchLocationsParams struct {
+	Lang   string
+	Search string
+}
+
+type SearchLocationsRow struct {
+	ID          int64
+	Country     string
+	CountryCode string
+	City        *string
+	Name        string
+	Iata        *string
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
+func (q *Queries) SearchLocations(ctx context.Context, arg SearchLocationsParams) ([]SearchLocationsRow, error) {
+	rows, err := q.db.Query(ctx, searchLocations, arg.Lang, arg.Search)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Location
+	var items []SearchLocationsRow
 	for rows.Next() {
-		var i Location
+		var i SearchLocationsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Country,

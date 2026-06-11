@@ -17,11 +17,6 @@ type GetPendingTranslationsParams struct {
 }
 
 func (s *TranslationService) GetPendingTranslations(ctx context.Context, p GetPendingTranslationsParams) (*GetPendingTranslationsResponse, error) {
-	if p.Token != secrets.translationToken {
-		rlog.Warn("invalid translation token", "provided_token", p.Token)
-		return nil, api_errors.ErrNotFound
-	}
-
 	ts, err := s.query.ListPendingTranslations(ctx)
 	if err != nil {
 		rlog.Error("failed to get pending translations", "error", err)
