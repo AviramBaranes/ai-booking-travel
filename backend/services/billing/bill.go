@@ -51,10 +51,6 @@ type BillResponse struct {
 
 // encore:api auth method=POST path=/bill tag:accountant
 func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
-	return &BillResponse{
-		DocNum: "N/A",
-	}, nil
-
 	icountClientRes, err := accounts.GetIcountClientID(ctx, contact.GetIcountClientIDParams{
 		OfficeID:       p.OfficeID,
 		OrganizationID: p.OrganizationID,
