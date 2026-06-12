@@ -4,6 +4,7 @@ import { authOptions } from "../auth/authOptions";
 import { getLang } from "../lang/lang";
 import { AppError } from "./AppError";
 
+// getBaseURL determines the base URL for API requests based on environment variables.
 export function getBaseURL(): string {
   const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
