@@ -1,6 +1,6 @@
+import { revalidateOnGlobalChange } from "@/CMS/hooks/revalidate";
 import type { GlobalConfig } from "payload";
-import { faqBlock, sharedSectionRefBlock, benefitsBlock } from "../blocks";
-import { revalidateOnGlobalChange } from "../hooks/revalidate";
+import { benefitsBlock, faqBlock, sharedSectionRefBlock } from "../blocks";
 
 export const Homepage: GlobalConfig = {
   slug: "homepage",
