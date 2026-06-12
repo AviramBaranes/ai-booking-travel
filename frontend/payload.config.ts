@@ -22,6 +22,7 @@ import { SuppliersGallery } from "./CMS/globals/SupplierGallery";
 import { AddonImagesGlobal } from "./CMS/globals/AddonImages";
 import { formSettings } from "./CMS/settings/formSettings";
 import { gcpStorageSettings } from "./CMS/settings/gcpStorageSettings";
+import { emailAdapter } from "./CMS/email/emailAdapter";
 
 export default buildConfig({
   editor: lexicalEditor({
@@ -94,6 +95,8 @@ export default buildConfig({
     AddonImagesGlobal,
   ],
 
+  email: emailAdapter(),
+  
   plugins: [
     formBuilderPlugin(formSettings),
     seoPlugin({
