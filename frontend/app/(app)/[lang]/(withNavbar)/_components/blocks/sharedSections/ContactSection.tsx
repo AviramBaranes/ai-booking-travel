@@ -1,8 +1,8 @@
 import Image from "next/image";
-import Link from "next/link";
 import { TypedSection, Populated } from "@/shared/types/payload";
 import { SectionHeader } from "../SectionHeader";
 import { RichText } from "@payloadcms/richtext-lexical/react";
+import { PayloadFormRenderer } from "@/shared/components/forms/FormRenderer";
 
 type ContactSectionProps = {
   section: TypedSection<"contact">;
@@ -11,6 +11,7 @@ type ContactSectionProps = {
 export function ContactSection({ section }: ContactSectionProps) {
   const { title, subtitle, contactForm, contactInfo, eyebrow } =
     section.contact;
+  const populatedContactForm = contactForm as Populated<typeof contactForm>;
 
   return (
     <section
@@ -22,10 +23,17 @@ export function ContactSection({ section }: ContactSectionProps) {
         title={title ?? ""}
         subtitle={subtitle}
       />
-      <div className="flex gap-12">
-        <div className="w-1/2"></div>
+      <div className="flex gap-12 my-8 items-stretch">
         <div className="w-1/2">
-          <div className="flex flex-col gap-4 my-8">
+          {typeof populatedContactForm === "object" && populatedContactForm && (
+            <PayloadFormRenderer
+              form={populatedContactForm}
+              title={populatedContactForm.title}
+            />
+          )}
+        </div>
+        <div className="w-1/2">
+          <div className="flex flex-col gap-4 justify-between h-full">
             {contactInfo?.map((info) => (
               <div className="py-8 px-6 shadow-card flex gap-5 bg-white rounded-xl items-center border border-border" key={info.id}>
                 <div className="p-3">
