@@ -12,7 +12,7 @@ import { Admins } from "./CMS/collections/Admins";
 import { Media } from "./CMS/collections/Media";
 import { he } from "@payloadcms/translations/languages/he";
 import { Pages } from "./CMS/collections/Pages";
-import { SharedSections } from "./CMS/collections/SharedSections";
+import { SharedSections } from "./CMS/collections/SharedSections/SharedSections";
 import { Header } from "./CMS/globals/Header";
 import { Footer } from "./CMS/globals/Footer";
 import { NotFoundConfig } from "./CMS/globals/NotFound";
