@@ -328,7 +328,7 @@ export interface SharedSection {
   /**
    * בחרו את סוג האזור. הבחירה קובעת אילו שדות יוצגו.
    */
-  type: 'newsletter' | 'suppliers' | 'stats';
+  type: 'newsletter' | 'suppliers' | 'stats' | 'contact';
   newsletter?: {
     title: string;
     subtitle?: string | null;
@@ -392,39 +392,40 @@ export interface SharedSection {
         }[]
       | null;
   };
+  contact?: {
+    /**
+     * טקסט קצר המוצג מעל הכותרת הראשית. לדוגמה: "למה לבחור בנו".
+     */
+    eyebrow?: string | null;
+    title?: string | null;
+    subtitle?: string | null;
+    contactForm: number | Form;
+    contactInfo?:
+      | {
+          icon: number | Media;
+          title: string;
+          content: {
+            root: {
+              type: string;
+              children: {
+                type: any;
+                version: number;
+                [k: string]: unknown;
+              }[];
+              direction: ('ltr' | 'rtl') | null;
+              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+              indent: number;
+              version: number;
+            };
+            [k: string]: unknown;
+          };
+          id?: string | null;
+        }[]
+      | null;
+  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "SidebarSectionBlock".
- */
-export interface SidebarSectionBlock {
-  sections?:
-    | {
-        title: string;
-        content: {
-          root: {
-            type: string;
-            children: {
-              type: any;
-              version: number;
-              [k: string]: unknown;
-            }[];
-            direction: ('ltr' | 'rtl') | null;
-            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-            indent: number;
-            version: number;
-          };
-          [k: string]: unknown;
-        };
-        id?: string | null;
-      }[]
-    | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'sidebarSection';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -552,6 +553,36 @@ export interface Form {
     | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SidebarSectionBlock".
+ */
+export interface SidebarSectionBlock {
+  sections?:
+    | {
+        title: string;
+        content: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'sidebarSection';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -853,6 +884,22 @@ export interface SharedSectionsSelect<T extends boolean = true> {
               value?: T;
               label?: T;
               icon?: T;
+              id?: T;
+            };
+      };
+  contact?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        subtitle?: T;
+        contactForm?: T;
+        contactInfo?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              content?: T;
               id?: T;
             };
       };

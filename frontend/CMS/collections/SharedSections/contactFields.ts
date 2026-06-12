@@ -37,7 +37,7 @@ export const contactBlockFields: Field[]  = [
       {
         name: "icon",
         label: "אייקון",
-        type: "relationship",
+        type: "upload",
         relationTo: "media",
         required: true,
       },
