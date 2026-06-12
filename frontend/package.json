@@ -17,6 +17,7 @@
     "@payloadcms/db-postgres": "^3.82.0",
     "@payloadcms/live-preview-react": "3.82.0",
     "@payloadcms/next": "^3.82.0",
+    "@payloadcms/plugin-form-builder": "^3.85.1",
     "@payloadcms/plugin-seo": "^3.82.0",
     "@payloadcms/richtext-lexical": "^3.82.0",
     "@payloadcms/storage-gcs": "^3.82.0",

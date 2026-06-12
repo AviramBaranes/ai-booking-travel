@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { fields, formBuilderPlugin } from "@payloadcms/plugin-form-builder";
 import { gcsStorage } from "@payloadcms/storage-gcs";
 import {
   FixedToolbarFeature,
@@ -19,33 +20,10 @@ import { Homepage } from "./CMS/globals/Homepage";
 import { BookingSettings } from "./CMS/globals/BookingSettings";
 import { SuppliersGallery } from "./CMS/globals/SupplierGallery";
 import { AddonImagesGlobal } from "./CMS/globals/AddonImages";
-
-const storageEnv = process.env.PAYLOAD_STORAGE_ENV ?? "local";
-
-if (!["local", "dev", "prod"].includes(storageEnv)) {
-  throw new Error("PAYLOAD_STORAGE_ENV must be one of: local, dev, prod");
-}
-
-const isGcsStorageEnabled = storageEnv === "dev" || storageEnv === "prod";
-const gcsBucket =
-  storageEnv === "dev"
-    ? process.env.PAYLOAD_GCS_DEV_BUCKET
-    : storageEnv === "prod"
-      ? process.env.PAYLOAD_GCS_PROD_BUCKET
-      : undefined;
-const gcsPrivateKey = process.env.PAYLOAD_GCS_PRIVATE_KEY?.replace(
-  /\\n/g,
-  "\n",
-);
-
-if (isGcsStorageEnabled && !gcsBucket) {
-  throw new Error(
-    `Missing ${storageEnv === "dev" ? "PAYLOAD_GCS_DEV_BUCKET" : "PAYLOAD_GCS_PROD_BUCKET"}`,
-  );
-}
+import { formSettings } from "./CMS/settings/formSettings";
+import { gcpStorageSettings } from "./CMS/settings/gcpStorageSettings";
 
 export default buildConfig({
-  // If you'd like to use Rich Text, pass your editor here
   editor: lexicalEditor({
     features: ({ defaultFeatures }) => [
       ...defaultFeatures,
@@ -104,7 +82,6 @@ export default buildConfig({
   routes: {
     admin: "/cms",
   },
-  // Define and configure your collections in this array
   collections: [Admins, Media, Pages, SharedSections],
 
   globals: [
@@ -118,6 +95,7 @@ export default buildConfig({
   ],
 
   plugins: [
+    formBuilderPlugin(formSettings),
     seoPlugin({
       collections: ["pages"],
       globals: ["homepage"],
@@ -126,40 +104,13 @@ export default buildConfig({
       generateTitle: ({ doc }) => doc?.title ?? "",
       generateDescription: ({ doc }) => doc?.excerpt ?? "",
     }),
-    gcsStorage({
-      enabled: isGcsStorageEnabled,
-      clientUploads: true,
-      collections: {
-        media: {
-          prefix: `${storageEnv}/media`,
-        },
-      },
-      bucket: gcsBucket ?? "local-disabled",
-      options: {
-        projectId: process.env.PAYLOAD_GCS_PROJECT_ID,
-        credentials:
-          process.env.PAYLOAD_GCS_CLIENT_EMAIL && gcsPrivateKey
-            ? {
-                client_email: process.env.PAYLOAD_GCS_CLIENT_EMAIL,
-                private_key: gcsPrivateKey,
-              }
-            : undefined,
-      },
-    }),
+    gcsStorage(gcpStorageSettings),
   ],
-
-  // Your Payload secret - should be a complex and secure string, unguessable
   secret: process.env.PAYLOAD_SECRET || "",
-  // Whichever Database Adapter you're using should go here
-  // Mongoose is shown as an example, but you can also use Postgres
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL,
     },
   }),
-  // If you want to resize images, crop, set focal point, etc.
-  // make sure to install it and pass it to the config.
-  // This is optional - if you don't need to do these things,
-  // you don't need it!
   sharp,
 });
