@@ -2,6 +2,8 @@ import { RichText } from "@payloadcms/richtext-lexical/react";
 import type { SidebarSectionBlock } from "@/payload-types";
 import { SidebarNav } from "./SidebarNav";
 import { slugify } from "@/shared/utils/slugify";
+import { SidebarToc } from "./SidebarToc";
+import { clsx } from "clsx";
 
 type SidebarSectionProps = {
   block: SidebarSectionBlock;
@@ -12,11 +14,22 @@ export function SidebarSection({ block }: SidebarSectionProps) {
 
   if (sections.length === 0) return null;
 
-  return (
-    <div className="flex items-start gap-12 w-2/3 mb-20 mx-auto">
-      <SidebarNav sections={sections} />
+  const type = block.type ?? "anchor";
 
-      <div className="flex flex-1 flex-col gap-12 px-12">
+  return (
+    <div
+      className={clsx("flex items-start gap-12 mb-20 mx-auto", {
+        "flex-col": type === "toc",
+        "w-2/3": type === "anchor",
+      })}
+    >
+      {type === "anchor" ? (
+        <SidebarNav sections={sections} />
+      ) : (
+        <SidebarToc sections={sections} />
+      )}
+
+      <div className="flex flex-1 flex-col gap-12">
         {sections.map((section) => (
           <div
             key={section.id}

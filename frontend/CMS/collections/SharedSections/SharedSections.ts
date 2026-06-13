@@ -21,9 +21,6 @@ export const SharedSections: CollectionConfig = {
   hooks: {
     afterChange: [revalidateOnCollectionChange],
   },
-  versions: {
-    drafts: true,
-  },
   fields: [
     // ── Identification ─────────────────────────────────────────────────────
     {

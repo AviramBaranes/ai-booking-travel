@@ -118,7 +118,7 @@ export function PayloadFormRenderer({
   return (
     <form
       className={cn(
-        "flex w-full flex-col items-center gap-6 rounded-xl border border-border-light bg-white p-12",
+        "flex w-full flex-col items-center gap-6",
         className,
       )}
       onSubmit={handleSubmit(onSubmit)}

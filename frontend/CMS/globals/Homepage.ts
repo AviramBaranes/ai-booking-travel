@@ -10,9 +10,6 @@ export const Homepage: GlobalConfig = {
       "תוכן דף הבית. הוסיפו בלוקים בסדר הרצוי ושלבו אזורים משותפים לפי הצורך.",
     group: "תוכן",
   },
-  versions: {
-    drafts: true,
-  },
   hooks: {
     afterChange: [revalidateOnGlobalChange],
   },

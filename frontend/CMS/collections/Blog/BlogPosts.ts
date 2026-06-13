@@ -19,9 +19,6 @@ export const BlogPosts: CollectionConfig = {
     defaultColumns: ["title", "slug", "category", "_status", "publishedAt"],
   },
   defaultSort: "-publishedAt",
-  versions: {
-    drafts: true,
-  },
   hooks: {
     beforeChange: [generateSlugFromBlogPostTitle()],
     afterChange: [revalidateOnCollectionChange],
