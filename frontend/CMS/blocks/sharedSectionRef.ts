@@ -8,61 +8,64 @@ import type { Block } from "payload";
  * Optional per-placement overrides let editors tweak spacing/theme without
  * editing the shared section itself.
  */
-export const sharedSectionRefBlock: Block = {
-  slug: "sharedSectionRef",
-  dbName: "secRef",
-  interfaceName: "SharedSectionRefBlock",
-  labels: {
-    singular: "אזור משותף",
-    plural: "אזורים משותפים",
-  },
-  fields: [
-    {
-      name: "section",
-      label: "אזור משותף",
-      type: "relationship",
-      relationTo: "sharedSections",
-      required: true,
-      admin: {
-        description:
-          "בחרו אזור קיים מהספרייה המשותפת (ניוזלטר, חברות השכרה, סטטיסטיקות וכד׳).",
-      },
+export function createSharedSectionRefBlock(dbName: string): Block {
+  return {
+    slug: "sharedSectionRef",
+    dbName: dbName,
+    interfaceName: "SharedSectionRefBlock",
+    labels: {
+      singular: "אזור משותף",
+      plural: "אזורים משותפים",
     },
-    {
-      name: "overrides",
-      label: "עקיפות מקומיות",
-      type: "group",
-      admin: {
-        description: "שינויים חזותיים לעמוד הזה בלבד, מבלי לפגוע באזור המשותף.",
+    fields: [
+      {
+        name: "section",
+        label: "אזור משותף",
+        type: "relationship",
+        relationTo: "sharedSections",
+        required: true,
+        admin: {
+          description:
+            "בחרו אזור קיים מהספרייה המשותפת (ניוזלטר, חברות השכרה, סטטיסטיקות וכד׳).",
+        },
       },
-      fields: [
-        {
-          name: "spacingTop",
-          label: "ריווח עליון",
-          type: "select",
-          defaultValue: "default",
-          options: [
-            { label: "ברירת מחדל", value: "default" },
-            { label: "ללא", value: "none" },
-            { label: "קטן", value: "sm" },
-            { label: "בינוני", value: "md" },
-            { label: "גדול", value: "lg" },
-          ],
+      {
+        name: "overrides",
+        label: "עקיפות מקומיות",
+        type: "group",
+        admin: {
+          description:
+            "שינויים חזותיים לעמוד הזה בלבד, מבלי לפגוע באזור המשותף.",
         },
-        {
-          name: "spacingBottom",
-          label: "ריווח תחתון",
-          type: "select",
-          defaultValue: "default",
-          options: [
-            { label: "ברירת מחדל", value: "default" },
-            { label: "ללא", value: "none" },
-            { label: "קטן", value: "sm" },
-            { label: "בינוני", value: "md" },
-            { label: "גדול", value: "lg" },
-          ],
-        },
-      ],
-    },
-  ],
-};
+        fields: [
+          {
+            name: "spacingTop",
+            label: "ריווח עליון",
+            type: "select",
+            defaultValue: "default",
+            options: [
+              { label: "ברירת מחדל", value: "default" },
+              { label: "ללא", value: "none" },
+              { label: "קטן", value: "sm" },
+              { label: "בינוני", value: "md" },
+              { label: "גדול", value: "lg" },
+            ],
+          },
+          {
+            name: "spacingBottom",
+            label: "ריווח תחתון",
+            type: "select",
+            defaultValue: "default",
+            options: [
+              { label: "ברירת מחדל", value: "default" },
+              { label: "ללא", value: "none" },
+              { label: "קטן", value: "sm" },
+              { label: "בינוני", value: "md" },
+              { label: "גדול", value: "lg" },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+}

@@ -71,6 +71,8 @@ export interface Config {
     media: Media;
     pages: Page;
     sharedSections: SharedSection;
+    'blog-posts': BlogPost;
+    'blog-categories': BlogCategory;
     forms: Form;
     'form-submissions': FormSubmission;
     'payload-kv': PayloadKv;
@@ -84,6 +86,8 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     sharedSections: SharedSectionsSelect<false> | SharedSectionsSelect<true>;
+    'blog-posts': BlogPostsSelect<false> | BlogPostsSelect<true>;
+    'blog-categories': BlogCategoriesSelect<false> | BlogCategoriesSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -151,21 +155,6 @@ export interface Admin {
   username: string;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
   collection: 'admins';
 }
 /**
@@ -289,6 +278,7 @@ export interface FAQBlock {
         id?: string | null;
       }[]
     | null;
+  width?: ('25%' | '50%' | '75%' | '100%') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'faq';
@@ -559,6 +549,7 @@ export interface Form {
  * via the `definition` "SidebarSectionBlock".
  */
 export interface SidebarSectionBlock {
+  type?: ('anchor' | 'toc') | null;
   sections?:
     | {
         title: string;
@@ -583,6 +574,124 @@ export interface SidebarSectionBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'sidebarSection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-posts".
+ */
+export interface BlogPost {
+  id: number;
+  title: string;
+  /**
+   * החלק שיופיע בכתובת ה־URL של הפוסט. לדוגמה: car-rental-insurance.
+   */
+  slug: string;
+  /**
+   * תיאור קצר של הפוסט. משמש לכרטיסיות בלוג, תוצאות חיפוש, שיתופים ו־SEO. מומלץ עד 220 תווים.
+   */
+  excerpt?: string | null;
+  /**
+   * התמונה הראשית של הפוסט. תופיע בדרך כלל בראש הפוסט, בכרטיסיות בלוג ובשיתופים.
+   */
+  featuredImage: number | Media;
+  /**
+   * תוכן הפוסט עצמו. ניתן להרכיב את הפוסט מבלוקים כמו טקסט עשיר, שאלות נפוצות, אזורים משותפים ועוד.
+   */
+  layout?: (RichTextBlock | FAQBlock | SharedSectionRefBlock | SidebarSectionBlock)[] | null;
+  /**
+   * הקטגוריה הראשית שאליה הפוסט שייך. משמשת לניווט, סינון, עמודי קטגוריה ופוסטים קשורים.
+   */
+  category: number | BlogCategory;
+  /**
+   * תגיות הן נושאים נקודתיים שהפוסט עוסק בהם, למשל: ביטוח, שדה תעופה, פיקדון, נהג צעיר. בשלב הזה הן טקסט חופשי ולא אוסף נפרד.
+   */
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * בחירה ידנית של פוסטים קשורים. אם השדה ריק, אפשר להציג אוטומטית פוסטים מאותה קטגוריה.
+   */
+  relatedPosts?: (number | BlogPost)[] | null;
+  /**
+   * טופס אופציונלי שיוצג בעמוד הפוסט, למשל טופס יצירת קשר, ליד או בקשת הצעת מחיר.
+   */
+  form?: (number | null) | Form;
+  /**
+   * באנר אופציונלי שיוצג בעמוד הפוסט. כולל תמונה וקישור שאליו המשתמש יועבר בלחיצה.
+   */
+  banner?: {
+    /**
+     * תמונה שתוצג כבאנר בעמוד הפוסט. מומלץ להשתמש בתמונה רחבה שמתאימה לתצוגה בדסקטופ ובמובייל.
+     */
+    image?: (number | null) | Media;
+    /**
+     * כתובת שאליה הבאנר יפנה בלחיצה. אפשר להזין קישור פנימי כמו /he/contact או קישור מלא.
+     */
+    link?: string | null;
+  };
+  /**
+   * נקבע אוטומטית בפעם הראשונה שהפוסט מפורסם. משמש למיון הפוסטים באתר.
+   */
+  publishedAt?: string | null;
+  /**
+   * הגדרות ייעודיות למנועי חיפוש ושיתופים. אם השדות ריקים, אפשר להשתמש בכותרת, בתקציר ובתמונה הראשית של הפוסט.
+   */
+  seo?: {
+    /**
+     * כותרת ייעודית למנועי חיפוש. אם ריק, ניתן להשתמש בכותרת הפוסט.
+     */
+    title?: string | null;
+    /**
+     * תיאור קצר שיופיע במנועי חיפוש ובשיתופים. מומלץ עד 220 תווים.
+     */
+    description?: string | null;
+    /**
+     * תמונה ייעודית לשיתופים. אם ריק, ניתן להשתמש בתמונה הראשית של הפוסט.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-categories".
+ */
+export interface BlogCategory {
+  id: number;
+  title: string;
+  /**
+   * החלק שיופיע בכתובת של עמוד הקטגוריה. לדוגמה: car-rental-guides.
+   */
+  slug: string;
+  /**
+   * תיאור קצר של הקטגוריה. יכול להופיע בעמוד הקטגוריה ולעזור ל־SEO.
+   */
+  description?: string | null;
+  /**
+   * תמונה אופציונלית לעמוד הקטגוריה או לכרטיסיות קטגוריה באתר.
+   */
+  image?: (number | null) | Media;
+  seo?: {
+    /**
+     * כותרת ייעודית למנועי חיפוש. אם ריק, ניתן להשתמש בשם הקטגוריה.
+     */
+    title?: string | null;
+    /**
+     * תיאור קצר למנועי חיפוש ושיתופים. מומלץ עד 220 תווים.
+     */
+    description?: string | null;
+    /**
+     * תמונה ייעודית לשיתופים. אם ריק, ניתן להשתמש בתמונת הקטגוריה.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -640,6 +749,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'sharedSections';
         value: number | SharedSection;
+      } | null)
+    | ({
+        relationTo: 'blog-posts';
+        value: number | BlogPost;
+      } | null)
+    | ({
+        relationTo: 'blog-categories';
+        value: number | BlogCategory;
       } | null)
     | ({
         relationTo: 'forms';
@@ -700,20 +817,6 @@ export interface AdminsSelect<T extends boolean = true> {
   username?: T;
   updatedAt?: T;
   createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -799,6 +902,7 @@ export interface FAQBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  width?: T;
   id?: T;
   blockName?: T;
 }
@@ -822,6 +926,7 @@ export interface SharedSectionRefBlockSelect<T extends boolean = true> {
  * via the `definition` "SidebarSectionBlock_select".
  */
 export interface SidebarSectionBlockSelect<T extends boolean = true> {
+  type?: T;
   sections?:
     | T
     | {
@@ -906,6 +1011,69 @@ export interface SharedSectionsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-posts_select".
+ */
+export interface BlogPostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  excerpt?: T;
+  featuredImage?: T;
+  layout?:
+    | T
+    | {
+        richText?: T | RichTextBlockSelect<T>;
+        faq?: T | FAQBlockSelect<T>;
+        sharedSectionRef?: T | SharedSectionRefBlockSelect<T>;
+        sidebarSection?: T | SidebarSectionBlockSelect<T>;
+      };
+  category?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  relatedPosts?: T;
+  form?: T;
+  banner?:
+    | T
+    | {
+        image?: T;
+        link?: T;
+      };
+  publishedAt?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-categories_select".
+ */
+export interface BlogCategoriesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  image?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

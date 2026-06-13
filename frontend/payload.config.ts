@@ -23,6 +23,8 @@ import { AddonImagesGlobal } from "./CMS/globals/AddonImages";
 import { formSettings } from "./CMS/settings/formSettings";
 import { gcpStorageSettings } from "./CMS/settings/gcpStorageSettings";
 import { emailAdapter } from "./CMS/email/emailAdapter";
+import { BlogPosts } from "./CMS/collections/Blog/BlogPosts";
+import { BlogCategories } from "./CMS/collections/Blog/BlogCategories";
 
 export default buildConfig({
   editor: lexicalEditor({
@@ -83,7 +85,7 @@ export default buildConfig({
   routes: {
     admin: "/cms",
   },
-  collections: [Admins, Media, Pages, SharedSections],
+  collections: [Admins, Media, Pages, SharedSections, BlogPosts, BlogCategories],
 
   globals: [
     Header,
