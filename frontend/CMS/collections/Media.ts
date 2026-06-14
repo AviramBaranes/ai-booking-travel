@@ -16,5 +16,26 @@ export const Media: CollectionConfig = {
       required: true,
     },
   ],
-  upload: true,
+  upload: {
+    imageSizes: [
+      {
+        name: "blogHero",
+        width: 900,
+        height: 380,
+        position: "centre",
+      },
+      {
+        name: "blogCard",
+        width: 520,
+        height: 320,
+        position: "centre",
+      },
+      {
+        name: "og",
+        width: 1200,
+        height: 630,
+        position: "centre",
+      },
+    ],
+  },
 };

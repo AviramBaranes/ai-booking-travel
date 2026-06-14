@@ -107,6 +107,7 @@ export interface Config {
     'booking-settings': BookingSetting;
     suppliersGallery: SuppliersGallery;
     addonsGallery: AddonsGallery;
+    'site-settings': SiteSetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -116,6 +117,7 @@ export interface Config {
     'booking-settings': BookingSettingsSelect<false> | BookingSettingsSelect<true>;
     suppliersGallery: SuppliersGallerySelect<false> | SuppliersGallerySelect<true>;
     addonsGallery: AddonsGallerySelect<false> | AddonsGallerySelect<true>;
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
   };
   locale: 'he' | 'en';
   widgets: {
@@ -176,6 +178,32 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    blogHero?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    blogCard?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    og?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -415,7 +443,6 @@ export interface SharedSection {
   };
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -595,9 +622,13 @@ export interface BlogPost {
    */
   featuredImage: number | Media;
   /**
-   * תוכן הפוסט עצמו. ניתן להרכיב את הפוסט מבלוקים כמו טקסט עשיר, שאלות נפוצות, אזורים משותפים ועוד.
+   * תוכן הפוסט עצמו. ניתן להרכיב את הפוסט מבלוקים כמו טקסט עשיר, שאלות נפוצות, אזורים משותפים ועוד. הפריסה הזאת תהיה ברוחב מצומצם בעמוד ברקע לבן
    */
   layout?: (RichTextBlock | FAQBlock | SharedSectionRefBlock | SidebarSectionBlock)[] | null;
+  /**
+   * תוכן הפוסט עצמו. ניתן להרכיב את הפוסט מבלוקים כמו טקסט עשיר, שאלות נפוצות, אזורים משותפים ועוד. הפריסה הזאת תהיה ברוחב מלא ללא רקע.
+   */
+  layout_out?: (RichTextBlock | FAQBlock | SharedSectionRefBlock | SidebarSectionBlock)[] | null;
   /**
    * הקטגוריה הראשית שאליה הפוסט שייך. משמשת לניווט, סינון, עמודי קטגוריה ופוסטים קשורים.
    */
@@ -655,7 +686,6 @@ export interface BlogPost {
   };
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -836,6 +866,40 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        blogHero?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        blogCard?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        og?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1010,7 +1074,6 @@ export interface SharedSectionsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
-  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1022,6 +1085,14 @@ export interface BlogPostsSelect<T extends boolean = true> {
   excerpt?: T;
   featuredImage?: T;
   layout?:
+    | T
+    | {
+        richText?: T | RichTextBlockSelect<T>;
+        faq?: T | FAQBlockSelect<T>;
+        sharedSectionRef?: T | SharedSectionRefBlockSelect<T>;
+        sidebarSection?: T | SidebarSectionBlockSelect<T>;
+      };
+  layout_out?:
     | T
     | {
         richText?: T | RichTextBlockSelect<T>;
@@ -1054,7 +1125,6 @@ export interface BlogPostsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
-  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1346,7 +1416,6 @@ export interface Homepage {
      */
     image?: (number | null) | Media;
   };
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1424,6 +1493,21 @@ export interface AddonsGallery {
         id?: string | null;
       }[]
     | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  rpPillText?: string | null;
+  rpTitle: string;
+  rpSubtitle?: string | null;
+  pillText?: string | null;
+  title: string;
+  subtitle?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1532,7 +1616,6 @@ export interface HomepageSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1606,6 +1689,21 @@ export interface AddonsGallerySelect<T extends boolean = true> {
         image?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  rpPillText?: T;
+  rpTitle?: T;
+  rpSubtitle?: T;
+  pillText?: T;
+  title?: T;
+  subtitle?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -85,7 +85,23 @@ export const BlogPosts: CollectionConfig = {
               ],
               admin: {
                 description:
-                  "תוכן הפוסט עצמו. ניתן להרכיב את הפוסט מבלוקים כמו טקסט עשיר, שאלות נפוצות, אזורים משותפים ועוד.",
+                  "תוכן הפוסט עצמו. ניתן להרכיב את הפוסט מבלוקים כמו טקסט עשיר, שאלות נפוצות, אזורים משותפים ועוד. הפריסה הזאת תהיה ברוחב מצומצם בעמוד ברקע לבן",
+              },
+            },
+            {
+              name: "layout_out",
+              label: "פריסת בלוקים חיצונית",
+              type: "blocks",
+              minRows: 1,
+              blocks: [
+                richTextBlock,
+                faqBlock,
+                createSharedSectionRefBlock("secRef_C"),// name needs to be unique and short.
+                sidebarSectionBlock,
+              ],
+              admin: {
+                description:
+                  "תוכן הפוסט עצמו. ניתן להרכיב את הפוסט מבלוקים כמו טקסט עשיר, שאלות נפוצות, אזורים משותפים ועוד. הפריסה הזאת תהיה ברוחב מלא ללא רקע.",
               },
             },
           ],

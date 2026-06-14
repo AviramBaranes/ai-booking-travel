@@ -12,6 +12,8 @@ import {
 } from "@/shared/constants/supported_langs";
 import { getCachedPayload } from "@/shared/server/cms";
 import { PayloadFormRenderer } from "@/shared/components/forms/FormRenderer";
+import { SectionHeader } from "../../_components/blocks/SectionHeader";
+import { RelatedPosts } from "../../_components/posts/RelatedPosts";
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
@@ -28,6 +30,7 @@ const getPost = async (
     locale: lang as SupportedLang,
     draft: false,
     limit: 1,
+    depth: 2,
   });
 
   return (result.docs[0] as BlogPost) ?? null;
@@ -68,18 +71,74 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+async function getRelatedPosts(post: BlogPost, lang: string) {
+  const payload = await getCachedPayload();
+
+  const settings = await payload.findGlobal({
+    slug: "site-settings",
+    locale: lang as SupportedLang,
+  });
+
+  const relatedPosts = post.relatedPosts?.filter(
+    (relatedPost): relatedPost is BlogPost => typeof relatedPost === "object",
+  );
+
+  if (relatedPosts?.length) {
+    return {
+      rpPillText: settings.rpPillText,
+      rpTitle: settings.rpTitle,
+      rpSubtitle: settings.rpSubtitle,
+      posts: relatedPosts.slice(0, 4),
+    };
+  }
+
+  const category =
+    typeof post.category === "object" ? post.category.id : post.category;
+
+  const posts = await payload.find({
+    collection: "blog-posts",
+    where: {
+      and: [
+        {
+          category: {
+            equals: category,
+          },
+        },
+        {
+          id: {
+            not_equals: post.id,
+          },
+        },
+      ],
+    },
+    locale: lang as SupportedLang,
+    draft: false,
+    sort: "-publishedAt",
+    limit: 4,
+    depth: 1,
+  });
+
+  return {
+    rpPillText: settings.rpPillText,
+    rpTitle: settings.rpTitle,
+    rpSubtitle: settings.rpSubtitle,
+    posts: posts.docs as BlogPost[],
+  };
+}
 export default async function SlugPage({ params }: Props) {
   const { lang, slug } = await params;
   const post = await getPost(decodeURIComponent(slug), lang);
 
   if (!post) notFound();
 
+  const relatedPostsData = await getRelatedPosts(post, lang);
+  console.log("relatedPostsData", relatedPostsData);
   const image = post.featuredImage as Populated<BlogPost["featuredImage"]>;
 
   return (
     <>
       <PayloadLivePreview />
-      <div className="relative overflow-x-clip">
+      <div className="relative isolate">
         <div className="bg-navy py-20 px-72 flex flex-col gap-5.5">
           <p className="type-paragraph text-white/55">
             ראשי / {(post.category as BlogCategory).title}
@@ -90,14 +149,13 @@ export default async function SlugPage({ params }: Props) {
           </p>
         </div>
         <PagesDecorations />
-
         <div className="w-2/3 mx-auto">
           <div className="shadow-card bg-white p-10 flex justify-between gap-24 rounded-b-xl">
             <div className="w-7/10">
               {image?.url && (
                 <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
                   <Image
-                    src={image.url}
+                    src={image.sizes?.blogHero?.url || image.url || ""}
                     alt={image.alt}
                     width={image.width ?? 780}
                     height={image.height ?? 280}
@@ -107,17 +165,21 @@ export default async function SlugPage({ params }: Props) {
                 </div>
               )}
               <BlocksRenderer blocks={post.layout} />
-              <h5 className="type-h5 text-navy my-5">תגיות:</h5>
-              <div className="flex items-start gap-4   flex-wrap">
-                {post.tags?.map((tag) => (
-                  <span
-                    key={tag.id}
-                    className="type-paragraph text-navy bg-brand-blue/5 rounded-full px-4 py-1.5"
-                  >
-                    {tag.tag}
-                  </span>
-                ))}
-              </div>
+              {post.tags && post.tags.length > 0 && (
+                <>
+                  <h5 className="type-h5 text-navy my-5">תגיות:</h5>
+                  <div className="flex items-start gap-4   flex-wrap">
+                    {post.tags?.map((tag) => (
+                      <span
+                        key={tag.id}
+                        className="type-paragraph text-navy bg-brand-blue/5 rounded-full px-4 py-1.5"
+                      >
+                        {tag.tag}
+                      </span>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
             <div className="w-3/10">
               <div className="sticky top-24 flex flex-col gap-6">
@@ -154,6 +216,16 @@ export default async function SlugPage({ params }: Props) {
             </div>
           </div>
         </div>
+        <div className="w-2/3 mx-auto">
+          <RelatedPosts
+            pillText={relatedPostsData.rpPillText ?? ""}
+            title={relatedPostsData.rpTitle ?? ""}
+            subtitle={relatedPostsData.rpSubtitle ?? ""}
+            posts={relatedPostsData.posts ?? []}
+            lang={lang}
+          />
+        </div>
+        <BlocksRenderer blocks={post.layout_out} />
       </div>
     </>
   );

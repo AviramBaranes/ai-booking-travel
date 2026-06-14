@@ -25,6 +25,7 @@ import { gcpStorageSettings } from "./CMS/settings/gcpStorageSettings";
 import { emailAdapter } from "./CMS/email/emailAdapter";
 import { BlogPosts } from "./CMS/collections/Blog/BlogPosts";
 import { BlogCategories } from "./CMS/collections/Blog/BlogCategories";
+import { SiteSettings } from "./CMS/globals/SiteSettings";
 
 export default buildConfig({
   editor: lexicalEditor({
@@ -85,7 +86,14 @@ export default buildConfig({
   routes: {
     admin: "/cms",
   },
-  collections: [Admins, Media, Pages, SharedSections, BlogPosts, BlogCategories],
+  collections: [
+    Admins,
+    Media,
+    Pages,
+    SharedSections,
+    BlogPosts,
+    BlogCategories,
+  ],
 
   globals: [
     Header,
@@ -95,10 +103,11 @@ export default buildConfig({
     BookingSettings,
     SuppliersGallery,
     AddonImagesGlobal,
+    SiteSettings,
   ],
 
   email: emailAdapter(),
-  
+
   plugins: [
     formBuilderPlugin(formSettings),
     seoPlugin({
