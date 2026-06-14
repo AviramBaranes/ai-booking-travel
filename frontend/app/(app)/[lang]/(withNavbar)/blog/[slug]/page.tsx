@@ -12,7 +12,6 @@ import {
 } from "@/shared/constants/supported_langs";
 import { getCachedPayload } from "@/shared/server/cms";
 import { PayloadFormRenderer } from "@/shared/components/forms/FormRenderer";
-import { SectionHeader } from "../../_components/blocks/SectionHeader";
 import { RelatedPosts } from "../../_components/posts/RelatedPosts";
 
 type Props = {
@@ -132,7 +131,6 @@ export default async function SlugPage({ params }: Props) {
   if (!post) notFound();
 
   const relatedPostsData = await getRelatedPosts(post, lang);
-  console.log("relatedPostsData", relatedPostsData);
   const image = post.featuredImage as Populated<BlogPost["featuredImage"]>;
 
   return (

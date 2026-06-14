@@ -15,7 +15,7 @@ interface RelatedPostsProps {
 
 type FeaturedImage = Populated<BlogPost["featuredImage"]>;
 
-function getImageUrl(post: BlogPost): string {
+export function getCardImageUrl(post: BlogPost): string {
   return (
     (post.featuredImage as FeaturedImage).sizes?.blogCard?.url ||
     (post.featuredImage as FeaturedImage).url ||
@@ -49,7 +49,7 @@ export function RelatedPosts({
               <div className="p-4 shadow-card m-3 rounded-xl border border-border flex flex-col justify-between gap-4">
                 <div className="relative aspect-275/195 w-full overflow-hidden rounded-xl">
                   <Image
-                    src={getImageUrl(post)}
+                    src={getCardImageUrl(post)}
                     alt={(post.featuredImage as FeaturedImage).alt}
                     fill
                     className="object-cover"

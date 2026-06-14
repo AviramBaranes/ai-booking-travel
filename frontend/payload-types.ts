@@ -1505,6 +1505,7 @@ export interface SiteSetting {
   rpPillText?: string | null;
   rpTitle: string;
   rpSubtitle?: string | null;
+  featuredImage?: (number | null) | Media;
   pillText?: string | null;
   title: string;
   subtitle?: string | null;
@@ -1701,6 +1702,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   rpPillText?: T;
   rpTitle?: T;
   rpSubtitle?: T;
+  featuredImage?: T;
   pillText?: T;
   title?: T;
   subtitle?: T;

@@ -34,6 +34,12 @@ export const SiteSettings: GlobalConfig = {
       label: "הגדרות עמוד בלוג",
       fields: [
         {
+          name: "featuredImage",
+          label: "תמונה ראשית",
+          type: "upload",
+          relationTo: "media",
+        },
+        {
           name: "pillText",
           label: "תג עליון",
           type: "text",
