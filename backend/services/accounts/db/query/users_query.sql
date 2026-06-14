@@ -58,7 +58,12 @@ FROM users u
 LEFT JOIN offices       o   ON o.id   = u.office_id
 LEFT JOIN organizations org ON org.id = o.organization_id
 WHERE u.role = 'agent'
-  AND (sqlc.narg(search)::text IS NULL OR u.email ILIKE '%' || sqlc.narg(search)::text || '%' OR u.phone_number ILIKE '%' || sqlc.narg(search)::text || '%')
+  AND (sqlc.narg(search)::text IS NULL 
+    OR u.email ILIKE '%' || sqlc.narg(search)::text || '%' 
+    OR u.phone_number ILIKE '%' || sqlc.narg(search)::text || '%'
+    OR u.first_name ILIKE '%' || sqlc.narg(search)::text || '%'
+    OR u.last_name ILIKE '%' || sqlc.narg(search)::text || '%'
+    )
   AND (sqlc.narg(office_id)::bigint IS NULL OR u.office_id = sqlc.narg(office_id)::bigint)
   AND (sqlc.narg(organization_id)::bigint IS NULL OR o.organization_id = sqlc.narg(organization_id)::bigint)
 ORDER BY u.created_at DESC

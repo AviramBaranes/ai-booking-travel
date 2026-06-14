@@ -54,7 +54,7 @@ export function PlansPageContent() {
       planInclusions: supplier?.inclusions ?? [],
       addOns: supplier?.addOns ?? [],
     };
-  }, [data]);
+  }, [data, selectedPlan, vehicle]);
 
   if (!vehicle) {
     return <Loading />;

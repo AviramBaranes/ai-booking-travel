@@ -475,7 +475,12 @@ FROM users u
 LEFT JOIN offices       o   ON o.id   = u.office_id
 LEFT JOIN organizations org ON org.id = o.organization_id
 WHERE u.role = 'agent'
-  AND ($1::text IS NULL OR u.email ILIKE '%' || $1::text || '%' OR u.phone_number ILIKE '%' || $1::text || '%')
+  AND ($1::text IS NULL 
+    OR u.email ILIKE '%' || $1::text || '%' 
+    OR u.phone_number ILIKE '%' || $1::text || '%'
+    OR u.first_name ILIKE '%' || $1::text || '%'
+    OR u.last_name ILIKE '%' || $1::text || '%'
+    )
   AND ($2::bigint IS NULL OR u.office_id = $2::bigint)
   AND ($3::bigint IS NULL OR o.organization_id = $3::bigint)
 ORDER BY u.created_at DESC
