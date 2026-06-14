@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Populated } from "@/shared/types/payload";
 import Link from "next/link";
 import clsx from "clsx";
+import { Button } from "@/components/ui/button";
 
 interface RelatedPostsProps {
   pillText: string;
@@ -11,6 +12,7 @@ interface RelatedPostsProps {
   subtitle?: string;
   posts: BlogPost[];
   lang: string;
+  showButton?: boolean;
 }
 
 type FeaturedImage = Populated<BlogPost["featuredImage"]>;
@@ -29,6 +31,7 @@ export function RelatedPosts({
   subtitle,
   posts,
   lang,
+  showButton = true,
 }: RelatedPostsProps) {
   if (posts.length === 0) return null;
 
@@ -68,6 +71,16 @@ export function RelatedPosts({
             )}
           </div>
         ))}
+        {showButton && (
+          <Link
+            href={`/${lang}/blog`}
+            className="text-center w-full"
+          >
+            <Button variant="outline" className="mx-auto mt-6 rounded-md p-5">
+              לכל הכתבות
+            </Button>
+          </Link>
+        )}
       </div>
     </>
   );

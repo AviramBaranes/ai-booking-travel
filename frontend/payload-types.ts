@@ -1407,7 +1407,7 @@ export interface Homepage {
   /**
    * בנו את דף הבית על ידי הוספת בלוקים. שלבו אזורים משותפים עם תוכן ייחודי לדף הבית.
    */
-  layout?: (SharedSectionRefBlock | BenefitsBlock | FAQBlock)[] | null;
+  layout?: (SharedSectionRefBlock | BenefitsBlock | FAQBlock | RelatedPostsBlock)[] | null;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -1441,6 +1441,22 @@ export interface BenefitsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'benefits';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RelatedPostsBlock".
+ */
+export interface RelatedPostsBlock {
+  /**
+   * טקסט קצר המוצג מעל הכותרת הראשית. לדוגמה: "למה לבחור בנו".
+   */
+  eyebrow?: string | null;
+  title?: string | null;
+  subtitle?: string | null;
+  relatedPosts?: (number | BlogPost)[] | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'related-posts';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1609,6 +1625,7 @@ export interface HomepageSelect<T extends boolean = true> {
         sharedSectionRef?: T | SharedSectionRefBlockSelect<T>;
         benefits?: T | BenefitsBlockSelect<T>;
         faq?: T | FAQBlockSelect<T>;
+        'related-posts'?: T | RelatedPostsBlockSelect<T>;
       };
   meta?:
     | T
@@ -1637,6 +1654,18 @@ export interface BenefitsBlockSelect<T extends boolean = true> {
         subtitle?: T;
         id?: T;
       };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RelatedPostsBlock_select".
+ */
+export interface RelatedPostsBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  subtitle?: T;
+  relatedPosts?: T;
   id?: T;
   blockName?: T;
 }
