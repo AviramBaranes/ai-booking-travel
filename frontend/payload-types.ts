@@ -71,6 +71,10 @@ export interface Config {
     media: Media;
     pages: Page;
     sharedSections: SharedSection;
+    'blog-posts': BlogPost;
+    'blog-categories': BlogCategory;
+    forms: Form;
+    'form-submissions': FormSubmission;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -82,6 +86,10 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     sharedSections: SharedSectionsSelect<false> | SharedSectionsSelect<true>;
+    'blog-posts': BlogPostsSelect<false> | BlogPostsSelect<true>;
+    'blog-categories': BlogCategoriesSelect<false> | BlogCategoriesSelect<true>;
+    forms: FormsSelect<false> | FormsSelect<true>;
+    'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -99,6 +107,7 @@ export interface Config {
     'booking-settings': BookingSetting;
     suppliersGallery: SuppliersGallery;
     addonsGallery: AddonsGallery;
+    'site-settings': SiteSetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -108,6 +117,7 @@ export interface Config {
     'booking-settings': BookingSettingsSelect<false> | BookingSettingsSelect<true>;
     suppliersGallery: SuppliersGallerySelect<false> | SuppliersGallerySelect<true>;
     addonsGallery: AddonsGallerySelect<false> | AddonsGallerySelect<true>;
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
   };
   locale: 'he' | 'en';
   widgets: {
@@ -147,21 +157,6 @@ export interface Admin {
   username: string;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
   collection: 'admins';
 }
 /**
@@ -171,6 +166,7 @@ export interface Admin {
 export interface Media {
   id: number;
   alt: string;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -182,6 +178,32 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    blogHero?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    blogCard?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    og?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -284,6 +306,7 @@ export interface FAQBlock {
         id?: string | null;
       }[]
     | null;
+  width?: ('25%' | '50%' | '75%' | '100%') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'faq';
@@ -323,7 +346,7 @@ export interface SharedSection {
   /**
    * בחרו את סוג האזור. הבחירה קובעת אילו שדות יוצגו.
    */
-  type: 'newsletter' | 'suppliers' | 'stats';
+  type: 'newsletter' | 'suppliers' | 'stats' | 'contact';
   newsletter?: {
     title: string;
     subtitle?: string | null;
@@ -387,15 +410,173 @@ export interface SharedSection {
         }[]
       | null;
   };
+  contact?: {
+    /**
+     * טקסט קצר המוצג מעל הכותרת הראשית. לדוגמה: "למה לבחור בנו".
+     */
+    eyebrow?: string | null;
+    title?: string | null;
+    subtitle?: string | null;
+    contactForm: number | Form;
+    contactInfo?:
+      | {
+          icon: number | Media;
+          title: string;
+          content: {
+            root: {
+              type: string;
+              children: {
+                type: any;
+                version: number;
+                [k: string]: unknown;
+              }[];
+              direction: ('ltr' | 'rtl') | null;
+              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+              indent: number;
+              version: number;
+            };
+            [k: string]: unknown;
+          };
+          id?: string | null;
+        }[]
+      | null;
+  };
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forms".
+ */
+export interface Form {
+  id: number;
+  title: string;
+  fields?:
+    | (
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            defaultValue?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'checkbox';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'email';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            placeholder?: string | null;
+            options?:
+              | {
+                  label: string;
+                  value: string;
+                  id?: string | null;
+                }[]
+              | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'select';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'text';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            width?: number | null;
+            defaultValue?: string | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'textarea';
+          }
+        | {
+            name: string;
+            label?: string | null;
+            defaultValue?: string | null;
+            width?: number | null;
+            required?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'phone';
+          }
+      )[]
+    | null;
+  submitButtonLabel?: string | null;
+  confirmationType?: ('message' | 'redirect') | null;
+  confirmationMessage?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  redirect?: {
+    url: string;
+  };
+  emails?:
+    | {
+        emailTo?: string | null;
+        cc?: string | null;
+        bcc?: string | null;
+        replyTo?: string | null;
+        emailFrom?: string | null;
+        subject: string;
+        message?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "SidebarSectionBlock".
  */
 export interface SidebarSectionBlock {
+  type?: ('anchor' | 'toc') | null;
   sections?:
     | {
         title: string;
@@ -420,6 +601,144 @@ export interface SidebarSectionBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'sidebarSection';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-posts".
+ */
+export interface BlogPost {
+  id: number;
+  title: string;
+  /**
+   * החלק שיופיע בכתובת ה־URL של הפוסט. לדוגמה: car-rental-insurance.
+   */
+  slug: string;
+  /**
+   * תיאור קצר של הפוסט. משמש לכרטיסיות בלוג, תוצאות חיפוש, שיתופים ו־SEO. מומלץ עד 220 תווים.
+   */
+  excerpt?: string | null;
+  /**
+   * התמונה הראשית של הפוסט. תופיע בדרך כלל בראש הפוסט, בכרטיסיות בלוג ובשיתופים.
+   */
+  featuredImage: number | Media;
+  /**
+   * תוכן הפוסט עצמו. ניתן להרכיב את הפוסט מבלוקים כמו טקסט עשיר, שאלות נפוצות, אזורים משותפים ועוד. הפריסה הזאת תהיה ברוחב מצומצם בעמוד ברקע לבן
+   */
+  layout?: (RichTextBlock | FAQBlock | SharedSectionRefBlock | SidebarSectionBlock)[] | null;
+  /**
+   * תוכן הפוסט עצמו. ניתן להרכיב את הפוסט מבלוקים כמו טקסט עשיר, שאלות נפוצות, אזורים משותפים ועוד. הפריסה הזאת תהיה ברוחב מלא ללא רקע.
+   */
+  layout_out?: (RichTextBlock | FAQBlock | SharedSectionRefBlock | SidebarSectionBlock)[] | null;
+  /**
+   * הקטגוריה הראשית שאליה הפוסט שייך. משמשת לניווט, סינון, עמודי קטגוריה ופוסטים קשורים.
+   */
+  category: number | BlogCategory;
+  /**
+   * תגיות הן נושאים נקודתיים שהפוסט עוסק בהם, למשל: ביטוח, שדה תעופה, פיקדון, נהג צעיר. בשלב הזה הן טקסט חופשי ולא אוסף נפרד.
+   */
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * בחירה ידנית של פוסטים קשורים. אם השדה ריק, אפשר להציג אוטומטית פוסטים מאותה קטגוריה.
+   */
+  relatedPosts?: (number | BlogPost)[] | null;
+  /**
+   * טופס אופציונלי שיוצג בעמוד הפוסט, למשל טופס יצירת קשר, ליד או בקשת הצעת מחיר.
+   */
+  form?: (number | null) | Form;
+  /**
+   * באנר אופציונלי שיוצג בעמוד הפוסט. כולל תמונה וקישור שאליו המשתמש יועבר בלחיצה.
+   */
+  banner?: {
+    /**
+     * תמונה שתוצג כבאנר בעמוד הפוסט. מומלץ להשתמש בתמונה רחבה שמתאימה לתצוגה בדסקטופ ובמובייל.
+     */
+    image?: (number | null) | Media;
+    /**
+     * כתובת שאליה הבאנר יפנה בלחיצה. אפשר להזין קישור פנימי כמו /he/contact או קישור מלא.
+     */
+    link?: string | null;
+  };
+  /**
+   * נקבע אוטומטית בפעם הראשונה שהפוסט מפורסם. משמש למיון הפוסטים באתר.
+   */
+  publishedAt?: string | null;
+  /**
+   * הגדרות ייעודיות למנועי חיפוש ושיתופים. אם השדות ריקים, אפשר להשתמש בכותרת, בתקציר ובתמונה הראשית של הפוסט.
+   */
+  seo?: {
+    /**
+     * כותרת ייעודית למנועי חיפוש. אם ריק, ניתן להשתמש בכותרת הפוסט.
+     */
+    title?: string | null;
+    /**
+     * תיאור קצר שיופיע במנועי חיפוש ובשיתופים. מומלץ עד 220 תווים.
+     */
+    description?: string | null;
+    /**
+     * תמונה ייעודית לשיתופים. אם ריק, ניתן להשתמש בתמונה הראשית של הפוסט.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-categories".
+ */
+export interface BlogCategory {
+  id: number;
+  title: string;
+  /**
+   * החלק שיופיע בכתובת של עמוד הקטגוריה. לדוגמה: car-rental-guides.
+   */
+  slug: string;
+  /**
+   * תיאור קצר של הקטגוריה. יכול להופיע בעמוד הקטגוריה ולעזור ל־SEO.
+   */
+  description?: string | null;
+  /**
+   * תמונה אופציונלית לעמוד הקטגוריה או לכרטיסיות קטגוריה באתר.
+   */
+  image?: (number | null) | Media;
+  seo?: {
+    /**
+     * כותרת ייעודית למנועי חיפוש. אם ריק, ניתן להשתמש בשם הקטגוריה.
+     */
+    title?: string | null;
+    /**
+     * תיאור קצר למנועי חיפוש ושיתופים. מומלץ עד 220 תווים.
+     */
+    description?: string | null;
+    /**
+     * תמונה ייעודית לשיתופים. אם ריק, ניתן להשתמש בתמונת הקטגוריה.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "form-submissions".
+ */
+export interface FormSubmission {
+  id: number;
+  form: number | Form;
+  submissionData?:
+    | {
+        field: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -460,6 +779,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'sharedSections';
         value: number | SharedSection;
+      } | null)
+    | ({
+        relationTo: 'blog-posts';
+        value: number | BlogPost;
+      } | null)
+    | ({
+        relationTo: 'blog-categories';
+        value: number | BlogCategory;
+      } | null)
+    | ({
+        relationTo: 'forms';
+        value: number | Form;
+      } | null)
+    | ({
+        relationTo: 'form-submissions';
+        value: number | FormSubmission;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -512,20 +847,6 @@ export interface AdminsSelect<T extends boolean = true> {
   username?: T;
   updatedAt?: T;
   createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -533,6 +854,7 @@ export interface AdminsSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -544,6 +866,40 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+  sizes?:
+    | T
+    | {
+        blogHero?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        blogCard?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        og?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -610,6 +966,7 @@ export interface FAQBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  width?: T;
   id?: T;
   blockName?: T;
 }
@@ -633,6 +990,7 @@ export interface SharedSectionRefBlockSelect<T extends boolean = true> {
  * via the `definition` "SidebarSectionBlock_select".
  */
 export interface SidebarSectionBlockSelect<T extends boolean = true> {
+  type?: T;
   sections?:
     | T
     | {
@@ -698,9 +1056,216 @@ export interface SharedSectionsSelect<T extends boolean = true> {
               id?: T;
             };
       };
+  contact?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        subtitle?: T;
+        contactForm?: T;
+        contactInfo?:
+          | T
+          | {
+              icon?: T;
+              title?: T;
+              content?: T;
+              id?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
-  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-posts_select".
+ */
+export interface BlogPostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  excerpt?: T;
+  featuredImage?: T;
+  layout?:
+    | T
+    | {
+        richText?: T | RichTextBlockSelect<T>;
+        faq?: T | FAQBlockSelect<T>;
+        sharedSectionRef?: T | SharedSectionRefBlockSelect<T>;
+        sidebarSection?: T | SidebarSectionBlockSelect<T>;
+      };
+  layout_out?:
+    | T
+    | {
+        richText?: T | RichTextBlockSelect<T>;
+        faq?: T | FAQBlockSelect<T>;
+        sharedSectionRef?: T | SharedSectionRefBlockSelect<T>;
+        sidebarSection?: T | SidebarSectionBlockSelect<T>;
+      };
+  category?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  relatedPosts?: T;
+  form?: T;
+  banner?:
+    | T
+    | {
+        image?: T;
+        link?: T;
+      };
+  publishedAt?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "blog-categories_select".
+ */
+export interface BlogCategoriesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  image?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forms_select".
+ */
+export interface FormsSelect<T extends boolean = true> {
+  title?: T;
+  fields?:
+    | T
+    | {
+        checkbox?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              required?: T;
+              defaultValue?: T;
+              id?: T;
+              blockName?: T;
+            };
+        email?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        select?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              placeholder?: T;
+              options?:
+                | T
+                | {
+                    label?: T;
+                    value?: T;
+                    id?: T;
+                  };
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        text?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        textarea?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              width?: T;
+              defaultValue?: T;
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+        phone?:
+          | T
+          | {
+              name?: T;
+              label?: T;
+              defaultValue?: T;
+              width?: T;
+              required?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  submitButtonLabel?: T;
+  confirmationType?: T;
+  confirmationMessage?: T;
+  redirect?:
+    | T
+    | {
+        url?: T;
+      };
+  emails?:
+    | T
+    | {
+        emailTo?: T;
+        cc?: T;
+        bcc?: T;
+        replyTo?: T;
+        emailFrom?: T;
+        subject?: T;
+        message?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "form-submissions_select".
+ */
+export interface FormSubmissionsSelect<T extends boolean = true> {
+  form?: T;
+  submissionData?:
+    | T
+    | {
+        field?: T;
+        value?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -842,7 +1407,7 @@ export interface Homepage {
   /**
    * בנו את דף הבית על ידי הוספת בלוקים. שלבו אזורים משותפים עם תוכן ייחודי לדף הבית.
    */
-  layout?: (SharedSectionRefBlock | BenefitsBlock | FAQBlock)[] | null;
+  layout?: (SharedSectionRefBlock | BenefitsBlock | FAQBlock | RelatedPostsBlock)[] | null;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -851,7 +1416,6 @@ export interface Homepage {
      */
     image?: (number | null) | Media;
   };
-  _status?: ('draft' | 'published') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -877,6 +1441,22 @@ export interface BenefitsBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'benefits';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RelatedPostsBlock".
+ */
+export interface RelatedPostsBlock {
+  /**
+   * טקסט קצר המוצג מעל הכותרת הראשית. לדוגמה: "למה לבחור בנו".
+   */
+  eyebrow?: string | null;
+  title?: string | null;
+  subtitle?: string | null;
+  relatedPosts?: (number | BlogPost)[] | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'related-posts';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -929,6 +1509,22 @@ export interface AddonsGallery {
         id?: string | null;
       }[]
     | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  rpPillText?: string | null;
+  rpTitle: string;
+  rpSubtitle?: string | null;
+  featuredImage?: (number | null) | Media;
+  pillText?: string | null;
+  title: string;
+  subtitle?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1029,6 +1625,7 @@ export interface HomepageSelect<T extends boolean = true> {
         sharedSectionRef?: T | SharedSectionRefBlockSelect<T>;
         benefits?: T | BenefitsBlockSelect<T>;
         faq?: T | FAQBlockSelect<T>;
+        'related-posts'?: T | RelatedPostsBlockSelect<T>;
       };
   meta?:
     | T
@@ -1037,7 +1634,6 @@ export interface HomepageSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
-  _status?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1058,6 +1654,18 @@ export interface BenefitsBlockSelect<T extends boolean = true> {
         subtitle?: T;
         id?: T;
       };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "RelatedPostsBlock_select".
+ */
+export interface RelatedPostsBlockSelect<T extends boolean = true> {
+  eyebrow?: T;
+  title?: T;
+  subtitle?: T;
+  relatedPosts?: T;
   id?: T;
   blockName?: T;
 }
@@ -1111,6 +1719,22 @@ export interface AddonsGallerySelect<T extends boolean = true> {
         image?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  rpPillText?: T;
+  rpTitle?: T;
+  rpSubtitle?: T;
+  featuredImage?: T;
+  pillText?: T;
+  title?: T;
+  subtitle?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

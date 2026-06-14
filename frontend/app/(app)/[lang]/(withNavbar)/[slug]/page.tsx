@@ -75,7 +75,7 @@ export default async function SlugPage({ params }: Props) {
   return (
     <>
       <PayloadLivePreview />
-      <main className="relative">
+      <div className="relative">
         {page.includeBgDecorations && <PagesDecorations />}
         {image?.url && (
           <Image
@@ -94,7 +94,7 @@ export default async function SlugPage({ params }: Props) {
           </div>
         )}
         <BlocksRenderer blocks={page.layout} />
-      </main>
+      </div>
     </>
   );
 }

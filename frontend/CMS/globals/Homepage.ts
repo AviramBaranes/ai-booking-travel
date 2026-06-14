@@ -1,6 +1,6 @@
+import { revalidateOnGlobalChange } from "@/CMS/hooks/revalidate";
 import type { GlobalConfig } from "payload";
-import { faqBlock, sharedSectionRefBlock, benefitsBlock } from "../blocks";
-import { revalidateOnGlobalChange } from "../hooks/revalidate";
+import { benefitsBlock, faqBlock, createSharedSectionRefBlock, relatedPostsBlock } from "../blocks";
 
 export const Homepage: GlobalConfig = {
   slug: "homepage",
@@ -9,9 +9,6 @@ export const Homepage: GlobalConfig = {
     description:
       "תוכן דף הבית. הוסיפו בלוקים בסדר הרצוי ושלבו אזורים משותפים לפי הצורך.",
     group: "תוכן",
-  },
-  versions: {
-    drafts: true,
   },
   hooks: {
     afterChange: [revalidateOnGlobalChange],
@@ -66,7 +63,7 @@ export const Homepage: GlobalConfig = {
                 description:
                   "בנו את דף הבית על ידי הוספת בלוקים. שלבו אזורים משותפים עם תוכן ייחודי לדף הבית.",
               },
-              blocks: [sharedSectionRefBlock, benefitsBlock, faqBlock],
+              blocks: [createSharedSectionRefBlock("secRef"), benefitsBlock, faqBlock, relatedPostsBlock],
             },
           ],
         },

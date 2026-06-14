@@ -12,9 +12,10 @@ export function FAQBlock({ data, className }: FAQBlockProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center gap-12 w-1/2 mx-auto mb-20",
+        "flex flex-col items-center gap-12 mx-auto mb-20",
         className,
       )}
+      style={{width: data.width ?? "100%"}}
     >
       <SectionHeader
         pillText={data.eyebrow ?? ""}

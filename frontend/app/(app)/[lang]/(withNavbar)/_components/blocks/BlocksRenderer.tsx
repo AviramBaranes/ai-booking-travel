@@ -1,4 +1,9 @@
-import { Homepage, Page, SharedSectionRefBlock } from "@/payload-types";
+import {
+  BlogPost,
+  Homepage,
+  Page,
+  SharedSectionRefBlock,
+} from "@/payload-types";
 import { Populated } from "@/shared/types/payload";
 import { SharedSectionRenderer } from "./sharedSections/sharedSectionRenderer";
 import { SidebarSection } from "./sidebar/SidebarSection";
@@ -6,13 +11,16 @@ import { SharedSectionWrapper } from "./sharedSections/SharedSectionWrapper";
 import { RichText } from "@payloadcms/richtext-lexical/react";
 import { FAQBlock } from "./faq/FaqBlock";
 import { BenefitsBlock } from "./BenefitsBlock";
+import { RelatedPosts } from "../posts/RelatedPosts";
 
 export function BlocksRenderer({
   blocks,
   faqClassName,
+  lang,
 }: {
   blocks: Page["layout"] | Homepage["layout"];
   faqClassName?: string;
+  lang?: string;
 }) {
   return (
     <>
@@ -26,7 +34,10 @@ export function BlocksRenderer({
             );
           case "richText":
             return (
-              <section className="w-4/10 mx-auto prose prose-headings:font-bold max-w-none" key={block.id}>
+              <section
+                className="w-4/10 mx-auto prose prose-headings:font-bold max-w-none"
+                key={block.id}
+              >
                 <RichText data={block.content} />
               </section>
             );
@@ -42,6 +53,19 @@ export function BlocksRenderer({
             );
           case "benefits":
             return <BenefitsBlock key={block.id} block={block} />;
+          case "related-posts":
+            return (
+              <section className="w-2/3 mx-auto mb-10" key={block.id}>
+                <RelatedPosts
+                  showButton
+                  pillText={block.eyebrow ?? ""}
+                  posts={(block.relatedPosts as BlogPost[]) ?? []}
+                  title={block.title ?? ""}
+                  subtitle={block.subtitle ?? ""}
+                  lang={lang ?? "he"}
+                />
+              </section>
+            );
         }
       })}
     </>

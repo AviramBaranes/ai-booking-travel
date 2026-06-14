@@ -35,6 +35,7 @@ export default class Client {
     public readonly accounts: accounts.ServiceClient
     public readonly billing: billing.ServiceClient
     public readonly booking: booking.ServiceClient
+    public readonly notifications: notifications.ServiceClient
     public readonly reservation: reservation.ServiceClient
     private readonly options: ClientOptions
     private readonly target: string
@@ -69,6 +70,7 @@ export default class Client {
         this.accounts = new accounts.ServiceClient(base)
         this.billing = new billing.ServiceClient(base)
         this.booking = new booking.ServiceClient(base)
+        this.notifications = new notifications.ServiceClient(base)
         this.reservation = new reservation.ServiceClient(base)
     }
 
@@ -822,6 +824,40 @@ export namespace booking {
          */
         public async VerifyBrokerTranslation(id: number): Promise<void> {
             await this.baseClient.callTypedAPI("PATCH", `/broker-translations/${encodeURIComponent(id)}/verify`)
+        }
+    }
+}
+
+export namespace notifications {
+    export interface SendCMSEmailParams {
+        Token: string
+        to: string
+        subject: string
+        content: string
+    }
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.SendCMSEmail = this.SendCMSEmail.bind(this)
+        }
+
+        public async SendCMSEmail(params: SendCMSEmailParams): Promise<void> {
+            // Convert our params into the objects we need for the request
+            const headers = makeRecord<string, string>({
+                "x-translation-token": params.Token,
+            })
+
+            // Construct the body with only the fields which we want encoded within the body (excluding query string or header fields)
+            const body: Record<string, any> = {
+                content: params.content,
+                subject: params.subject,
+                to:      params.to,
+            }
+
+            await this.baseClient.callTypedAPI("POST", `/send-cms-email`, JSON.stringify(body), {headers})
         }
     }
 }

@@ -3,6 +3,7 @@ import { TypedSection } from "@/shared/types/payload";
 import { NewsletterSection } from "./NewsletterSection";
 import { StatsSection } from "./StatsSection";
 import { SuppliersSection } from "./SuppliersSection";
+import { ContactSection } from "./ContactSection";
 
 interface SharedSectionRendererProps {
   section: SharedSection;
@@ -19,6 +20,8 @@ export function SharedSectionRenderer({ section }: SharedSectionRendererProps) {
       return (
         <SuppliersSection section={section as TypedSection<"suppliers">} />
       );
+    case "contact":
+      return <ContactSection section={section as TypedSection<"contact">} />;
     default:
       return <div>[Unknown SharedSection: {section.type}]</div>;
   }

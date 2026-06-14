@@ -1,7 +1,17 @@
 package email
 
+import "html/template"
+
 type Template[T any] struct {
 	name string
+}
+
+type CMSEmailData struct {
+	Content template.HTML
+}
+
+var CMSEmailTemplate = Template[CMSEmailData]{
+	name: "cms_email",
 }
 
 type CriticalErrorData struct {
