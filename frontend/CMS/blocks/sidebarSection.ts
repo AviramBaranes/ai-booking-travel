@@ -9,6 +9,15 @@ export const sidebarSectionBlock: Block = {
   },
   fields: [
     {
+      name: "type",
+      type: "select",
+      defaultValue: "anchor",
+      options: [
+        { label: "עוגן", value: "anchor" },
+        { label: "תוכן עניינים", value: "toc" },
+      ],
+    },
+    {
       name: "sections",
       label: "אזורים",
       type: "array",

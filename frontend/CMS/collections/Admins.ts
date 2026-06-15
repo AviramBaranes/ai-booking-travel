@@ -35,7 +35,6 @@ export const Admins: CollectionConfig = {
               data: {
                 userId: session.user.id,
                 username: session.user.firstName + " " + session.user.lastName,
-                email: "",
               },
               draft: false,
             });

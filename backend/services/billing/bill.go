@@ -25,11 +25,12 @@ var (
 )
 
 type BillParams struct {
-	IDs            []int64 `json:"ids" validate:"required,min=1"`
-	TotalPaid      float64 `json:"total_paid" validate:"required,gt=0"`
-	TransferDate   string  `json:"transfer_date" validate:"required,datetime=2006-01-02"`
-	OfficeID       *int64  `json:"office_id" encore:"optional"`
-	OrganizationID *int64  `json:"organization_id" encore:"optional"`
+	IDs                 []int64 `json:"ids" validate:"required,min=1"`
+	SkipInvoiceCreation bool    `json:"skip_invoice_creation" encore:"optional"`
+	TotalPaid           float64 `json:"total_paid" validate:"required,gt=0"`
+	TransferDate        string  `json:"transfer_date" validate:"required,datetime=2006-01-02"`
+	OfficeID            *int64  `json:"office_id" encore:"optional"`
+	OrganizationID      *int64  `json:"organization_id" encore:"optional"`
 }
 
 func (r BillParams) Validate() error {
@@ -80,6 +81,20 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 	if err := validateSelectedIDsShareCurrency(currency, p.IDs, reservationSet); err != nil {
 		rlog.Error("validation failed for billing request", "error", err, "invalid_ids", p.IDs)
 		return nil, err
+	}
+
+	if p.SkipInvoiceCreation {
+		err = reservation.ResolveReservations(ctx, reservation.ResolveReservationsParams{
+			IDs: p.IDs,
+		})
+
+		if err != nil {
+			rlog.Error("failed to resolve reservations", "error", err, "reservation_ids", p.IDs)
+			return nil, api_errors.ErrInternalError
+		}
+		return &BillResponse{
+			DocNum: "N/A",
+		}, nil
 	}
 
 	invoiceItems := buildInvoiceItems(p.IDs, reservationSet)

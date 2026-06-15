@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { queries } from "@/shared/client";
 import { BillDialog } from "./BillDialog";
 import type { BillingEntity } from "./BillingEntityCombobox";
+import { PromptBillDialog } from "./PromptBillDialog";
 
 const CHECKBOX_CLASSES =
   "border-[#a9a8b3] data-checked:border-brand data-checked:bg-brand";
@@ -26,7 +27,8 @@ export function CurrencyGroupCard({
   showActions = true,
 }: CurrencyGroupCardProps) {
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [promptBillDialogOpen, setPromptBillDialogOpen] = useState(false);
+  const [billDialogOpen, setBillDialogOpen] = useState(false);
   const tStatus = useTranslations("MyAccount.reservation.summary.status");
 
   const currencyFormatter = useMemo(
@@ -105,7 +107,7 @@ export function CurrencyGroupCard({
             variant="brand"
             className="h-10 px-6"
             disabled={selectedIds.length === 0}
-            onClick={() => setDialogOpen(true)}
+            onClick={() => setPromptBillDialogOpen(true)}
           >
             חייב נבחרים
           </Button>
@@ -230,16 +232,22 @@ export function CurrencyGroupCard({
         </table>
       </div>
 
-      {dialogOpen && (
-        <BillDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          entity={entity}
-          currencyCode={group.currencyCode}
-          selectedIds={selectedIds}
-          onSuccess={() => setSelected(new Set())}
-        />
-      )}
+      <BillDialog
+        open={billDialogOpen}
+        onOpenChange={setBillDialogOpen}
+        entity={entity}
+        currencyCode={group.currencyCode}
+        selectedIds={selectedIds}
+        onSuccess={() => setSelected(new Set())}
+      />
+      <PromptBillDialog
+        open={promptBillDialogOpen}
+        onOpenChange={setPromptBillDialogOpen}
+        entity={entity}
+        selectedIds={selectedIds}
+        onSuccess={() => setSelected(new Set())}
+        onContinueToInvoiceCreation={() => setBillDialogOpen(true)}
+      />
     </section>
   );
 }

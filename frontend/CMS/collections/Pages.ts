@@ -2,7 +2,7 @@ import type { CollectionBeforeChangeHook, CollectionConfig } from "payload";
 import {
   richTextBlock,
   faqBlock,
-  sharedSectionRefBlock,
+  createSharedSectionRefBlock,
   sidebarSectionBlock,
 } from "../blocks";
 import { Page } from "@/payload-types";
@@ -75,7 +75,7 @@ export const Pages: CollectionConfig = {
               blocks: [
                 richTextBlock,
                 faqBlock,
-                sharedSectionRefBlock,
+                createSharedSectionRefBlock("secRef"),
                 sidebarSectionBlock,
               ],
             },
