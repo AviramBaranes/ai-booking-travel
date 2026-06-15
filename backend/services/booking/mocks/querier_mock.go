@@ -797,6 +797,20 @@ func (mr *MockQuerierMockRecorder) SetPriceOfferRenewedAt(ctx, arg any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPriceOfferRenewedAt", reflect.TypeOf((*MockQuerier)(nil).SetPriceOfferRenewedAt), ctx, arg)
 }
 
+// ToggleIsAirport mocks base method.
+func (m *MockQuerier) ToggleIsAirport(ctx context.Context, arg db.ToggleIsAirportParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToggleIsAirport", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ToggleIsAirport indicates an expected call of ToggleIsAirport.
+func (mr *MockQuerierMockRecorder) ToggleIsAirport(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToggleIsAirport", reflect.TypeOf((*MockQuerier)(nil).ToggleIsAirport), ctx, arg)
+}
+
 // ToggleLocationBrokerCode mocks base method.
 func (m *MockQuerier) ToggleLocationBrokerCode(ctx context.Context, arg db.ToggleLocationBrokerCodeParams) error {
 	m.ctrl.T.Helper()

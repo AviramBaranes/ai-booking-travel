@@ -63,6 +63,14 @@ func (s *Service) ToggleLocation(ctx context.Context, id int64, p location.Toggl
 	return ls.ToggleLocation(ctx, id, p)
 }
 
+// ToggleLocationIsAirport sets the is_airport flag for a location by ID.
+//
+//encore:api auth method=PATCH path=/locations/:id/airport tag:admin
+func (s *Service) ToggleLocationIsAirport(ctx context.Context, id int64, p location.ToggleLocationIsAirportParams) error {
+	ls := location.NewLocationService(s.query)
+	return ls.ToggleLocationIsAirport(ctx, id, p)
+}
+
 // BulkToggleLocations enables or disables multiple location broker codes.
 //
 //encore:api auth method=PATCH path=/location-bulk-toggle tag:admin

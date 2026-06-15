@@ -65,6 +65,7 @@ type Querier interface {
 	RenewPriceOfferUnavailable(ctx context.Context, arg RenewPriceOfferUnavailableParams) error
 	SearchLocations(ctx context.Context, search string) ([]SearchLocationsRow, error)
 	SetPriceOfferRenewedAt(ctx context.Context, arg SetPriceOfferRenewedAtParams) error
+	ToggleIsAirport(ctx context.Context, arg ToggleIsAirportParams) error
 	ToggleLocationBrokerCode(ctx context.Context, arg ToggleLocationBrokerCodeParams) error
 	TranslatePendingTranslation(ctx context.Context, arg TranslatePendingTranslationParams) error
 	UpdateBrokerTranslation(ctx context.Context, arg UpdateBrokerTranslationParams) error

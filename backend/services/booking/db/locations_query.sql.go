@@ -346,6 +346,23 @@ func (q *Queries) SearchLocations(ctx context.Context, search string) ([]SearchL
 	return items, nil
 }
 
+const toggleIsAirport = `-- name: ToggleIsAirport :exec
+UPDATE locations
+SET is_airport = $1,
+    updated_at = now()
+WHERE id = $2
+`
+
+type ToggleIsAirportParams struct {
+	IsAirport bool
+	ID        int64
+}
+
+func (q *Queries) ToggleIsAirport(ctx context.Context, arg ToggleIsAirportParams) error {
+	_, err := q.db.Exec(ctx, toggleIsAirport, arg.IsAirport, arg.ID)
+	return err
+}
+
 const upsertLocationByCountryCodeName = `-- name: UpsertLocationByCountryCodeName :one
 INSERT INTO locations (country, country_code, city, name, iata)
 VALUES (

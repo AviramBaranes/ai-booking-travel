@@ -177,3 +177,9 @@ WHERE NOT EXISTS (
 )
 AND (sqlc.narg('name')::text IS NULL OR l.name ILIKE '%' || sqlc.narg('name')::text || '%')
 LIMIT 100;
+
+-- name: ToggleIsAirport :exec
+UPDATE locations
+SET is_airport = sqlc.arg(is_airport),
+    updated_at = now()
+WHERE id = sqlc.arg(id);
