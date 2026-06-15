@@ -202,3 +202,117 @@ func TestToggleLocation(t *testing.T) {
 	})
 
 }
+
+func TestToggleLocationIsAirport(t *testing.T) {
+	ctx := context.Background()
+	q := testQuerier()
+	s := &Service{query: q}
+
+	// Helper to read back the is_airport flag for a location.
+	getIsAirport := func(t *testing.T, locID int64) bool {
+		t.Helper()
+		row, err := q.GetLocationById(ctx, locID)
+		if err != nil {
+			t.Fatalf("failed to fetch location: %v", err)
+		}
+		return row.IsAirport
+	}
+
+	t.Run("sets is_airport to true", func(t *testing.T) {
+		loc, _ := seedLocationWithBrokerCode(t, q,
+			db.InsertLocationParams{
+				Country: "Israel", CountryCode: "IL", Name: "Airport Toggle True Test",
+			},
+			db.BrokerFlex, "flex-airport-toggle-true",
+		)
+
+		if getIsAirport(t, loc.ID) {
+			t.Fatal("expected is_airport to be false by default")
+		}
+
+		err := s.ToggleLocationIsAirport(ctx, loc.ID, location.ToggleLocationIsAirportParams{IsAirport: true})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if !getIsAirport(t, loc.ID) {
+			t.Fatal("expected is_airport to be true after toggle")
+		}
+	})
+
+	t.Run("sets is_airport to false", func(t *testing.T) {
+		loc, _ := seedLocationWithBrokerCode(t, q,
+			db.InsertLocationParams{
+				Country: "Israel", CountryCode: "IL", Name: "Airport Toggle False Test",
+			},
+			db.BrokerFlex, "flex-airport-toggle-false",
+		)
+
+		// Set to true first
+		if err := q.ToggleIsAirport(ctx, db.ToggleIsAirportParams{
+			IsAirport: true,
+			ID:        loc.ID,
+		}); err != nil {
+			t.Fatalf("failed to set is_airport: %v", err)
+		}
+		if !getIsAirport(t, loc.ID) {
+			t.Fatal("expected is_airport to be true")
+		}
+
+		err := s.ToggleLocationIsAirport(ctx, loc.ID, location.ToggleLocationIsAirportParams{IsAirport: false})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if getIsAirport(t, loc.ID) {
+			t.Fatal("expected is_airport to be false after toggle")
+		}
+	})
+
+	t.Run("setting true when already true is idempotent", func(t *testing.T) {
+		loc, _ := seedLocationWithBrokerCode(t, q,
+			db.InsertLocationParams{
+				Country: "Israel", CountryCode: "IL", Name: "Airport Idempotent True Test",
+			},
+			db.BrokerFlex, "flex-airport-idempotent-true",
+		)
+
+		if err := q.ToggleIsAirport(ctx, db.ToggleIsAirportParams{
+			IsAirport: true,
+			ID:        loc.ID,
+		}); err != nil {
+			t.Fatalf("failed to set is_airport: %v", err)
+		}
+
+		err := s.ToggleLocationIsAirport(ctx, loc.ID, location.ToggleLocationIsAirportParams{IsAirport: true})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if !getIsAirport(t, loc.ID) {
+			t.Fatal("expected is_airport to still be true")
+		}
+	})
+
+	t.Run("setting false when already false is idempotent", func(t *testing.T) {
+		loc, _ := seedLocationWithBrokerCode(t, q,
+			db.InsertLocationParams{
+				Country: "Israel", CountryCode: "IL", Name: "Airport Idempotent False Test",
+			},
+			db.BrokerFlex, "flex-airport-idempotent-false",
+		)
+
+		if getIsAirport(t, loc.ID) {
+			t.Fatal("expected is_airport to be false by default")
+		}
+
+		err := s.ToggleLocationIsAirport(ctx, loc.ID, location.ToggleLocationIsAirportParams{IsAirport: false})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if getIsAirport(t, loc.ID) {
+			t.Fatal("expected is_airport to still be false")
+		}
+	})
+}
