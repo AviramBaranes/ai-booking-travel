@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
-	"encore.app/internal/lang"
 	"encore.app/internal/validation"
 	"encore.app/services/booking/db"
 	"encore.dev/rlog"
@@ -30,14 +29,12 @@ type LocationResult struct {
 	CountryCode string  `json:"countryCode"`
 	City        *string `json:"city,omitempty"`
 	Iata        *string `json:"iata,omitempty"`
+	IsAirport   bool    `json:"isAirport"`
 }
 
 func (s *LocationService) SearchLocations(ctx context.Context, p SearchLocationParams) (*SearchLocationResponse, error) {
 	rlog.Info("searching for locations matching query", "search", p.Search)
-	locs, err := s.query.SearchLocations(ctx, db.SearchLocationsParams{
-		Lang:   lang.FromContext(ctx, "en"),
-		Search: p.Search,
-	})
+	locs, err := s.query.SearchLocations(ctx, p.Search)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
 			return &SearchLocationResponse{Locations: []LocationResult{}}, nil
@@ -55,6 +52,7 @@ func (s *LocationService) SearchLocations(ctx context.Context, p SearchLocationP
 			CountryCode: loc.CountryCode,
 			City:        loc.City,
 			Iata:        loc.Iata,
+			IsAirport:   loc.IsAirport,
 		})
 	}
 

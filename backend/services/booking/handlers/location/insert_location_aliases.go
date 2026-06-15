@@ -23,14 +23,7 @@ func (s *LocationService) InsertLocationAliases(ctx context.Context, p InsertLoc
 	var dbParams db.InsertManyLocationAliasesParams
 	for _, alias := range p.Aliases {
 		dbParams.LocationIds = append(dbParams.LocationIds, p.LocationID)
-		dbParams.Names = append(dbParams.Names, alias.Value)
-		dbParams.Types = append(dbParams.Types, string(alias.AliasType))
-		aliasType := db.LocationAliasType(alias.AliasType)
-		if aliasType == db.LocationAliasTypeTranslation {
-			dbParams.LanguageCodes = append(dbParams.LanguageCodes, p.Lang)
-		} else {
-			dbParams.LanguageCodes = append(dbParams.LanguageCodes, "")
-		}
+		dbParams.Aliases = append(dbParams.Aliases, alias.Value)
 	}
 
 	err := s.query.InsertManyLocationAliases(ctx, dbParams)

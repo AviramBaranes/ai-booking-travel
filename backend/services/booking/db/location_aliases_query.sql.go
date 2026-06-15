@@ -12,39 +12,24 @@ import (
 const insertManyLocationAliases = `-- name: InsertManyLocationAliases :exec
 INSERT INTO location_aliases (
     location_id,
-    name,
-    type,
-    language_code
+    alias
 )
 SELECT
     location_ids.location_id,
-    names.name,
-    types.type_text::location_alias_type,
-    language_codes.language_code
+    aliases.alias
 FROM unnest($1::bigint[]) WITH ORDINALITY AS location_ids(location_id, idx)
-JOIN unnest($2::text[]) WITH ORDINALITY AS names(name, idx)
+JOIN unnest($2::text[]) WITH ORDINALITY AS aliases(alias, idx)
     USING (idx)
-JOIN unnest($3::text[]) WITH ORDINALITY AS types(type_text, idx)
-    USING (idx)
-JOIN unnest($4::text[]) WITH ORDINALITY AS language_codes(language_code, idx)
-    USING (idx)
-ON CONFLICT (location_id, language_code, type, lower(name))
+ON CONFLICT (location_id, lower(alias))
 DO NOTHING
 `
 
 type InsertManyLocationAliasesParams struct {
-	LocationIds   []int64
-	Names         []string
-	Types         []string
-	LanguageCodes []string
+	LocationIds []int64
+	Aliases     []string
 }
 
 func (q *Queries) InsertManyLocationAliases(ctx context.Context, arg InsertManyLocationAliasesParams) error {
-	_, err := q.db.Exec(ctx, insertManyLocationAliases,
-		arg.LocationIds,
-		arg.Names,
-		arg.Types,
-		arg.LanguageCodes,
-	)
+	_, err := q.db.Exec(ctx, insertManyLocationAliases, arg.LocationIds, arg.Aliases)
 	return err
 }

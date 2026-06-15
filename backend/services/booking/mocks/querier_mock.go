@@ -797,18 +797,18 @@ func (mr *MockQuerierMockRecorder) RenewPriceOfferUnavailable(ctx, arg any) *gom
 }
 
 // SearchLocations mocks base method.
-func (m *MockQuerier) SearchLocations(ctx context.Context, arg db.SearchLocationsParams) ([]db.SearchLocationsRow, error) {
+func (m *MockQuerier) SearchLocations(ctx context.Context, search string) ([]db.SearchLocationsRow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SearchLocations", ctx, arg)
+	ret := m.ctrl.Call(m, "SearchLocations", ctx, search)
 	ret0, _ := ret[0].([]db.SearchLocationsRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SearchLocations indicates an expected call of SearchLocations.
-func (mr *MockQuerierMockRecorder) SearchLocations(ctx, arg any) *gomock.Call {
+func (mr *MockQuerierMockRecorder) SearchLocations(ctx, search any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchLocations", reflect.TypeOf((*MockQuerier)(nil).SearchLocations), ctx, arg)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchLocations", reflect.TypeOf((*MockQuerier)(nil).SearchLocations), ctx, search)
 }
 
 // SetPriceOfferRenewedAt mocks base method.

@@ -96,48 +96,6 @@ func (ns NullBrokerTranslationStatus) Value() (driver.Value, error) {
 	return string(ns.BrokerTranslationStatus), nil
 }
 
-type LocationAliasType string
-
-const (
-	LocationAliasTypeTranslation LocationAliasType = "translation"
-	LocationAliasTypeTypo        LocationAliasType = "typo"
-)
-
-func (e *LocationAliasType) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = LocationAliasType(s)
-	case string:
-		*e = LocationAliasType(s)
-	default:
-		return fmt.Errorf("unsupported scan type for LocationAliasType: %T", src)
-	}
-	return nil
-}
-
-type NullLocationAliasType struct {
-	LocationAliasType LocationAliasType
-	Valid             bool // Valid is true if LocationAliasType is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullLocationAliasType) Scan(value interface{}) error {
-	if value == nil {
-		ns.LocationAliasType, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.LocationAliasType.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullLocationAliasType) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.LocationAliasType), nil
-}
-
 type OfferStatus string
 
 const (
@@ -248,16 +206,15 @@ type Location struct {
 	Iata        *string
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
+	IsAirport   bool
 }
 
 type LocationAlias struct {
-	ID           int64
-	LocationID   int64
-	Name         string
-	Type         LocationAliasType
-	LanguageCode string
-	CreatedAt    pgtype.Timestamptz
-	UpdatedAt    pgtype.Timestamptz
+	ID         int64
+	LocationID int64
+	Alias      string
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
 }
 
 type LocationBrokerCode struct {
