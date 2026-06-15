@@ -5,6 +5,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/validation"
+	"encore.app/services/booking/db"
 	"encore.dev/rlog"
 )
 
@@ -19,13 +20,10 @@ func (p BulkToggleLocationsParams) Validate() error {
 
 func (s *LocationService) BulkToggleLocations(ctx context.Context, p BulkToggleLocationsParams) error {
 	for _, id := range p.IDs {
-		var err error
-		if p.Enabled {
-			err = s.query.EnableLocationBrokerCode(ctx, id)
-		} else {
-			err = s.query.DisableLocationBrokerCode(ctx, id)
-		}
-		if err != nil {
+		if err := s.query.ToggleLocationBrokerCode(ctx, db.ToggleLocationBrokerCodeParams{
+			Enabled: p.Enabled,
+			ID:      id,
+		}); err != nil {
 			rlog.Error("failed to toggle location broker code", "error", err, "id", id, "enabled", p.Enabled)
 			return api_errors.ErrInternalError
 		}

@@ -306,34 +306,6 @@ func (mr *MockQuerierMockRecorder) DeleteSnapshotByID(ctx, id any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshotByID", reflect.TypeOf((*MockQuerier)(nil).DeleteSnapshotByID), ctx, id)
 }
 
-// DisableLocationBrokerCode mocks base method.
-func (m *MockQuerier) DisableLocationBrokerCode(ctx context.Context, id int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DisableLocationBrokerCode", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DisableLocationBrokerCode indicates an expected call of DisableLocationBrokerCode.
-func (mr *MockQuerierMockRecorder) DisableLocationBrokerCode(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DisableLocationBrokerCode", reflect.TypeOf((*MockQuerier)(nil).DisableLocationBrokerCode), ctx, id)
-}
-
-// EnableLocationBrokerCode mocks base method.
-func (m *MockQuerier) EnableLocationBrokerCode(ctx context.Context, id int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnableLocationBrokerCode", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// EnableLocationBrokerCode indicates an expected call of EnableLocationBrokerCode.
-func (mr *MockQuerierMockRecorder) EnableLocationBrokerCode(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnableLocationBrokerCode", reflect.TypeOf((*MockQuerier)(nil).EnableLocationBrokerCode), ctx, id)
-}
-
 // FindCouponByCode mocks base method.
 func (m *MockQuerier) FindCouponByCode(ctx context.Context, code string) (db.Coupon, error) {
 	m.ctrl.T.Helper()
@@ -823,6 +795,20 @@ func (m *MockQuerier) SetPriceOfferRenewedAt(ctx context.Context, arg db.SetPric
 func (mr *MockQuerierMockRecorder) SetPriceOfferRenewedAt(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPriceOfferRenewedAt", reflect.TypeOf((*MockQuerier)(nil).SetPriceOfferRenewedAt), ctx, arg)
+}
+
+// ToggleLocationBrokerCode mocks base method.
+func (m *MockQuerier) ToggleLocationBrokerCode(ctx context.Context, arg db.ToggleLocationBrokerCodeParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToggleLocationBrokerCode", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ToggleLocationBrokerCode indicates an expected call of ToggleLocationBrokerCode.
+func (mr *MockQuerierMockRecorder) ToggleLocationBrokerCode(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToggleLocationBrokerCode", reflect.TypeOf((*MockQuerier)(nil).ToggleLocationBrokerCode), ctx, arg)
 }
 
 // TranslatePendingTranslation mocks base method.

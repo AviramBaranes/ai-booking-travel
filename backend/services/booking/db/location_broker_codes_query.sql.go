@@ -70,34 +70,6 @@ func (q *Queries) DeleteLocationBrokerCode(ctx context.Context, id int64) (int64
 	return location_id, err
 }
 
-const disableLocationBrokerCode = `-- name: DisableLocationBrokerCode :exec
-UPDATE location_broker_codes
-SET
-    enabled = FALSE,
-    updated_at = CURRENT_TIMESTAMP
-WHERE
-    id = $1
-`
-
-func (q *Queries) DisableLocationBrokerCode(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, disableLocationBrokerCode, id)
-	return err
-}
-
-const enableLocationBrokerCode = `-- name: EnableLocationBrokerCode :exec
-UPDATE location_broker_codes
-SET
-    enabled = TRUE,
-    updated_at = CURRENT_TIMESTAMP
-WHERE
-    id = $1
-`
-
-func (q *Queries) EnableLocationBrokerCode(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, enableLocationBrokerCode, id)
-	return err
-}
-
 const getAllLocationBrokerCodesByLocationIDs = `-- name: GetAllLocationBrokerCodesByLocationIDs :many
 SELECT
     lbc.id, lbc.location_id, lbc.broker, lbc.broker_location_id, lbc.enabled, lbc.created_at, lbc.updated_at,
@@ -328,4 +300,23 @@ func (q *Queries) ListLocationBrokerCodesWithLocation(ctx context.Context, arg L
 		return nil, err
 	}
 	return items, nil
+}
+
+const toggleLocationBrokerCode = `-- name: ToggleLocationBrokerCode :exec
+UPDATE location_broker_codes
+SET
+    enabled = $1,
+    updated_at = CURRENT_TIMESTAMP
+WHERE
+    id = $2
+`
+
+type ToggleLocationBrokerCodeParams struct {
+	Enabled bool
+	ID      int64
+}
+
+func (q *Queries) ToggleLocationBrokerCode(ctx context.Context, arg ToggleLocationBrokerCodeParams) error {
+	_, err := q.db.Exec(ctx, toggleLocationBrokerCode, arg.Enabled, arg.ID)
+	return err
 }

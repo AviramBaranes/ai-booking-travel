@@ -37,18 +37,10 @@ VALUES
     created_at,
     updated_at;
 
--- name: EnableLocationBrokerCode :exec
+-- name: ToggleLocationBrokerCode :exec
 UPDATE location_broker_codes
 SET
-    enabled = TRUE,
-    updated_at = CURRENT_TIMESTAMP
-WHERE
-    id = sqlc.arg (id);
-
--- name: DisableLocationBrokerCode :exec
-UPDATE location_broker_codes
-SET
-    enabled = FALSE,
+    enabled = $1,
     updated_at = CURRENT_TIMESTAMP
 WHERE
     id = sqlc.arg (id);

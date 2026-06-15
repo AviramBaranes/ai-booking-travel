@@ -30,8 +30,6 @@ type Querier interface {
 	DeleteLocationByID(ctx context.Context, id int64) error
 	DeleteOldAvailablePlansSnapshots(ctx context.Context, createdAt pgtype.Timestamptz) error
 	DeleteSnapshotByID(ctx context.Context, id int64) error
-	DisableLocationBrokerCode(ctx context.Context, id int64) error
-	EnableLocationBrokerCode(ctx context.Context, id int64) error
 	FindCouponByCode(ctx context.Context, code string) (Coupon, error)
 	FindCurrencyByISOName(ctx context.Context, currencyIsoName string) (Currency, error)
 	GetAllLocationBrokerCodesByLocationIDs(ctx context.Context, locationIds []int64) ([]GetAllLocationBrokerCodesByLocationIDsRow, error)
@@ -67,6 +65,7 @@ type Querier interface {
 	RenewPriceOfferUnavailable(ctx context.Context, arg RenewPriceOfferUnavailableParams) error
 	SearchLocations(ctx context.Context, search string) ([]SearchLocationsRow, error)
 	SetPriceOfferRenewedAt(ctx context.Context, arg SetPriceOfferRenewedAtParams) error
+	ToggleLocationBrokerCode(ctx context.Context, arg ToggleLocationBrokerCodeParams) error
 	TranslatePendingTranslation(ctx context.Context, arg TranslatePendingTranslationParams) error
 	UpdateBrokerTranslation(ctx context.Context, arg UpdateBrokerTranslationParams) error
 	UpdateCoupon(ctx context.Context, arg UpdateCouponParams) (Coupon, error)

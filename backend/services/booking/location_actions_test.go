@@ -134,7 +134,10 @@ func TestToggleLocation(t *testing.T) {
 		)
 
 		// Disable first
-		if err := q.DisableLocationBrokerCode(ctx, lbc.ID); err != nil {
+		if err := q.ToggleLocationBrokerCode(ctx, db.ToggleLocationBrokerCodeParams{
+			Enabled: false,
+			ID:      lbc.ID,
+		}); err != nil {
 			t.Fatalf("failed to disable: %v", err)
 		}
 		if getEnabled(t, lbc) {
@@ -181,7 +184,10 @@ func TestToggleLocation(t *testing.T) {
 			db.BrokerFlex, "flex-toggle-idempotent-dis",
 		)
 
-		if err := q.DisableLocationBrokerCode(ctx, lbc.ID); err != nil {
+		if err := q.ToggleLocationBrokerCode(ctx, db.ToggleLocationBrokerCodeParams{
+			Enabled: false,
+			ID:      lbc.ID,
+		}); err != nil {
 			t.Fatalf("failed to disable: %v", err)
 		}
 

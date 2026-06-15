@@ -475,7 +475,10 @@ func TestSearchLocations(t *testing.T) {
 			}
 
 			if i == 3 {
-				err = query.DisableLocationBrokerCode(ctx, lbc.ID)
+				err = query.ToggleLocationBrokerCode(ctx, db.ToggleLocationBrokerCodeParams{
+					Enabled: false,
+					ID:      lbc.ID,
+				})
 				if err != nil {
 					t.Fatalf("failed to disable broker code for location %d: %v", id, err)
 				}

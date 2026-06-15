@@ -14,14 +14,10 @@ type ToggleLocationParams struct {
 }
 
 func (s *LocationService) ToggleLocation(ctx context.Context, id int64, p ToggleLocationParams) error {
-	var err error
-	if p.Enabled {
-		err = s.query.EnableLocationBrokerCode(ctx, id)
-	} else {
-		err = s.query.DisableLocationBrokerCode(ctx, id)
-	}
-
-	if err != nil {
+	if err := s.query.ToggleLocationBrokerCode(ctx, db.ToggleLocationBrokerCodeParams{
+		Enabled: p.Enabled,
+		ID:      id,
+	}); err != nil {
 		if errors.Is(err, db.ErrNoRows) {
 			return api_errors.ErrNotFound
 		}
