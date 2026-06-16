@@ -711,18 +711,18 @@ func (mr *MockQuerierMockRecorder) ListLocationBrokerCodesWithLocation(ctx, arg 
 }
 
 // ListLocationsWithoutAliases mocks base method.
-func (m *MockQuerier) ListLocationsWithoutAliases(ctx context.Context, name *string) ([]db.ListLocationsWithoutAliasesRow, error) {
+func (m *MockQuerier) ListLocationsWithoutAliases(ctx context.Context) ([]db.ListLocationsWithoutAliasesRow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListLocationsWithoutAliases", ctx, name)
+	ret := m.ctrl.Call(m, "ListLocationsWithoutAliases", ctx)
 	ret0, _ := ret[0].([]db.ListLocationsWithoutAliasesRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListLocationsWithoutAliases indicates an expected call of ListLocationsWithoutAliases.
-func (mr *MockQuerierMockRecorder) ListLocationsWithoutAliases(ctx, name any) *gomock.Call {
+func (mr *MockQuerierMockRecorder) ListLocationsWithoutAliases(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListLocationsWithoutAliases", reflect.TypeOf((*MockQuerier)(nil).ListLocationsWithoutAliases), ctx, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListLocationsWithoutAliases", reflect.TypeOf((*MockQuerier)(nil).ListLocationsWithoutAliases), ctx)
 }
 
 // ListPendingTranslations mocks base method.

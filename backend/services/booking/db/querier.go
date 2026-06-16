@@ -59,7 +59,7 @@ type Querier interface {
 	// Admin listing with pagination, optional filtering, and sorting.
 	ListHertzMarkupRates(ctx context.Context, arg ListHertzMarkupRatesParams) ([]HertzMarkupRate, error)
 	ListLocationBrokerCodesWithLocation(ctx context.Context, arg ListLocationBrokerCodesWithLocationParams) ([]ListLocationBrokerCodesWithLocationRow, error)
-	ListLocationsWithoutAliases(ctx context.Context, name *string) ([]ListLocationsWithoutAliasesRow, error)
+	ListLocationsWithoutAliases(ctx context.Context) ([]ListLocationsWithoutAliasesRow, error)
 	ListPendingTranslations(ctx context.Context) ([]BrokerTranslation, error)
 	ListPriceOffersByAgent(ctx context.Context, arg ListPriceOffersByAgentParams) ([]ListPriceOffersByAgentRow, error)
 	RenewPriceOfferDetails(ctx context.Context, arg RenewPriceOfferDetailsParams) error

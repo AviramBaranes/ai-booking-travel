@@ -20,9 +20,7 @@ type MissingAliasLocation struct {
 }
 
 func (s *LocationService) ListLocationsMissingAliases(ctx context.Context) (*ListLocationsMissingAliasesResponse, error) {
-	var search *string
-
-	locations, err := s.query.ListLocationsWithoutAliases(ctx, search)
+	locations, err := s.query.ListLocationsWithoutAliases(ctx)
 	if err != nil && !errors.Is(err, db.ErrNoRows) {
 		rlog.Error("failed to list locations without aliases", "error", err)
 		return nil, api_errors.ErrInternalError

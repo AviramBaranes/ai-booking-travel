@@ -175,7 +175,12 @@ WHERE NOT EXISTS (
     FROM location_aliases la
     WHERE la.location_id = l.id
 )
-AND (sqlc.narg('name')::text IS NULL OR l.name ILIKE '%' || sqlc.narg('name')::text || '%')
+AND (
+    SELECT 1
+    FROM location_broker_codes lbc
+    WHERE lbc.location_id = l.id
+      AND lbc.enabled = TRUE
+)
 LIMIT 500;
 
 -- name: ToggleIsAirport :exec
