@@ -260,7 +260,12 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
                 value={field.value}
                 onChange={(e) => {
                   field.onChange(e);
-                  dropoffDateRef.current?.focus();
+                  
+                  requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                      dropoffDateRef.current?.focus();
+                    });
+                  });
                 }}
                 error={fieldState.error}
               />
