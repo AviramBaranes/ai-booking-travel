@@ -839,7 +839,6 @@ export namespace booking {
 
 export namespace notifications {
     export interface SendCMSEmailParams {
-        Token: string
         to: string
         subject: string
         content: string
@@ -854,19 +853,7 @@ export namespace notifications {
         }
 
         public async SendCMSEmail(params: SendCMSEmailParams): Promise<void> {
-            // Convert our params into the objects we need for the request
-            const headers = makeRecord<string, string>({
-                "x-translation-token": params.Token,
-            })
-
-            // Construct the body with only the fields which we want encoded within the body (excluding query string or header fields)
-            const body: Record<string, any> = {
-                content: params.content,
-                subject: params.subject,
-                to:      params.to,
-            }
-
-            await this.baseClient.callTypedAPI("POST", `/send-cms-email`, JSON.stringify(body), {headers})
+            await this.baseClient.callTypedAPI("POST", `/send-cms-email`, JSON.stringify(params))
         }
     }
 }

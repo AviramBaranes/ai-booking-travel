@@ -9,14 +9,19 @@ export function emailAdapter(): EmailAdapter {
     defaultFromName: "",
 
     sendEmail: async (message) => {
-      const client = new Client(getBaseURL());
+      const client = new Client(getBaseURL(), {
+        requestInit: {
+          headers: {
+            "X-Service-Client-Token": process.env.PAYLOAD_EMAIL_API_KEY || "",
+          },
+        },
+      });
 
       try {
         await client.notifications.SendCMSEmail({
           to: message.to,
           subject: message.subject,
           content: message.html,
-          Token: process.env.PAYLOAD_EMAIL_API_KEY || "",
         });
 
         return;

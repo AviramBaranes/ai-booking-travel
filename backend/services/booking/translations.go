@@ -7,14 +7,14 @@ import (
 )
 
 // GetPendingTranslations returns the list of pending translations for brokers. It requires a valid translation token in the header.
-// encore: api public path=/booking/translations/pending method=GET tag:ai_agent
+// encore: api public path=/booking/translations/pending method=GET tag:service_client
 func (s *Service) GetPendingTranslations(ctx context.Context, p translation.GetPendingTranslationsParams) (*translation.GetPendingTranslationsResponse, error) {
 	ts := translation.NewTranslationService(s.query)
 	return ts.GetPendingTranslations(ctx, p)
 }
 
 // TranslateTranslation translates a pending translation. It requires a valid translation token in the header.
-// encore: api public path=/booking/translations/translate method=PATCH tag:ai_agent
+// encore: api public path=/booking/translations/translate method=PATCH tag:service_client
 func (s *Service) TranslateTranslation(ctx context.Context, p translation.TranslateTranslationParams) error {
 	ts := translation.NewTranslationService(s.query)
 	return ts.TranslateTranslation(ctx, p)

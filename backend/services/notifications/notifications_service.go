@@ -40,7 +40,6 @@ var cfg = config.Load[*Config]()
 var secrets struct {
 	GoogleServiceAccountJSON string
 	smsToken                 string
-	cmsAPIKey                string
 }
 
 func initService() (*Service, error) {

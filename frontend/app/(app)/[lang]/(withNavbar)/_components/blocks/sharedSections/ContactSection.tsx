@@ -23,7 +23,7 @@ export function ContactSection({ section }: ContactSectionProps) {
         title={title ?? ""}
         subtitle={subtitle}
       />
-      <div className="flex gap-12 my-8 items-stretch">
+      <div className="flex gap-12 my-8 items-start">
         <div className="w-1/2 rounded-xl border border-border-light bg-white p-12">
           {typeof populatedContactForm === "object" && populatedContactForm && (
             <PayloadFormRenderer

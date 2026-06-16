@@ -88,13 +88,13 @@ func (s *Service) DeleteLocation(ctx context.Context, id int64) error {
 	return ls.DeleteLocation(ctx, id)
 }
 
-// encore:api public method=GET path=/locations-without-alias tag:ai_agent
+// encore:api public method=GET path=/locations-without-alias tag:service_client
 func (s *Service) ListLocationsWithoutAlias(ctx context.Context) (*location.ListLocationsMissingAliasesResponse, error) {
 	ls := location.NewLocationService(s.query)
 	return ls.ListLocationsMissingAliases(ctx)
 }
 
-// encore:api public method=POST path=/locations/insert-alias tag:ai_agent
+// encore:api public method=POST path=/locations/insert-alias tag:service_client
 func (s *Service) InsertLocationAlias(ctx context.Context, p location.InsertLocationAliasesParams) error {
 	ls := location.NewLocationService(s.query)
 	return ls.InsertLocationAliases(ctx, p)
