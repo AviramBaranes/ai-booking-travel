@@ -14,10 +14,10 @@ var secrets struct {
 	flexAgentCode string
 	flexPassword  string
 
-	// Hertz secrets:
-	hertzAgentDutyCode string
-	hertzVendorNumber  string
-	hertzCodeContext   string
+	// Hertz secrets: (temporarily removed)
+	// hertzAgentDutyCode string
+	// hertzVendorNumber  string
+	// hertzCodeContext   string
 }
 
 const (

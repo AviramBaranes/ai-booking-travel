@@ -62,13 +62,13 @@ func (h *Hertz) buildPOSReqItem(brandID hertzBrand, addSecondSource ...bool) her
 		Source: []hertzSource{
 			{
 				ISOCountry:    hertzSearchAvailabilityISOCountry,
-				AgentDutyCode: secrets.hertzAgentDutyCode,
+				AgentDutyCode: "", //secrets.hertzAgentDutyCode,
 				RequestorID: hertzRequestorID{
 					Type: hertzSearchAvailabilityVendorNumberType,
-					ID:   secrets.hertzVendorNumber,
+					ID:   "", //secrets.hertzVendorNumber,
 					CompanyName: &hertzCompanyName{
 						Code:        hertzSearchAvailabilityConsumerProductCode,
-						CodeContext: secrets.hertzCodeContext,
+						CodeContext: "", //secrets.hertzCodeContext,
 					},
 				},
 			},
