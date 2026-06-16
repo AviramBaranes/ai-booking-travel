@@ -180,7 +180,7 @@ WHERE NOT EXISTS (
     FROM location_aliases la
     WHERE la.location_id = l.id
 )
-AND (
+AND EXISTS(
     SELECT 1
     FROM location_broker_codes lbc
     WHERE lbc.location_id = l.id
