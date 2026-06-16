@@ -9,7 +9,7 @@ import {
   ComboboxItem,
 } from "@/components/ui/combobox";
 import { Building2, MapPin, Plane } from "lucide-react";
-import { availability, location } from "@/shared/client";
+import { location } from "@/shared/client";
 import { FieldError } from "react-hook-form";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 
@@ -33,9 +33,12 @@ export function LocationCombobox({
   const [selectedName, setSelectedName] = useState(value ?? "");
   const { locations } = useLocations(search);
 
+  const items = locations?.length ? locations : initializedLocations || [];
+
   return (
     <Combobox
-      items={locations?.length ? locations : initializedLocations || []}
+      items={items}
+      filteredItems={items}
       value={selectedName}
       onValueChange={(val) => {
         setSelectedName(val ?? "");
