@@ -2,91 +2,12 @@ package accounts
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/accounts/db"
 	user "encore.app/services/accounts/handlers/user"
-	"encore.app/services/accounts/mocks"
-	"go.uber.org/mock/gomock"
 )
-
-func TestCreateFirstAdmin(t *testing.T) {
-	ctx := context.Background()
-
-	// Save original secrets and restore after tests
-	originalUsername := secrets.FirstAdminEmail
-	originalPassword := secrets.FirstAdminPassword
-	defer func() {
-		secrets.FirstAdminEmail = originalUsername
-		secrets.FirstAdminPassword = originalPassword
-	}()
-
-	t.Run("Secrets not set", func(t *testing.T) {
-		secrets.FirstAdminEmail = ""
-		secrets.FirstAdminPassword = ""
-
-		defer func() {
-			if r := recover(); r == nil {
-				t.Errorf("The code did not panic")
-			}
-		}()
-
-		createFirstAdmin(query)
-	})
-
-	t.Run("Success And User already exists", func(t *testing.T) {
-		email := generateTestEmail()
-		secrets.FirstAdminEmail = email
-		secrets.FirstAdminPassword = "password123"
-
-		// success, should create admin user
-		createFirstAdmin(query)
-
-		// validate admin was created:
-		id, err := query.CheckUserExists(ctx, email)
-		if err != nil {
-			t.Fatalf("failed to find user after creation: %v", err)
-		}
-		defer query.DeleteUser(ctx, id)
-
-		if id == 0 {
-			t.Error("expected non-zero user ID")
-		}
-
-		// user already exists, should not panic or create another user
-		defer func() {
-			if r := recover(); r != nil {
-				t.Errorf("The code panicked when it should not have")
-			}
-		}()
-
-		createFirstAdmin(query)
-	})
-
-	t.Run("Database error checking user", func(t *testing.T) {
-		secrets.FirstAdminEmail = "admin@example.com"
-		secrets.FirstAdminPassword = "password123"
-
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		q := mocks.NewMockQuerier(ctrl)
-		expectedErr := errors.New("db error")
-		q.EXPECT().
-			CheckUserExists(gomock.Any(), secrets.FirstAdminEmail).
-			Return(int64(0), expectedErr)
-
-		defer func() {
-			if r := recover(); r == nil {
-				t.Errorf("The code did not panic")
-			}
-		}()
-
-		createFirstAdmin(q)
-	})
-}
 
 func createTestAdmin(t *testing.T, s *Service, email string) *user.CreateAdminResponse {
 	t.Helper()

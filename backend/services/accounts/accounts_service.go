@@ -25,8 +25,6 @@ func initService() (*Service, error) {
 	pgxdb := sqldb.Driver[*pgxpool.Pool](accountsDb)
 	query := db.New(pgxdb)
 
-	createFirstAdmin(query)
-
 	return &Service{
 		query: query,
 	}, nil
