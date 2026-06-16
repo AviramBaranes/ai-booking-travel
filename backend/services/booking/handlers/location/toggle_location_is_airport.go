@@ -14,9 +14,18 @@ type ToggleLocationIsAirportParams struct {
 }
 
 func (s *LocationService) ToggleLocationIsAirport(ctx context.Context, id int64, p ToggleLocationIsAirportParams) error {
+	locID, err := s.query.GetLocationIDByLocationBrokerCodeID(ctx, id)
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return api_errors.ErrNotFound
+		}
+		rlog.Error("failed to fetch location for broker code", "error", err, "id", id)
+		return api_errors.ErrInternalError
+	}
+
 	if err := s.query.ToggleIsAirport(ctx, db.ToggleIsAirportParams{
 		IsAirport: p.IsAirport,
-		ID:        id,
+		ID:        locID,
 	}); err != nil {
 		if errors.Is(err, db.ErrNoRows) {
 			return api_errors.ErrNotFound

@@ -7,7 +7,6 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/validation"
 	"encore.app/services/booking/db"
-	"encore.dev/beta/errs"
 	"encore.dev/rlog"
 )
 
@@ -16,16 +15,12 @@ type ListLocationsParams struct {
 	Broker      string `query:"broker"`
 	Name        string `query:"name"`
 	Iata        string `query:"iata"`
-	Enabled     string `query:"enabled"`
+	Enabled     string `query:"enabled" validate:"omitempty,oneof=true false"`
+	IsAirport   string `query:"is_airport" validate:"omitempty,oneof=true false"`
 	Page        int    `query:"page" validate:"required,min=1"`
 }
 
 func (p ListLocationsParams) Validate() error {
-	if p.Enabled != "" && p.Enabled != "true" && p.Enabled != "false" {
-		return api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
-			Code: api_errors.CodeInvalidValue, Field: "enabled",
-		})
-	}
 	return validation.ValidateStruct(p)
 }
 
@@ -43,6 +38,7 @@ type LocationRow struct {
 	Iata             *string `json:"iata"`
 	Enabled          bool    `json:"enabled"`
 	BrokerLocationID string  `json:"broker_location_id"`
+	IsAirport        bool    `json:"isAirport"`
 }
 
 const LocationsLimit = 15
@@ -54,12 +50,19 @@ func (s *LocationService) ListLocations(ctx context.Context, p ListLocationsPara
 		enabled = &v
 	}
 
+	var isAirport *bool
+	if p.IsAirport != "" {
+		v := p.IsAirport == "true"
+		isAirport = &v
+	}
+
 	filterParams := db.CountLocationBrokerCodesWithLocationParams{
 		CountryCode: nilIfEmpty(p.CountryCode),
 		Broker:      nilIfEmpty(p.Broker),
 		Name:        nilIfEmpty(p.Name),
 		Iata:        nilIfEmpty(p.Iata),
 		Enabled:     enabled,
+		IsAirport:   isAirport,
 	}
 
 	total, err := s.query.CountLocationBrokerCodesWithLocation(ctx, filterParams)
@@ -77,6 +80,7 @@ func (s *LocationService) ListLocations(ctx context.Context, p ListLocationsPara
 		Name:        filterParams.Name,
 		Iata:        filterParams.Iata,
 		Enabled:     filterParams.Enabled,
+		IsAirport:   filterParams.IsAirport,
 	})
 
 	if err != nil {
@@ -100,6 +104,7 @@ func (s *LocationService) ListLocations(ctx context.Context, p ListLocationsPara
 			Iata:             row.LocationIata,
 			Enabled:          row.Enabled,
 			BrokerLocationID: row.BrokerLocationID,
+			IsAirport:        row.IsAirport,
 		}
 	}
 

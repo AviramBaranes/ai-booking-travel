@@ -459,16 +459,19 @@ export namespace booking {
             this.GetPendingTranslations = this.GetPendingTranslations.bind(this)
             this.InsertHertzLocations = this.InsertHertzLocations.bind(this)
             this.InsertLocation = this.InsertLocation.bind(this)
+            this.InsertLocationAlias = this.InsertLocationAlias.bind(this)
             this.ListBrokerTranslations = this.ListBrokerTranslations.bind(this)
             this.ListCoupons = this.ListCoupons.bind(this)
             this.ListCurrencies = this.ListCurrencies.bind(this)
             this.ListHertzMarkupRates = this.ListHertzMarkupRates.bind(this)
             this.ListLocations = this.ListLocations.bind(this)
+            this.ListLocationsWithoutAlias = this.ListLocationsWithoutAlias.bind(this)
             this.ListPriceOffers = this.ListPriceOffers.bind(this)
             this.RenewPriceOffer = this.RenewPriceOffer.bind(this)
             this.SearchAvailability = this.SearchAvailability.bind(this)
             this.SearchLocations = this.SearchLocations.bind(this)
             this.ToggleLocation = this.ToggleLocation.bind(this)
+            this.ToggleLocationIsAirport = this.ToggleLocationIsAirport.bind(this)
             this.TranslateTranslation = this.TranslateTranslation.bind(this)
             this.UpdateBrokerTranslation = this.UpdateBrokerTranslation.bind(this)
             this.UpdateCoupon = this.UpdateCoupon.bind(this)
@@ -622,6 +625,10 @@ export namespace booking {
             await this.baseClient.callTypedAPI("POST", `/locations`, JSON.stringify(params))
         }
 
+        public async InsertLocationAlias(params: location.InsertLocationAliasesParams): Promise<void> {
+            await this.baseClient.callTypedAPI("POST", `/locations/insert-alias`, JSON.stringify(params))
+        }
+
         public async ListBrokerTranslations(params: translation.ListBrokerTranslationsParams): Promise<translation.ListBrokerTranslationsResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
@@ -683,6 +690,7 @@ export namespace booking {
                 "country_code": params.CountryCode,
                 enabled:        params.Enabled,
                 iata:           params.Iata,
+                "is_airport":   params.IsAirport,
                 name:           params.Name,
                 page:           String(params.Page),
             })
@@ -690,6 +698,12 @@ export namespace booking {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/locations`, undefined, {query})
             return await resp.json() as location.ListLocationsResponse
+        }
+
+        public async ListLocationsWithoutAlias(): Promise<location.ListLocationsMissingAliasesResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/locations-without-alias`)
+            return await resp.json() as location.ListLocationsMissingAliasesResponse
         }
 
         /**
@@ -760,22 +774,17 @@ export namespace booking {
         }
 
         /**
+         * ToggleLocationIsAirport sets the is_airport flag for a location by ID.
+         */
+        public async ToggleLocationIsAirport(id: number, params: location.ToggleLocationIsAirportParams): Promise<void> {
+            await this.baseClient.callTypedAPI("PATCH", `/locations/${encodeURIComponent(id)}/airport`, JSON.stringify(params))
+        }
+
+        /**
          * TranslateTranslation translates a pending translation. It requires a valid translation token in the header.
          */
         public async TranslateTranslation(params: translation.TranslateTranslationParams): Promise<void> {
-            // Convert our params into the objects we need for the request
-            const headers = makeRecord<string, string>({
-                "x-translation-token": params.Token,
-            })
-
-            // Construct the body with only the fields which we want encoded within the body (excluding query string or header fields)
-            const body: Record<string, any> = {
-                confidence: params.confidence,
-                id:         params.id,
-                targetText: params.targetText,
-            }
-
-            await this.baseClient.callTypedAPI("PATCH", `/booking/translations/translate`, JSON.stringify(body), {headers})
+            await this.baseClient.callTypedAPI("PATCH", `/booking/translations/translate`, JSON.stringify(params))
         }
 
         /**
@@ -1495,9 +1504,20 @@ export namespace db {
 }
 
 export namespace location {
+    export interface Alias {
+        value: string
+        type: string
+    }
+
     export interface BulkToggleLocationsParams {
         ids: number[]
         enabled: boolean
+    }
+
+    export interface InsertLocationAliasesParams {
+        locationId: number
+        lang: string
+        aliases: Alias[]
     }
 
     export interface InsertLocationParams {
@@ -1510,12 +1530,17 @@ export namespace location {
         iata: string
     }
 
+    export interface ListLocationsMissingAliasesResponse {
+        locations: MissingAliasLocation[]
+    }
+
     export interface ListLocationsParams {
         CountryCode: string
         Broker: string
         Name: string
         Iata: string
         Enabled: string
+        IsAirport: string
         Page: number
     }
 
@@ -1531,6 +1556,7 @@ export namespace location {
         countryCode: string
         city: string
         iata: string
+        isAirport: boolean
     }
 
     export interface LocationRow {
@@ -1542,6 +1568,13 @@ export namespace location {
         iata: string
         enabled: boolean
         "broker_location_id": string
+        isAirport: boolean
+    }
+
+    export interface MissingAliasLocation {
+        id: number
+        iata: string
+        name: string
     }
 
     export interface SearchLocationParams {
@@ -1550,6 +1583,10 @@ export namespace location {
 
     export interface SearchLocationResponse {
         locations: LocationResult[]
+    }
+
+    export interface ToggleLocationIsAirportParams {
+        "is_airport": boolean
     }
 
     export interface ToggleLocationParams {
@@ -2118,7 +2155,6 @@ export namespace translation {
     }
 
     export interface TranslateTranslationParams {
-        Token: string
         id: number
         targetText: string
         confidence: number

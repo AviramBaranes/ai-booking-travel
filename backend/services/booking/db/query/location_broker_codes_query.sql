@@ -69,7 +69,8 @@ SELECT
     l.country_code AS location_country_code,
     l.city AS location_city,
     l.name AS location_name,
-    l.iata AS location_iata
+    l.iata AS location_iata,
+    l.is_airport AS is_airport
 FROM
     location_broker_codes lbc
     JOIN locations l ON l.id = lbc.location_id
@@ -79,6 +80,7 @@ WHERE
     AND (sqlc.narg('name')::text IS NULL OR l.name ILIKE '%' || sqlc.narg('name')::text || '%')
     AND (sqlc.narg('iata')::text IS NULL OR l.iata ILIKE '%' || sqlc.narg('iata')::text || '%')
     AND (sqlc.narg('enabled')::boolean IS NULL OR lbc.enabled = sqlc.narg('enabled')::boolean)
+    AND (sqlc.narg('is_airport')::boolean IS NULL OR l.is_airport = sqlc.narg('is_airport')::boolean)
 ORDER BY
     l.country_code, l.name, lbc.broker
 LIMIT $1
@@ -94,7 +96,8 @@ WHERE
     AND (sqlc.narg('broker')::text IS NULL OR lbc.broker::text ILIKE '%' || sqlc.narg('broker')::text || '%')
     AND (sqlc.narg('name')::text IS NULL OR l.name ILIKE '%' || sqlc.narg('name')::text || '%')
     AND (sqlc.narg('iata')::text IS NULL OR l.iata ILIKE '%' || sqlc.narg('iata')::text || '%')
-    AND (sqlc.narg('enabled')::boolean IS NULL OR lbc.enabled = sqlc.narg('enabled')::boolean);
+    AND (sqlc.narg('enabled')::boolean IS NULL OR lbc.enabled = sqlc.narg('enabled')::boolean)
+    AND (sqlc.narg('is_airport')::boolean IS NULL OR l.is_airport = sqlc.narg('is_airport')::boolean);
 
 -- name: DeleteLocationBrokerCode :one
 DELETE FROM location_broker_codes
@@ -104,3 +107,7 @@ RETURNING location_id;
 -- name: CountLocationBrokerCodesByLocationID :one
 SELECT COUNT(*) FROM location_broker_codes
 WHERE location_id = sqlc.arg(location_id);
+
+-- name: GetLocationIDByLocationBrokerCodeID :one
+SELECT location_id FROM location_broker_codes
+WHERE id = sqlc.arg(id); 

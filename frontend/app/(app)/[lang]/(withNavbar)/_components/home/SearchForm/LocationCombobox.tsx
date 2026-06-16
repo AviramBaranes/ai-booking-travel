@@ -69,7 +69,7 @@ export function LocationCombobox({
               value={loc.name}
               className="flex items-center gap-3 px-3 py-3 text-base text-[#1b1b1b] rounded-none pr-3 pl-3 data-highlighted:text-brand data-highlighted:bg-[#f0f3f9]"
             >
-              {loc.iata ? (
+              {loc.isAirport ? (
                 <Plane className="size-5 shrink-0 text-brand!" />
               ) : (
                 <Building2 className="size-5 shrink-0 text-brand!" />

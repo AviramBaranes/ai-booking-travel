@@ -16,6 +16,7 @@ import {
   deleteLocation,
   toggleLocation,
   bulkToggleLocations,
+  toggleIsAirport,
 } from "@/shared/api/locations-api";
 
 const columns: ColumnDef<location.LocationRow>[] = [
@@ -26,6 +27,7 @@ const columns: ColumnDef<location.LocationRow>[] = [
   { key: "city", label: "עיר", type: "text", editable: false },
   { key: "iata", label: "IATA", type: "text", editable: false },
   { key: "enabled", label: "פעיל", type: "checkbox" },
+  { key: "isAirport", label: "שדה תעופה", type: "checkbox", editable: true },
   {
     key: "broker_location_id",
     label: "קוד ספק",
@@ -46,6 +48,7 @@ const createSchema = z.object({
 
 const updateSchema = z.object({
   enabled: z.boolean(),
+  isAirport: z.boolean(),
 });
 
 interface Filters {
@@ -54,6 +57,7 @@ interface Filters {
   name: string;
   iata: string;
   enabled: string;
+  isAirport: string;
 }
 
 function buildListParams(
@@ -67,6 +71,7 @@ function buildListParams(
     Name: filters.name,
     Iata: filters.iata,
     Enabled: filters.enabled,
+    IsAirport: filters.isAirport,
     Page: page,
   };
 }
@@ -137,6 +142,18 @@ function FilterBar({
           <option value="false">לא פעיל</option>
         </select>
       </div>
+      <div>
+        <label className="block text-xs text-gray-500 mb-1">נמל תעופה</label>
+        <select
+          className={inputClass}
+          value={filters.isAirport}
+          onChange={(e) => onChange({ ...filters, isAirport: e.target.value })}
+        >
+          <option value="">הכל</option>
+          <option value="true">כן</option>
+          <option value="false">לא</option>
+        </select>
+      </div>
     </div>
   );
 }
@@ -149,6 +166,7 @@ export default function LocationsTable() {
     name: "",
     iata: "",
     enabled: "",
+    isAirport: "",
   });
 
   async function handleBulkToggle(ids: number[], enabled: boolean) {
@@ -160,7 +178,7 @@ export default function LocationsTable() {
     <CrudTable<
       location.LocationRow,
       location.InsertLocationParams,
-      { enabled: boolean }
+      { enabled: boolean; isAirport: boolean }
     >
       columns={columns}
       queryKey="locations"
@@ -170,6 +188,7 @@ export default function LocationsTable() {
         filters.name,
         filters.iata,
         filters.enabled,
+        filters.isAirport,
       ]}
       getId={(r) => r.id}
       listFn={(sort, page) =>
@@ -182,7 +201,12 @@ export default function LocationsTable() {
         (r as location.ListLocationsResponse | undefined)?.total ?? 0
       }
       createFn={insertLocation}
-      updateFn={(id, data) => toggleLocation(id, data.enabled)}
+      updateFn={ (id, data) =>
+        Promise.all([
+          toggleLocation(id, data.enabled),
+          toggleIsAirport(id, data.isAirport),
+        ])
+      }
       deleteFn={deleteLocation}
       createSchema={createSchema}
       updateSchema={updateSchema}

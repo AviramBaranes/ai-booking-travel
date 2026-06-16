@@ -34,6 +34,7 @@ WHERE
     AND ($3::text IS NULL OR l.name ILIKE '%' || $3::text || '%')
     AND ($4::text IS NULL OR l.iata ILIKE '%' || $4::text || '%')
     AND ($5::boolean IS NULL OR lbc.enabled = $5::boolean)
+    AND ($6::boolean IS NULL OR l.is_airport = $6::boolean)
 `
 
 type CountLocationBrokerCodesWithLocationParams struct {
@@ -42,6 +43,7 @@ type CountLocationBrokerCodesWithLocationParams struct {
 	Name        *string
 	Iata        *string
 	Enabled     *bool
+	IsAirport   *bool
 }
 
 func (q *Queries) CountLocationBrokerCodesWithLocation(ctx context.Context, arg CountLocationBrokerCodesWithLocationParams) (int64, error) {
@@ -51,6 +53,7 @@ func (q *Queries) CountLocationBrokerCodesWithLocation(ctx context.Context, arg 
 		arg.Name,
 		arg.Iata,
 		arg.Enabled,
+		arg.IsAirport,
 	)
 	var total int64
 	err := row.Scan(&total)
@@ -169,6 +172,18 @@ func (q *Queries) GetLocationBrokerCode(ctx context.Context, arg GetLocationBrok
 	return i, err
 }
 
+const getLocationIDByLocationBrokerCodeID = `-- name: GetLocationIDByLocationBrokerCodeID :one
+SELECT location_id FROM location_broker_codes
+WHERE id = $1
+`
+
+func (q *Queries) GetLocationIDByLocationBrokerCodeID(ctx context.Context, id int64) (int64, error) {
+	row := q.db.QueryRow(ctx, getLocationIDByLocationBrokerCodeID, id)
+	var location_id int64
+	err := row.Scan(&location_id)
+	return location_id, err
+}
+
 const insertLocationBrokerCode = `-- name: InsertLocationBrokerCode :one
 INSERT INTO
     location_broker_codes (location_id, broker, broker_location_id)
@@ -220,7 +235,8 @@ SELECT
     l.country_code AS location_country_code,
     l.city AS location_city,
     l.name AS location_name,
-    l.iata AS location_iata
+    l.iata AS location_iata,
+    l.is_airport AS is_airport
 FROM
     location_broker_codes lbc
     JOIN locations l ON l.id = lbc.location_id
@@ -230,6 +246,7 @@ WHERE
     AND ($5::text IS NULL OR l.name ILIKE '%' || $5::text || '%')
     AND ($6::text IS NULL OR l.iata ILIKE '%' || $6::text || '%')
     AND ($7::boolean IS NULL OR lbc.enabled = $7::boolean)
+    AND ($8::boolean IS NULL OR l.is_airport = $8::boolean)
 ORDER BY
     l.country_code, l.name, lbc.broker
 LIMIT $1
@@ -244,6 +261,7 @@ type ListLocationBrokerCodesWithLocationParams struct {
 	Name        *string
 	Iata        *string
 	Enabled     *bool
+	IsAirport   *bool
 }
 
 type ListLocationBrokerCodesWithLocationRow struct {
@@ -259,6 +277,7 @@ type ListLocationBrokerCodesWithLocationRow struct {
 	LocationCity        *string
 	LocationName        string
 	LocationIata        *string
+	IsAirport           bool
 }
 
 func (q *Queries) ListLocationBrokerCodesWithLocation(ctx context.Context, arg ListLocationBrokerCodesWithLocationParams) ([]ListLocationBrokerCodesWithLocationRow, error) {
@@ -270,6 +289,7 @@ func (q *Queries) ListLocationBrokerCodesWithLocation(ctx context.Context, arg L
 		arg.Name,
 		arg.Iata,
 		arg.Enabled,
+		arg.IsAirport,
 	)
 	if err != nil {
 		return nil, err
@@ -291,6 +311,7 @@ func (q *Queries) ListLocationBrokerCodesWithLocation(ctx context.Context, arg L
 			&i.LocationCity,
 			&i.LocationName,
 			&i.LocationIata,
+			&i.IsAirport,
 		); err != nil {
 			return nil, err
 		}

@@ -456,6 +456,21 @@ func (mr *MockQuerierMockRecorder) GetLocationIDByBrokerCode(ctx, arg any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLocationIDByBrokerCode", reflect.TypeOf((*MockQuerier)(nil).GetLocationIDByBrokerCode), ctx, arg)
 }
 
+// GetLocationIDByLocationBrokerCodeID mocks base method.
+func (m *MockQuerier) GetLocationIDByLocationBrokerCodeID(ctx context.Context, id int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLocationIDByLocationBrokerCodeID", ctx, id)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLocationIDByLocationBrokerCodeID indicates an expected call of GetLocationIDByLocationBrokerCodeID.
+func (mr *MockQuerierMockRecorder) GetLocationIDByLocationBrokerCodeID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLocationIDByLocationBrokerCodeID", reflect.TypeOf((*MockQuerier)(nil).GetLocationIDByLocationBrokerCodeID), ctx, id)
+}
+
 // GetPriceOfferById mocks base method.
 func (m *MockQuerier) GetPriceOfferById(ctx context.Context, arg db.GetPriceOfferByIdParams) (db.GetPriceOfferByIdRow, error) {
 	m.ctrl.T.Helper()

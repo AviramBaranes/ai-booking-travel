@@ -122,9 +122,10 @@ export function EditableRow<TRow>({
             <button
               type="button"
               disabled={isPending}
-              onClick={handleSubmit((data) =>
-                onSave(data as Record<string, unknown>),
-              )}
+              onClick={handleSubmit((data) => {
+                console.log("Submitting data:", data);
+                onSave(data as Record<string, unknown>);
+              })}
               className="p-1 text-green-600 hover:text-green-800 disabled:opacity-50 cursor-pointer"
             >
               <Check size={16} />
