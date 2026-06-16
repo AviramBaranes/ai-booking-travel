@@ -88,7 +88,7 @@ func (s *Service) DeleteLocation(ctx context.Context, id int64) error {
 	return ls.DeleteLocation(ctx, id)
 }
 
-// encore:api public method=GET path=/locations-without-alias
+// encore:api public method=GET path=/locations-without-alias tag:service_client
 func (s *Service) ListLocationsWithoutAlias(ctx context.Context, p location.ListLocationsMissingAliasesParams) (*location.ListLocationsMissingAliasesResponse, error) {
 	ls := location.NewLocationService(s.query)
 	return ls.ListLocationsMissingAliases(ctx, p)
