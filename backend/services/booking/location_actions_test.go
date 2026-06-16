@@ -219,7 +219,7 @@ func TestToggleLocationIsAirport(t *testing.T) {
 	}
 
 	t.Run("sets is_airport to true", func(t *testing.T) {
-		loc, _ := seedLocationWithBrokerCode(t, q,
+		loc, locBc := seedLocationWithBrokerCode(t, q,
 			db.InsertLocationParams{
 				Country: "Israel", CountryCode: "IL", Name: "Airport Toggle True Test",
 			},
@@ -230,7 +230,7 @@ func TestToggleLocationIsAirport(t *testing.T) {
 			t.Fatal("expected is_airport to be false by default")
 		}
 
-		err := s.ToggleLocationIsAirport(ctx, loc.ID, location.ToggleLocationIsAirportParams{IsAirport: true})
+		err := s.ToggleLocationIsAirport(ctx, locBc.ID, location.ToggleLocationIsAirportParams{IsAirport: true})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -241,7 +241,7 @@ func TestToggleLocationIsAirport(t *testing.T) {
 	})
 
 	t.Run("sets is_airport to false", func(t *testing.T) {
-		loc, _ := seedLocationWithBrokerCode(t, q,
+		loc, locBc := seedLocationWithBrokerCode(t, q,
 			db.InsertLocationParams{
 				Country: "Israel", CountryCode: "IL", Name: "Airport Toggle False Test",
 			},
@@ -259,7 +259,7 @@ func TestToggleLocationIsAirport(t *testing.T) {
 			t.Fatal("expected is_airport to be true")
 		}
 
-		err := s.ToggleLocationIsAirport(ctx, loc.ID, location.ToggleLocationIsAirportParams{IsAirport: false})
+		err := s.ToggleLocationIsAirport(ctx, locBc.ID, location.ToggleLocationIsAirportParams{IsAirport: false})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -270,7 +270,7 @@ func TestToggleLocationIsAirport(t *testing.T) {
 	})
 
 	t.Run("setting true when already true is idempotent", func(t *testing.T) {
-		loc, _ := seedLocationWithBrokerCode(t, q,
+		loc, locBc := seedLocationWithBrokerCode(t, q,
 			db.InsertLocationParams{
 				Country: "Israel", CountryCode: "IL", Name: "Airport Idempotent True Test",
 			},
@@ -284,7 +284,7 @@ func TestToggleLocationIsAirport(t *testing.T) {
 			t.Fatalf("failed to set is_airport: %v", err)
 		}
 
-		err := s.ToggleLocationIsAirport(ctx, loc.ID, location.ToggleLocationIsAirportParams{IsAirport: true})
+		err := s.ToggleLocationIsAirport(ctx, locBc.ID, location.ToggleLocationIsAirportParams{IsAirport: true})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -295,7 +295,7 @@ func TestToggleLocationIsAirport(t *testing.T) {
 	})
 
 	t.Run("setting false when already false is idempotent", func(t *testing.T) {
-		loc, _ := seedLocationWithBrokerCode(t, q,
+		loc, locBc := seedLocationWithBrokerCode(t, q,
 			db.InsertLocationParams{
 				Country: "Israel", CountryCode: "IL", Name: "Airport Idempotent False Test",
 			},
@@ -306,7 +306,7 @@ func TestToggleLocationIsAirport(t *testing.T) {
 			t.Fatal("expected is_airport to be false by default")
 		}
 
-		err := s.ToggleLocationIsAirport(ctx, loc.ID, location.ToggleLocationIsAirportParams{IsAirport: false})
+		err := s.ToggleLocationIsAirport(ctx, locBc.ID, location.ToggleLocationIsAirportParams{IsAirport: false})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
