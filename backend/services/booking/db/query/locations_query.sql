@@ -176,7 +176,7 @@ WHERE NOT EXISTS (
     WHERE la.location_id = l.id
 )
 AND (sqlc.narg('name')::text IS NULL OR l.name ILIKE '%' || sqlc.narg('name')::text || '%')
-LIMIT 100;
+LIMIT 500;
 
 -- name: ToggleIsAirport :exec
 UPDATE locations

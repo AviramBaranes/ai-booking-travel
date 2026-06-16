@@ -6,7 +6,6 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/services/booking/db"
-	"encore.dev"
 	"encore.dev/rlog"
 )
 
@@ -22,13 +21,6 @@ type MissingAliasLocation struct {
 
 func (s *LocationService) ListLocationsMissingAliases(ctx context.Context) (*ListLocationsMissingAliasesResponse, error) {
 	var search *string
-	meta := encore.Meta()
-	if meta.Environment.Type == encore.EnvDevelopment && meta.Environment.Cloud == encore.CloudLocal {
-		str := "ams"
-		search = &str
-	}
-
-	rlog.Info("listing locations missing aliases", "search", search)
 
 	locations, err := s.query.ListLocationsWithoutAliases(ctx, search)
 	if err != nil && !errors.Is(err, db.ErrNoRows) {

@@ -181,7 +181,7 @@ WHERE NOT EXISTS (
     WHERE la.location_id = l.id
 )
 AND ($1::text IS NULL OR l.name ILIKE '%' || $1::text || '%')
-LIMIT 100
+LIMIT 500
 `
 
 type ListLocationsWithoutAliasesRow struct {
