@@ -9,6 +9,10 @@ import (
 	"encore.dev/rlog"
 )
 
+type ListLocationsMissingAliasesParams struct {
+	FromEnd bool `query:"fromEnd"`
+}
+
 type ListLocationsMissingAliasesResponse struct {
 	Locations []MissingAliasLocation `json:"locations"`
 }
@@ -19,8 +23,8 @@ type MissingAliasLocation struct {
 	Name string  `json:"name"`
 }
 
-func (s *LocationService) ListLocationsMissingAliases(ctx context.Context) (*ListLocationsMissingAliasesResponse, error) {
-	locations, err := s.query.ListLocationsWithoutAliases(ctx)
+func (s *LocationService) ListLocationsMissingAliases(ctx context.Context, p ListLocationsMissingAliasesParams) (*ListLocationsMissingAliasesResponse, error) {
+	locations, err := s.query.ListLocationsWithoutAliases(ctx, p.FromEnd)
 	if err != nil && !errors.Is(err, db.ErrNoRows) {
 		rlog.Error("failed to list locations without aliases", "error", err)
 		return nil, api_errors.ErrInternalError

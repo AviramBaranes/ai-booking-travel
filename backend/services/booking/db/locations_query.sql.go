@@ -180,12 +180,15 @@ WHERE NOT EXISTS (
     FROM location_aliases la
     WHERE la.location_id = l.id
 )
-AND EXISTS(
+AND EXISTS (
     SELECT 1
     FROM location_broker_codes lbc
     WHERE lbc.location_id = l.id
       AND lbc.enabled = TRUE
 )
+ORDER BY
+    CASE WHEN $1::boolean THEN l.id END DESC,
+    CASE WHEN NOT $1::boolean THEN l.id END ASC
 LIMIT 500
 `
 
@@ -195,8 +198,8 @@ type ListLocationsWithoutAliasesRow struct {
 	Iata *string
 }
 
-func (q *Queries) ListLocationsWithoutAliases(ctx context.Context) ([]ListLocationsWithoutAliasesRow, error) {
-	rows, err := q.db.Query(ctx, listLocationsWithoutAliases)
+func (q *Queries) ListLocationsWithoutAliases(ctx context.Context, fromEnd bool) ([]ListLocationsWithoutAliasesRow, error) {
+	rows, err := q.db.Query(ctx, listLocationsWithoutAliases, fromEnd)
 	if err != nil {
 		return nil, err
 	}

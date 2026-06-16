@@ -175,12 +175,15 @@ WHERE NOT EXISTS (
     FROM location_aliases la
     WHERE la.location_id = l.id
 )
-AND EXISTS(
+AND EXISTS (
     SELECT 1
     FROM location_broker_codes lbc
     WHERE lbc.location_id = l.id
       AND lbc.enabled = TRUE
 )
+ORDER BY
+    CASE WHEN @from_end::boolean THEN l.id END DESC,
+    CASE WHEN NOT @from_end::boolean THEN l.id END ASC
 LIMIT 500;
 
 -- name: ToggleIsAirport :exec
