@@ -76,6 +76,19 @@ export function searchSchema(t: (key: string) => string) {
           });
         }
       }
+
+      const [hours, minutes] = data.pickupTime.split(":").map(Number);
+
+      const pickupDateTime = new Date(data.pickupDate);
+      pickupDateTime.setHours(hours, minutes, 0, 0);
+
+      if (pickupDateTime < new Date()) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["pickupTime"],
+          message: t("validation.dateInPast"),
+        });
+      }
     });
 
   return baseSchema.and(crossFieldSchema);
