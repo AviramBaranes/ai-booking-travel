@@ -1,0 +1,7 @@
+ALTER TABLE organizations
+ADD COLUMN balance_due NUMERIC(10, 2) NOT NULL DEFAULT 0,
+ADD COLUMN agency_markup_percentage NUMERIC(5, 2) NOT NULL DEFAULT 0;
+
+ALTER TABLE offices
+ADD COLUMN balance_due NUMERIC(10, 2) NOT NULL DEFAULT 0,
+ADD COLUMN agency_markup_percentage NUMERIC(5, 2) NOT NULL DEFAULT 0;

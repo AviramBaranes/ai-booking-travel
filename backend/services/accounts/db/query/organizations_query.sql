@@ -43,7 +43,7 @@ VALUES (
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
-RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at;
+RETURNING *;
 
 -- name: UpdateOrganization :one
 UPDATE organizations
@@ -56,7 +56,7 @@ SET
     obligo           = sqlc.narg(obligo),
     updated_at       = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg(id)
-RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at;
+RETURNING *;
 
 -- name: ListOrganicOrganizations :many
 SELECT

@@ -70,27 +70,31 @@ type Contact struct {
 }
 
 type Office struct {
-	ID             int64
-	Name           string
-	OrganizationID int64
-	IcountClientID *int32
-	Phone          *string
-	Address        *string
-	Obligo         *int32
-	CreatedAt      pgtype.Timestamptz
-	UpdatedAt      pgtype.Timestamptz
+	ID                     int64
+	Name                   string
+	OrganizationID         int64
+	IcountClientID         *int32
+	Phone                  *string
+	Address                *string
+	Obligo                 *int32
+	CreatedAt              pgtype.Timestamptz
+	UpdatedAt              pgtype.Timestamptz
+	BalanceDue             pgtype.Numeric
+	AgencyMarkupPercentage pgtype.Numeric
 }
 
 type Organization struct {
-	ID             int64
-	Name           string
-	IsOrganic      bool
-	IcountClientID *int32
-	Phone          *string
-	Address        *string
-	Obligo         *int32
-	CreatedAt      pgtype.Timestamptz
-	UpdatedAt      pgtype.Timestamptz
+	ID                     int64
+	Name                   string
+	IsOrganic              bool
+	IcountClientID         *int32
+	Phone                  *string
+	Address                *string
+	Obligo                 *int32
+	CreatedAt              pgtype.Timestamptz
+	UpdatedAt              pgtype.Timestamptz
+	BalanceDue             pgtype.Numeric
+	AgencyMarkupPercentage pgtype.Numeric
 }
 
 type PasswordResetToken struct {

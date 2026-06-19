@@ -43,7 +43,7 @@ VALUES (
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
-RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at
+RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at, balance_due, agency_markup_percentage
 `
 
 type CreateOrganizationParams struct {
@@ -75,6 +75,8 @@ func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganization
 		&i.Obligo,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.BalanceDue,
+		&i.AgencyMarkupPercentage,
 	)
 	return i, err
 }
@@ -272,7 +274,7 @@ SET
     obligo           = $6,
     updated_at       = CURRENT_TIMESTAMP
 WHERE id = $7
-RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at
+RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at, balance_due, agency_markup_percentage
 `
 
 type UpdateOrganizationParams struct {
@@ -306,6 +308,8 @@ func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganization
 		&i.Obligo,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.BalanceDue,
+		&i.AgencyMarkupPercentage,
 	)
 	return i, err
 }
