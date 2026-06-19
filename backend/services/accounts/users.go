@@ -4,6 +4,7 @@ import (
 	"context"
 
 	user "encore.app/services/accounts/handlers/user"
+	"encore.dev/beta/auth"
 )
 
 // --- Endpoints ---
@@ -74,4 +75,11 @@ func (s *Service) CreateAccountant(ctx context.Context, params user.CreateAccoun
 func (s *Service) GetUserEmail(ctx context.Context, params user.GetUserEmailParams) (*user.GetUserEmailResponse, error) {
 	h := user.NewUserService(s.query)
 	return h.GetUserEmail(ctx, params)
+}
+
+// encore:api private tag:agent
+func (s *Service) GetUserCredit(ctx context.Context) (*user.GetUserCreditResponse, error) {
+	authData := auth.Data().(AuthData)
+	h := user.NewUserService(s.query)
+	return h.GetUserCredit(ctx, authData.UserID)
 }

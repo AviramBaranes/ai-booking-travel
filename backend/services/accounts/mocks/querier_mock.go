@@ -456,6 +456,21 @@ func (mr *MockQuerierMockRecorder) GetUserByPhone(ctx, phoneNumber any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByPhone", reflect.TypeOf((*MockQuerier)(nil).GetUserByPhone), ctx, phoneNumber)
 }
 
+// GetUserCredit mocks base method.
+func (m *MockQuerier) GetUserCredit(ctx context.Context, id int64) (db.GetUserCreditRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserCredit", ctx, id)
+	ret0, _ := ret[0].(db.GetUserCreditRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserCredit indicates an expected call of GetUserCredit.
+func (mr *MockQuerierMockRecorder) GetUserCredit(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserCredit", reflect.TypeOf((*MockQuerier)(nil).GetUserCredit), ctx, id)
+}
+
 // GetUserNamesByIDs mocks base method.
 func (m *MockQuerier) GetUserNamesByIDs(ctx context.Context, ids []int64) ([]db.GetUserNamesByIDsRow, error) {
 	m.ctrl.T.Helper()

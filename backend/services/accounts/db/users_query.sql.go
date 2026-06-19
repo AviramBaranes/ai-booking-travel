@@ -409,6 +409,37 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phoneNumber *string) (User
 	return i, err
 }
 
+const getUserCredit = `-- name: GetUserCredit :one
+SELECT (
+  CASE WHEN org.is_organic = TRUE
+    THEN org.obligo
+    ELSE offices.obligo
+  END
+)::INTEGER AS obligo,
+(
+  CASE WHEN org.is_organic = TRUE
+    THEN org.balance_due
+    ELSE offices.balance_due
+  END
+)::NUMERIC(10, 2) AS balance_due
+FROM users AS u
+INNER JOIN offices ON u.office_id = id
+INNER JOIN organizations AS org ON org.id = offices.id
+WHERE u.id = $1
+`
+
+type GetUserCreditRow struct {
+	Obligo     int32
+	BalanceDue pgtype.Numeric
+}
+
+func (q *Queries) GetUserCredit(ctx context.Context, id int64) (GetUserCreditRow, error) {
+	row := q.db.QueryRow(ctx, getUserCredit, id)
+	var i GetUserCreditRow
+	err := row.Scan(&i.Obligo, &i.BalanceDue)
+	return i, err
+}
+
 const getUserNamesByIDs = `-- name: GetUserNamesByIDs :many
 SELECT id, first_name, last_name
 FROM users

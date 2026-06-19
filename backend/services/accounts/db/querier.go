@@ -37,6 +37,7 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	GetUserById(ctx context.Context, id int64) (GetUserByIdRow, error)
 	GetUserByPhone(ctx context.Context, phoneNumber *string) (User, error)
+	GetUserCredit(ctx context.Context, id int64) (GetUserCreditRow, error)
 	GetUserNamesByIDs(ctx context.Context, ids []int64) ([]GetUserNamesByIDsRow, error)
 	InsertPasswordResetToken(ctx context.Context, arg InsertPasswordResetTokenParams) (PasswordResetToken, error)
 	ListAdminsEmails(ctx context.Context) ([]string, error)
