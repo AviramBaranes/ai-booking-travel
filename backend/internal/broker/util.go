@@ -39,8 +39,11 @@ func isElectric(acrissCode string) bool {
 
 // normalizeModelName removes the "or similar" suffix from the model name if it exists
 func normalizeModelName(model string) string {
-	if len(model) > 12 && strings.HasSuffix(strings.ToLower(model), " or similar") {
-		return model[:len(model)-12]
+	const suffix = " or similar"
+
+	if len(model) >= len(suffix) && strings.HasSuffix(strings.ToLower(model), suffix) {
+		return strings.TrimSpace(model[:len(model)-len(suffix)])
 	}
+
 	return model
 }

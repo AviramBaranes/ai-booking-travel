@@ -241,10 +241,14 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
                 }}
                 error={fieldState.error}
                 ref={pickupDateRef}
-                disabledFn={(date) =>
-                  date < new Date() ||
-                  date > new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-                }
+                disabledFn={(date) => {
+                  const yesterday = new Date();
+                  yesterday.setDate(yesterday.getDate() - 1);
+                  return (
+                    date < yesterday ||
+                    date > new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+                  );
+                }}
               />
             )}
           />
@@ -260,7 +264,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
                 value={field.value}
                 onChange={(e) => {
                   field.onChange(e);
-                  
+
                   requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
                       dropoffDateRef.current?.focus();
