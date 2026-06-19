@@ -81,5 +81,8 @@ WHERE id = ANY(sqlc.arg(ids)::BIGINT[]);
 
 -- name: UpdateOfficeBalanceDue :exec
 UPDATE offices
-SET balance_due = sqlc.arg(balance_due)::NUMERIC(10, 2) + COALESCE(balance_due, 0)
+SET balance_due = GREATEST(
+    0,
+    COALESCE(balance_due, 0) + sqlc.arg(delta)::NUMERIC(10, 2)
+)::NUMERIC(10, 2)
 WHERE id = sqlc.arg(id)::BIGINT;
