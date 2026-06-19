@@ -13,6 +13,7 @@ type Querier interface {
 	CancelReservation(ctx context.Context, id int64) error
 	CountReservationsByUser(ctx context.Context, arg CountReservationsByUserParams) (int64, error)
 	CountReservationsReport(ctx context.Context, arg CountReservationsReportParams) (CountReservationsReportRow, error)
+	GetBillingReservation(ctx context.Context, id int64) (GetBillingReservationRow, error)
 	GetOpenReservationsPickingUpWithinWeek(ctx context.Context) ([]GetOpenReservationsPickingUpWithinWeekRow, error)
 	GetOutboxByTopic(ctx context.Context, topic string) ([]Outbox, error)
 	GetPaymentPendingReservations(ctx context.Context) ([]GetPaymentPendingReservationsRow, error)
@@ -24,6 +25,7 @@ type Querier interface {
 	ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error)
 	ListReservationsReport(ctx context.Context, arg ListReservationsReportParams) ([]Reservation, error)
 	ResolveReservationsPayment(ctx context.Context, ids []int64) error
+	VoucherReservationAfterPayment(ctx context.Context, arg VoucherReservationAfterPaymentParams) (Reservation, error)
 }
 
 var _ Querier = (*Queries)(nil)

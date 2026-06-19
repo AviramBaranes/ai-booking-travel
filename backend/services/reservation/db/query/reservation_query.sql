@@ -310,3 +310,39 @@ FROM reservations
 WHERE
     reservation_status = 'booked'
     AND pickup_date <= CURRENT_DATE + INTERVAL '7 days';
+
+-- name: VoucherReservationAfterPayment :one
+UPDATE reservations
+SET
+    reservation_status = 'vouchered',
+    payment_status = 'paid',
+    payment_confirmation_code = $2,
+    payment_doc_num = $3,
+    vouchered_at = CURRENT_TIMESTAMP,
+    updated_at = CURRENT_TIMESTAMP
+WHERE
+    id = $1
+AND
+    reservation_status = 'booked'
+AND
+    payment_status = 'unpaid'
+RETURNING *;
+
+
+-- name: GetBillingReservation :one
+SELECT
+    id,
+    broker_reservation_id,
+    payment_status,
+    reservation_status,
+    purchase_price,
+    markup_percentage,
+    bt_erp_price,
+    broker_erp_price,
+    total_price,
+    currency_code,
+    created_at,
+    pickup_date
+FROM reservations
+WHERE
+    id = $1;
