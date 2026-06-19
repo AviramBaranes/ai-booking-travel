@@ -418,18 +418,48 @@ export namespace billing {
         docNum: string
     }
 
+    export interface GenerateOrderIframeParams {
+        orderId: number
+        isIls: boolean
+    }
+
+    export interface GenerateOrderIframeResponse {
+        url: string
+    }
+
     export class ServiceClient {
         private baseClient: BaseClient
 
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
             this.Bill = this.Bill.bind(this)
+            this.GenerateOrderIframe = this.GenerateOrderIframe.bind(this)
+            this.OrderPaymentIPNGateway = this.OrderPaymentIPNGateway.bind(this)
+            this.SuccessPaymentGateway = this.SuccessPaymentGateway.bind(this)
         }
 
         public async Bill(params: BillParams): Promise<BillResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/bill`, JSON.stringify(params))
             return await resp.json() as BillResponse
+        }
+
+        /**
+         * GenerateOrderIframe generates an iframe for the order page. It returns the URL of the iframe and an error if any occurs.
+         * It should be used for agents that can't voucher an order because of a finished obligo.
+         */
+        public async GenerateOrderIframe(params: GenerateOrderIframeParams): Promise<GenerateOrderIframeResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/billing/generate-order-iframe`, JSON.stringify(params))
+            return await resp.json() as GenerateOrderIframeResponse
+        }
+
+        public async OrderPaymentIPNGateway(method: "POST", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
+            return this.baseClient.callAPI(method, `/order-payment-ipn-gateway`, body, options)
+        }
+
+        public async SuccessPaymentGateway(method: "GET", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
+            return this.baseClient.callAPI(method, `/success-payment-gateway`, body, options)
         }
     }
 }
@@ -700,9 +730,14 @@ export namespace booking {
             return await resp.json() as location.ListLocationsResponse
         }
 
-        public async ListLocationsWithoutAlias(): Promise<location.ListLocationsMissingAliasesResponse> {
+        public async ListLocationsWithoutAlias(params: location.ListLocationsMissingAliasesParams): Promise<location.ListLocationsMissingAliasesResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                fromEnd: String(params.FromEnd),
+            })
+
             // Now make the actual call to the API
-            const resp = await this.baseClient.callTypedAPI("GET", `/locations-without-alias`)
+            const resp = await this.baseClient.callTypedAPI("GET", `/locations-without-alias`, undefined, {query})
             return await resp.json() as location.ListLocationsMissingAliasesResponse
         }
 
@@ -1517,6 +1552,10 @@ export namespace location {
         iata: string
     }
 
+    export interface ListLocationsMissingAliasesParams {
+        FromEnd: boolean
+    }
+
     export interface ListLocationsMissingAliasesResponse {
         locations: MissingAliasLocation[]
     }
@@ -1896,29 +1935,11 @@ export namespace price_offer {
 
 export namespace queries {
     /**
-     * BillingReservation is a reservation summary tailored for accountant billing workflows.
-     */
-    export interface BillingReservation {
-        id: number
-        brokerReservationId: string
-        paymentStatus: string
-        reservationStatus: string
-        carPurchasePrice: number
-        carSellingPrice: number
-        erpSellingPrice: number
-        profitOnCar: number
-        totalPrice: number
-        currencyCode: string
-        createdAt: string
-        pickupDate: string
-    }
-
-    /**
      * CurrencyGroup is a set of billing reservations sharing the same currency.
      */
     export interface CurrencyGroup {
         currencyCode: string
-        reservations: BillingReservation[]
+        reservations: reservation_pricing.BillingReservation[]
     }
 
     export interface GetFullReservationResponse {
@@ -2057,6 +2078,7 @@ export namespace queries {
         voucher?: string
         voucheredAt?: string
         createdAt: string
+        TotalPriceFloat: number
     }
 
     /**
@@ -2109,6 +2131,26 @@ export namespace queries {
         name: string
         price: number
         quantity: number
+    }
+}
+
+export namespace reservation_pricing {
+    /**
+     * BillingReservation is a reservation summary tailored for accountant billing workflows.
+     */
+    export interface BillingReservation {
+        id: number
+        brokerReservationId: string
+        paymentStatus: string
+        reservationStatus: string
+        carPurchasePrice: number
+        carSellingPrice: number
+        erpSellingPrice: number
+        profitOnCar: number
+        totalPrice: number
+        currencyCode: string
+        createdAt: string
+        pickupDate: string
     }
 }
 

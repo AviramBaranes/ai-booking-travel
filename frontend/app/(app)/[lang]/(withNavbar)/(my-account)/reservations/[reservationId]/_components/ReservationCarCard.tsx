@@ -6,6 +6,8 @@ import { SelectedCarHeader } from "@/shared/components/booking/SelectedCarCard/S
 import { useTranslations } from "next-intl";
 import { VoucherForm } from "./VoucherForm";
 import { useReservation } from "../_hooks/useReservation";
+import { ReservationPaymentDialog } from "./ReservationPaymentDialog";
+import { useState } from "react";
 
 export function ReservationCarCard({
   reservationId,
@@ -14,6 +16,10 @@ export function ReservationCarCard({
 }) {
   const { data: reservation, refetch } = useReservation(reservationId);
   const t = useTranslations("MyAccount.reservation");
+  const [showPaymentDialog, setShowPaymentDialog] = useState(
+    reservation.reservationStatus === "booked" &&
+      reservation.paymentStatus === "unpaid",
+  );
 
   return (
     <div className="sticky top-24">
@@ -26,6 +32,12 @@ export function ReservationCarCard({
         />
         {reservation.reservationStatus === "booked" && (
           <VoucherForm reservationId={reservationId} refetch={refetch} />
+        )}
+        {showPaymentDialog && (
+          <ReservationPaymentDialog
+            reservationId={reservationId}
+            setShow={setShowPaymentDialog}
+          />
         )}
       </SelectedCarCardWrapper>
     </div>

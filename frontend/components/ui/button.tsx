@@ -22,6 +22,8 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         brand:
           "bg-brand text-white hover:bg-brand/90 shadow-subtle rounded-[10px]",
+        payment:
+          "bg-success text-white font-bold hover:bg-success/90 shadow-subtle rounded-[10px] py-6",
       },
       size: {
         default:

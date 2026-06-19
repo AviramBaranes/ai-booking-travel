@@ -24,3 +24,12 @@ export function bill(params: billing.BillParams) {
     }
   });
 }
+
+export function getOrderPaymentIframe(reservationId: number, isIls: boolean) {
+  return withErrorHandler((client) =>
+    client.billing.GenerateOrderIframe({
+      orderId: reservationId,
+      isIls,
+    }),
+  );
+}

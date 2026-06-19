@@ -344,6 +344,8 @@
     },
     "reservation": {
       "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
+      "payNow": "לתשלום מיידי",
+      "paymentIframeTitle": "תשלום עבור הזמנה מס' {bookingId}",
       "voucher": {
         "apply": "כרטס הזמנה",
         "enterVoucherCode": "הכנס מספר שובר",
