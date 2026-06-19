@@ -28,9 +28,15 @@ MonthlyReport: {
 }
 
 Icount:{
-	CID: "aibookingtravel",
-	User: "accounting",
 	AccountID: 4,
+	PaypageID: 3,
+}
+
+if #Meta.Environment.Type == "production" {
+	Icount:{
+		AccountID: 4,
+		PaypageID: 14,
+	}
 }
 
 Invoice:{

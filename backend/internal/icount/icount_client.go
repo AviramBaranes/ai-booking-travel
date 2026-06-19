@@ -13,19 +13,17 @@ var secrets struct {
 	IcountPassword string
 }
 
-type icount struct {
+type Icount struct {
 	httpClient *http.Client
 	cid        string
 	user       string
 }
 
-// NewIcount initializes and returns an icount client with the provided credentials.
+// NewIcount initializes and returns an Icount client with the provided credentials.
 // The password is read from the shared IcountPassword secret.
-func NewIcount(cid, user string) *icount {
-	return &icount{
+func NewIcount() *Icount {
+	return &Icount{
 		httpClient: &http.Client{Timeout: 10 * time.Second},
-		cid:        cid,
-		user:       user,
 	}
 }
 
@@ -34,9 +32,11 @@ type icountAPIEndPoint string
 const (
 	createDocEndpoint       icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/doc/create"
 	fetchCurrenciesEndpoint icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/currency/get_rates"
+	generatePaypageEndpoint icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/paypage/generate_sale"
+	getTransactionEndpoint  icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/cc/transactions"
 )
 
-func (i *icount) DoRequest(endpoint icountAPIEndPoint, requestBody any) ([]byte, error) {
+func (i *Icount) DoRequest(endpoint icountAPIEndPoint, requestBody any) ([]byte, error) {
 	jsonString, err := json.Marshal(requestBody)
 	if err != nil {
 		return nil, fmt.Errorf("creating json: %w", err)
@@ -48,6 +48,7 @@ func (i *icount) DoRequest(endpoint icountAPIEndPoint, requestBody any) ([]byte,
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", secrets.IcountPassword))
 
 	resp, err := i.httpClient.Do(req)
 	if err != nil {

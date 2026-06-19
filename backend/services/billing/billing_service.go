@@ -40,9 +40,8 @@ type monthlyReportStylesConfig struct {
 }
 
 type icountConfig struct {
-	CID       config.String
-	User      config.String
 	AccountID config.Int
+	PaypageID config.Int
 }
 
 type invoiceConfig struct {

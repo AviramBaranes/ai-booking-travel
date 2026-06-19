@@ -99,14 +99,12 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 
 	invoiceItems := buildInvoiceItems(p.IDs, reservationSet)
 	rlog.Info("build items", "items", invoiceItems)
-	ic := icount.NewIcount(cfg.Icount.CID(), cfg.Icount.User())
+	ic := icount.NewIcount()
 	res, err := ic.CreateInvoice(icount.CreateInvoiceParams{
-		ClientID:   int(icountClientRes.ClientID),
-		CurrencyID: icount.CurrencyIDsMap[currency],
-		Sum:        p.TotalPaid,
-		Date:       p.TransferDate,
-		AccountID:  cfg.Icount.AccountID(),
-		Items:      invoiceItems,
+		ClientID:      int(icountClientRes.ClientID),
+		CurrencyID:    icount.CurrencyIDsMap[currency],
+		PaymentMethod: icount.NewBankTransferPayment(p.TotalPaid, p.TransferDate, cfg.Icount.AccountID()),
+		Items:         invoiceItems,
 	})
 
 	resp, err := parseBillingResponse(res)
@@ -148,31 +146,41 @@ func buildInvoiceItems(ids []int64, reservationsSet reservationSet) []icount.ICo
 	invoiceItems := make([]icount.ICountInvoiceItem, 0, len(ids)*2)
 	for _, id := range ids {
 		reservation := reservationsSet[id]
-		m := 1.0
-		if reservation.PaymentStatus == "refund_pending" {
-			m = -1.0
-		}
-
-		invoiceItems = append(invoiceItems, icount.ICountInvoiceItem{
-			Description: cfg.Invoice.PurchaseItemDescription(),
-			UnitPrice:   floatPtr(reservation.CarPurchasePrice * m),
-			Quantity:    1,
-			IsTaxExempt: true,
-			SKU:         fmt.Sprintf("%d", id),
-		})
-
-		profitDesc := cfg.Invoice.ProfitItemDescription()
-		if reservation.ERPSellingPrice > 0 {
-			profitDesc = cfg.Invoice.ProfitAndErpItemDescription()
-		}
-		invoiceItems = append(invoiceItems, icount.ICountInvoiceItem{
-			Description:     profitDesc,
-			UnitPriceIncvat: floatPtr((reservation.ProfitOnCar + reservation.ERPSellingPrice) * m),
-			Quantity:        1,
-			IsTaxExempt:     false,
-			SKU:             fmt.Sprintf("%d", id),
-		})
+		rItems := buildReservationInvoiceItems(reservation, 0) //currencyID omitted
+		invoiceItems = append(invoiceItems, rItems...)
 	}
+
+	return invoiceItems
+}
+
+func buildReservationInvoiceItems(reservation reservation.BillingReservation, currencyID int) []icount.ICountInvoiceItem {
+	invoiceItems := make([]icount.ICountInvoiceItem, 0, 2)
+	m := 1.0
+	if reservation.PaymentStatus == "refund_pending" {
+		m = -1.0
+	}
+
+	invoiceItems = append(invoiceItems, icount.ICountInvoiceItem{
+		Description: cfg.Invoice.PurchaseItemDescription(),
+		UnitPrice:   floatPtr(reservation.CarPurchasePrice * m),
+		Quantity:    1,
+		IsTaxExempt: true,
+		SKU:         fmt.Sprintf("%d", reservation.ID),
+		CurrencyID:  currencyID,
+	})
+
+	profitDesc := cfg.Invoice.ProfitItemDescription()
+	if reservation.ERPSellingPrice > 0 {
+		profitDesc = cfg.Invoice.ProfitAndErpItemDescription()
+	}
+	invoiceItems = append(invoiceItems, icount.ICountInvoiceItem{
+		Description:     profitDesc,
+		UnitPriceIncvat: floatPtr((reservation.ProfitOnCar + reservation.ERPSellingPrice) * m),
+		Quantity:        1,
+		IsTaxExempt:     false,
+		SKU:             fmt.Sprintf("%d", reservation.ID),
+		CurrencyID:      currencyID,
+	})
 
 	return invoiceItems
 }

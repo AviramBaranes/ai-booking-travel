@@ -12,7 +12,7 @@ import (
 
 // UpdateCurrenciesRates fetches the latest currency rates from iCount and updates the database.
 func (s *CurrencyService) UpdateCurrenciesRates(ctx context.Context, cid string, user string) error {
-	i := icount.NewIcount(cid, user)
+	i := icount.NewIcount()
 	res, err := i.FetchCurrencies()
 	if err != nil {
 		rlog.Error("failed to fetch currencies from iCount", "error", err)

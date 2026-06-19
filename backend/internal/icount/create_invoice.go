@@ -3,21 +3,23 @@ package icount
 import (
 	"encoding/json"
 	"fmt"
+
+	"encore.dev/rlog"
 )
 
 // CreateInvoiceParams contains the parameters required to create an invoice in iCount.
 type CreateInvoiceParams struct {
-	ClientID   int
-	CurrencyID int
-	Sum        float64
-	Date       string
-	AccountID  int
-	Items      []ICountInvoiceItem
+	ClientID      int
+	CurrencyID    int
+	Items         []ICountInvoiceItem
+	PaymentMethod PaymentMethod
+	Rate          float64
 }
 
 // CreateInvoice creates an invoice in iCount using the provided parameters and returns the response from iCount, the response might contain error details if the creation was not successful.
-func (i *icount) CreateInvoice(params CreateInvoiceParams) (*ICountCreateDocResponse, error) {
+func (i *Icount) CreateInvoice(params CreateInvoiceParams) (*ICountCreateDocResponse, error) {
 	icountReq := i.createInvoiceDocRequest(params)
+	rlog.Info("creating invoice in iCount", "request", icountReq)
 
 	body, err := i.DoRequest(createDocEndpoint, icountReq)
 	if err != nil {
@@ -32,20 +34,16 @@ func (i *icount) CreateInvoice(params CreateInvoiceParams) (*ICountCreateDocResp
 	return &result, nil
 }
 
-// createInvoiceDocRequest constructs the ICountCreateDocRequest from the provided CreateInvoiceParams and the icount struct
-func (i *icount) createInvoiceDocRequest(params CreateInvoiceParams) ICountCreateDocRequest {
+// createInvoiceDocRequest constructs the ICountCreateDocRequest from the provided CreateInvoiceParams and the Icount struct
+func (i *Icount) createInvoiceDocRequest(params CreateInvoiceParams) ICountCreateDocRequest {
+	bankTransfer, payments := params.PaymentMethod.ToRequest()
 	return ICountCreateDocRequest{
-		CID:        i.cid,
-		User:       i.user,
-		Pass:       secrets.IcountPassword,
-		ClientID:   params.ClientID,
-		DocType:    "invrec",
-		CurrencyID: params.CurrencyID,
-		BankTransfer: &ICountBankTransferPayment{
-			Sum:     params.Sum,
-			Date:    params.Date,
-			Account: params.AccountID,
-		},
-		Items: params.Items,
+		ClientID:     params.ClientID,
+		DocType:      "invrec",
+		CurrencyID:   params.CurrencyID,
+		Rate:         params.Rate,
+		BankTransfer: bankTransfer,
+		CC:           payments,
+		Items:        params.Items,
 	}
 }
