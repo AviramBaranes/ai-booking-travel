@@ -1,0 +1,223 @@
+package billing
+
+import (
+	"context"
+	"fmt"
+	"strconv"
+
+	"encore.app/internal/api_errors"
+	"encore.app/internal/icount"
+	"encore.app/internal/lang"
+	"encore.app/services/accounts"
+	"encore.app/services/accounts/handlers/lookup"
+	"encore.app/services/reservation"
+	"encore.dev"
+	"encore.dev/beta/auth"
+	"encore.dev/beta/errs"
+	"encore.dev/rlog"
+)
+
+type GenerateOrderIframeParams struct {
+	OrderID int64 `json:"orderId"`
+	IsILS   bool  `json:"isIls"`
+}
+
+type GenerateOrderIframeResponse struct {
+	URL string `json:"url"`
+}
+
+var (
+	ErrOrderNotUnpaid = api_errors.NewErrorWithDetail(errs.FailedPrecondition, "invalid payment status on reservation, only unpaid reservations can be paid", api_errors.ErrorDetails{
+		Code: api_errors.CodeOrderNotUnpaid,
+	})
+
+	ErrOrderNotBooked = api_errors.NewErrorWithDetail(errs.FailedPrecondition, "invalid reservation status, only booked reservations can be paid", api_errors.ErrorDetails{
+		Code: api_errors.CodeOrderNotBooked,
+	})
+)
+
+// GenerateOrderIframe generates an iframe for the order page. It returns the URL of the iframe and an error if any occurs.
+// It should be used for agents that can't voucher an order because of a finished obligo.
+//
+// encore:api auth path=/billing/generate-order-iframe method=POST tag:agent
+func GenerateOrderIframe(ctx context.Context, p GenerateOrderIframeParams) (*GenerateOrderIframeResponse, error) {
+	authData := auth.Data().(*accounts.AuthData)
+
+	clientName, err := getClientName(ctx, authData.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	order, err := getOrder(ctx, p.OrderID)
+	if err != nil {
+		rlog.Error("failed to get order", "error", err, "order_id", p.OrderID)
+		return nil, err
+	}
+
+	ic := icount.NewIcount()
+
+	sum, currency, err := getPrice(ic, order, p.IsILS)
+	if err != nil {
+		rlog.Error("failed to get price", "error", err)
+		return nil, err
+	}
+
+	baseURL := encore.Meta().APIBaseURL.String()
+	baseURL = "https://aa11-89-139-210-250.ngrok-free.app"
+
+	langCode := lang.FromContext(ctx, "he")
+	resp, err := ic.GenerateIframe(icount.GenerateIframeParams{
+		ClientName:   clientName,
+		PaypageID:    cfg.Icount.PaypageID(),
+		Sum:          sum,
+		CurrencyCode: currency,
+		Description:  getOrderDescription(order, langCode),
+		OrderID:      p.OrderID,
+		PageLang:     langCode,
+		SuccessURL:   fmt.Sprintf("%s%s", baseURL, SuccessPaymentGatewayPath),
+		IpnURL:       getIpnURL(baseURL, p.OrderID, authData),
+	})
+
+	if err != nil {
+		rlog.Error("failed to generate paypage iframe", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	return &GenerateOrderIframeResponse{
+		URL: resp.SaleURL,
+	}, nil
+}
+
+// getClientName uses the accounts service to get the name of the user with the given auth data. It returns the name of the user and an error if any occurs.
+func getClientName(ctx context.Context, userID int64) (string, error) {
+	resp, err := accounts.GetAccountsLookup(ctx, lookup.GetAccountsLookupParams{
+		UserIDs: []int64{userID},
+	})
+	if err != nil {
+		rlog.Error("failed to get user name", "error", err)
+		return "", api_errors.ErrInternalError
+	}
+
+	if len(resp.Users) == 0 {
+		rlog.Error("no user found for user id", "user_id", userID)
+		return "", api_errors.ErrInternalError
+	}
+
+	return resp.Users[0].Name, nil
+}
+
+// getOrder retrieves the order with the given order ID from the reservation service.
+func getOrder(ctx context.Context, orderID int64) (*reservation.GetReservationResponse, error) {
+	resp, err := reservation.GetReservation(ctx, orderID)
+	if err != nil {
+		rlog.Error("failed to get order", "error", err, "order_id", orderID)
+		return nil, api_errors.ErrInternalError
+	}
+
+	if resp.PaymentStatus != reservation.PaymentStatusUnpaid {
+		rlog.Error("order already paid", "order_id", orderID)
+		return nil, ErrOrderNotUnpaid
+	}
+
+	if resp.ReservationStatus != reservation.ReservationStatusBooked {
+		rlog.Error("order not booked", "order_id", orderID, "reservation_status", resp.ReservationStatus)
+		return nil, ErrOrderNotBooked
+	}
+
+	return resp, nil
+}
+
+// getPrice calculates the price of the order. If isILS is false, it returns the total price of the order and its currency code. If isILS is true, it converts the total price to ILS using the exchange rate from iCount and returns the converted price and "ILS" as the currency code.
+func getPrice(ic *icount.Icount, order *reservation.GetReservationResponse, isILS bool) (float64, string, error) {
+	if !isILS {
+		return order.TotalPriceFloat, order.CurrencyCode, nil
+	}
+
+	resp, err := ic.FetchCurrencies()
+	if err != nil {
+		rlog.Error("failed to fetch currency rates", "error", err)
+		return 0, "", api_errors.ErrInternalError
+	}
+
+	rate, ok := resp.Rates[order.CurrencyCode]
+	rlog.Info("currency rates", "rate", rate)
+	if !ok {
+		rlog.Error("currency code not found in rates", "currency_code", order.CurrencyCode)
+		return 0, "", api_errors.ErrInternalError
+	}
+
+	return order.TotalPriceFloat * rate, "ILS", nil
+}
+
+// getIpnURL constructs the IPN URL for the order payment notification. It takes the base URL of the API, the order ID, and the auth data of the user making the request. It returns the constructed IPN URL.
+func getIpnURL(baseURL string, orderID int64, authData *accounts.AuthData) string {
+	billingEntityParam := "&office_id=" + strconv.FormatInt(authData.OrganizationContext.OfficeID, 10)
+	if authData.OrganizationContext.IsOrganic {
+		billingEntityParam = "&organization_id=" + strconv.FormatInt(authData.OrganizationContext.OrganizationID, 10)
+	}
+	return fmt.Sprintf("%s%s?id=%d%s", baseURL, OrderPaymentIPNGatewayPath, orderID, billingEntityParam)
+}
+
+// getOrderDescription generates a description for the order based on its details and the given language.
+// It returns the generated description with embedded line breaks.
+func getOrderDescription(order *reservation.GetReservationResponse, lang string) string {
+	pickupTime := order.PickupTime
+	pickupDate := order.PickupDate
+	dropoffTime := order.DropoffTime
+	dropoffDate := order.DropoffDate
+	pickupLocation := order.PickupLocationName
+	dropoffLocation := order.DropoffLocationName
+	model := order.CarDetails.Model
+
+	sameLocation := pickupLocation == dropoffLocation
+
+	switch lang {
+	case "he":
+		if sameLocation {
+			return fmt.Sprintf(
+				"השכרת רכב %s או דומה.\nאיסוף והחזרה ב%s.\nאיסוף: %s בשעה %s\nהחזרה: %s בשעה %s",
+				model,
+				pickupLocation,
+				pickupDate,
+				pickupTime,
+				dropoffDate,
+				dropoffTime,
+			)
+		}
+
+		return fmt.Sprintf(
+			"השכרת רכב %s או דומה.\nאיסוף מ%s בתאריך %s בשעה %s.\nהחזרה ב%s בתאריך %s בשעה %s.",
+			model,
+			pickupLocation,
+			pickupDate,
+			pickupTime,
+			dropoffLocation,
+			dropoffDate,
+			dropoffTime,
+		)
+
+	default:
+		if sameLocation {
+			return fmt.Sprintf(
+				"Car rental for %s or similar.\nPickup and return at %s.\nPickup: %s at %s\nReturn: %s at %s",
+				model,
+				pickupLocation,
+				pickupDate,
+				pickupTime,
+				dropoffDate,
+				dropoffTime,
+			)
+		}
+
+		return fmt.Sprintf(
+			"Car rental for %s or similar.\nPickup at %s on %s at %s.\nReturn at %s on %s at %s.",
+			model,
+			pickupLocation,
+			pickupDate,
+			pickupTime,
+			dropoffLocation,
+			dropoffDate,
+			dropoffTime,
+		)
+	}
+}
