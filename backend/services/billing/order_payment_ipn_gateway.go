@@ -163,6 +163,7 @@ func getBillingReservation(ctx context.Context, reqData *ipnReqData, transaction
 		ReservationID:           reqData.orderID,
 		PaymentConfirmationCode: reqData.confirmationCode,
 		PaymentDocNum:           transaction.DocNumber,
+		UserEmail:               transaction.ClientEmail,
 	})
 	if err != nil {
 		rlog.Error("failed to voucher reservation after payment", "error", err, "orderID", reqData.orderID)

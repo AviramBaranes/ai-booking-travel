@@ -15,6 +15,7 @@ import (
 	"encore.dev/beta/auth"
 	"encore.dev/beta/errs"
 	"encore.dev/rlog"
+	"golang.org/x/sync/errgroup"
 )
 
 type GenerateOrderIframeParams struct {
@@ -43,20 +44,49 @@ var (
 func GenerateOrderIframe(ctx context.Context, p GenerateOrderIframeParams) (*GenerateOrderIframeResponse, error) {
 	authData := auth.Data().(*accounts.AuthData)
 
-	clientName, err := getClientName(ctx, authData.UserID)
-	if err != nil {
+	g, groupCtx := errgroup.WithContext(ctx)
+
+	var clientName string
+	var order *reservation.GetReservationResponse
+	var rates map[string]float64
+
+	g.Go(func() error {
+		cn, err := getClientName(groupCtx, authData.UserID)
+		if err != nil {
+			return err
+		}
+		clientName = cn
+		return nil
+	})
+
+	g.Go(func() error {
+		o, err := getOrder(groupCtx, p.OrderID)
+		if err != nil {
+			return err
+		}
+		order = o
+		return nil
+	})
+
+	if p.IsILS {
+		g.Go(func() error {
+			ic := icount.NewIcount()
+			r, err := ic.FetchCurrencies()
+			if err != nil {
+				rlog.Error("failed to fetch currency rates", "error", err)
+				return api_errors.ErrInternalError
+			}
+			rates = r.Rates
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		rlog.Error("failed to get data for generating order iframe", "error", err)
 		return nil, err
 	}
 
-	order, err := getOrder(ctx, p.OrderID)
-	if err != nil {
-		rlog.Error("failed to get order", "error", err, "order_id", p.OrderID)
-		return nil, err
-	}
-
-	ic := icount.NewIcount()
-
-	sum, currency, err := getPrice(ic, order, p.IsILS)
+	sum, currency, err := getPrice(order, p.IsILS, rates)
 	if err != nil {
 		rlog.Error("failed to get price", "error", err)
 		return nil, err
@@ -66,6 +96,7 @@ func GenerateOrderIframe(ctx context.Context, p GenerateOrderIframeParams) (*Gen
 	baseURL = "https://aa11-89-139-210-250.ngrok-free.app"
 
 	langCode := lang.FromContext(ctx, "he")
+	ic := icount.NewIcount()
 	resp, err := ic.GenerateIframe(icount.GenerateIframeParams{
 		ClientName:   clientName,
 		PaypageID:    cfg.Icount.PaypageID(),
@@ -128,18 +159,12 @@ func getOrder(ctx context.Context, orderID int64) (*reservation.GetReservationRe
 }
 
 // getPrice calculates the price of the order. If isILS is false, it returns the total price of the order and its currency code. If isILS is true, it converts the total price to ILS using the exchange rate from iCount and returns the converted price and "ILS" as the currency code.
-func getPrice(ic *icount.Icount, order *reservation.GetReservationResponse, isILS bool) (float64, string, error) {
+func getPrice(order *reservation.GetReservationResponse, isILS bool, rates map[string]float64) (float64, string, error) {
 	if !isILS {
 		return order.TotalPriceFloat, order.CurrencyCode, nil
 	}
 
-	resp, err := ic.FetchCurrencies()
-	if err != nil {
-		rlog.Error("failed to fetch currency rates", "error", err)
-		return 0, "", api_errors.ErrInternalError
-	}
-
-	rate, ok := resp.Rates[order.CurrencyCode]
+	rate, ok := rates[order.CurrencyCode]
 	rlog.Info("currency rates", "rate", rate)
 	if !ok {
 		rlog.Error("currency code not found in rates", "currency_code", order.CurrencyCode)
