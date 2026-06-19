@@ -6,11 +6,23 @@ import (
 	"encore.app/services/reservation/db"
 	actions "encore.app/services/reservation/handlers/actions"
 	queries "encore.app/services/reservation/handlers/queries"
+	"encore.app/services/reservation/handlers/reservation_pricing"
 	"encore.dev/config"
 	"encore.dev/pubsub"
 	"encore.dev/storage/sqldb"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"x.encore.dev/infra/pubsub/outbox"
+)
+
+const (
+	PaymentStatusUnpaid        = "unpaid"
+	PaymentStatusPaid          = "paid"
+	PaymentStatusRefunded      = "refunded"
+	PaymentStatusRefundPending = "refund_pending"
+
+	ReservationStatusBooked    = "booked"
+	ReservationStatusCanceled  = "canceled"
+	ReservationStatusVouchered = "vouchered"
 )
 
 type GetReservationResponse = queries.GetReservationResponse
@@ -20,7 +32,7 @@ type ListReservationsResponse = queries.ListReservationsResponse
 type OpenReservation = queries.OpenReservation
 type GetOpenReservationsResponse = queries.GetOpenReservationsResponse
 type ListOpenReservationsByBillingEntityParams = queries.ListOpenReservationsByBillingEntityParams
-type BillingReservation = queries.BillingReservation
+type BillingReservation = reservation_pricing.BillingReservation
 type ListOpenReservationsByBillingEntityResponse = queries.ListOpenReservationsByBillingEntityResponse
 type CurrencyGroup = queries.CurrencyGroup
 
@@ -34,6 +46,7 @@ type ResolveReservationsParams = actions.ResolveReservationsParams
 type SeedReservationsResponse = actions.SeedReservationsResponse
 type PayAtPickup = actions.PayAtPickup
 type SelectedAddon = actions.SelectedAddon
+type VoucherReservationAfterPaymentParams = actions.VoucherReservationAfterPaymentParams
 
 // --- Error re-exports ---
 

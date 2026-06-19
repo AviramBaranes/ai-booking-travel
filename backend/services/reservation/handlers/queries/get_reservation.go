@@ -44,6 +44,7 @@ type GetReservationResponse struct {
 	Voucher             *string             `json:"voucher,omitempty" encore:"optional"`
 	VoucheredAt         *string             `json:"voucheredAt,omitempty" encore:"optional"`
 	CreatedAt           string              `json:"createdAt"`
+	TotalPriceFloat     float64
 }
 
 func (s *QueryService) GetReservation(ctx context.Context, id int64) (*GetReservationResponse, error) {
@@ -99,6 +100,7 @@ func (s *QueryService) GetReservation(ctx context.Context, id int64) (*GetReserv
 		DropoffLocationName: row.DropoffLocationName,
 		Voucher:             row.VoucherNumber,
 		VoucheredAt:         &voucheredAt,
+		TotalPriceFloat:     dbadapters.NumericToFloat64(row.TotalPrice),
 	}, nil
 }
 

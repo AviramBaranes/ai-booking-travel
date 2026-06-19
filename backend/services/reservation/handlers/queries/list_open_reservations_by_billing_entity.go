@@ -2,12 +2,11 @@ package queries
 
 import (
 	"context"
-	"math"
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
-	"encore.app/internal/pricing"
 	"encore.app/services/reservation/db"
+	"encore.app/services/reservation/handlers/reservation_pricing"
 	"encore.dev/beta/errs"
 	"encore.dev/rlog"
 )
@@ -42,22 +41,6 @@ func (r *ListOpenReservationsByBillingEntityParams) Validate() error {
 	return nil
 }
 
-// BillingReservation is a reservation summary tailored for accountant billing workflows.
-type BillingReservation struct {
-	ID                  int64   `json:"id"`
-	BrokerReservationID string  `json:"brokerReservationId"`
-	PaymentStatus       string  `json:"paymentStatus"`
-	ReservationStatus   string  `json:"reservationStatus"`
-	CarPurchasePrice    float64 `json:"carPurchasePrice"`
-	CarSellingPrice     float64 `json:"carSellingPrice"`
-	ERPSellingPrice     float64 `json:"erpSellingPrice"`
-	ProfitOnCar         float64 `json:"profitOnCar"`
-	TotalPrice          float64 `json:"totalPrice"`
-	CurrencyCode        string  `json:"currencyCode"`
-	CreatedAt           string  `json:"createdAt"`
-	PickupDate          string  `json:"pickupDate"`
-}
-
 // ListOpenReservationsByBillingEntityResponse holds the open reservations for a billing unit,
 // grouped by currency.
 type ListOpenReservationsByBillingEntityResponse struct {
@@ -66,8 +49,8 @@ type ListOpenReservationsByBillingEntityResponse struct {
 
 // CurrencyGroup is a set of billing reservations sharing the same currency.
 type CurrencyGroup struct {
-	CurrencyCode string               `json:"currencyCode"`
-	Reservations []BillingReservation `json:"reservations"`
+	CurrencyCode string                                   `json:"currencyCode"`
+	Reservations []reservation_pricing.BillingReservation `json:"reservations"`
 }
 
 // ListOpenReservationsByBillingEntity returns all unpaid/refund-pending reservations
@@ -109,55 +92,26 @@ func toCurrencyGroups(rows []db.GetPaymentPendingReservationsByBillingEntityRow)
 		if groupIndex == -1 {
 			groups = append(groups, CurrencyGroup{
 				CurrencyCode: r.CurrencyCode,
-				Reservations: []BillingReservation{},
+				Reservations: []reservation_pricing.BillingReservation{},
 			})
 			groupIndex = len(groups) - 1
 		}
 
-		pd := getReservationPriceDetails(r)
-		groups[groupIndex].Reservations = append(groups[groupIndex].Reservations, BillingReservation{
+		pd := reservation_pricing.GetReservationPriceDetails(r)
+		groups[groupIndex].Reservations = append(groups[groupIndex].Reservations, reservation_pricing.BillingReservation{
 			ID:                  r.ID,
 			BrokerReservationID: r.BrokerReservationID,
 			PaymentStatus:       string(r.PaymentStatus),
 			ReservationStatus:   string(r.ReservationStatus),
-			CarPurchasePrice:    pd.carPurchasePrice,
-			CarSellingPrice:     pd.carSellingPrice,
-			ERPSellingPrice:     pd.erpSellingPrice,
-			ProfitOnCar:         pd.carProfit,
-			TotalPrice:          pd.totalPrice,
+			CarPurchasePrice:    pd.CarPurchasePrice,
+			CarSellingPrice:     pd.CarSellingPrice,
+			ERPSellingPrice:     pd.ErpSellingPrice,
+			ProfitOnCar:         pd.CarProfit,
+			TotalPrice:          pd.TotalPrice,
 			CurrencyCode:        r.CurrencyCode,
 			CreatedAt:           dbadapters.TimestamptzToString(r.CreatedAt),
 			PickupDate:          dbadapters.DateToString(r.PickupDate),
 		})
 	}
 	return groups
-}
-
-// priceDetails holds the computed price breakdown for a single reservation.
-type priceDetails struct {
-	carPurchasePrice float64
-	carSellingPrice  float64
-	carProfit        float64
-	erpSellingPrice  float64
-	totalPrice       float64
-}
-
-// roundPrice rounds a price to 2 decimal places.
-func roundPrice(price float64) float64 {
-	return math.Round(price*100) / 100
-}
-
-// getReservationPriceDetails computes purchase price, selling price, profit, and ERP price from a db row.
-func getReservationPriceDetails(row db.GetPaymentPendingReservationsByBillingEntityRow) priceDetails {
-	carPurchasePrice := dbadapters.NumericToFloat64(row.PurchasePrice) + dbadapters.NumericToFloat64(row.BrokerErpPrice)
-	mp := dbadapters.NumericToFloat64(row.MarkupPercentage)
-	carSellingPrice := pricing.ApplyMarkup(carPurchasePrice, mp)
-
-	return priceDetails{
-		carPurchasePrice: roundPrice(carPurchasePrice),
-		carSellingPrice:  roundPrice(carSellingPrice),
-		carProfit:        roundPrice(carSellingPrice - carPurchasePrice),
-		erpSellingPrice:  dbadapters.NumericToFloat64(row.BtErpPrice),
-		totalPrice:       dbadapters.NumericToFloat64(row.TotalPrice),
-	}
 }

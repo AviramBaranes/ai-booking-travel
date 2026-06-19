@@ -25,9 +25,7 @@ var emailPublisher = emailevents.NewPublisher(emailRequestedTopic)
 
 func (s *Service) newActionService() *actions.ActionService {
 	return actions.NewActionService(s.query, s.pool, s.cancellationTopic, actions.Config{
-		VAT:        cfg.VAT(),
-		IcountCID:  cfg.Icount.CID(),
-		IcountUser: cfg.Icount.User(),
+		VAT: cfg.VAT(),
 	})
 }
 
@@ -89,4 +87,9 @@ func (s *Service) AlertOpenReservations(ctx context.Context) error {
 // encore:api private
 func (s *Service) SeedReservations(ctx context.Context) (*actions.SeedReservationsResponse, error) {
 	return s.newActionService().SeedReservations(ctx)
+}
+
+// encore:api private
+func (s *Service) VoucherReservationAfterPayment(ctx context.Context, p *actions.VoucherReservationAfterPaymentParams) (*actions.VoucherReservationAfterPaymentResponse, error) {
+	return s.newActionService().VoucherReservationAfterPayment(ctx, p)
 }

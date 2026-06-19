@@ -8,9 +8,7 @@ import (
 
 // Config holds configuration values required by the action service.
 type Config struct {
-	VAT        float64
-	IcountCID  string
-	IcountUser string
+	VAT float64
 }
 
 // ActionService provides all reservation write/action operations.

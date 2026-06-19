@@ -51,24 +51,35 @@ func (s *ActionService) ApplyVoucher(ctx context.Context, id int64, p ApplyVouch
 		return api_errors.ErrInternalError
 	}
 
-	b, err := getVoucherProvider(reservation.Broker)
-	if err != nil {
-		rlog.Error("getting voucher provider", "error", err, "id", id, "voucher", p.Voucher)
-		notifyVoucherError(ctx, "Voucher Send Failed — Unsupported Broker", id, reservation.Broker, p.Voucher, err)
-		return nil
-	}
-
 	userEmail, err := accounts.GetUserEmail(ctx, accounts.GetUserEmailParams{UserID: authData.UserID})
 	if err != nil {
-		rlog.Error("getting user email for voucher", "error", err, "id", id, "userID", authData.UserID)
-		notifyVoucherError(ctx, "Voucher Send Failed — Could Not Resolve Recipient", id, reservation.Broker, p.Voucher, err)
+		rlog.Error("getting user email for voucher", "error", err, "id", reservation.ID, "userID", authData.UserID)
+		notifyVoucherError(ctx, "Voucher Send Failed — Could Not Resolve Recipient", reservation.ID, reservation.Broker, p.Voucher, err)
 		return nil
 	}
 
-	err = sendVoucher(ctx, b, reservation, userEmail.Email)
+	return sendReservationVoucherToUser(ctx, reservation, userEmail.Email, p.Voucher)
+}
+
+// sendReservationVoucherToUser generates and sends the reservation voucher to the user's email.
+// It logs and notifies critical errors without returning them, as voucher sending failure should not block the main flow.
+func sendReservationVoucherToUser(
+	ctx context.Context,
+	reservation db.Reservation,
+	email string,
+	voucherNumber string,
+) error {
+	b, err := getVoucherProvider(reservation.Broker)
 	if err != nil {
-		rlog.Error("sending voucher", "error", err, "id", id, "voucher", p.Voucher)
-		notifyVoucherError(ctx, "Voucher Send Failed", id, reservation.Broker, p.Voucher, err)
+		rlog.Error("getting voucher provider", "error", err, "id", reservation.ID, "voucher", voucherNumber)
+		notifyVoucherError(ctx, "Voucher Send Failed — Unsupported Broker", reservation.ID, reservation.Broker, voucherNumber, err)
+		return nil
+	}
+
+	err = sendVoucher(ctx, b, reservation, email)
+	if err != nil {
+		rlog.Error("sending voucher", "error", err, "id", reservation.ID, "voucher", voucherNumber)
+		notifyVoucherError(ctx, "Voucher Send Failed", reservation.ID, reservation.Broker, voucherNumber, err)
 	}
 
 	return nil
@@ -158,7 +169,7 @@ func (s *ActionService) getCurrencyRate(ctx context.Context, reservationID int64
 		return 0, api_errors.ErrInternalError
 	}
 
-	ic := icount.NewIcount(s.cfg.IcountCID, s.cfg.IcountUser)
+	ic := icount.NewIcount()
 	resp, err := ic.FetchCurrencies()
 	if err != nil {
 		rlog.Error("fetching currency rates from icount", "error", err)

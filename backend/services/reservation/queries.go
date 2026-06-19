@@ -6,12 +6,12 @@ import (
 	queries "encore.app/services/reservation/handlers/queries"
 )
 
-// encore:api auth method=GET path=/reservations/:id
+// encore:api auth method=GET path=/reservations/:id tag:agent
 func (s *Service) GetReservation(ctx context.Context, id int64) (*queries.GetReservationResponse, error) {
 	return queries.NewQueryService(s.query).GetReservation(ctx, id)
 }
 
-// encore:api auth method=GET path=/reservations
+// encore:api auth method=GET path=/reservations tag:agent
 func (s *Service) ListReservations(ctx context.Context, p queries.ListReservationsParams) (*queries.ListReservationsResponse, error) {
 	return queries.NewQueryService(s.query).ListReservations(ctx, p)
 }

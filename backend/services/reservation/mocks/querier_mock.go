@@ -100,6 +100,21 @@ func (mr *MockQuerierMockRecorder) CountReservationsReport(ctx, arg any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountReservationsReport", reflect.TypeOf((*MockQuerier)(nil).CountReservationsReport), ctx, arg)
 }
 
+// GetBillingReservation mocks base method.
+func (m *MockQuerier) GetBillingReservation(ctx context.Context, id int64) (db.GetBillingReservationRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBillingReservation", ctx, id)
+	ret0, _ := ret[0].(db.GetBillingReservationRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBillingReservation indicates an expected call of GetBillingReservation.
+func (mr *MockQuerierMockRecorder) GetBillingReservation(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBillingReservation", reflect.TypeOf((*MockQuerier)(nil).GetBillingReservation), ctx, id)
+}
+
 // GetOpenReservationsPickingUpWithinWeek mocks base method.
 func (m *MockQuerier) GetOpenReservationsPickingUpWithinWeek(ctx context.Context) ([]db.GetOpenReservationsPickingUpWithinWeekRow, error) {
 	m.ctrl.T.Helper()
@@ -262,4 +277,19 @@ func (m *MockQuerier) ResolveReservationsPayment(ctx context.Context, ids []int6
 func (mr *MockQuerierMockRecorder) ResolveReservationsPayment(ctx, ids any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveReservationsPayment", reflect.TypeOf((*MockQuerier)(nil).ResolveReservationsPayment), ctx, ids)
+}
+
+// VoucherReservationAfterPayment mocks base method.
+func (m *MockQuerier) VoucherReservationAfterPayment(ctx context.Context, arg db.VoucherReservationAfterPaymentParams) (db.Reservation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VoucherReservationAfterPayment", ctx, arg)
+	ret0, _ := ret[0].(db.Reservation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// VoucherReservationAfterPayment indicates an expected call of VoucherReservationAfterPayment.
+func (mr *MockQuerierMockRecorder) VoucherReservationAfterPayment(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VoucherReservationAfterPayment", reflect.TypeOf((*MockQuerier)(nil).VoucherReservationAfterPayment), ctx, arg)
 }
