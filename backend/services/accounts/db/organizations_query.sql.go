@@ -313,3 +313,19 @@ func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganization
 	)
 	return i, err
 }
+
+const updateOrganizationBalanceDue = `-- name: UpdateOrganizationBalanceDue :exec
+UPDATE organizations
+SET balance_due = $1::NUMERIC(10, 2) + COALESCE(balance_due, 0)
+WHERE id = $2::BIGINT
+`
+
+type UpdateOrganizationBalanceDueParams struct {
+	BalanceDue pgtype.Numeric
+	ID         int64
+}
+
+func (q *Queries) UpdateOrganizationBalanceDue(ctx context.Context, arg UpdateOrganizationBalanceDueParams) error {
+	_, err := q.db.Exec(ctx, updateOrganizationBalanceDue, arg.BalanceDue, arg.ID)
+	return err
+}

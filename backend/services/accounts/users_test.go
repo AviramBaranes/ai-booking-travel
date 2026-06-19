@@ -310,3 +310,10 @@ func TestUpdateUser(t *testing.T) {
 	})
 
 }
+
+func TestGetUserCredit(t *testing.T) {
+	t.Run("it returns the credit of the office for a user of an in organic organization", func(t *testing.T) {
+	})
+
+	t.Run("it returns the credit of the organization for a user of an organic organization", func(t *testing.T) {})
+}

@@ -679,6 +679,20 @@ func (mr *MockQuerierMockRecorder) UpdateOffice(ctx, arg any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOffice", reflect.TypeOf((*MockQuerier)(nil).UpdateOffice), ctx, arg)
 }
 
+// UpdateOfficeBalanceDue mocks base method.
+func (m *MockQuerier) UpdateOfficeBalanceDue(ctx context.Context, arg db.UpdateOfficeBalanceDueParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateOfficeBalanceDue", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateOfficeBalanceDue indicates an expected call of UpdateOfficeBalanceDue.
+func (mr *MockQuerierMockRecorder) UpdateOfficeBalanceDue(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOfficeBalanceDue", reflect.TypeOf((*MockQuerier)(nil).UpdateOfficeBalanceDue), ctx, arg)
+}
+
 // UpdateOrganization mocks base method.
 func (m *MockQuerier) UpdateOrganization(ctx context.Context, arg db.UpdateOrganizationParams) (db.Organization, error) {
 	m.ctrl.T.Helper()
@@ -692,6 +706,20 @@ func (m *MockQuerier) UpdateOrganization(ctx context.Context, arg db.UpdateOrgan
 func (mr *MockQuerierMockRecorder) UpdateOrganization(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrganization", reflect.TypeOf((*MockQuerier)(nil).UpdateOrganization), ctx, arg)
+}
+
+// UpdateOrganizationBalanceDue mocks base method.
+func (m *MockQuerier) UpdateOrganizationBalanceDue(ctx context.Context, arg db.UpdateOrganizationBalanceDueParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateOrganizationBalanceDue", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateOrganizationBalanceDue indicates an expected call of UpdateOrganizationBalanceDue.
+func (mr *MockQuerierMockRecorder) UpdateOrganizationBalanceDue(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOrganizationBalanceDue", reflect.TypeOf((*MockQuerier)(nil).UpdateOrganizationBalanceDue), ctx, arg)
 }
 
 // UpdateUser mocks base method.

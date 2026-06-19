@@ -39,3 +39,9 @@ func (s *Service) ListInorganicOffices(ctx context.Context) (*office.ListInorgan
 	handler := office.NewOfficeService(s.query)
 	return handler.ListInorganicOffices(ctx)
 }
+
+// encore:api private
+func (s *Service) UpdateOfficeBalanceDue(ctx context.Context, p office.UpdateOfficeBalanceDueParams) error {
+	handler := office.NewOfficeService(s.query)
+	return handler.UpdateOfficeBalanceDue(ctx, p)
+}

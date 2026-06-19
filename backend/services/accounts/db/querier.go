@@ -52,7 +52,9 @@ type Querier interface {
 	SaveRefreshToken(ctx context.Context, arg SaveRefreshTokenParams) error
 	UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error)
 	UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (UpdateOfficeRow, error)
+	UpdateOfficeBalanceDue(ctx context.Context, arg UpdateOfficeBalanceDueParams) error
 	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error)
+	UpdateOrganizationBalanceDue(ctx context.Context, arg UpdateOrganizationBalanceDueParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error)
 }
 

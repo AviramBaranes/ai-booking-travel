@@ -39,3 +39,9 @@ func (s *Service) ListOrganicOrganizations(ctx context.Context) (*organization.L
 	handler := organization.NewOrganizationService(s.query)
 	return handler.ListOrganicOrganizations(ctx)
 }
+
+// encore:api private
+func (s *Service) UpdateOrganizationBalanceDue(ctx context.Context, p organization.UpdateOrganizationBalanceDueParams) error {
+	handler := organization.NewOrganizationService(s.query)
+	return handler.UpdateOrganizationBalanceDue(ctx, p)
+}
