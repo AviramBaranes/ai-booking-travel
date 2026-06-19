@@ -9,6 +9,7 @@ import (
 	"encore.app/services/accounts/db"
 	oh "encore.app/services/accounts/handlers/office"
 	organization "encore.app/services/accounts/handlers/organization"
+	user "encore.app/services/accounts/handlers/user"
 	"encore.dev/et"
 )
 
@@ -548,6 +549,77 @@ func TestListInorganicOffices(t *testing.T) {
 			if office.ID != expectedResults[i].ID || office.Name != expectedResults[i].Name {
 				t.Fatalf("expected office %v, got %v", expectedResults[i], office)
 			}
+		}
+	})
+}
+
+func TestUpdateOfficeBalanceDue(t *testing.T) {
+	ctx := context.Background()
+	s := &Service{query: query}
+
+	setup := func(t *testing.T) (officeID int64, agentID int64) {
+		t.Helper()
+		icountID := int32(42)
+		org, err := s.CreateOrganization(ctx, organization.CreateOrganizationParams{Name: randomName(), IsOrganic: false})
+		if err != nil {
+			t.Fatalf("create org: %v", err)
+		}
+		off, err := s.CreateOffice(ctx, oh.CreateOfficeParams{Name: randomName(), OrganizationID: org.ID, IcountClientID: &icountID})
+		if err != nil {
+			t.Fatalf("create office: %v", err)
+		}
+		agent, err := s.CreateAgent(ctx, user.CreateAgentParams{
+			FirstName: "Test", LastName: "Agent",
+			Email: generateTestEmail(), Password: "Str0ng!Pass99",
+			PhoneNumber: randomIsraeliPhoneNumber(), OfficeID: off.ID,
+		})
+		if err != nil {
+			t.Fatalf("create agent: %v", err)
+		}
+		return off.ID, agent.ID
+	}
+
+	getBalance := func(t *testing.T, agentID int64) float64 {
+		t.Helper()
+		credit, err := user.NewUserService(s.query).GetUserCredit(ctx, agentID)
+		if err != nil {
+			t.Fatalf("GetUserCredit: %v", err)
+		}
+		return credit.BalanceDue
+	}
+
+	t.Run("positive delta increases balance", func(t *testing.T) {
+		t.Parallel()
+		officeID, agentID := setup(t)
+		if err := s.UpdateOfficeBalanceDue(ctx, oh.UpdateOfficeBalanceDueParams{ID: officeID, BalanceChange: 100.0}); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if got := getBalance(t, agentID); got != 100.0 {
+			t.Fatalf("expected balance 100.0, got %v", got)
+		}
+	})
+
+	t.Run("negative delta decreases balance (payment resolved)", func(t *testing.T) {
+		t.Parallel()
+		officeID, agentID := setup(t)
+		_ = s.UpdateOfficeBalanceDue(ctx, oh.UpdateOfficeBalanceDueParams{ID: officeID, BalanceChange: 100.0})
+		if err := s.UpdateOfficeBalanceDue(ctx, oh.UpdateOfficeBalanceDueParams{ID: officeID, BalanceChange: -60.0}); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if got := getBalance(t, agentID); got != 40.0 {
+			t.Fatalf("expected balance 40.0, got %v", got)
+		}
+	})
+
+	t.Run("balance never goes below 0", func(t *testing.T) {
+		t.Parallel()
+		officeID, agentID := setup(t)
+		_ = s.UpdateOfficeBalanceDue(ctx, oh.UpdateOfficeBalanceDueParams{ID: officeID, BalanceChange: 50.0})
+		if err := s.UpdateOfficeBalanceDue(ctx, oh.UpdateOfficeBalanceDueParams{ID: officeID, BalanceChange: -200.0}); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if got := getBalance(t, agentID); got != 0.0 {
+			t.Fatalf("expected balance 0.0, got %v", got)
 		}
 	})
 }

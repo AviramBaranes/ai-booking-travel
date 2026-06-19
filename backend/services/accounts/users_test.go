@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	oh "encore.app/services/accounts/handlers/office"
+	organization "encore.app/services/accounts/handlers/organization"
 	user "encore.app/services/accounts/handlers/user"
 )
 
@@ -312,8 +314,68 @@ func TestUpdateUser(t *testing.T) {
 }
 
 func TestGetUserCredit(t *testing.T) {
-	t.Run("it returns the credit of the office for a user of an in organic organization", func(t *testing.T) {
+	ctx := context.Background()
+	s := &Service{query: query}
+
+	t.Run("it returns the credit of the office for a user of an inorganic organization", func(t *testing.T) {
+		t.Parallel()
+		icountID := int32(42)
+		org, err := s.CreateOrganization(ctx, organization.CreateOrganizationParams{Name: randomName(), IsOrganic: false})
+		if err != nil {
+			t.Fatalf("create org: %v", err)
+		}
+		off, err := s.CreateOffice(ctx, oh.CreateOfficeParams{Name: randomName(), OrganizationID: org.ID, IcountClientID: &icountID})
+		if err != nil {
+			t.Fatalf("create office: %v", err)
+		}
+		agent, err := s.CreateAgent(ctx, user.CreateAgentParams{
+			FirstName: "Test", LastName: "Agent",
+			Email: generateTestEmail(), Password: "Str0ng!Pass99",
+			PhoneNumber: randomIsraeliPhoneNumber(), OfficeID: off.ID,
+		})
+		if err != nil {
+			t.Fatalf("create agent: %v", err)
+		}
+
+		_ = s.UpdateOfficeBalanceDue(ctx, oh.UpdateOfficeBalanceDueParams{ID: off.ID, BalanceChange: 150.0})
+
+		credit, err := user.NewUserService(s.query).GetUserCredit(ctx, agent.ID)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if credit.BalanceDue != 150.0 {
+			t.Fatalf("expected balance_due 150.0 (office), got %v", credit.BalanceDue)
+		}
 	})
 
-	t.Run("it returns the credit of the organization for a user of an organic organization", func(t *testing.T) {})
+	t.Run("it returns the credit of the organization for a user of an organic organization", func(t *testing.T) {
+		t.Parallel()
+		icountID := int32(10)
+		org, err := s.CreateOrganization(ctx, organization.CreateOrganizationParams{Name: randomName(), IsOrganic: true, IcountClientID: &icountID})
+		if err != nil {
+			t.Fatalf("create org: %v", err)
+		}
+		off, err := s.CreateOffice(ctx, oh.CreateOfficeParams{Name: randomName(), OrganizationID: org.ID})
+		if err != nil {
+			t.Fatalf("create office: %v", err)
+		}
+		agent, err := s.CreateAgent(ctx, user.CreateAgentParams{
+			FirstName: "Test", LastName: "Agent",
+			Email: generateTestEmail(), Password: "Str0ng!Pass99",
+			PhoneNumber: randomIsraeliPhoneNumber(), OfficeID: off.ID,
+		})
+		if err != nil {
+			t.Fatalf("create agent: %v", err)
+		}
+
+		_ = s.UpdateOrganizationBalanceDue(ctx, organization.UpdateOrganizationBalanceDueParams{ID: org.ID, BalanceChange: 200.0})
+
+		credit, err := user.NewUserService(s.query).GetUserCredit(ctx, agent.ID)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if credit.BalanceDue != 200.0 {
+			t.Fatalf("expected balance_due 200.0 (org), got %v", credit.BalanceDue)
+		}
+	})
 }

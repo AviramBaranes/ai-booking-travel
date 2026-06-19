@@ -412,8 +412,8 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phoneNumber *string) (User
 const getUserCredit = `-- name: GetUserCredit :one
 SELECT (
   CASE WHEN org.is_organic = TRUE
-    THEN org.obligo
-    ELSE offices.obligo
+    THEN COALESCE(org.obligo, 0)
+    ELSE COALESCE(offices.obligo, 0)
   END
 )::INTEGER AS obligo,
 (
@@ -423,8 +423,8 @@ SELECT (
   END
 )::NUMERIC(10, 2) AS balance_due
 FROM users AS u
-INNER JOIN offices ON u.office_id = id
-INNER JOIN organizations AS org ON org.id = offices.id
+INNER JOIN offices ON u.office_id = offices.id
+INNER JOIN organizations AS org ON org.id = offices.organization_id
 WHERE u.id = $1
 `
 
