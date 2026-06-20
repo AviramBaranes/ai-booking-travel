@@ -32,17 +32,19 @@ func (q *Queries) CountOffices(ctx context.Context, arg CountOfficesParams) (int
 }
 
 const createOffice = `-- name: CreateOffice :one
-INSERT INTO offices (name, organization_id, icount_client_id, phone, address, created_at, updated_at)
+INSERT INTO offices (name, organization_id, icount_client_id, phone, address, obligo, gross_markup, created_at, updated_at)
 VALUES (
     $1,
     $2,
     $3,
     $4,
     $5,
+    $6,
+    $7,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
-RETURNING id, name, organization_id, icount_client_id, phone, address, created_at, updated_at
+RETURNING id, name, organization_id, icount_client_id, phone, address, gross_markup, created_at, updated_at
 `
 
 type CreateOfficeParams struct {
@@ -51,6 +53,8 @@ type CreateOfficeParams struct {
 	IcountClientID *int32
 	Phone          *string
 	Address        *string
+	Obligo         *int32
+	GrossMarkup    pgtype.Numeric
 }
 
 type CreateOfficeRow struct {
@@ -60,6 +64,7 @@ type CreateOfficeRow struct {
 	IcountClientID *int32
 	Phone          *string
 	Address        *string
+	GrossMarkup    pgtype.Numeric
 	CreatedAt      pgtype.Timestamptz
 	UpdatedAt      pgtype.Timestamptz
 }
@@ -71,6 +76,8 @@ func (q *Queries) CreateOffice(ctx context.Context, arg CreateOfficeParams) (Cre
 		arg.IcountClientID,
 		arg.Phone,
 		arg.Address,
+		arg.Obligo,
+		arg.GrossMarkup,
 	)
 	var i CreateOfficeRow
 	err := row.Scan(
@@ -80,6 +87,7 @@ func (q *Queries) CreateOffice(ctx context.Context, arg CreateOfficeParams) (Cre
 		&i.IcountClientID,
 		&i.Phone,
 		&i.Address,
+		&i.GrossMarkup,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -195,6 +203,7 @@ SELECT
     o.address,
     o.obligo,
     o.balance_due,
+    o.gross_markup,
     o.created_at,
     o.updated_at,
     COUNT(DISTINCT c.id)::BIGINT  AS contact_count,
@@ -229,6 +238,7 @@ type ListOfficesRow struct {
 	Address          *string
 	Obligo           *int32
 	BalanceDue       pgtype.Numeric
+	GrossMarkup      pgtype.Numeric
 	CreatedAt        pgtype.Timestamptz
 	UpdatedAt        pgtype.Timestamptz
 	ContactCount     int64
@@ -259,6 +269,7 @@ func (q *Queries) ListOffices(ctx context.Context, arg ListOfficesParams) ([]Lis
 			&i.Address,
 			&i.Obligo,
 			&i.BalanceDue,
+			&i.GrossMarkup,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.ContactCount,
@@ -283,9 +294,10 @@ SET
     phone            = $4,
     address          = $5,
     obligo           = $6,
+    gross_markup = $7,
     updated_at       = CURRENT_TIMESTAMP
-WHERE id = $7
-RETURNING id, name, organization_id, icount_client_id, phone, address, created_at, updated_at
+WHERE id = $8
+RETURNING id, name, organization_id, icount_client_id, phone, address, obligo, gross_markup, created_at, updated_at
 `
 
 type UpdateOfficeParams struct {
@@ -295,6 +307,7 @@ type UpdateOfficeParams struct {
 	Phone          *string
 	Address        *string
 	Obligo         *int32
+	GrossMarkup    pgtype.Numeric
 	ID             int64
 }
 
@@ -305,6 +318,8 @@ type UpdateOfficeRow struct {
 	IcountClientID *int32
 	Phone          *string
 	Address        *string
+	Obligo         *int32
+	GrossMarkup    pgtype.Numeric
 	CreatedAt      pgtype.Timestamptz
 	UpdatedAt      pgtype.Timestamptz
 }
@@ -317,6 +332,7 @@ func (q *Queries) UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (Upd
 		arg.Phone,
 		arg.Address,
 		arg.Obligo,
+		arg.GrossMarkup,
 		arg.ID,
 	)
 	var i UpdateOfficeRow
@@ -327,6 +343,8 @@ func (q *Queries) UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (Upd
 		&i.IcountClientID,
 		&i.Phone,
 		&i.Address,
+		&i.Obligo,
+		&i.GrossMarkup,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

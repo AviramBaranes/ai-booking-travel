@@ -32,7 +32,7 @@ func (q *Queries) CountOrganizations(ctx context.Context, arg CountOrganizations
 }
 
 const createOrganization = `-- name: CreateOrganization :one
-INSERT INTO organizations (name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at)
+INSERT INTO organizations (name, is_organic, icount_client_id, phone, address, obligo, gross_markup, created_at, updated_at)
 VALUES (
     $1,
     $2,
@@ -40,10 +40,11 @@ VALUES (
     $4,
     $5,
     $6,
+    $7,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
-RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at, balance_due, agency_markup_percentage
+RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at, balance_due, gross_markup
 `
 
 type CreateOrganizationParams struct {
@@ -53,6 +54,7 @@ type CreateOrganizationParams struct {
 	Phone          *string
 	Address        *string
 	Obligo         *int32
+	GrossMarkup    pgtype.Numeric
 }
 
 func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (Organization, error) {
@@ -63,6 +65,7 @@ func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganization
 		arg.Phone,
 		arg.Address,
 		arg.Obligo,
+		arg.GrossMarkup,
 	)
 	var i Organization
 	err := row.Scan(
@@ -76,7 +79,7 @@ func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganization
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.BalanceDue,
-		&i.AgencyMarkupPercentage,
+		&i.GrossMarkup,
 	)
 	return i, err
 }
@@ -186,6 +189,7 @@ SELECT
     o.address,
     o.obligo,
     o.balance_due,
+    o.gross_markup,
     o.created_at,
     o.updated_at,
     COUNT(DISTINCT of.id)::BIGINT          AS office_count,
@@ -220,6 +224,7 @@ type ListOrganizationsRow struct {
 	Address        *string
 	Obligo         *int32
 	BalanceDue     pgtype.Numeric
+	GrossMarkup    pgtype.Numeric
 	CreatedAt      pgtype.Timestamptz
 	UpdatedAt      pgtype.Timestamptz
 	OfficeCount    int64
@@ -250,6 +255,7 @@ func (q *Queries) ListOrganizations(ctx context.Context, arg ListOrganizationsPa
 			&i.Address,
 			&i.Obligo,
 			&i.BalanceDue,
+			&i.GrossMarkup,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.OfficeCount,
@@ -275,9 +281,10 @@ SET
     phone            = $4,
     address          = $5,
     obligo           = $6,
+    gross_markup = $7,
     updated_at       = CURRENT_TIMESTAMP
-WHERE id = $7
-RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at, balance_due, agency_markup_percentage
+WHERE id = $8
+RETURNING id, name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at, balance_due, gross_markup
 `
 
 type UpdateOrganizationParams struct {
@@ -287,6 +294,7 @@ type UpdateOrganizationParams struct {
 	Phone          *string
 	Address        *string
 	Obligo         *int32
+	GrossMarkup    pgtype.Numeric
 	ID             int64
 }
 
@@ -298,6 +306,7 @@ func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganization
 		arg.Phone,
 		arg.Address,
 		arg.Obligo,
+		arg.GrossMarkup,
 		arg.ID,
 	)
 	var i Organization
@@ -312,7 +321,7 @@ func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganization
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.BalanceDue,
-		&i.AgencyMarkupPercentage,
+		&i.GrossMarkup,
 	)
 	return i, err
 }

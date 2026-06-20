@@ -22,6 +22,7 @@ type ListOrganizationsRow struct {
 	Address        *string `json:"address" encore:"optional"`
 	Obligo         *int32  `json:"obligo" encore:"optional"`
 	BalanceDue     float64 `json:"balanceDue"`
+	GrossMarkup    float64 `json:"grossMarkup,omitempty"`
 	OfficeCount    int64   `json:"officeCount"`
 	ContactCount   int64   `json:"contactCount"`
 	AgentCount     int64   `json:"agentCount"`
@@ -56,6 +57,7 @@ func toListOrganizationsRow(o db.ListOrganizationsRow) ListOrganizationsRow {
 		Address:        o.Address,
 		Obligo:         o.Obligo,
 		BalanceDue:     dbadapters.NumericToFloat64(o.BalanceDue),
+		GrossMarkup:    dbadapters.NumericToFloat64(o.GrossMarkup),
 		OfficeCount:    o.OfficeCount,
 		ContactCount:   o.ContactCount,
 		AgentCount:     o.AgentCount,

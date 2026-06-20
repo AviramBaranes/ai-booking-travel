@@ -9,6 +9,7 @@ SELECT
     o.address,
     o.obligo,
     o.balance_due,
+    o.gross_markup,
     o.created_at,
     o.updated_at,
     COUNT(DISTINCT c.id)::BIGINT  AS contact_count,
@@ -33,17 +34,19 @@ WHERE
     AND (sqlc.narg(organization_id)::BIGINT IS NULL OR o.organization_id = sqlc.narg(organization_id)::BIGINT);
 
 -- name: CreateOffice :one
-INSERT INTO offices (name, organization_id, icount_client_id, phone, address, created_at, updated_at)
+INSERT INTO offices (name, organization_id, icount_client_id, phone, address, obligo, gross_markup, created_at, updated_at)
 VALUES (
     sqlc.arg(name),
     sqlc.arg(organization_id),
     sqlc.narg(icount_client_id),
     sqlc.narg(phone),
     sqlc.narg(address),
+    sqlc.narg(obligo),
+    sqlc.narg(gross_markup),
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
-RETURNING id, name, organization_id, icount_client_id, phone, address, created_at, updated_at;
+RETURNING id, name, organization_id, icount_client_id, phone, address, gross_markup, created_at, updated_at;
 
 -- name: UpdateOffice :one
 UPDATE offices
@@ -54,9 +57,10 @@ SET
     phone            = sqlc.narg(phone),
     address          = sqlc.narg(address),
     obligo           = sqlc.narg(obligo),
+    gross_markup = sqlc.narg(gross_markup),
     updated_at       = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg(id)
-RETURNING id, name, organization_id, icount_client_id, phone, address, created_at, updated_at;
+RETURNING id, name, organization_id, icount_client_id, phone, address, obligo, gross_markup, created_at, updated_at;
 
 -- name: ListInorganicOffices :many
 SELECT

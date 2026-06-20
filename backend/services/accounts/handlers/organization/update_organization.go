@@ -5,18 +5,20 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
 	"encore.dev/rlog"
 )
 
 type UpdateOrganizationParams struct {
-	Name           string  `json:"name" validate:"required,notblank"`
-	IsOrganic      bool    `json:"isOrganic"`
-	IcountClientID *int32  `json:"icountClientId" validate:"omitempty,gt=0" encore:"optional"`
-	Phone          *string `json:"phone" validate:"omitempty,notblank" encore:"optional"`
-	Address        *string `json:"address" validate:"omitempty,notblank" encore:"optional"`
-	Obligo         *int32  `json:"obligo" validate:"omitempty,gt=0" encore:"optional"`
+	Name           string   `json:"name" validate:"required,notblank"`
+	IsOrganic      bool     `json:"isOrganic"`
+	IcountClientID *int32   `json:"icountClientId" validate:"omitempty,gt=0" encore:"optional"`
+	Phone          *string  `json:"phone" validate:"omitempty,notblank" encore:"optional"`
+	Address        *string  `json:"address" validate:"omitempty,notblank" encore:"optional"`
+	Obligo         *int32   `json:"obligo" validate:"omitempty,gt=0" encore:"optional"`
+	GrossMarkup    *float64 `json:"grossMarkup" validate:"gte=0" encore:"optional"`
 }
 
 func (p UpdateOrganizationParams) Validate() error {
@@ -36,6 +38,7 @@ func (s *OrganizationService) UpdateOrganization(ctx context.Context, id int64, 
 		Phone:          params.Phone,
 		Address:        params.Address,
 		Obligo:         params.Obligo,
+		GrossMarkup:    dbadapters.NumericFromFloat64Ptr(params.GrossMarkup),
 	})
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {

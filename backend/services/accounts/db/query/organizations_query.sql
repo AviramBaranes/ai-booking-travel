@@ -8,6 +8,7 @@ SELECT
     o.address,
     o.obligo,
     o.balance_due,
+    o.gross_markup,
     o.created_at,
     o.updated_at,
     COUNT(DISTINCT of.id)::BIGINT          AS office_count,
@@ -33,7 +34,7 @@ WHERE
     AND (sqlc.narg(is_organic)::BOOLEAN IS NULL OR o.is_organic = sqlc.narg(is_organic)::BOOLEAN);
 
 -- name: CreateOrganization :one
-INSERT INTO organizations (name, is_organic, icount_client_id, phone, address, obligo, created_at, updated_at)
+INSERT INTO organizations (name, is_organic, icount_client_id, phone, address, obligo, gross_markup, created_at, updated_at)
 VALUES (
     sqlc.arg(name),
     sqlc.arg(is_organic),
@@ -41,6 +42,7 @@ VALUES (
     sqlc.narg(phone),
     sqlc.narg(address),
     sqlc.narg(obligo),
+    sqlc.narg(gross_markup),
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 )
@@ -55,6 +57,7 @@ SET
     phone            = sqlc.narg(phone),
     address          = sqlc.narg(address),
     obligo           = sqlc.narg(obligo),
+    gross_markup = sqlc.narg(gross_markup),
     updated_at       = CURRENT_TIMESTAMP
 WHERE id = sqlc.arg(id)
 RETURNING *;

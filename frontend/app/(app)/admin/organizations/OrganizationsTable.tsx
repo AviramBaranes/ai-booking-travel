@@ -37,6 +37,7 @@ const columns: ColumnDef<organization.ListOrganizationsRow>[] = [
   { key: "phone", label: "טלפון", type: "text" },
   { key: "address", label: "כתובת", type: "text" },
   { key: "obligo", label: "אובליגו", type: "number" },
+  { key: "grossMarkup", label: "אחוז ברוטו", type: "number"},
   { key: "balanceDue", label: "יתרת חוב", type: "number", editable: false },
   {
     key: "officeCount",
@@ -89,6 +90,7 @@ const createSchema = z.object({
   phone: z.string().optional().default(""),
   address: z.string().optional().default(""),
   obligo: obligoField,
+  grossMarkup: z.number().min(0, "ערך מינימלי 0").optional(),
 });
 
 const updateSchema = z.object({
@@ -98,6 +100,7 @@ const updateSchema = z.object({
   phone: z.string().optional().default(""),
   address: z.string().optional().default(""),
   obligo: obligoField,
+  grossMarkup: z.number().min(0, "ערך מינימלי 0").optional(),
 });
 
 interface Filters {
@@ -162,6 +165,7 @@ type OrgUpdateData = {
   address?: string;
   obligo?: number;
   icountClientId?: number;
+  grossMarkup?: number;
 };
 
 type OrgCreateData = OrgUpdateData;
@@ -196,6 +200,7 @@ export default function OrganizationsTable() {
           phone: data.phone || undefined,
           address: data.address || undefined,
           obligo: data.obligo || undefined,
+          grossMarkup: data.grossMarkup || undefined,
         })
       }
       updateFn={(id, data) =>
@@ -206,6 +211,7 @@ export default function OrganizationsTable() {
           address: data.address,
           obligo: data.obligo,
           icountClientId: data.icountClientId,
+          grossMarkup: data.grossMarkup,  
         })
       }
       createSchema={createSchema}

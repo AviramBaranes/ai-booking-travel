@@ -5,17 +5,20 @@ import (
 	"errors"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
 	"encore.dev/rlog"
 )
 
 type CreateOfficeParams struct {
-	Name           string  `json:"name" validate:"required,notblank"`
-	OrganizationID int64   `json:"organizationId" validate:"required,gte=1"`
-	IcountClientID *int32  `json:"icountClientId" validate:"omitempty,gte=0" encore:"optional"`
-	Phone          *string `json:"phone" encore:"optional"`
-	Address        *string `json:"address" encore:"optional"`
+	Name           string   `json:"name" validate:"required,notblank"`
+	OrganizationID int64    `json:"organizationId" validate:"required,gte=1"`
+	IcountClientID *int32   `json:"icountClientId" validate:"omitempty,gte=0" encore:"optional"`
+	Phone          *string  `json:"phone" encore:"optional"`
+	Address        *string  `json:"address" encore:"optional"`
+	Obligo         *int32   `json:"obligo" validate:"omitempty,gte=0" encore:"optional"`
+	GrossMarkup    *float64 `json:"grossMarkup" validate:"omitempty,gte=0" encore:"optional"`
 }
 
 func (p CreateOfficeParams) Validate() error {
@@ -48,6 +51,8 @@ func (s *OfficeService) CreateOffice(ctx context.Context, params CreateOfficePar
 		IcountClientID: params.IcountClientID,
 		Phone:          params.Phone,
 		Address:        params.Address,
+		Obligo:         params.Obligo,
+		GrossMarkup:    dbadapters.NumericFromFloat64Ptr(params.GrossMarkup),
 	})
 	if err != nil {
 		if db.IsUniqueViolation(err) {
@@ -64,6 +69,7 @@ func (s *OfficeService) CreateOffice(ctx context.Context, params CreateOfficePar
 		IcountClientID: row.IcountClientID,
 		Phone:          row.Phone,
 		Address:        row.Address,
+		GrossMarkup:    dbadapters.NumericToFloat64Ptr(row.GrossMarkup),
 	}
 	return &resp, nil
 }

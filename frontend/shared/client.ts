@@ -1680,6 +1680,8 @@ export namespace office {
         icountClientId?: number
         phone?: string
         address?: string
+        obligo?: number
+        grossMarkup?: number
     }
 
     export interface InorganicOffice {
@@ -1712,6 +1714,7 @@ export namespace office {
         address?: string
         balanceDue: number
         obligo?: number
+        grossMarkup?: number
         contactCount: number
         agentCount: number
     }
@@ -1723,6 +1726,7 @@ export namespace office {
         phone?: string
         address?: string
         obligo?: number
+        grossMarkup?: number
     }
 }
 
@@ -1734,6 +1738,7 @@ export namespace organization {
         phone?: string
         address?: string
         obligo?: number
+        grossMarkup?: number
     }
 
     export interface ListOrganicOrganizationResponse {
@@ -1760,6 +1765,7 @@ export namespace organization {
         address?: string
         obligo?: number
         balanceDue: number
+        grossMarkup: number
         officeCount: number
         contactCount: number
         agentCount: number
@@ -1787,6 +1793,7 @@ export namespace organization {
         phone?: string
         address?: string
         obligo?: number
+        grossMarkup?: number
     }
 }
 
@@ -2153,6 +2160,7 @@ export namespace reservation_pricing {
         profitOnCar: number
         totalPrice: number
         currencyCode: string
+        currencyRate: number
         createdAt: string
         pickupDate: string
     }

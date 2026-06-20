@@ -33,17 +33,18 @@ func NewOfficeService(query db.Querier) *OfficeService {
 }
 
 type OfficeResponse struct {
-	ID               int64   `json:"id"`
-	Name             string  `json:"name"`
-	OrganizationID   int64   `json:"organizationId"`
-	OrganizationName string  `json:"organizationName"`
-	IcountClientID   *int32  `json:"icountClientId" encore:"optional"`
-	Phone            *string `json:"phone" encore:"optional"`
-	Address          *string `json:"address" encore:"optional"`
-	BalanceDue       float64 `json:"balanceDue"`
-	Obligo           *int32  `json:"obligo" encore:"optional"`
-	ContactCount     int64   `json:"contactCount"`
-	AgentCount       int64   `json:"agentCount"`
+	ID               int64    `json:"id"`
+	Name             string   `json:"name"`
+	OrganizationID   int64    `json:"organizationId"`
+	OrganizationName string   `json:"organizationName"`
+	IcountClientID   *int32   `json:"icountClientId" encore:"optional"`
+	Phone            *string  `json:"phone" encore:"optional"`
+	Address          *string  `json:"address" encore:"optional"`
+	BalanceDue       float64  `json:"balanceDue"`
+	Obligo           *int32   `json:"obligo" encore:"optional"`
+	GrossMarkup      *float64 `json:"grossMarkup" encore:"optional"`
+	ContactCount     int64    `json:"contactCount"`
+	AgentCount       int64    `json:"agentCount"`
 }
 
 func toOfficeResponse(o db.ListOfficesRow) OfficeResponse {
@@ -57,6 +58,7 @@ func toOfficeResponse(o db.ListOfficesRow) OfficeResponse {
 		Address:          o.Address,
 		Obligo:           o.Obligo,
 		BalanceDue:       dbadapters.NumericToFloat64(o.BalanceDue),
+		GrossMarkup:      dbadapters.NumericToFloat64Ptr(o.GrossMarkup),
 		ContactCount:     o.ContactCount,
 		AgentCount:       o.AgentCount,
 	}

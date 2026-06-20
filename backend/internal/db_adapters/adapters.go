@@ -17,10 +17,28 @@ func NumericFromFloat64(f float64) pgtype.Numeric {
 	return n
 }
 
+// NumericFromFloat64Ptr converts a *float64 to a pgtype.Numeric, treating nil as NULL.
+func NumericFromFloat64Ptr(f *float64) pgtype.Numeric {
+	if f == nil {
+		return pgtype.Numeric{Valid: false}
+	}
+	return NumericFromFloat64(*f)
+}
+
 // NumericToFloat64 converts a pgtype.Numeric to a float64.
 func NumericToFloat64(n pgtype.Numeric) float64 {
 	f, _ := n.Float64Value()
 	return f.Float64
+}
+
+// NumericToFloat64Ptr converts a pgtype.Numeric to a *float64, treating NULL as nil.
+func NumericToFloat64Ptr(n pgtype.Numeric) *float64 {
+	if !n.Valid {
+		return nil
+	}
+	f, _ := n.Float64Value()
+	val := f.Float64
+	return &val
 }
 
 // UuidToString converts a pgtype.UUID to its string representation, returning an empty string if the UUID is null.

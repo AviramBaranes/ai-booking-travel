@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
 	"encore.dev/rlog"
@@ -16,6 +17,7 @@ type CreateOrganizationParams struct {
 	Phone          *string `json:"phone" validate:"omitempty,notblank" encore:"optional"`
 	Address        *string `json:"address" validate:"omitempty,notblank" encore:"optional"`
 	Obligo         *int32  `json:"obligo" validate:"omitempty,gt=0" encore:"optional"`
+	GrossMarkup    float64 `json:"grossMarkup" validate:"gte=0" encore:"optional"`
 }
 
 func (p CreateOrganizationParams) Validate() error {
@@ -34,6 +36,7 @@ func (s *OrganizationService) CreateOrganization(ctx context.Context, params Cre
 		Phone:          params.Phone,
 		Address:        params.Address,
 		Obligo:         params.Obligo,
+		GrossMarkup:    dbadapters.NumericFromFloat64(params.GrossMarkup),
 	})
 	if err != nil {
 		if db.IsUniqueViolation(err) {
