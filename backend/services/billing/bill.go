@@ -9,6 +9,8 @@ import (
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
 	contact "encore.app/services/accounts/handlers/contact"
+	"encore.app/services/accounts/handlers/office"
+	"encore.app/services/accounts/handlers/organization"
 	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation"
 	"encore.dev/beta/errs"
@@ -83,15 +85,12 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 		return nil, err
 	}
 
+	total := calculateTotalAmount(reservationSet, p.IDs)
 	if p.SkipInvoiceCreation {
-		err = reservation.ResolveReservations(ctx, reservation.ResolveReservationsParams{
-			IDs: p.IDs,
-		})
-
-		if err != nil {
-			rlog.Error("failed to resolve reservations", "error", err, "reservation_ids", p.IDs)
-			return nil, api_errors.ErrInternalError
+		if err := resolveReservations(ctx, p, total); err != nil {
+			return nil, err
 		}
+
 		return &BillResponse{
 			DocNum: "N/A",
 		}, nil
@@ -113,17 +112,8 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 		return nil, err
 	}
 
-	err = reservation.ResolveReservations(ctx, reservation.ResolveReservationsParams{
-		IDs: p.IDs,
-	})
-	if err != nil {
-		rlog.Error("failed to resolve reservations after successful billing", "error", err, "reservation_ids", p.IDs)
-		if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
-			Subject: "Failed to resolve reservations after billing",
-			Message: fmt.Sprintf("failed to resolve reservations after successful billing, reservation_ids: %v, error: %v", p.IDs, err),
-		}); publishErr != nil {
-			rlog.Error("failed to publish critical error email event", "reservation_ids", p.IDs, "error", publishErr)
-		}
+	if err := resolveReservations(ctx, p, total); err != nil {
+		return nil, err
 	}
 
 	return resp, nil
@@ -232,9 +222,68 @@ func parseBillingResponse(result *icount.ICountCreateDocResponse) (*BillResponse
 	}
 }
 
+// resolveReservations attempts to resolve the reservations associated with the billed invoice.
+// If resolving fails after a successful billing, it logs the error and sends a critical error email notification.
+// It also updates the balance due for the associated office or organization based on the billing entity specified in the BillParams.
+func resolveReservations(ctx context.Context, p BillParams, total float64) error {
+	err := reservation.ResolveReservations(ctx, reservation.ResolveReservationsParams{
+		IDs: p.IDs,
+	})
+	if err != nil {
+		if !p.SkipInvoiceCreation {
+			rlog.Error("failed to resolve reservations after successful billing", "error", err, "reservation_ids", p.IDs)
+			if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
+				Subject: "Failed to resolve reservations after billing",
+				Message: fmt.Sprintf("failed to resolve reservations after successful billing, reservation_ids: %v, error: %v", p.IDs, err),
+			}); publishErr != nil {
+				rlog.Error("failed to publish critical error email event", "reservation_ids", p.IDs, "error", publishErr)
+			}
+			return nil
+		}
+		if err != nil {
+			rlog.Error("failed to resolve reservations", "error", err, "reservation_ids", p.IDs)
+			return api_errors.ErrInternalError
+		}
+	}
+
+	if p.OfficeID != nil {
+		rlog.Info("updating office balance due after billing", "office_id", p.OfficeID, "amount", total)
+		if err := accounts.UpdateOfficeBalanceDue(ctx, office.UpdateOfficeBalanceDueParams{
+			ID:            *p.OfficeID,
+			BalanceChange: total * -1,
+		}); err != nil {
+			rlog.Error("failed to update office balance due after billing", "error", err, "office_id", p.OfficeID, "amount", total)
+			return api_errors.ErrInternalError
+		}
+		return nil
+	}
+
+	rlog.Info("updating organization balance due after billing", "organization_id", p.OrganizationID, "amount", total)
+	if err := accounts.UpdateOrganizationBalanceDue(ctx, organization.UpdateOrganizationBalanceDueParams{
+		ID:            *p.OrganizationID,
+		BalanceChange: total * -1,
+	}); err != nil {
+		rlog.Error("failed to update organization balance due after billing", "error", err, "organization_id", p.OrganizationID, "amount", total)
+		return api_errors.ErrInternalError
+	}
+
+	return nil
+}
+
 func derefInt64(ptr *int64) int64 {
 	if ptr == nil {
 		return 0
 	}
 	return *ptr
+}
+
+// calculateTotalAmount computes the total amount for the provided reservation set by summing the total price of each reservation multiplied by its currency rate. It returns the computed total as a float64.
+func calculateTotalAmount(reservationSet reservationSet, ids []int64) float64 {
+	var total float64
+	for _, id := range ids {
+		r := reservationSet[id]
+		total += (r.TotalPrice * r.CurrencyRate)
+	}
+
+	return total
 }

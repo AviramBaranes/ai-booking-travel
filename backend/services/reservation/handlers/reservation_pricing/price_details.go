@@ -49,6 +49,7 @@ type BillingReservation struct {
 	ProfitOnCar         float64 `json:"profitOnCar"`
 	TotalPrice          float64 `json:"totalPrice"`
 	CurrencyCode        string  `json:"currencyCode"`
+	CurrencyRate        float64 `json:"currencyRate"`
 	CreatedAt           string  `json:"createdAt"`
 	PickupDate          string  `json:"pickupDate"`
 }

@@ -109,6 +109,7 @@ func toCurrencyGroups(rows []db.GetPaymentPendingReservationsByBillingEntityRow)
 			ProfitOnCar:         pd.CarProfit,
 			TotalPrice:          pd.TotalPrice,
 			CurrencyCode:        r.CurrencyCode,
+			CurrencyRate:        dbadapters.NumericToFloat64(r.CurrencyRate),
 			CreatedAt:           dbadapters.TimestamptzToString(r.CreatedAt),
 			PickupDate:          dbadapters.DateToString(r.PickupDate),
 		})

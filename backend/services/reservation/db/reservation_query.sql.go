@@ -377,6 +377,7 @@ SELECT
     broker_erp_price,
     total_price,
     currency_code,
+    currency_rate,
     created_at,
     pickup_date
 FROM reservations
@@ -418,6 +419,7 @@ type GetPaymentPendingReservationsByBillingEntityRow struct {
 	BrokerErpPrice      pgtype.Numeric
 	TotalPrice          pgtype.Numeric
 	CurrencyCode        string
+	CurrencyRate        pgtype.Numeric
 	CreatedAt           pgtype.Timestamptz
 	PickupDate          pgtype.Date
 }
@@ -442,6 +444,7 @@ func (q *Queries) GetPaymentPendingReservationsByBillingEntity(ctx context.Conte
 			&i.BrokerErpPrice,
 			&i.TotalPrice,
 			&i.CurrencyCode,
+			&i.CurrencyRate,
 			&i.CreatedAt,
 			&i.PickupDate,
 		); err != nil {

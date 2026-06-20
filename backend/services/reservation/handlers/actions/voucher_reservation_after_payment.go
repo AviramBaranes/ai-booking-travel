@@ -60,6 +60,7 @@ func (s *ActionService) VoucherReservationAfterPayment(ctx context.Context, p *V
 			ProfitOnCar:         pd.CarProfit,
 			TotalPrice:          pd.TotalPrice,
 			CurrencyCode:        reservation.CurrencyCode,
+			CurrencyRate:        dbadapters.NumericToFloat64(reservation.CurrencyRate),
 			CreatedAt:           dbadapters.TimestamptzToString(reservation.CreatedAt),
 			PickupDate:          dbadapters.DateToString(reservation.PickupDate),
 		}}, nil

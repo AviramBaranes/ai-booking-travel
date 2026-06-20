@@ -172,6 +172,7 @@ SELECT
     broker_erp_price,
     total_price,
     currency_code,
+    currency_rate,
     created_at,
     pickup_date
 FROM reservations
