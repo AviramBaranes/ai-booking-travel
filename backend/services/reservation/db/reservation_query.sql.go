@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const applyVoucher = `-- name: ApplyVoucher :one
+const applyVoucher = `-- name: ApplyVoucher :exec
 UPDATE reservations
 SET 
     reservation_status = 'vouchered',
@@ -22,7 +22,6 @@ WHERE
 id = $1
 AND
 user_id = $2
-RETURNING id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num
 `
 
 type ApplyVoucherParams struct {
@@ -32,59 +31,14 @@ type ApplyVoucherParams struct {
 	CurrencyRate  pgtype.Numeric
 }
 
-func (q *Queries) ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) (Reservation, error) {
-	row := q.db.QueryRow(ctx, applyVoucher,
+func (q *Queries) ApplyVoucher(ctx context.Context, arg ApplyVoucherParams) error {
+	_, err := q.db.Exec(ctx, applyVoucher,
 		arg.ID,
 		arg.UserID,
 		arg.VoucherNumber,
 		arg.CurrencyRate,
 	)
-	var i Reservation
-	err := row.Scan(
-		&i.ID,
-		&i.BrokerReservationID,
-		&i.UserID,
-		&i.OfficeID,
-		&i.OrganizationID,
-		&i.IsOrganizationOrganic,
-		&i.AdminRefID,
-		&i.ReservationStatus,
-		&i.PaymentStatus,
-		&i.Broker,
-		&i.SupplierCode,
-		&i.CarDetails,
-		&i.PlanInclusions,
-		&i.PayAtPickup,
-		&i.CurrencyCode,
-		&i.CurrencyRate,
-		&i.VatPercentage,
-		&i.PurchasePrice,
-		&i.MarkupPercentage,
-		&i.BrokerErpPrice,
-		&i.BtErpPrice,
-		&i.DiscountPercentage,
-		&i.TotalPrice,
-		&i.FlightNumber,
-		&i.CountryCode,
-		&i.PickupDate,
-		&i.DropoffDate,
-		&i.PickupTime,
-		&i.DropoffTime,
-		&i.RentalDays,
-		&i.PickupLocationName,
-		&i.DropoffLocationName,
-		&i.DriverTitle,
-		&i.DriverFirstName,
-		&i.DriverLastName,
-		&i.DriverAge,
-		&i.VoucherNumber,
-		&i.VoucheredAt,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.PaymentConfirmationCode,
-		&i.PaymentDocNum,
-	)
-	return i, err
+	return err
 }
 
 const cancelReservation = `-- name: CancelReservation :exec
@@ -555,19 +509,6 @@ func (q *Queries) GetReservationByID(ctx context.Context, id int64) (Reservation
 		&i.PaymentDocNum,
 	)
 	return i, err
-}
-
-const getReservationCurrencyCode = `-- name: GetReservationCurrencyCode :one
-SELECT currency_code
-FROM reservations
-WHERE id = $1
-`
-
-func (q *Queries) GetReservationCurrencyCode(ctx context.Context, id int64) (string, error) {
-	row := q.db.QueryRow(ctx, getReservationCurrencyCode, id)
-	var currency_code string
-	err := row.Scan(&currency_code)
-	return currency_code, err
 }
 
 const insertReservation = `-- name: InsertReservation :one

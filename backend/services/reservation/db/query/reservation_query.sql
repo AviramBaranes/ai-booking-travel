@@ -108,7 +108,7 @@ WHERE user_id = sqlc.arg(user_id)
     AND (sqlc.narg(pickup_date)::DATE IS NULL OR pickup_date = sqlc.narg(pickup_date)::DATE)
     AND (sqlc.narg(booking_id)::VARCHAR IS NULL OR broker_reservation_id ILIKE '%' || sqlc.narg(booking_id)::VARCHAR || '%');
 
--- name: ApplyVoucher :one
+-- name: ApplyVoucher :exec
 UPDATE reservations
 SET 
     reservation_status = 'vouchered',
@@ -118,13 +118,7 @@ SET
 WHERE 
 id = $1
 AND
-user_id = $2
-RETURNING *;
-
--- name: GetReservationCurrencyCode :one
-SELECT currency_code
-FROM reservations
-WHERE id = $1;
+user_id = $2;
 
 -- name: CancelReservation :exec
 UPDATE reservations

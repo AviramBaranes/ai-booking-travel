@@ -79,7 +79,7 @@ func (s *Service) GetUserEmail(ctx context.Context, params user.GetUserEmailPara
 
 // encore:api private tag:agent
 func (s *Service) GetUserCredit(ctx context.Context) (*user.GetUserCreditResponse, error) {
-	authData := auth.Data().(AuthData)
+	authData := auth.Data().(*AuthData)
 	h := user.NewUserService(s.query)
 	return h.GetUserCredit(ctx, authData.UserID)
 }

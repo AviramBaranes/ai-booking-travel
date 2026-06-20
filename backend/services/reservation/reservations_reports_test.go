@@ -596,7 +596,7 @@ func applyVoucherForTest(t *testing.T, ctx context.Context, s *Service, reservat
 	if err != nil {
 		t.Fatalf("failed to get reservation: %v", err)
 	}
-	if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: reservationID, UserID: userID, VoucherNumber: &voucherNumber, CurrencyRate: reserv.CurrencyRate}); err != nil {
+	if err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: reservationID, UserID: userID, VoucherNumber: &voucherNumber, CurrencyRate: reserv.CurrencyRate}); err != nil {
 		t.Fatalf("failed to apply voucher: %v", err)
 	}
 }

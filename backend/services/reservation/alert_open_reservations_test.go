@@ -29,7 +29,7 @@ func TestAlertOpenReservations(t *testing.T) {
 		t.Fatalf("seed vouchered reservation: %v", err)
 	}
 	voucher := "TESTVOUCH-001"
-	if _, err := q.ApplyVoucher(ctx, db.ApplyVoucherParams{
+	if err := q.ApplyVoucher(ctx, db.ApplyVoucherParams{
 		ID:            res1.ID,
 		UserID:        p1.UserID,
 		VoucherNumber: &voucher,

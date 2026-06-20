@@ -41,7 +41,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			p.OrganizationID = &orgID
 			p.IsOrganizationOrganic = &isOrganic
 		})
-		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id1, UserID: agent1, VoucherNumber: &vn1, CurrencyRate: dbadapters.NumericFromFloat64(1)}); err != nil {
+		if err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id1, UserID: agent1, VoucherNumber: &vn1, CurrencyRate: dbadapters.NumericFromFloat64(1)}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
 
@@ -53,7 +53,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			p.OrganizationID = &orgID
 			p.IsOrganizationOrganic = &isOrganic
 		})
-		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id2, UserID: agent2, VoucherNumber: &vn2, CurrencyRate: dbadapters.NumericFromFloat64(1)}); err != nil {
+		if err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id2, UserID: agent2, VoucherNumber: &vn2, CurrencyRate: dbadapters.NumericFromFloat64(1)}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
 
@@ -84,7 +84,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			p.OrganizationID = &orgID
 			p.IsOrganizationOrganic = &isOrganic
 		})
-		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id1, UserID: agent1, VoucherNumber: &vn1, CurrencyRate: dbadapters.NumericFromFloat64(1)}); err != nil {
+		if err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id1, UserID: agent1, VoucherNumber: &vn1, CurrencyRate: dbadapters.NumericFromFloat64(1)}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
 
@@ -96,7 +96,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			p.OrganizationID = &orgID
 			p.IsOrganizationOrganic = &isOrganic
 		})
-		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id2, UserID: agent2, VoucherNumber: &vn2, CurrencyRate: dbadapters.NumericFromFloat64(1)}); err != nil {
+		if err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id2, UserID: agent2, VoucherNumber: &vn2, CurrencyRate: dbadapters.NumericFromFloat64(1)}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
 
@@ -108,7 +108,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			p.OrganizationID = &orgID
 			p.IsOrganizationOrganic = &isOrganic
 		})
-		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id3, UserID: agent2, VoucherNumber: &vn3, CurrencyRate: dbadapters.NumericFromFloat64(1)}); err != nil {
+		if err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id3, UserID: agent2, VoucherNumber: &vn3, CurrencyRate: dbadapters.NumericFromFloat64(1)}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
 
@@ -168,7 +168,7 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			p.OrganizationID = &orgID
 			p.IsOrganizationOrganic = &isOrganic
 		})
-		if _, err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id, UserID: agentID, VoucherNumber: &vn, CurrencyRate: dbadapters.NumericFromFloat64(1)}); err != nil {
+		if err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: id, UserID: agentID, VoucherNumber: &vn, CurrencyRate: dbadapters.NumericFromFloat64(1)}); err != nil {
 			t.Fatalf("failed to apply voucher: %v", err)
 		}
 
