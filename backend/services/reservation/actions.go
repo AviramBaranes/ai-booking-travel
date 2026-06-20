@@ -59,10 +59,10 @@ func (s *Service) AlertOpenReservations(ctx context.Context) error {
 
 	for _, r := range reservations {
 		// pickupDateTime, err := dbadapters.CombineDateTime(r.PickupDate, r.PickupTime)
-		if err != nil {
-			rlog.Error("failed to parse pickup date/time", "error", err, "reservationId", r.ID)
-			continue
-		}
+		// if err != nil {
+		// 	rlog.Error("failed to parse pickup date/time", "error", err, "reservationId", r.ID)
+		// 	continue
+		// }
 
 		// if time.Until(pickupDateTime) > cancellationWindowHours*time.Hour {
 		// More than 48h until pickup — send open order alert

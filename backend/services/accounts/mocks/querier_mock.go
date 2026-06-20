@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	db "encore.app/services/accounts/db"
+	pgtype "github.com/jackc/pgx/v5/pgtype"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -469,6 +470,21 @@ func (m *MockQuerier) GetUserCredit(ctx context.Context, id int64) (db.GetUserCr
 func (mr *MockQuerierMockRecorder) GetUserCredit(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserCredit", reflect.TypeOf((*MockQuerier)(nil).GetUserCredit), ctx, id)
+}
+
+// GetUserGrossMarkup mocks base method.
+func (m *MockQuerier) GetUserGrossMarkup(ctx context.Context, id int64) (pgtype.Numeric, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserGrossMarkup", ctx, id)
+	ret0, _ := ret[0].(pgtype.Numeric)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserGrossMarkup indicates an expected call of GetUserGrossMarkup.
+func (mr *MockQuerierMockRecorder) GetUserGrossMarkup(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserGrossMarkup", reflect.TypeOf((*MockQuerier)(nil).GetUserGrossMarkup), ctx, id)
 }
 
 // GetUserNamesByIDs mocks base method.

@@ -83,3 +83,10 @@ func (s *Service) GetUserCredit(ctx context.Context) (*user.GetUserCreditRespons
 	h := user.NewUserService(s.query)
 	return h.GetUserCredit(ctx, authData.UserID)
 }
+
+// encore:api private
+func (s *Service) GetUserMarkupGross(ctx context.Context) (*user.GetUserMarkupGrossResponse, error) {
+	authData := auth.Data().(*AuthData)
+	h := user.NewUserService(s.query)
+	return h.GetUserMarkupGross(ctx, authData.UserID)
+}

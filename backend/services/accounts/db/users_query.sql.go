@@ -440,6 +440,26 @@ func (q *Queries) GetUserCredit(ctx context.Context, id int64) (GetUserCreditRow
 	return i, err
 }
 
+const getUserGrossMarkup = `-- name: GetUserGrossMarkup :one
+SELECT 
+  COALESCE(
+    NULLIF(o.markup_gross, 0),
+    org.markup_gross,
+    0
+  )::NUMERIC(5, 2) AS markup_gross
+FROM users AS u
+LEFT JOIN offices AS o ON u.office_id = o.id
+LEFT JOIN organizations AS org ON org.id = o.organization_id
+WHERE u.id = $1
+`
+
+func (q *Queries) GetUserGrossMarkup(ctx context.Context, id int64) (pgtype.Numeric, error) {
+	row := q.db.QueryRow(ctx, getUserGrossMarkup, id)
+	var markup_gross pgtype.Numeric
+	err := row.Scan(&markup_gross)
+	return markup_gross, err
+}
+
 const getUserNamesByIDs = `-- name: GetUserNamesByIDs :many
 SELECT id, first_name, last_name
 FROM users

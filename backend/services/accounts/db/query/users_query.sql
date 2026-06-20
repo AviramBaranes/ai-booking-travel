@@ -148,3 +148,15 @@ FROM users AS u
 INNER JOIN offices ON u.office_id = offices.id
 INNER JOIN organizations AS org ON org.id = offices.organization_id
 WHERE u.id = $1;
+
+-- name: GetUserGrossMarkup :one
+SELECT 
+  COALESCE(
+    NULLIF(o.markup_gross, 0),
+    org.markup_gross,
+    0
+  )::NUMERIC(5, 2) AS markup_gross
+FROM users AS u
+LEFT JOIN offices AS o ON u.office_id = o.id
+LEFT JOIN organizations AS org ON org.id = o.organization_id
+WHERE u.id = $1;
