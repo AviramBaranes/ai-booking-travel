@@ -8,8 +8,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { applyVoucher } from "@/shared/api/reservations-api";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
-import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
+import {
+  getErrorKey,
+  useTranslatedError,
+} from "@/shared/hooks/useTranslatedError";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
+import { toast } from "sonner";
 
 const applyVoucherSchema = zod.object({
   voucherCode: zod.string().min(1, "requiredField"),
@@ -36,7 +40,7 @@ export function VoucherForm({
     resolver: zodResolver(applyVoucherSchema),
   });
 
-  const { mutate, isPending, error } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: (data: ApplyVoucherFormValues) =>
       applyVoucher(reservationId, data.voucherCode),
     onSuccess: () => {
@@ -46,9 +50,13 @@ export function VoucherForm({
         setSuccessMessage(null);
       }, 2000);
     },
+    onError: (err) => {
+      toast.error(tErrors(getErrorKey(err)), {
+        duration: 5000,
+        position: "top-center",
+      });
+    },
   });
-
-  const translatedError = useTranslatedError(error);
 
   function onSubmit(data: ApplyVoucherFormValues) {
     mutate(data);
@@ -60,6 +68,7 @@ export function VoucherForm({
         type="text"
         placeholder={t("enterVoucherCode")}
         className="mb-2 border-brand py-6"
+        isError={!!errors.voucherCode}
         {...register("voucherCode")}
       />
       {errors.voucherCode?.message && (
@@ -73,7 +82,6 @@ export function VoucherForm({
       >
         {t("apply")}
       </Button>
-      {!!translatedError && <ErrorDisplay>{translatedError}</ErrorDisplay>}
       {successMessage && <SuccessBadge>{successMessage}</SuccessBadge>}
     </form>
   );

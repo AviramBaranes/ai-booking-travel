@@ -7,11 +7,14 @@ export function useTranslatedError(error: Error | null) {
 
   return useMemo(() => {
     if (!error) return null;
-
-    if (isAppError(error)) {
-      return tErrors(error.code);
-    }
-
-    return tErrors("internal_error");
+    return tErrors(getErrorKey(error));
   }, [error]);
+}
+
+export function getErrorKey(error: Error): string {
+  if (isAppError(error)) {
+    return error.code;
+  }
+
+  return "internal_error";
 }

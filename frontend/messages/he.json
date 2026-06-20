@@ -1,5 +1,6 @@
 {
   "ApiErrors": {
+    "requiredField": "שדה חובה",
     "unknown": "אירעה שגיאה לא ידועה",
     "unknown_error": "אירעה שגיאה לא ידועה",
     "internal_error": "אירעה שגיאה בלתי צפויה",
@@ -32,7 +33,9 @@
     "organization_organic_requires_icount_client_id": "ארגון אורגני חייב להכיל מזהה לקוח iCount",
     "organization_non_organic_forbids_icount_client_id": "ארגון לא-אורגני אינו יכול להכיל מזהה לקוח iCount",
     "office_organic_forbids_icount_client_id": "תחנה אורגנית אינה יכולה להכיל מזהה לקוח iCount",
-    "office_non_organic_requires_icount_client_id": "תחנה לא-אורגנית חייבת להכיל מזהה לקוח iCount"
+    "office_non_organic_requires_icount_client_id": "תחנה לא-אורגנית חייבת להכיל מזהה לקוח iCount",
+    "not_enough_credits": "לרשת או למשרד אין מספיק קרדיט לביצוע ההזמנה. כדי לכרטס את ההזמנה יש להסדיר תשלום או לשלם באשראי.",
+    "no_obligo": "לא מוגדרת לך מסגרת אשראי במערכת, ולכן יש לשלם על ההזמנה באשראי."
   },
   "TranslationStatus": {
     "pending": "ממתין",
