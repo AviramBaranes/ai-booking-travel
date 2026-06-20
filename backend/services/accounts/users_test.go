@@ -379,3 +379,87 @@ func TestGetUserCredit(t *testing.T) {
 		}
 	})
 }
+
+func TestGetUserMarkupGross(t *testing.T) {
+	ctx := context.Background()
+	s := &Service{query: query}
+	strongPassword := "Str0ng!Pass99"
+
+	t.Run("it returns the office markup gross if set", func(t *testing.T) {
+		t.Parallel()
+		officeMarkup := float64(12)
+		icountID := int32(1)
+		org, err := s.CreateOrganization(ctx, organization.CreateOrganizationParams{Name: randomName(), IsOrganic: false})
+		if err != nil {
+			t.Fatalf("create org: %v", err)
+		}
+		off, err := s.CreateOffice(ctx, oh.CreateOfficeParams{Name: randomName(), OrganizationID: org.ID, IcountClientID: &icountID, GrossMarkup: &officeMarkup})
+		if err != nil {
+			t.Fatalf("create office: %v", err)
+		}
+		agent, err := s.CreateAgent(ctx, user.CreateAgentParams{
+			FirstName: "Test", LastName: "Agent",
+			Email: generateTestEmail(), Password: strongPassword,
+			PhoneNumber: randomIsraeliPhoneNumber(), OfficeID: off.ID,
+		})
+		if err != nil {
+			t.Fatalf("create agent: %v", err)
+		}
+
+		resp, err := user.NewUserService(s.query).GetUserMarkupGross(ctx, agent.ID)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.GrossMarkup != officeMarkup {
+			t.Fatalf("expected gross markup %.2f (office), got %.2f", officeMarkup, resp.GrossMarkup)
+		}
+	})
+
+	t.Run("it returns the organization markup gross if set and office not set", func(t *testing.T) {
+		t.Parallel()
+		orgMarkup := float64(8)
+		icountID := int32(2)
+		org, err := s.CreateOrganization(ctx, organization.CreateOrganizationParams{Name: randomName(), IsOrganic: false, GrossMarkup: orgMarkup})
+		if err != nil {
+			t.Fatalf("create org: %v", err)
+		}
+		// Office has no markup_gross (nil → 0 in DB)
+		off, err := s.CreateOffice(ctx, oh.CreateOfficeParams{Name: randomName(), OrganizationID: org.ID, IcountClientID: &icountID})
+		if err != nil {
+			t.Fatalf("create office: %v", err)
+		}
+		agent, err := s.CreateAgent(ctx, user.CreateAgentParams{
+			FirstName: "Test", LastName: "Agent",
+			Email: generateTestEmail(), Password: strongPassword,
+			PhoneNumber: randomIsraeliPhoneNumber(), OfficeID: off.ID,
+		})
+		if err != nil {
+			t.Fatalf("create agent: %v", err)
+		}
+
+		resp, err := user.NewUserService(s.query).GetUserMarkupGross(ctx, agent.ID)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.GrossMarkup != orgMarkup {
+			t.Fatalf("expected gross markup %.2f (org), got %.2f", orgMarkup, resp.GrossMarkup)
+		}
+	})
+
+	t.Run("it returns 0 for none agent user", func(t *testing.T) {
+		t.Parallel()
+		admin, cleanup, err := registerAdmin(ctx, generateTestEmail(), strongPassword)
+		if err != nil {
+			t.Fatalf("setup: %v", err)
+		}
+		t.Cleanup(cleanup)
+
+		resp, err := user.NewUserService(s.query).GetUserMarkupGross(ctx, admin.ID)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.GrossMarkup != 0 {
+			t.Fatalf("expected gross markup 0 for admin, got %.2f", resp.GrossMarkup)
+		}
+	})
+}

@@ -443,10 +443,10 @@ func (q *Queries) GetUserCredit(ctx context.Context, id int64) (GetUserCreditRow
 const getUserGrossMarkup = `-- name: GetUserGrossMarkup :one
 SELECT 
   COALESCE(
-    NULLIF(o.markup_gross, 0),
-    org.markup_gross,
+    NULLIF(o.gross_markup, 0),
+    org.gross_markup,
     0
-  )::NUMERIC(5, 2) AS markup_gross
+  )::NUMERIC(5, 2) AS gross_markup
 FROM users AS u
 LEFT JOIN offices AS o ON u.office_id = o.id
 LEFT JOIN organizations AS org ON org.id = o.organization_id
