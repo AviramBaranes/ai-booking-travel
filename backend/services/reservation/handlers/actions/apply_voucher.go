@@ -27,8 +27,8 @@ var (
 	ErrNotEnoughCredits = api_errors.NewErrorWithDetail(errs.PermissionDenied, "Not enough credits for this order", api_errors.ErrorDetails{
 		Code: api_errors.CodeNotEnoughCredits,
 	})
-	ErrNoOblogo = api_errors.NewErrorWithDetail(errs.PermissionDenied, "Organization/office has no oblogo", api_errors.ErrorDetails{
-		Code: api_errors.CodeNoOblogo,
+	ErrNoObligo = api_errors.NewErrorWithDetail(errs.PermissionDenied, "Organization/office has no oblogo", api_errors.ErrorDetails{
+		Code: api_errors.CodeNoObligo,
 	})
 )
 
@@ -234,7 +234,7 @@ func checkCredit(ctx context.Context, totalPrice float64, currencyRate float64) 
 	}
 
 	if balance.Obligo <= 0 {
-		return ErrNoOblogo
+		return ErrNoObligo
 	}
 
 	adjustedPrice := totalPrice * currencyRate

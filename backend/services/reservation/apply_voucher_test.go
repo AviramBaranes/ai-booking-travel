@@ -115,7 +115,7 @@ func TestApplyVoucher(t *testing.T) {
 					Obligo:     0,
 					BalanceDue: 0,
 				},
-				expectedErr: actions.ErrNoOblogo,
+				expectedErr: actions.ErrNoObligo,
 			},
 			{
 				name: "balance due exceeds obligo",

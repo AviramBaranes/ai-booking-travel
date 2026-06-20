@@ -5,5 +5,5 @@ const (
 	CodeOfficeInOrganicOrg     = "office_in_organic_org"
 	CodeOrgIsInorganic         = "org_is_inorganic"
 	CodeNotEnoughCredits       = "not_enough_credits"
-	CodeNoOblogo               = "no_oblogo"
+	CodeNoObligo               = "no_obligo"
 )
