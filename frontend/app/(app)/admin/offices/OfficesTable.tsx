@@ -35,6 +35,8 @@ const columns: ColumnDef<office.OfficeResponse>[] = [
   },
   { key: "phone", label: "טלפון", type: "text" },
   { key: "address", label: "כתובת", type: "text" },
+  { key: "obligo", label: "אובליגו", type: "number" },
+  { key: "balanceDue", label: "יתרת חוב", type: "number", editable: false },
   {
     key: "contactCount",
     label: "אנשי קשר",
@@ -59,6 +61,14 @@ const icountField = z.preprocess(
   z.number().optional(),
 );
 
+const obligoField = z.preprocess(
+  (v) =>
+    v === "" || v === undefined || (typeof v === "number" && isNaN(v))
+      ? undefined
+      : Number(v),
+  z.number().min(0, "ערך מינימלי 0").optional(),
+);
+
 const createSchema = z.object({
   name: z.string().min(1, "שדה חובה"),
   organizationId: z.preprocess(
@@ -68,6 +78,7 @@ const createSchema = z.object({
   icountClientId: icountField,
   phone: z.string().optional().default(""),
   address: z.string().optional().default(""),
+  obligo: obligoField,
 });
 
 const updateSchema = z.object({
@@ -79,6 +90,7 @@ const updateSchema = z.object({
   icountClientId: icountField,
   phone: z.string().optional().default(""),
   address: z.string().optional().default(""),
+  obligo: obligoField,
 });
 
 function buildRequest(

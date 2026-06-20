@@ -1710,6 +1710,8 @@ export namespace office {
         icountClientId?: number
         phone?: string
         address?: string
+        balanceDue: number
+        obligo?: number
         contactCount: number
         agentCount: number
     }
@@ -1720,6 +1722,7 @@ export namespace office {
         icountClientId?: number
         phone?: string
         address?: string
+        obligo?: number
     }
 }
 
@@ -1756,6 +1759,7 @@ export namespace organization {
         phone?: string
         address?: string
         obligo?: number
+        balanceDue: number
         officeCount: number
         contactCount: number
         agentCount: number
