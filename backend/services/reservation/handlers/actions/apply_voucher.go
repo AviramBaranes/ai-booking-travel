@@ -43,7 +43,7 @@ func (r ApplyVoucherParams) Validate() error {
 
 func (s *ActionService) ApplyVoucher(ctx context.Context, id int64, p ApplyVoucherParams) error {
 	authData := auth.Data().(*accounts.AuthData)
-	reservation, err := s.getReservation(ctx, id)
+	reservation, err := s.getReservation(ctx, id, authData.UserID)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (s *ActionService) ApplyVoucher(ctx context.Context, id int64, p ApplyVouch
 	return sendReservationVoucherToUser(ctx, reservation, userEmail.Email, p.Voucher)
 }
 
-func (s *ActionService) getReservation(ctx context.Context, id int64) (db.Reservation, error) {
+func (s *ActionService) getReservation(ctx context.Context, id, userID int64) (db.Reservation, error) {
 	reservation, err := s.query.GetReservationByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
@@ -88,6 +88,10 @@ func (s *ActionService) getReservation(ctx context.Context, id int64) (db.Reserv
 		rlog.Error("getting reservation by ID", "error", err, "id", id)
 		return db.Reservation{}, api_errors.ErrInternalError
 	}
+	if reservation.UserID != userID {
+		return db.Reservation{}, api_errors.ErrNotFound
+	}
+
 	return reservation, nil
 }
 
@@ -100,9 +104,6 @@ func (s *ActionService) applyVoucher(ctx context.Context, id, userID int64, vouc
 	})
 
 	if err != nil {
-		if errors.Is(err, db.ErrNoRows) {
-			return api_errors.ErrNotFound
-		}
 		rlog.Error("applying voucher", "error", err, "id", id, "voucher", voucher)
 		return api_errors.ErrInternalError
 	}

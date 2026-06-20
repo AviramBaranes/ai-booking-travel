@@ -8,6 +8,9 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	"encore.app/services/accounts"
+	"encore.app/services/accounts/handlers/office"
+	"encore.app/services/accounts/handlers/user"
 	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation/db"
 	"encore.dev/et"
@@ -187,7 +190,18 @@ func TestCancelReservation(t *testing.T) {
 			t.Fatalf("failed to create reservation: %v", err)
 		}
 
-		authCtx := authContext(userID)
+		et.MockEndpoint(accounts.GetUserCredit, func(ctx context.Context) (*user.GetUserCreditResponse, error) {
+			return &user.GetUserCreditResponse{
+				Obligo:     1000,
+				BalanceDue: 0,
+			}, nil
+		})
+
+		et.MockEndpoint(accounts.UpdateOfficeBalanceDue, func(ctx context.Context, p office.UpdateOfficeBalanceDueParams) error {
+			return nil
+		})
+
+		authCtx := authContextWithOrgCtx(userID, 1, 1, false)
 		if err := ApplyVoucher(authCtx, res.ID, ApplyVoucherParams{
 			Voucher: "VOUCHER_123",
 		}); err != nil {

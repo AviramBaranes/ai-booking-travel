@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/jwt"
 	authpkg "encore.app/services/accounts"
 	"encore.dev/beta/auth"
 )
@@ -16,6 +17,20 @@ func authContext(userID int64) context.Context {
 	return auth.WithContext(context.Background(), uid, &authpkg.AuthData{
 		UserID: userID,
 		Role:   authpkg.UserRoleAgent,
+	})
+}
+
+func authContextWithOrgCtx(userID, orgID, officeID int64, isOrganic bool) context.Context {
+	uid := auth.UID(strconv.FormatInt(userID, 10))
+	orgContext := &jwt.OrganizationContext{
+		OrganizationID: orgID,
+		OfficeID:       officeID,
+		IsOrganic:      isOrganic,
+	}
+	return auth.WithContext(context.Background(), uid, &authpkg.AuthData{
+		UserID:              userID,
+		Role:                authpkg.UserRoleAgent,
+		OrganizationContext: orgContext,
 	})
 }
 

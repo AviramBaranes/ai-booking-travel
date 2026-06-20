@@ -5,6 +5,10 @@ import (
 	"testing"
 
 	dbadapters "encore.app/internal/db_adapters"
+	"encore.app/services/accounts"
+	"encore.app/services/accounts/handlers/office"
+	"encore.app/services/accounts/handlers/user"
+	"encore.dev/et"
 )
 
 func TestGetOpenReservations(t *testing.T) {
@@ -83,7 +87,18 @@ func TestGetOpenReservations(t *testing.T) {
 
 		// Transition reservation states via the existing sqlc-generated queries.
 		voucherNumber := "VCH-12345"
-		authCtx := authContext(userID)
+		et.MockEndpoint(accounts.GetUserCredit, func(ctx context.Context) (*user.GetUserCreditResponse, error) {
+			return &user.GetUserCreditResponse{
+				Obligo:     1000,
+				BalanceDue: 0,
+			}, nil
+		})
+
+		et.MockEndpoint(accounts.UpdateOfficeBalanceDue, func(ctx context.Context, p office.UpdateOfficeBalanceDueParams) error {
+			return nil
+		})
+
+		authCtx := authContextWithOrgCtx(userID, 1, 1, false)
 		if err := ApplyVoucher(authCtx, vouchID, ApplyVoucherParams{
 			Voucher: voucherNumber,
 		}); err != nil {
