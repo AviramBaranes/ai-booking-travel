@@ -16,6 +16,7 @@ type UpdateOfficeParams struct {
 	IcountClientID *int32  `json:"icountClientId" validate:"omitempty,gte=0" encore:"optional"`
 	Phone          *string `json:"phone" encore:"optional"`
 	Address        *string `json:"address" encore:"optional"`
+	Obligo         *int32  `json:"obligo" validate:"omitempty,gte=0" encore:"optional"`
 }
 
 func (p UpdateOfficeParams) Validate() error {
@@ -63,6 +64,7 @@ func (s *OfficeService) UpdateOffice(ctx context.Context, id int64, params Updat
 		IcountClientID: params.IcountClientID,
 		Phone:          params.Phone,
 		Address:        params.Address,
+		Obligo:         params.Obligo,
 	})
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {

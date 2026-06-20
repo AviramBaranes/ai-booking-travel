@@ -185,6 +185,7 @@ SELECT
     o.phone,
     o.address,
     o.obligo,
+    o.balance_due,
     o.created_at,
     o.updated_at,
     COUNT(DISTINCT of.id)::BIGINT          AS office_count,
@@ -218,6 +219,7 @@ type ListOrganizationsRow struct {
 	Phone          *string
 	Address        *string
 	Obligo         *int32
+	BalanceDue     pgtype.Numeric
 	CreatedAt      pgtype.Timestamptz
 	UpdatedAt      pgtype.Timestamptz
 	OfficeCount    int64
@@ -247,6 +249,7 @@ func (q *Queries) ListOrganizations(ctx context.Context, arg ListOrganizationsPa
 			&i.Phone,
 			&i.Address,
 			&i.Obligo,
+			&i.BalanceDue,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.OfficeCount,

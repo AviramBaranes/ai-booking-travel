@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
 	"encore.dev/rlog"
@@ -20,6 +21,7 @@ type ListOrganizationsRow struct {
 	Phone          *string `json:"phone" encore:"optional"`
 	Address        *string `json:"address" encore:"optional"`
 	Obligo         *int32  `json:"obligo" encore:"optional"`
+	BalanceDue     float64 `json:"balanceDue"`
 	OfficeCount    int64   `json:"officeCount"`
 	ContactCount   int64   `json:"contactCount"`
 	AgentCount     int64   `json:"agentCount"`
@@ -53,6 +55,7 @@ func toListOrganizationsRow(o db.ListOrganizationsRow) ListOrganizationsRow {
 		Phone:          o.Phone,
 		Address:        o.Address,
 		Obligo:         o.Obligo,
+		BalanceDue:     dbadapters.NumericToFloat64(o.BalanceDue),
 		OfficeCount:    o.OfficeCount,
 		ContactCount:   o.ContactCount,
 		AgentCount:     o.AgentCount,

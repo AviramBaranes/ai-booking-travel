@@ -2,6 +2,7 @@ package office
 
 import (
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/accounts/db"
 	"encore.dev/beta/errs"
 )
@@ -39,6 +40,8 @@ type OfficeResponse struct {
 	IcountClientID   *int32  `json:"icountClientId" encore:"optional"`
 	Phone            *string `json:"phone" encore:"optional"`
 	Address          *string `json:"address" encore:"optional"`
+	BalanceDue       float64 `json:"balanceDue"`
+	Obligo           *int32  `json:"obligo" encore:"optional"`
 	ContactCount     int64   `json:"contactCount"`
 	AgentCount       int64   `json:"agentCount"`
 }
@@ -52,6 +55,8 @@ func toOfficeResponse(o db.ListOfficesRow) OfficeResponse {
 		IcountClientID:   o.IcountClientID,
 		Phone:            o.Phone,
 		Address:          o.Address,
+		Obligo:           o.Obligo,
+		BalanceDue:       dbadapters.NumericToFloat64(o.BalanceDue),
 		ContactCount:     o.ContactCount,
 		AgentCount:       o.AgentCount,
 	}

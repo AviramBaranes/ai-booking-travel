@@ -7,6 +7,7 @@ SELECT
     o.phone,
     o.address,
     o.obligo,
+    o.balance_due,
     o.created_at,
     o.updated_at,
     COUNT(DISTINCT of.id)::BIGINT          AS office_count,

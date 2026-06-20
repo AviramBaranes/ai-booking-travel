@@ -193,6 +193,8 @@ SELECT
     o.icount_client_id,
     o.phone,
     o.address,
+    o.obligo,
+    o.balance_due,
     o.created_at,
     o.updated_at,
     COUNT(DISTINCT c.id)::BIGINT  AS contact_count,
@@ -225,6 +227,8 @@ type ListOfficesRow struct {
 	IcountClientID   *int32
 	Phone            *string
 	Address          *string
+	Obligo           *int32
+	BalanceDue       pgtype.Numeric
 	CreatedAt        pgtype.Timestamptz
 	UpdatedAt        pgtype.Timestamptz
 	ContactCount     int64
@@ -253,6 +257,8 @@ func (q *Queries) ListOffices(ctx context.Context, arg ListOfficesParams) ([]Lis
 			&i.IcountClientID,
 			&i.Phone,
 			&i.Address,
+			&i.Obligo,
+			&i.BalanceDue,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.ContactCount,
@@ -276,8 +282,9 @@ SET
     icount_client_id = $3,
     phone            = $4,
     address          = $5,
+    obligo           = $6,
     updated_at       = CURRENT_TIMESTAMP
-WHERE id = $6
+WHERE id = $7
 RETURNING id, name, organization_id, icount_client_id, phone, address, created_at, updated_at
 `
 
@@ -287,6 +294,7 @@ type UpdateOfficeParams struct {
 	IcountClientID *int32
 	Phone          *string
 	Address        *string
+	Obligo         *int32
 	ID             int64
 }
 
@@ -308,6 +316,7 @@ func (q *Queries) UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (Upd
 		arg.IcountClientID,
 		arg.Phone,
 		arg.Address,
+		arg.Obligo,
 		arg.ID,
 	)
 	var i UpdateOfficeRow
