@@ -52,17 +52,18 @@ export function ReservationPaymentDialog({
 
   return (
     <>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            disabled={isPaymentDisabled}
-            loading={isPending}
-            variant="payment"
-            className="min-w-34"
-          >
-            {t("payNow")}
-          </Button>
-        </PopoverTrigger>
+      {/* <Popover> */}
+      {/* <PopoverTrigger asChild> */}
+      <Button
+        disabled={isPaymentDisabled}
+        loading={isPending}
+        variant="payment"
+        className="min-w-34"
+        onClick={() => mutate(true)}
+      >
+        {t("payNow")}
+      </Button>
+      {/* </PopoverTrigger>
         <PopoverContent align="start" className="w-80 p-3">
           <PopoverHeader className="mb-1">
             <PopoverTitle className="type-paragraph font-semibold">
@@ -86,7 +87,7 @@ export function ReservationPaymentDialog({
             </Button>
           </ButtonGroup>
         </PopoverContent>
-      </Popover>
+      </Popover> */}
       <ErrorDisplay>{tErr}</ErrorDisplay>
       <Dialog
         open={!!iframeUrl}
