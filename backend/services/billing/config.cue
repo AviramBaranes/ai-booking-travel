@@ -27,13 +27,15 @@ MonthlyReport: {
 	}
 }
 
-Icount:{
-	AccountID: 4,
-	PaypageID: 3,
+if #Meta.Environment.Type != "production" && #Meta.Environment.Name != "staging" {
+	Icount: {
+		AccountID: 4,
+		PaypageID: 3,
+	}
 }
 
 if #Meta.Environment.Type == "production" || #Meta.Environment.Name == "staging" {
-	Icount:{
+	Icount: {
 		AccountID: 4,
 		PaypageID: 14,
 	}
