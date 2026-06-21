@@ -11,6 +11,7 @@ import (
 	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/lang"
 	"encore.app/internal/pricing"
+	"encore.app/services/accounts"
 	auth "encore.app/services/accounts"
 	"encore.dev/rlog"
 )
@@ -46,6 +47,12 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 	markupProviders, err := s.getMarkupProviderMap(ctx, locs, daysCount, p.PickupDate, extractCarGroups(avResp.AvailableVehicles))
 	if err != nil {
 		rlog.Error("failed to get markup provider map", "error", err)
+		return artifacts, api_errors.ErrInternalError
+	}
+
+	grossMarkupResp, err := accounts.GetUserMarkupGross(ctx)
+	if err != nil {
+		rlog.Error("failed to get user gross markup", "error", err)
 		return artifacts, api_errors.ErrInternalError
 	}
 
@@ -138,13 +145,20 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 			erpWithMarkup := pricing.ApplyMarkup(p.BrokerErpPrice, markupPercentage)
 			discountedErp := pricing.CalculateDiscountedPrice(erpWithMarkup, couponDiscount)
 			discountedCarPrice := pricing.CalculateDiscountedPrice(carPriceWithMarkup, couponDiscount) // no discount on charged erp
+
+			// with gross:
+			carPriceWithMarkup = pricing.ApplyMarkup(carPriceWithMarkup, grossMarkupResp.GrossMarkup)
+			discountedCarPrice = pricing.ApplyMarkup(discountedCarPrice, grossMarkupResp.GrossMarkup)
+			discountedErp = pricing.ApplyMarkup(discountedErp, grossMarkupResp.GrossMarkup)
+			chargedErpPriceWithVat := pricing.ApplyMarkup(p.ChargedErpPriceWithVat, grossMarkupResp.GrossMarkup)
+
 			avPlan := Plan{
 				PlanID:        p.PlanID,
 				PlanName:      p.PlanName,
 				FullPrice:     pricing.RoundToInt(carPriceWithMarkup),
 				Discount:      pricing.RoundToInt(couponDiscount),
 				Price:         pricing.RoundToInt(discountedCarPrice),
-				ErpPrice:      pricing.RoundToInt(discountedErp + p.ChargedErpPriceWithVat), // no discount on charged erp
+				ErpPrice:      pricing.RoundToInt(discountedErp + chargedErpPriceWithVat), // no discount on charged erp
 				Info:          p.Info,
 				RateQualifier: p.RateQualifier,
 				SupplierName:  sp.Name,
