@@ -192,6 +192,7 @@ func createInvoice(ic *icount.Icount, reservation reservation.BillingReservation
 	currencyID, _ := icount.CurrencyIDsMap[reservation.CurrencyCode]
 	items := buildReservationInvoiceItems(reservation, currencyID)
 	invoiceRes, err := ic.CreateInvoice(icount.CreateInvoiceParams{
+		DocType:       "invoice",
 		ClientID:      clientID,
 		CurrencyID:    transaction.CurrencyID,
 		PaymentMethod: transaction.ToCCPayment(true),
