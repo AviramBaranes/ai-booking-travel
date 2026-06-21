@@ -164,6 +164,7 @@ type CarDetails struct {
 	SupplierName string `json:"supplierName"`
 	CarType      string `json:"carType"`
 	Acriss       string `json:"acriss"`
+	FullAcriss   string `json:"fullAcriss"`
 	HasAC        bool   `json:"hasAC"`
 	IsAutoGear   bool   `json:"isAutoGear"`
 	IsElectric   bool   `json:"isElectric"`

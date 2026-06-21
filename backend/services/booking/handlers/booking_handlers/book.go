@@ -194,7 +194,7 @@ func bookCarAtBroker(snapshot db.AvailablePlansSnapshot, plan availability.PlanP
 	res, err := b.Book(broker.BookingParams{
 		RateQualifier:   plan.RateQualifier,
 		SupplierCode:    plan.SupplierCode,
-		Acriss:          plan.CarDetails.Acriss,
+		Acriss:          plan.CarDetails.FullAcriss,
 		PlanID:          p.PlanID,
 		PickupLocation:  plan.PickupLocationCode,
 		DropoffLocation: plan.DropoffLocationCode,

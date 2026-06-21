@@ -248,12 +248,18 @@ func flexCarToBrokerCar(c flexCar, supplierName string) CarDetails {
 	doors, _ := strconv.Atoi(c.Doors)
 	bags, _ := strconv.Atoi(c.Luggage)
 
+	acriss := c.Code
+	if len(acriss) > 4 {
+		acriss = acriss[:4]
+	}
+
 	return CarDetails{
 		Model:        normalizeModelName(c.Name),
 		ImageURL:     c.URL,
 		SupplierName: supplierName,
 		CarType:      c.CarType,
-		Acriss:       c.Code,
+		Acriss:       acriss,
+		FullAcriss:   c.Code,
 		HasAC:        strings.HasPrefix(c.IsAirCon, "Y"),
 		IsAutoGear:   strings.HasPrefix(c.IsAutomatic, "Y"),
 		IsElectric:   isElectric(c.Code),

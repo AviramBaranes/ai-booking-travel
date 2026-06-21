@@ -1308,6 +1308,7 @@ export namespace broker {
         supplierName: string
         carType: string
         acriss: string
+        fullAcriss: string
         hasAC: boolean
         isAutoGear: boolean
         isElectric: boolean
