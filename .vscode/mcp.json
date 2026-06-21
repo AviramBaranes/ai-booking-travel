@@ -7,6 +7,9 @@
                 "--app=ai-booking-travel-bo22"
             ],
             "command": "encore"
+        },
+        "encore-cloud": {
+            "url": "https://api.encore.cloud/mcp"
         }
     }
 }
