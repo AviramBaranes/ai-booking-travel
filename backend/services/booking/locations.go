@@ -94,7 +94,7 @@ func (s *Service) ListLocationsWithoutAlias(ctx context.Context, p location.List
 	return ls.ListLocationsMissingAliases(ctx, p)
 }
 
-// encore:api public method=POST path=/locations/insert-alias tag:service_client
+// encore:api auth method=POST path=/locations/insert-alias tag:admin
 func (s *Service) InsertLocationAlias(ctx context.Context, p location.InsertLocationAliasesParams) error {
 	ls := location.NewLocationService(s.query)
 	return ls.InsertLocationAliases(ctx, p)

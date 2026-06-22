@@ -10,13 +10,11 @@ import (
 
 type InsertLocationAliasesParams struct {
 	LocationID int64   `json:"locationId"`
-	Lang       string  `json:"lang"`
 	Aliases    []Alias `json:"aliases"`
 }
 
 type Alias struct {
-	Value     string `json:"value"`
-	AliasType string `json:"type"`
+	Value string `json:"value"`
 }
 
 func (s *LocationService) InsertLocationAliases(ctx context.Context, p InsertLocationAliasesParams) error {
