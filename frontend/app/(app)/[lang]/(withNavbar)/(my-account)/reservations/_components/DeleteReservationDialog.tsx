@@ -27,7 +27,7 @@ export function DeleteReservationDialog({
 
   const {
     mutate: deleteReservation,
-    isPending,
+    isPending,isSuccess,
     error,
   } = useMutation({
     mutationFn: () => cancelReservation(reservationId),
@@ -71,6 +71,7 @@ export function DeleteReservationDialog({
         <Button
           onClick={() => deleteReservation()}
           variant="destructive"
+          disabled={isSuccess}
           loading={isPending}
         >
           {t("button")}
