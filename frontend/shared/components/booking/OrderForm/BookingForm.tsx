@@ -19,6 +19,11 @@ export function BookingForm() {
     formState: { errors },
   } = useFormContext<OrderFormValues>();
 
+  const normalizeName = (value: unknown) =>
+    String(value ?? "")
+      .replace(/[^a-zA-Z\s]/g, "")
+      .toUpperCase();
+
   return (
     <>
       <div className="flex-1">
@@ -60,11 +65,7 @@ export function BookingForm() {
           placeholder={t("firstName")}
           aria-invalid={!!errors.driverFirstName}
           {...register("driverFirstName", {
-            onChange: (e) => {
-              e.target.value = e.target.value
-                .replace(/[^a-zA-Z\s]/g, "")
-                .toUpperCase();
-            },
+            setValueAs: normalizeName,
           })}
         />
         <ErrorDisplay>{errors.driverFirstName?.message}</ErrorDisplay>
@@ -75,11 +76,7 @@ export function BookingForm() {
           placeholder={t("lastName")}
           aria-invalid={!!errors.driverLastName}
           {...register("driverLastName", {
-            onChange: (e) => {
-              e.target.value = e.target.value
-                .replace(/[^a-zA-Z\s]/g, "")
-                .toUpperCase();
-            },
+            setValueAs: normalizeName,
           })}
         />
         <ErrorDisplay>{errors.driverLastName?.message}</ErrorDisplay>

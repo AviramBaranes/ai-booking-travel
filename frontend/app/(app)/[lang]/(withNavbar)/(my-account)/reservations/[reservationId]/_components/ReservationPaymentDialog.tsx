@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/popover";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { useDirection } from "@/shared/hooks/useDirection";
+import { useReservation } from "../_hooks/useReservation";
 
 export function ReservationPaymentDialog({
   reservationId,
@@ -25,8 +26,8 @@ export function ReservationPaymentDialog({
   reservationId: number;
   setShow: (show: boolean) => void;
 }) {
-  const dir = useDirection();
   const t = useTranslations("MyAccount.reservation");
+  const { data: reservation } = useReservation(reservationId);
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [run, setRun] = useState(false);
   const [recycle, setRecycle] = useState(true);
@@ -54,15 +55,18 @@ export function ReservationPaymentDialog({
     <>
       {/* <Popover> */}
       {/* <PopoverTrigger asChild> */}
-      <Button
-        disabled={isPaymentDisabled}
-        loading={isPending}
-        variant="payment"
-        className="min-w-34"
-        onClick={() => mutate(true)}
-      >
-        {t("payNow")}
-      </Button>
+      {reservation.reservationStatus === "booked" &&
+        reservation.paymentStatus === "unpaid" && (
+          <Button
+            disabled={isPaymentDisabled}
+            loading={isPending}
+            variant="payment"
+            className="min-w-34"
+            onClick={() => mutate(true)}
+          >
+            {t("payNow")}
+          </Button>
+        )}
       {/* </PopoverTrigger>
         <PopoverContent align="start" className="w-80 p-3">
           <PopoverHeader className="mb-1">
