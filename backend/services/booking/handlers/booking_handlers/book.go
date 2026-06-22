@@ -46,7 +46,7 @@ func (s *BookingService) Book(ctx context.Context, p BookParams) (*BookResponse,
 		return nil, err
 	}
 
-	plan, err := findPlan(snapshot, p.RateQualifier, p.SupplierCode)
+	plan, err := findPlan(snapshot, p.RateQualifier, p.SupplierCode, p.PlanID)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func (s *BookingService) getSnapshot(ctx context.Context, snapshotID int64) (db.
 	return snapshot, nil
 }
 
-func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode string) (availability.PlanPriceDetails, error) {
+func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode, planID string) (availability.PlanPriceDetails, error) {
 	var plans []availability.PlanPriceDetails
 	if err := json.Unmarshal(snapshot.Plans, &plans); err != nil {
 		rlog.Error("failed to unmarshal plans JSON", "error", err)
@@ -173,7 +173,8 @@ func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode st
 	}
 
 	for _, plan := range plans {
-		if plan.RateQualifier == rateQualifier && plan.SupplierCode == supplierCode {
+		currPlanID := strconv.FormatInt(int64(plan.PlanID), 10)
+		if plan.RateQualifier == rateQualifier && plan.SupplierCode == supplierCode && currPlanID == planID {
 			return plan, nil
 		}
 	}
