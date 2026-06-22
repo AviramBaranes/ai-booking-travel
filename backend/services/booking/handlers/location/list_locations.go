@@ -30,15 +30,16 @@ type ListLocationsResponse struct {
 }
 
 type LocationRow struct {
-	ID               int64   `json:"id"`
-	Name             string  `json:"name"`
-	CountryCode      string  `json:"country_code"`
-	Country          string  `json:"country"`
-	City             *string `json:"city"`
-	Iata             *string `json:"iata"`
-	Enabled          bool    `json:"enabled"`
-	BrokerLocationID string  `json:"broker_location_id"`
-	IsAirport        bool    `json:"isAirport"`
+	ID                 int64   `json:"id"`
+	OriginalLocationID int64   `json:"original_location_id"`
+	Name               string  `json:"name"`
+	CountryCode        string  `json:"country_code"`
+	Country            string  `json:"country"`
+	City               *string `json:"city"`
+	Iata               *string `json:"iata"`
+	Enabled            bool    `json:"enabled"`
+	BrokerLocationID   string  `json:"broker_location_id"`
+	IsAirport          bool    `json:"isAirport"`
 }
 
 const LocationsLimit = 15
@@ -96,15 +97,16 @@ func (s *LocationService) ListLocations(ctx context.Context, p ListLocationsPara
 	locations := make([]LocationRow, len(rows))
 	for i, row := range rows {
 		locations[i] = LocationRow{
-			ID:               row.ID,
-			Name:             row.LocationName,
-			CountryCode:      row.LocationCountryCode,
-			Country:          row.LocationCountry,
-			City:             row.LocationCity,
-			Iata:             row.LocationIata,
-			Enabled:          row.Enabled,
-			BrokerLocationID: row.BrokerLocationID,
-			IsAirport:        row.IsAirport,
+			ID:                 row.ID,
+			OriginalLocationID: row.LocationID,
+			Name:               row.LocationName,
+			CountryCode:        row.LocationCountryCode,
+			Country:            row.LocationCountry,
+			City:               row.LocationCity,
+			Iata:               row.LocationIata,
+			Enabled:            row.Enabled,
+			BrokerLocationID:   row.BrokerLocationID,
+			IsAirport:          row.IsAirport,
 		}
 	}
 

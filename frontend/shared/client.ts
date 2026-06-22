@@ -1529,7 +1529,6 @@ export namespace db {
 export namespace location {
     export interface Alias {
         value: string
-        type: string
     }
 
     export interface BulkToggleLocationsParams {
@@ -1539,7 +1538,6 @@ export namespace location {
 
     export interface InsertLocationAliasesParams {
         locationId: number
-        lang: string
         aliases: Alias[]
     }
 
@@ -1588,6 +1586,7 @@ export namespace location {
 
     export interface LocationRow {
         id: number
+        "original_location_id": number
         name: string
         "country_code": string
         country: string

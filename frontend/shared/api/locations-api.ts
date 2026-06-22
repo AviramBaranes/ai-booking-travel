@@ -38,3 +38,9 @@ export function toggleIsAirport(id: number, is_airport: boolean) {
     client.booking.ToggleLocationIsAirport(id, { is_airport }),
   );
 }
+
+export function insertLocationAlias(data: location.InsertLocationAliasesParams) {
+  return withErrorHandler((client) =>
+    client.booking.InsertLocationAlias(data),
+  );
+}

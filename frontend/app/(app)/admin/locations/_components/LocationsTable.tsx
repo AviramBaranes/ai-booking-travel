@@ -21,6 +21,7 @@ import {
 
 const columns: ColumnDef<location.LocationRow>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },
+  {key:"original_location_id", label: "מזהה מיקום מקור", type: "number", editable: false},
   { key: "name", label: "שם", type: "text", editable: false },
   { key: "country_code", label: "קוד מדינה", type: "text", editable: false },
   { key: "country", label: "מדינה", type: "text", editable: false },
