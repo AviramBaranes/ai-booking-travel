@@ -113,12 +113,21 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 
 			if lang.FromContext(ctx, "en") == "he" {
 				if !translatedSuppliers[sp.Name] {
-					sp.PlanInclusions = s.translatePlanDetails(ctx, sp.PlanInclusions)
+					for i, inc := range sp.Inclusions {
+						sp.Inclusions[i].ProductInclusions = s.translatePlanDetails(ctx, inc.ProductInclusions)
+					}
 					translatedSuppliers[sp.Name] = true
 				}
 				p.Info = s.translatePlanDetails(ctx, p.Info)
 			}
 
+			var incs []string
+			for _, prd := range sp.Inclusions {
+				if prd.ProductName == p.PlanName {
+					incs = prd.ProductInclusions
+					break
+				}
+			}
 			pd := PlanPriceDetails{
 				PlanID:                 p.PlanID,
 				RateQualifier:          p.RateQualifier,
@@ -134,7 +143,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				SupplierErpPrice:       p.BrokerErpPrice,
 				ChargedERPPriceWithVat: p.ChargedErpPriceWithVat,
 				CarDetails:             v.CarDetails,
-				Inclusions:             sp.PlanInclusions,
+				Inclusions:             incs,
 				AvailableAddOns:        sp.AddOns,
 				Fees:                   v.PriceDetails.Fees,
 			}

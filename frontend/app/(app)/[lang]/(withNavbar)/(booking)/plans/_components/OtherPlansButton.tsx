@@ -99,8 +99,11 @@ export function OtherPlansButton({
                 (s) => s.name === plan.supplierName
               );
 
+              const planInclusions = supplier?.inclusions.find(
+                (inc) => inc.productName === plan.planName
+              )?.productInclusions ?? [];
               const items =
-                activeTab === "terms" ? plan.info : supplier?.inclusions ?? [];
+                activeTab === "terms" ? plan.info : planInclusions;
 
               return (
                 <div

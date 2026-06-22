@@ -1324,6 +1324,11 @@ export namespace broker {
         youngDriverFeeCurrency: string
     }
 
+    export interface Inclusions {
+        productName: string
+        productInclusions: string[]
+    }
+
     /**
      * LocationDetails holds the locationType of a rental location
      */
@@ -1377,7 +1382,7 @@ export namespace broker {
     export interface SupplierInfo {
         name: string
         addOns: AddOn[]
-        inclusions: string[]
+        inclusions: Inclusions[]
         termsAndConditions: TermsAndConditionsItem[]
         pickupDetails: StationInfo
         dropoffDetails: StationInfo

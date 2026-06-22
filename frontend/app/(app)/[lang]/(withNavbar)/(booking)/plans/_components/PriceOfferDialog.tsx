@@ -65,6 +65,7 @@ export function PriceOfferDialog({
       <DialogContent
         className="min-w-1/3 max-w-md py-6 px-10 flex flex-col gap-4 bg-background border-border-light/50 rounded-2xl shadow-modal"
         showCloseButton={false}
+        overlayClassName="bg-black/30 backdrop-blur-none!"
       >
         <div className="flex items-center justify-between p-3 pb-0">
           <DialogTitle className="flex items-center gap-4">

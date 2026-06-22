@@ -50,8 +50,14 @@ export function PlansPageContent() {
     const supplier = data.suppliersInfo.find(
       (s) => s.name === vehicle?.plans[selectedPlan].supplierName,
     );
+
+    const selectedPlanName = vehicle?.plans[selectedPlan].planName;
+    const selectedPlanInclusions = supplier?.inclusions.find(
+      (inc) => inc.productName === selectedPlanName,
+    )?.productInclusions;
+    
     return {
-      planInclusions: supplier?.inclusions ?? [],
+      planInclusions: selectedPlanInclusions ?? [],
       addOns: supplier?.addOns ?? [],
     };
   }, [data, selectedPlan, vehicle]);

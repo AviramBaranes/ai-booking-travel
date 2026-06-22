@@ -292,7 +292,7 @@ func (f *Flex) parseSupplierDetails(supplierDetails []flexSupplierDetails) []Sup
 		supplierInfo = append(supplierInfo, SupplierInfo{
 			Name:               s.Supplier,
 			AddOns:             parseAddons(s),
-			PlanInclusions:     f.parseInclusions(s),
+			Inclusions:         f.parseInclusions(s),
 			TermsAndConditions: f.parseTerms(s.Terms),
 			PickupDetails:      f.parseStation(s.PickUpDetails),
 			DropoffDetails:     f.parseStation(s.DropOffDetails),
@@ -301,22 +301,28 @@ func (f *Flex) parseSupplierDetails(supplierDetails []flexSupplierDetails) []Sup
 	return supplierInfo
 }
 
-func (f *Flex) parseInclusions(s flexSupplierDetails) []string {
-	var planInclusions []string
-	inclusionsMap := make(map[string]struct{})
+func (f *Flex) parseInclusions(s flexSupplierDetails) []Inclusions {
+	inclusions := make([]Inclusions, 0, len(s.Inclusions))
 	for _, inc := range s.Inclusions {
+		var productIncs []string
+		inclusionsMap := make(map[string]struct{})
 		raw := strings.Split(inc.Inclusion, ";")
 		for _, inclusion := range raw {
 			if trimmed := strings.TrimSpace(inclusion); trimmed != "" {
 				if _, exists := inclusionsMap[trimmed]; !exists {
-					planInclusions = append(planInclusions, trimmed)
+					productIncs = append(productIncs, trimmed)
 					inclusionsMap[trimmed] = struct{}{}
 				}
 			}
 		}
+
+		inclusions = append(inclusions, Inclusions{
+			ProductName:       inc.Product,
+			ProductInclusions: productIncs,
+		})
 	}
 
-	return planInclusions
+	return inclusions
 }
 
 func (f *Flex) parseTerms(terms []flexTerms) []TermsAndConditionsItem {

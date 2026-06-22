@@ -200,10 +200,15 @@ type AddOn struct {
 type SupplierInfo struct {
 	Name               string                   `json:"name"`
 	AddOns             []AddOn                  `json:"addOns"`
-	PlanInclusions     []string                 `json:"inclusions"`
+	Inclusions         []Inclusions             `json:"inclusions"`
 	TermsAndConditions []TermsAndConditionsItem `json:"termsAndConditions"`
 	PickupDetails      StationInfo              `json:"pickupDetails"`
 	DropoffDetails     StationInfo              `json:"dropoffDetails"`
+}
+
+type Inclusions struct {
+	ProductName       string   `json:"productName"`
+	ProductInclusions []string `json:"productInclusions"`
 }
 
 // StationInfo represents information about a rental station, including its location info, address, phone number, and opening hours.
