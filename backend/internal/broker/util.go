@@ -47,3 +47,12 @@ func normalizeModelName(model string) string {
 
 	return model
 }
+
+func isAcrissShowsAutoGear(acriss string) bool {
+	if len(acriss) < 4 {
+		rlog.Warn("invalid acriss code, cannot determine if the car is automatic", "acrissCode", acriss)
+		return false
+	}
+
+	return acriss[2] == 'A' || acriss[2] == 'B' || acriss[2] == 'D'
+}

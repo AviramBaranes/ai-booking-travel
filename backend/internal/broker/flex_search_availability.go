@@ -23,7 +23,7 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResp
 	}
 	form.Set("ProductID", productID)
 	form.Set("Language", "UK")
-	form.Set("AdditionalParameters", "Timeout=15000")
+	form.Set("AdditionalParameters", "Timeout=25000")
 	form.Set("PickupLocationID", p.PickupLocation)
 	form.Set("DropoffLocationID", p.DropoffLocation)
 	form.Set("PickupDate", formatDate(p.PickupDate))
@@ -261,7 +261,7 @@ func flexCarToBrokerCar(c flexCar, supplierName string) CarDetails {
 		Acriss:       acriss,
 		FullAcriss:   c.Code,
 		HasAC:        strings.HasPrefix(c.IsAirCon, "Y"),
-		IsAutoGear:   strings.HasPrefix(c.IsAutomatic, "Y"),
+		IsAutoGear:   strings.HasPrefix(c.IsAutomatic, "Y") || isAcrissShowsAutoGear(c.Code),
 		IsElectric:   isElectric(c.Code),
 		Seats:        seats,
 		Doors:        doors,

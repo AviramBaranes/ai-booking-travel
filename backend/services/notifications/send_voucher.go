@@ -19,6 +19,9 @@ type VoucherBroker string
 const (
 	VoucherBrokerFlex  VoucherBroker = "flex"
 	VoucherBrokerHertz VoucherBroker = "hertz"
+
+	TermsFileName = "תנאים-כלליים.pdf"
+	ERPFileName   = "תנאי-כיסוי-מלא.pdf"
 )
 
 type SendVoucherParams struct {
@@ -75,8 +78,8 @@ func brokerAttachments(b VoucherBroker) ([]email.Attachment, error) {
 			return nil, fmt.Errorf("reading flex-erp-letter.pdf: %w", err)
 		}
 		return []email.Attachment{
-			{Filename: "flex-terms.pdf", Reader: bytes.NewReader(terms)},
-			{Filename: "flex-erp-letter.pdf", Reader: bytes.NewReader(erp)},
+			{Filename: TermsFileName, Reader: bytes.NewReader(terms)},
+			{Filename: ERPFileName, Reader: bytes.NewReader(erp)},
 		}, nil
 	case VoucherBrokerHertz:
 		// No static attachments for Hertz yet.
