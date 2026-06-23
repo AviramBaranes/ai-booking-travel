@@ -29,9 +29,12 @@ export const RESERVATION_REPORT_FILTER_KEYS = [
 export type ReservationReportFilterKey =
   (typeof RESERVATION_REPORT_FILTER_KEYS)[number];
 
-export type ReservationReportFilters = Record<ReservationReportFilterKey, string>;
+export type ReservationReportFilters = Record<
+  ReservationReportFilterKey,
+  string
+>;
 
-const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
 export type ReportPageSize = (typeof PAGE_SIZE_OPTIONS)[number];
 
 interface ReservationsReportFilterBarProps {
@@ -39,7 +42,7 @@ interface ReservationsReportFilterBarProps {
   onSubmit: (filters: ReservationReportFilters) => void;
   pageSize: ReportPageSize;
   onPageSizeChange: (size: ReportPageSize) => void;
- showStatusFilter?: boolean;
+  showStatusFilter?: boolean;
 }
 
 export const emptyReservationReportFilters: ReservationReportFilters = {
@@ -60,7 +63,9 @@ export const emptyReservationReportFilters: ReservationReportFilters = {
 const inputClass =
   "h-9 border border-gray-300 rounded px-2 py-1.5 text-sm w-full bg-white";
 
-function selectedEntity(filters: ReservationReportFilters): ReportAccountEntity | null {
+function selectedEntity(
+  filters: ReservationReportFilters,
+): ReportAccountEntity | null {
   if (filters.organizationId) {
     return {
       kind: "organization",
@@ -208,7 +213,12 @@ export function ReservationsReportFilterBar({
         <Button type="submit" className="h-9 bg-navy px-5 hover:bg-dark-navy">
           הפעל סינון
         </Button>
-        <Button type="button" variant="outline" className="h-9" onClick={handleReset}>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-9"
+          onClick={handleReset}
+        >
           נקה
         </Button>
       </div>
