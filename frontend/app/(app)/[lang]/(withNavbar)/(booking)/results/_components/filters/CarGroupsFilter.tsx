@@ -1,30 +1,16 @@
 import Image from "next/image";
 import { CAR_GROUPS_FILTERS } from "../../../_components/_constants/carGroupsFilters";
 import clsx from "clsx";
+import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 
 interface CarGroupFiltersProps {
   title: string;
-  selectedGroups: Set<string>;
-  setSelectedGroups: React.Dispatch<React.SetStateAction<Set<string>>>;
 }
 
-export function CarGroupsFilter({
-  title,
-  selectedGroups,
-  setSelectedGroups,
-}: CarGroupFiltersProps) {
-  function toggleGroup(groupName: string) {
-    setSelectedGroups((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(groupName)) {
-        newSet.delete(groupName);
-      } else {
-        newSet.add(groupName);
-      }
-      return newSet;
-    });
-  }
-
+export function CarGroupsFilter({ title }: CarGroupFiltersProps) {
+  const selectedGroups = useBookingSessionStore((state) => state.carGroupFilters);
+  const toggleGroup = useBookingSessionStore((state) => state.toggleCarGroupFilter);
+  
   return (
     <div className="mt-12">
       <h5 className="type-h5 mb-8 text-navy">{title}</h5>

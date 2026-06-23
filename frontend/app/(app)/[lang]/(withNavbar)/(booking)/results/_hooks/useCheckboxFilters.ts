@@ -5,40 +5,15 @@ import {
   type FilterConfig,
 } from "../../_components/_constants/filtersList";
 import { getNestedValue, toFilterValue } from "./useFiltersOptions";
+import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 
 export type SelectedFilters = Map<FilterConfig["id"], Set<string>>;
 
 type CarFilter = (car: availability.AvailableVehicle) => boolean;
 
 export function useCheckboxFilters() {
-  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(
-    new Map(),
-  );
-
-  function toggleOption(filterId: FilterConfig["id"], value: string) {
-    setSelectedFilters((prev) => {
-      const next = new Map(prev);
-      const nextSet = new Set(next.get(filterId) ?? []);
-
-      if (nextSet.has(value)) {
-        nextSet.delete(value);
-      } else {
-        nextSet.add(value);
-      }
-
-      if (nextSet.size === 0) {
-        next.delete(filterId);
-      } else {
-        next.set(filterId, nextSet);
-      }
-
-      return next;
-    });
-  }
-
-  function clearAll() {
-    setSelectedFilters(new Map());
-  }
+  const selectedFilters = useBookingSessionStore((state) => state.checkboxFilters);
+  const clearAllCheckboxFilters = useBookingSessionStore((state) => state.clearAllCheckboxFilters);
 
   const filterFunctions = useMemo<CarFilter[]>(() => {
     const activeEntries = Array.from(selectedFilters.entries()).filter(
@@ -64,9 +39,7 @@ export function useCheckboxFilters() {
   const hasActiveFilters = selectedFilters.size > 0;
 
   return {
-    selectedFilters,
-    toggleOption,
-    clearAll,
+    clearAll: clearAllCheckboxFilters,
     filterFunctions,
     hasActiveFilters,
   };

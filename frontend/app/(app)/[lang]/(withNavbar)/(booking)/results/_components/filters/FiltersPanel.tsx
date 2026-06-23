@@ -2,28 +2,24 @@ import { availability } from "@/shared/client";
 import { useTranslations } from "next-intl";
 import { CheckboxFilter } from "./CheckboxFilter";
 import { useFilterOptions } from "../../_hooks/useFiltersOptions";
-import type { SelectedFilters } from "../../_hooks/useCheckboxFilters";
-import type { FilterConfig } from "../../../_components/_constants/filtersList";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
+import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 
 interface FiltersPanelProps {
   cars: availability.AvailableVehicle[];
-  selectedFilters: SelectedFilters;
-  onToggle: (filterId: FilterConfig["id"], value: string) => void;
-  onClear: () => void;
   hasActiveFilters: boolean;
 }
 
 export function FiltersPanel({
   cars,
-  selectedFilters,
-  onToggle,
-  onClear,
   hasActiveFilters,
 }: FiltersPanelProps) {
   const t = useTranslations();
   const filtersOptions = useFilterOptions(cars);
+  const selectedFilters = useBookingSessionStore((state) => state.checkboxFilters);
+  const onToggle = useBookingSessionStore((state) => state.setCheckboxFilters);
+  const onClear = useBookingSessionStore((state) => state.clearAllCheckboxFilters);
 
   const visibleFilters = filtersOptions.filter(
     (filter) => filter.options.length > 1,

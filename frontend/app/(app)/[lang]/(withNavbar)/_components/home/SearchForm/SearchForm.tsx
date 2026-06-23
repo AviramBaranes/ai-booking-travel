@@ -50,6 +50,8 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
   const router = useRouter();
   const { lang } = useParams();
   const clearSession = useBookingSessionStore((s) => s.clearSession);
+  const clearCarGroupFilters = useBookingSessionStore((s) => s.clearCarGroupFilters);
+  const clearAllCheckboxFilters = useBookingSessionStore((s) => s.clearAllCheckboxFilters);
   const t = useTranslations("SearchForm");
   const searchFormSchema = searchSchema(t);
   const [loading, setLoading] = useState(false);
@@ -94,6 +96,8 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
 
   function onSubmit(data: SearchFormValues) {
     clearSession();
+    clearCarGroupFilters();
+    clearAllCheckboxFilters();
     setLoading(true);
     const urlParams = new URLSearchParams();
 

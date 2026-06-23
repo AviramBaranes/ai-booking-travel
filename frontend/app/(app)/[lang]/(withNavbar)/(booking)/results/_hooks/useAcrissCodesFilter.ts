@@ -1,9 +1,11 @@
 import { availability } from "@/shared/client";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { CAR_GROUPS_FILTERS } from "../../_components/_constants/carGroupsFilters";
+import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 
 export function useAcrissCodesFilter() {
-  const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
+  const selectedGroups = useBookingSessionStore((state) => state.carGroupFilters);
+  const clearAcrissFilters = useBookingSessionStore((state) => state.clearCarGroupFilters);
 
   const acrissCodes = useMemo(() => {
     return new Set(
@@ -18,13 +20,9 @@ export function useAcrissCodesFilter() {
     return acrissCodes.size === 0 || acrissCodes.has(car.carDetails.acriss);
   };
 
-  const clearAcrissFilters = () => {
-    setSelectedGroups(new Set());
-  };
-
+  
   return {
     selectedGroups,
-    setSelectedGroups,
     clearAcrissFilters,
     acrissFilterFn: filterFunction,
   };

@@ -23,12 +23,7 @@ interface CarResultsProps {
 export function CarResults({ searchRequest }: CarResultsProps) {
   const t = useTranslations("booking.results");
   const { data } = useAvailableCars(searchRequest);
-  const {
-    acrissFilterFn,
-    selectedGroups,
-    setSelectedGroups,
-    clearAcrissFilters,
-  } = useAcrissCodesFilter();
+  const { acrissFilterFn, clearAcrissFilters } = useAcrissCodesFilter();
 
   const {
     isDevelopment,
@@ -40,8 +35,6 @@ export function CarResults({ searchRequest }: CarResultsProps) {
   } = useDevFilters();
 
   const {
-    selectedFilters,
-    toggleOption,
     clearAll,
     filterFunctions,
     hasActiveFilters,
@@ -62,11 +55,7 @@ export function CarResults({ searchRequest }: CarResultsProps) {
 
   return (
     <div>
-      <CarGroupsFilter
-        title={t("carGroupsFiltersTitle")}
-        selectedGroups={selectedGroups}
-        setSelectedGroups={setSelectedGroups}
-      />
+      <CarGroupsFilter title={t("carGroupsFiltersTitle")} />
 
       {isDevelopment && (
         <DevFilters
@@ -81,9 +70,6 @@ export function CarResults({ searchRequest }: CarResultsProps) {
         <div className="w-1/4">
           <FiltersPanel
             cars={cars}
-            selectedFilters={selectedFilters}
-            onToggle={toggleOption}
-            onClear={clearAll}
             hasActiveFilters={hasActiveFilters}
           />
         </div>
