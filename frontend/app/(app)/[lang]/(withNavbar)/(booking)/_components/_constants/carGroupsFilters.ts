@@ -462,6 +462,9 @@ export const CAR_GROUPS_FILTERS: CarGroupFilter[] = [
     name: "Passenger Van",
     image: "/assets/booking/car-groups/passenger-van.png",
     acrissCodes: [
+      // new:
+      "MVAR",
+      "MVAV",
       // ACRISS passenger van capacity-style codes.
       // V as 2nd letter = Passenger Van.
       "IVMR",
