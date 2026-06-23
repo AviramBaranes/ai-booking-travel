@@ -55,7 +55,7 @@ export function ReportTableShell<T extends { reservationId: number }>({
   const [page, setPage] = useState(1);
   const [isExporting, setIsExporting] = useState(false);
   const [selectedReservationId, setSelectedReservationId] = useState<number | null>(null);
-  const [pageSize, setPageSize] = useState<ReportPageSize>(25);
+  const [pageSize, setPageSize] = useState<ReportPageSize>(10);
   const [urlFilters, setUrlFilters] = useUrlFilters<ReservationReportFilterKey>(
     [...RESERVATION_REPORT_FILTER_KEYS],
   );
