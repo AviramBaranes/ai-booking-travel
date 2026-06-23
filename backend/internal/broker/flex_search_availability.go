@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -253,9 +254,12 @@ func flexCarToBrokerCar(c flexCar, supplierName string) CarDetails {
 		acriss = acriss[:4]
 	}
 
+	duplicateSlashRegex := regexp.MustCompile(`([^:])//+`)
+	imageURL := duplicateSlashRegex.ReplaceAllString(c.URL, "${1}/")
+
 	return CarDetails{
 		Model:        normalizeModelName(c.Name),
-		ImageURL:     c.URL,
+		ImageURL:     imageURL,
 		SupplierName: supplierName,
 		CarType:      c.CarType,
 		Acriss:       acriss,
