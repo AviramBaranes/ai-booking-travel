@@ -1152,6 +1152,11 @@ export namespace auth {
         lastName: string
         role: db.UserRole
         accessToken: string
+        /**
+         * UNIX timestamp
+         */
+        accessTokenExpiresAt: number
+
         refreshToken: string
         phoneNumber: string
         officeId: number

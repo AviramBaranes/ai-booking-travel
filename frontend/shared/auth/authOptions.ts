@@ -43,7 +43,7 @@ async function doRefreshAccessToken(token: JWT): Promise<JWT> {
       ...token,
       accessToken: refreshed.accessToken,
       refreshToken: refreshed.refreshToken,
-      customExp: Math.floor(Date.now() / 1000) + 60 * 14, // 14 minutes
+      customExp: refreshed.accessTokenExpiresAt,
     };
   } catch (error) {
     return { ...token, error: "RefreshTokenExpired" };
@@ -133,21 +133,26 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger }) {
       // Initial sign in
       if (trigger === "signIn" && user) {
-        const customExp = Math.floor(Date.now() / 1000) + 60 * 14; // 14 minutes
-        return { ...token, ...user, customExp };
+        return {
+          ...token,
+          ...user,
+          customExp: (user as unknown as auth.LoginResponse)
+            .accessTokenExpiresAt,
+        };
       }
+      const nowInSeconds = Math.floor(Date.now() / 1000);
+      // Safety buffer: If the token expires in less than 6 minutes, refresh it now
+      const refreshBuffer = 360;
 
-      // Return previous token if it hasn't expired yet
       if (
         typeof token.customExp === "number" &&
-        Date.now() / 1000 < token.customExp
+        nowInSeconds < token.customExp - refreshBuffer
       ) {
         return token;
       }
 
-      // Access token has expired, try to refresh
-      const res = await refreshAccessToken(token);
-      return res;
+      // Access token has expired or is nearing expiration, invoke refresh loop
+      return await refreshAccessToken(token);
     },
     async session({ session, token }) {
       session.user = token as unknown as auth.LoginResponse & {

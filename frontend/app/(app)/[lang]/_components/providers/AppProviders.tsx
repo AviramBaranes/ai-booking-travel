@@ -19,7 +19,7 @@ export function AppProviders({
   return (
     <QueryProvider showDevtools={showDevtools}>
       <NextIntlClientProvider locale={lang} messages={messages}>
-        <SessionProvider>
+        <SessionProvider refetchInterval={300}>
           <AuthTokenProvider>{children}</AuthTokenProvider>
         </SessionProvider>
       </NextIntlClientProvider>
