@@ -19,21 +19,22 @@ export function BackButton({
   const dir = useDirection();
 
   return (
-    <Button
-      variant="ghost"
-      className="flex gap-2 cursor-pointer mt-8"
-      onClick={() => {
-        if (href) {
-          router.push(href);
-        } else {
-          router.back();
-        }
-      }}
-    >
-      <span className="text-link text-sm">
-        {dir === "rtl" ? ARROW_RIGHT : ARROW_LEFT}
-      </span>
-      <span className="text-link text-sm">{t(translationKey)}</span>
-    </Button>
+      <Button
+        // variant="ghost"
+        variant="outline"
+        className="flex gap-2 cursor-pointer mt-8 font-bold my-4 p-6 border-navy rounded-md"
+        onClick={() => {
+          if (href) {
+            router.push(href);
+          } else {
+            router.back();
+          }
+        }}
+      >
+        <span className="text-navy text-sm">
+          {dir === "rtl" ? ARROW_RIGHT : ARROW_LEFT}
+        </span>
+        <span className="text-navy text-sm">{t(translationKey)}</span>
+      </Button>
   );
 }
