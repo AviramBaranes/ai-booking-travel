@@ -36,7 +36,7 @@ type OrganizationContext struct {
 }
 
 // SignAccessToken generates a signed JWT access token for the given user ID and role.
-func SignAccessToken(data AccessTokenData) (string, error) {
+func SignAccessToken(data AccessTokenData) (string, time.Time, error) {
 	now := time.Now()
 
 	claims := AccessTokenClaims{
@@ -57,10 +57,10 @@ func SignAccessToken(data AccessTokenData) (string, error) {
 
 	st, err := token.SignedString([]byte(secrets.SecretKey))
 	if err != nil {
-		return "", fmt.Errorf("sign access token for user_id=%d: %w", data.UserID, err)
+		return "", time.Time{}, fmt.Errorf("sign access token for user_id=%d: %w", data.UserID, err)
 	}
 
-	return st, nil
+	return st, claims.ExpiresAt.Time, nil
 }
 
 // SignRefreshToken generates a signed JWT refresh token for the given user ID.

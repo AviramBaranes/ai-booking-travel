@@ -45,7 +45,7 @@ func (s *AuthService) Login(ctx context.Context, p LoginParams) (*LoginResponse,
 		}
 	}
 
-	accessToken, refreshToken, err := s.generateTokens(ctx, jwt.AccessTokenData{
+	tokens, err := s.generateTokens(ctx, jwt.AccessTokenData{
 		UserID:              user.ID,
 		Role:                user.Role,
 		OrganizationContext: orgCtx,
@@ -56,14 +56,15 @@ func (s *AuthService) Login(ctx context.Context, p LoginParams) (*LoginResponse,
 	}
 
 	return &LoginResponse{
-		ID:           user.ID,
-		Role:         user.Role,
-		FirstName:    user.FirstName,
-		LastName:     user.LastName,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		Email:        user.Email,
-		PhoneNumber:  ptrToStr(user.PhoneNumber),
-		OfficeID:     user.OfficeID,
+		ID:                   user.ID,
+		Role:                 user.Role,
+		FirstName:            user.FirstName,
+		LastName:             user.LastName,
+		AccessToken:          tokens.AccessToken,
+		RefreshToken:         tokens.RefreshToken,
+		AccessTokenExpiresAt: tokens.AccessTokenExpiresAt,
+		Email:                user.Email,
+		PhoneNumber:          ptrToStr(user.PhoneNumber),
+		OfficeID:             user.OfficeID,
 	}, nil
 }

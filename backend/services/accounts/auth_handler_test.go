@@ -28,7 +28,7 @@ func TestAuthHandler(t *testing.T) {
 			},
 		}
 
-		token, err := jwt.SignAccessToken(data)
+		token, _, err := jwt.SignAccessToken(data)
 		if err != nil {
 			t.Fatalf("Failed to sign token: %v", err)
 		}
@@ -78,7 +78,7 @@ func TestAuthHandler(t *testing.T) {
 			},
 		}
 
-		token, err := jwt.SignAccessToken(data)
+		token, _, err := jwt.SignAccessToken(data)
 		if err != nil {
 			t.Fatalf("Failed to sign token: %v", err)
 		}

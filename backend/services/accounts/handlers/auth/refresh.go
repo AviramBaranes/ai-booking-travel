@@ -51,21 +51,26 @@ func (s *AuthService) RefreshTokens(ctx context.Context, p RefreshTokensParams) 
 	}
 
 	data := accessTokenDataFromUser(user, savedToken.AdminRefID)
-	accessToken, refreshToken, err := s.generateTokens(ctx, data)
+	tokens, err := s.generateTokens(ctx, data)
 	if err != nil {
 		rlog.Error("failed to generate new tokens", "user_id", user.ID, "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 
+	if err := s.query.UpdateLastLogin(ctx, user.ID); err != nil {
+		rlog.Error("failed to update last login", "user_id", user.ID, "error", err)
+	}
+
 	return &LoginResponse{
-		ID:           user.ID,
-		FirstName:    user.FirstName,
-		LastName:     user.LastName,
-		Role:         user.Role,
-		OfficeID:     user.OfficeID,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		Email:        user.Email,
-		PhoneNumber:  ptrToStr(user.PhoneNumber),
+		ID:                   user.ID,
+		FirstName:            user.FirstName,
+		LastName:             user.LastName,
+		Role:                 user.Role,
+		OfficeID:             user.OfficeID,
+		AccessToken:          tokens.AccessToken,
+		RefreshToken:         tokens.RefreshToken,
+		AccessTokenExpiresAt: tokens.AccessTokenExpiresAt,
+		Email:                user.Email,
+		PhoneNumber:          ptrToStr(user.PhoneNumber),
 	}, nil
 }

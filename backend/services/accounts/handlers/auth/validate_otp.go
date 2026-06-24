@@ -35,7 +35,7 @@ func (s *AuthService) ValidateCustomerLoginOTP(ctx context.Context, params Valid
 		return nil, ErrInvalidCredentials
 	}
 
-	accessToken, refreshToken, err := s.generateTokens(ctx, jwt.AccessTokenData{
+	tokens, err := s.generateTokens(ctx, jwt.AccessTokenData{
 		UserID: user.ID,
 		Role:   user.Role,
 	})
@@ -54,13 +54,14 @@ func (s *AuthService) ValidateCustomerLoginOTP(ctx context.Context, params Valid
 	}
 
 	return &LoginResponse{
-		ID:           user.ID,
-		Role:         user.Role,
-		FirstName:    user.FirstName,
-		LastName:     user.LastName,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		Email:        user.Email,
-		PhoneNumber:  ptrToStr(user.PhoneNumber),
+		ID:                   user.ID,
+		Role:                 user.Role,
+		FirstName:            user.FirstName,
+		LastName:             user.LastName,
+		AccessToken:          tokens.AccessToken,
+		RefreshToken:         tokens.RefreshToken,
+		AccessTokenExpiresAt: tokens.AccessTokenExpiresAt,
+		Email:                user.Email,
+		PhoneNumber:          ptrToStr(user.PhoneNumber),
 	}, nil
 }

@@ -26,7 +26,7 @@ func (s *AuthService) LoginBackToAdmin(ctx context.Context, adminRefID *int64) (
 		return nil, api_errors.ErrInternalError
 	}
 
-	accessToken, refreshToken, err := s.generateTokens(ctx, jwt.AccessTokenData{
+	tokens, err := s.generateTokens(ctx, jwt.AccessTokenData{
 		UserID: admin.ID,
 		Role:   admin.Role,
 	})
@@ -37,12 +37,13 @@ func (s *AuthService) LoginBackToAdmin(ctx context.Context, adminRefID *int64) (
 	}
 
 	return &LoginResponse{
-		ID:           admin.ID,
-		FirstName:    admin.FirstName,
-		LastName:     admin.LastName,
-		Role:         admin.Role,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		Email:        admin.Email,
+		ID:                   admin.ID,
+		FirstName:            admin.FirstName,
+		LastName:             admin.LastName,
+		Role:                 admin.Role,
+		AccessToken:          tokens.AccessToken,
+		RefreshToken:         tokens.RefreshToken,
+		AccessTokenExpiresAt: tokens.AccessTokenExpiresAt,
+		Email:                admin.Email,
 	}, nil
 }

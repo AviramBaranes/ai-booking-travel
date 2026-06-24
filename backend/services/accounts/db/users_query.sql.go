@@ -455,9 +455,9 @@ WHERE u.id = $1
 
 func (q *Queries) GetUserGrossMarkup(ctx context.Context, id int64) (pgtype.Numeric, error) {
 	row := q.db.QueryRow(ctx, getUserGrossMarkup, id)
-	var markup_gross pgtype.Numeric
-	err := row.Scan(&markup_gross)
-	return markup_gross, err
+	var gross_markup pgtype.Numeric
+	err := row.Scan(&gross_markup)
+	return gross_markup, err
 }
 
 const getUserNamesByIDs = `-- name: GetUserNamesByIDs :many
@@ -664,6 +664,17 @@ type SaveOTPParams struct {
 
 func (q *Queries) SaveOTP(ctx context.Context, arg SaveOTPParams) error {
 	_, err := q.db.Exec(ctx, saveOTP, arg.ID, arg.Otp)
+	return err
+}
+
+const updateLastLogin = `-- name: UpdateLastLogin :exec
+UPDATE users
+SET last_login = CURRENT_TIMESTAMP
+WHERE id = $1
+`
+
+func (q *Queries) UpdateLastLogin(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, updateLastLogin, id)
 	return err
 }
 

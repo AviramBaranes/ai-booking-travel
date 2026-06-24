@@ -33,7 +33,7 @@ func (s *AuthService) LoginAsAgent(ctx context.Context, params LoginAsAgentParam
 	}
 
 	data := accessTokenDataFromUser(agent, &adminID)
-	accessToken, refreshToken, err := s.generateTokens(ctx, data)
+	tokens, err := s.generateTokens(ctx, data)
 
 	if err != nil {
 		rlog.Error("failed to generate tokens in login as agent", "user_id", agent.ID, "error", err)
@@ -41,15 +41,16 @@ func (s *AuthService) LoginAsAgent(ctx context.Context, params LoginAsAgentParam
 	}
 
 	return &LoginResponse{
-		ID:           agent.ID,
-		Role:         agent.Role,
-		FirstName:    agent.FirstName,
-		LastName:     agent.LastName,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		Email:        agent.Email,
-		PhoneNumber:  ptrToStr(agent.PhoneNumber),
-		OfficeID:     agent.OfficeID,
+		ID:                   agent.ID,
+		Role:                 agent.Role,
+		FirstName:            agent.FirstName,
+		LastName:             agent.LastName,
+		AccessToken:          tokens.AccessToken,
+		RefreshToken:         tokens.RefreshToken,
+		AccessTokenExpiresAt: tokens.AccessTokenExpiresAt,
+		Email:                agent.Email,
+		PhoneNumber:          ptrToStr(agent.PhoneNumber),
+		OfficeID:             agent.OfficeID,
 	}, nil
 }
 

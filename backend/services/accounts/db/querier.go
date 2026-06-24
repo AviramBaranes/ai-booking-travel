@@ -54,6 +54,7 @@ type Querier interface {
 	SaveOTP(ctx context.Context, arg SaveOTPParams) error
 	SaveRefreshToken(ctx context.Context, arg SaveRefreshTokenParams) error
 	UpdateContact(ctx context.Context, arg UpdateContactParams) (Contact, error)
+	UpdateLastLogin(ctx context.Context, id int64) error
 	UpdateOffice(ctx context.Context, arg UpdateOfficeParams) (UpdateOfficeRow, error)
 	UpdateOfficeBalanceDue(ctx context.Context, arg UpdateOfficeBalanceDueParams) error
 	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (Organization, error)

@@ -160,3 +160,8 @@ FROM users AS u
 LEFT JOIN offices AS o ON u.office_id = o.id
 LEFT JOIN organizations AS org ON org.id = o.organization_id
 WHERE u.id = $1;
+
+-- name: UpdateLastLogin :exec
+UPDATE users
+SET last_login = CURRENT_TIMESTAMP
+WHERE id = $1;

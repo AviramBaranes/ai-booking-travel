@@ -680,6 +680,20 @@ func (mr *MockQuerierMockRecorder) UpdateContact(ctx, arg any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateContact", reflect.TypeOf((*MockQuerier)(nil).UpdateContact), ctx, arg)
 }
 
+// UpdateLastLogin mocks base method.
+func (m *MockQuerier) UpdateLastLogin(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateLastLogin", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateLastLogin indicates an expected call of UpdateLastLogin.
+func (mr *MockQuerierMockRecorder) UpdateLastLogin(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLastLogin", reflect.TypeOf((*MockQuerier)(nil).UpdateLastLogin), ctx, id)
+}
+
 // UpdateOffice mocks base method.
 func (m *MockQuerier) UpdateOffice(ctx context.Context, arg db.UpdateOfficeParams) (db.UpdateOfficeRow, error) {
 	m.ctrl.T.Helper()

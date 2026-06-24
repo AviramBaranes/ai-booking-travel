@@ -26,7 +26,7 @@ func TestSignAccessToken(t *testing.T) {
 		},
 	}
 
-	tokenString, err := SignAccessToken(user)
+	tokenString, _, err := SignAccessToken(user)
 	if err != nil {
 		t.Fatalf("SignAccessToken failed: %v", err)
 	}
@@ -74,7 +74,7 @@ func TestValidateAccessToken(t *testing.T) {
 		ID:   123,
 		Role: "admin",
 	}
-	validToken, _ := SignAccessToken(AccessTokenData{
+	validToken, _, _ := SignAccessToken(AccessTokenData{
 		UserID: user.ID,
 		Role:   user.Role,
 	})
