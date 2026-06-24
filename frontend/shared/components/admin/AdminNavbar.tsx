@@ -13,7 +13,11 @@ import { signOut } from "next-auth/react";
 import Image from "next/image";
 import { RevalidateButton } from "./RevalidateButton";
 
-export default function AdminNavbar({ hideLinks = false }: { hideLinks?: boolean }) {
+export default function AdminNavbar({
+  hideLinks = false,
+}: {
+  hideLinks?: boolean;
+}) {
   const pathname = usePathname();
 
   const isHeaderActive = (href: string) =>
@@ -29,47 +33,50 @@ export default function AdminNavbar({ hideLinks = false }: { hideLinks?: boolean
           className="pl-[38px] border-l-2 py-[16px] border-b border-gray-200"
           style={{ boxSizing: "border-box" }}
         >
-          <Image
-            src="/logo.png"
-            alt="AIBookingTravel"
-            width={160}
-            height={40}
-          />
+          <Link href="/he">
+            <Image
+              src="/logo.png"
+              alt="AIBookingTravel"
+              width={160}
+              height={40}
+            />
+          </Link>
         </div>
-        {!hideLinks && [
-          {
-            href: "/admin",
-            label: "ניהול מערכת",
-            icon: LayoutDashboard,
-          },
-          {
-            href: "/cms",
-            label: "ניהול תוכן",
-            icon: FileText,
-          },
-        ].map((item) => {
-          const active = isHeaderActive(item.href);
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              style={{ boxSizing: "border-box" }}
-              className={clsx(
-                "flex items-center gap-[8px] text-[16px] font-semibold transition-colors px-[8px] py-[4px] rounded-md no-underline m-0",
-                active
-                  ? "bg-blue-50 text-blue-700 border-l-[3px] border-blue-600"
-                  : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
-              )}
-            >
-              <Icon
-                size={18}
-                className={clsx(active ? "text-blue-600" : "text-gray-400")}
-              />
-              {item.label}
-            </Link>
-          );
-        })}
+        {!hideLinks &&
+          [
+            {
+              href: "/admin",
+              label: "ניהול מערכת",
+              icon: LayoutDashboard,
+            },
+            {
+              href: "/cms",
+              label: "ניהול תוכן",
+              icon: FileText,
+            },
+          ].map((item) => {
+            const active = isHeaderActive(item.href);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                style={{ boxSizing: "border-box" }}
+                className={clsx(
+                  "flex items-center gap-[8px] text-[16px] font-semibold transition-colors px-[8px] py-[4px] rounded-md no-underline m-0",
+                  active
+                    ? "bg-blue-50 text-blue-700 border-l-[3px] border-blue-600"
+                    : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
+                )}
+              >
+                <Icon
+                  size={18}
+                  className={clsx(active ? "text-blue-600" : "text-gray-400")}
+                />
+                {item.label}
+              </Link>
+            );
+          })}
       </div>
       <div className="flex items-center gap-[12px]">
         <RevalidateButton />

@@ -111,8 +111,10 @@
     }
   },
   "BackToAdmin": {
-    "message": "אתה מחובר כסוכן",
-    "button": "חזור למנהל"
+    "adminAsAgentMsg": "אתה מחובר כסוכן",
+    "adminMsg": "אתה מחובר כמנהל",
+    "adminAsAgentBtn": "חזור למנהל",
+    "adminBtn": "חזור לפאנל הניהול"
   },
   "ResultsPage": {
     "loadingTitle": "מחפשים לכם את הדיל הטוב ביותר",

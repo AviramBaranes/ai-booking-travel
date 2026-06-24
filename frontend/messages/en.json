@@ -112,8 +112,10 @@
     }
   },
   "BackToAdmin": {
-    "message": "You are logged in as an agent",
-    "button": "Back to Admin"
+    "adminAsAgentMsg": "You are logged in as an agent",
+    "adminMsg": "You are logged in as an admin",
+    "adminAsAgentBtn": "Back to Admin",
+    "adminBtn": "Back to Admin Panel"
   },
   "ResultsPage": {
     "loadingTitle": "Searching for the best deal for you",

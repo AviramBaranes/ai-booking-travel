@@ -1,4 +1,3 @@
-"use client";
 import { Loading } from "@/shared/components/Loading";
 import { ArrowLeftRight } from "lucide-react";
 import { signIn } from "next-auth/react";
