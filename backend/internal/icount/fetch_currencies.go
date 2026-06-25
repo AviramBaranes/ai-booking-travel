@@ -31,7 +31,7 @@ func (i *Icount) FetchCurrencies() (*GetCurrenciesRatesResponse, error) {
 	return &result, nil
 }
 
-const CHECK_CURRENCY_RATE_PERCENT = 1
+const CHECK_CURRENCY_RATE_PERCENT = 1.2
 
 func addCheckRateToCurrencies(r *GetCurrenciesRatesResponse) {
 	for currency, rate := range r.Rates {
