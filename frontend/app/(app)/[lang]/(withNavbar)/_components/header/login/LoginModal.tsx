@@ -1,6 +1,6 @@
 import { getSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { User, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,23 @@ type LoginMode = "agent" | "customer";
 type AgentStep = "credentials" | "success" | "passwordReset";
 type CustomerStep = "phone" | "otp";
 
+type LoginQuerySyncProps = {
+  open: () => void;
+  registerClearQueryFlag: (clearQueryFlag: () => void) => void;
+};
+
+// Keeps useSearchParams behind Suspense without hiding the login button.
+function LoginQuerySync({ open, registerClearQueryFlag }: LoginQuerySyncProps) {
+  const { clearQueryFlag } = useDialogOpenFromQuery({ open });
+
+  useEffect(() => {
+    registerClearQueryFlag(clearQueryFlag);
+    return () => registerClearQueryFlag(() => {});
+  }, [clearQueryFlag, registerClearQueryFlag]);
+
+  return null;
+}
+
 export function LoginModal() {
   const t = useTranslations("Login");
 
@@ -32,14 +49,20 @@ export function LoginModal() {
   const [customerStep, setCustomerStep] = useState<CustomerStep>("phone");
   const [customerPhone, setCustomerPhone] = useState("");
   const [passwordResetSuccess, setPasswordResetSuccess] = useState("");
+  // The query listener is isolated behind Suspense, so closing the modal calls
+  // the latest registered cleanup through this ref instead of reading URL state here.
+  const clearQueryFlagRef = useRef<() => void>(() => {});
 
   const openDialog = useCallback(() => {
     setOpen(true);
   }, []);
 
-  const { clearQueryFlag } = useDialogOpenFromQuery({
-    open: openDialog,
-  });
+  const registerClearQueryFlag = useCallback(
+    (clearQueryFlag: () => void) => {
+      clearQueryFlagRef.current = clearQueryFlag;
+    },
+    [],
+  );
 
   const handleOpenChange = (next: boolean) => {
     if (!next) {
@@ -47,7 +70,7 @@ export function LoginModal() {
       setAgentStep("credentials");
       setCustomerStep("phone");
       setCustomerPhone("");
-      clearQueryFlag();
+      clearQueryFlagRef.current();
     }
     setOpen(next);
   };
@@ -93,6 +116,13 @@ export function LoginModal() {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
+      <Suspense fallback={null}>
+        <LoginQuerySync
+          open={openDialog}
+          registerClearQueryFlag={registerClearQueryFlag}
+        />
+      </Suspense>
+
       <DialogTrigger asChild>
         <Button size="outline" variant="outline">
           <User className="size-5" />

@@ -24,4 +24,10 @@ const nextConfig: NextConfig = {
 };
 
 const withNextIntl = createNextIntlPlugin();
-export default withPayload(withNextIntl(nextConfig));
+const config = withPayload(withNextIntl(nextConfig));
+
+delete (
+  config.experimental as Record<string, unknown> | undefined
+)?.enableServerFastRefresh;
+
+export default config;
