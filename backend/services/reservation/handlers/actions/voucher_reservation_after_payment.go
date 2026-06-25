@@ -5,12 +5,15 @@ import (
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
+	"encore.app/internal/icount"
 	"encore.app/services/reservation/db"
 	"encore.app/services/reservation/handlers/reservation_pricing"
+	"encore.dev/rlog"
 )
 
 type VoucherReservationAfterPaymentParams struct {
 	ReservationID           int64
+	TransactionRate         float64
 	PaymentConfirmationCode string
 	PaymentDocNum           string
 	UserEmail               string
@@ -26,11 +29,11 @@ func (s *ActionService) VoucherReservationAfterPayment(ctx context.Context, p *V
 		PaymentConfirmationCode: &p.PaymentConfirmationCode,
 		PaymentDocNum:           &p.PaymentDocNum,
 	})
-
 	if err != nil {
 		return nil, api_errors.ErrInternalError
 	}
 
+	s.updateReservationCurrencyRate(ctx, reservation.ID, reservation.CurrencyCode)
 	sendReservationVoucherToUser(ctx, reservation, p.UserEmail, "N/A")
 
 	pd := reservation_pricing.GetReservationPriceDetails(db.GetPaymentPendingReservationsByBillingEntityRow{
@@ -65,4 +68,26 @@ func (s *ActionService) VoucherReservationAfterPayment(ctx context.Context, p *V
 			PickupDate:          dbadapters.DateToString(reservation.PickupDate),
 		}}, nil
 
+}
+
+func (s *ActionService) updateReservationCurrencyRate(ctx context.Context, reservationID int64, currencyCode string) {
+	ic := icount.NewIcount()
+	resp, err := ic.FetchCurrencies()
+	if err != nil {
+		rlog.Error("failed to fetch currencies from iCount", "error", err)
+	}
+
+	rate, ok := resp.Rates[currencyCode]
+	if !ok {
+		rlog.Error("currency not found in iCount response", "currency", currencyCode)
+		return
+	}
+
+	err = s.query.UpdateReservationCurrencyRate(ctx, db.UpdateReservationCurrencyRateParams{
+		ID:           reservationID,
+		CurrencyRate: dbadapters.NumericFromFloat64(rate),
+	})
+	if err != nil {
+		rlog.Error("failed to update reservation currency rate", "error", err, "reservationID", reservationID)
+	}
 }

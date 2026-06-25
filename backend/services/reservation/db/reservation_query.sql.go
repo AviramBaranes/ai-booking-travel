@@ -966,6 +966,25 @@ func (q *Queries) ResolveReservationsPayment(ctx context.Context, ids []int64) e
 	return err
 }
 
+const updateReservationCurrencyRate = `-- name: UpdateReservationCurrencyRate :exec
+UPDATE reservations
+SET
+    currency_rate = $2,
+    updated_at = CURRENT_TIMESTAMP
+WHERE
+    id = $1
+`
+
+type UpdateReservationCurrencyRateParams struct {
+	ID           int64
+	CurrencyRate pgtype.Numeric
+}
+
+func (q *Queries) UpdateReservationCurrencyRate(ctx context.Context, arg UpdateReservationCurrencyRateParams) error {
+	_, err := q.db.Exec(ctx, updateReservationCurrencyRate, arg.ID, arg.CurrencyRate)
+	return err
+}
+
 const voucherReservationAfterPayment = `-- name: VoucherReservationAfterPayment :one
 UPDATE reservations
 SET

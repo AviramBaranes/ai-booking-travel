@@ -26,6 +26,17 @@ func (i *Icount) FetchCurrencies() (*GetCurrenciesRatesResponse, error) {
 		return nil, fmt.Errorf("icount error: %s", result.Reason)
 	}
 
-	return &result, nil
+	addCheckRateToCurrencies(&result)
 
+	return &result, nil
+}
+
+const CHECK_CURRENCY_RATE_PERCENT = 1
+
+func addCheckRateToCurrencies(r *GetCurrenciesRatesResponse) {
+	for currency, rate := range r.Rates {
+		if rate > 0 {
+			r.Rates[currency] = rate * (1 + CHECK_CURRENCY_RATE_PERCENT/100.0)
+		}
+	}
 }

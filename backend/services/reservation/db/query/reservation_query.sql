@@ -323,6 +323,13 @@ AND
     payment_status = 'unpaid'
 RETURNING *;
 
+-- name: UpdateReservationCurrencyRate :exec
+UPDATE reservations
+SET
+    currency_rate = $2,
+    updated_at = CURRENT_TIMESTAMP
+WHERE
+    id = $1;
 
 -- name: GetBillingReservation :one
 SELECT

@@ -24,6 +24,7 @@ type Querier interface {
 	ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error)
 	ListReservationsReport(ctx context.Context, arg ListReservationsReportParams) ([]Reservation, error)
 	ResolveReservationsPayment(ctx context.Context, ids []int64) error
+	UpdateReservationCurrencyRate(ctx context.Context, arg UpdateReservationCurrencyRateParams) error
 	VoucherReservationAfterPayment(ctx context.Context, arg VoucherReservationAfterPaymentParams) (Reservation, error)
 }
 
