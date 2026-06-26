@@ -1474,6 +1474,8 @@ export interface BookingSetting {
   youngDriverContent: string;
   dropoffChargeTitle: string;
   dropoffChargeContent: string;
+  depositChargeTitle: string;
+  depositChargeContent: string;
   orderTermsLink: number | Page;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1684,6 +1686,8 @@ export interface BookingSettingsSelect<T extends boolean = true> {
   youngDriverContent?: T;
   dropoffChargeTitle?: T;
   dropoffChargeContent?: T;
+  depositChargeTitle?: T;
+  depositChargeContent?: T;
   orderTermsLink?: T;
   updatedAt?: T;
   createdAt?: T;

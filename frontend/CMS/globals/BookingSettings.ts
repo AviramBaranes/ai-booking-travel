@@ -87,6 +87,20 @@ export const BookingSettings: GlobalConfig = {
           localized: true,
           required: true,
         },
+        {
+          name: "depositChargeTitle",
+          label: "כותרת עמלת פיקדון",
+          type: "text",
+          localized: true,
+          required: true,
+        },
+        {
+          name: "depositChargeContent",
+          label: "תוכן עמלת פיקדון",
+          type: "textarea",
+          localized: true,
+          required: true,
+        }
       ],
     },
 

@@ -7,6 +7,7 @@ import { getTranslations } from "next-intl/server";
 import { formatPrice } from "@/shared/utils/formatPrice";
 import { PayAtPickupSection } from "@/app/(app)/[lang]/(withNavbar)/(my-account)/_components/PayAtPickupSection";
 import Image from "next/image";
+import { clsx } from "clsx";
 
 export async function ClientOfferSummary({
   offer,
@@ -55,7 +56,9 @@ export async function ClientOfferSummary({
           {t("summary.erpIncluded")}
         </div>
       )}
-      <div className="text-white bg-brand py-3 5 px-5 flex justify-between items-center rounded-xl">
+      <div className={clsx("text-white bg-brand py-3 5 px-5 flex justify-between items-center rounded-xl",{
+        "mt-6": !offer.isErpIncluded,
+      })}>
         <span className="type-paragraph">
           {t("priceOffer.summary.labels.totalToPay")}
         </span>

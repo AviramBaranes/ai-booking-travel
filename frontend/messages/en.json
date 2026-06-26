@@ -326,7 +326,8 @@
         "title": "Fees payable at the station",
         "dropCharge": "One-way rental return fee",
         "youngDriverFee": "Young driver fee",
-        "quantity": "X {quantity}"
+        "quantity": "X {quantity}",
+        "deposit": "Deposit"
       },
       "labels": {
         "rentalDays": "Rental days:",

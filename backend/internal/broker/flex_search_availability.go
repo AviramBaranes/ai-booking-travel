@@ -96,6 +96,10 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResp
 		carDetails := flexCarToBrokerCar(c, s.name)
 
 		ydFee, ydFeeCurrency := f.getYoungDriverFee(c.Information)
+		deposit, depositCurrency := f.getDeposit(c.Information)
+		if deposit == 0 {
+			rlog.Info("deposit found in CarAvailability response", "car_name", c.Name, "deposit", deposit, "currency", depositCurrency)
+		}
 
 		car := AvailableVehicle{
 			Broker:     BrokerFlex,
@@ -111,6 +115,8 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResp
 					DropChargeCurrency:     c.DropChargeCurrency,
 					YoungDriverFee:         ydFee,
 					YoungDriverFeeCurrency: ydFeeCurrency,
+					Deposit:                deposit,
+					DepositCurrency:        depositCurrency,
 				},
 			},
 		}
@@ -134,34 +140,53 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResp
 	}, nil
 }
 
-// getYoungDriverFee returns the young driver fee and its currency for the given driver age, rental length, and market.
-// Each info item may be a comma-separated list of key:value:unit segments, e.g.:
-//
-//	"YoungDriverFee:29:$"
-//	"MANDATORY CHARGES - OneWay:149.99:EUR,YoungDriverFee:150.00:EUR,moreinfo:10:$"
+// getYoungDriverFee returns the young driver fee and its currency.
+// The young driver fee is expected to appear as "YoungDriverFee:amount:currency", e.g.
+// "YoungDriverFee:29:$"
+// or inside a bundled charges item, e.g.
+// "MANDATORY CHARGES - OneWay:149.99:EUR,YoungDriverFee:150.00:EUR,moreinfo:10:$"
 func (f *Flex) getYoungDriverFee(info []string) (int, string) {
-	const prefix = "YoungDriverFee:"
+	return f.getAmountAndCurrency(info, "YoungDriverFee:")
+}
+
+// getDeposit returns the deposit amount and its currency.
+// The deposit is expected to appear as "Deposit:amount:currency", usually inside OTHER COSTS, e.g.
+// "OTHER COSTS - Excess:900:EUR,Deposit:600:EUR"
+func (f *Flex) getDeposit(info []string) (int, string) {
+	return f.getAmountAndCurrency(info, "Deposit:")
+}
+
+// getAmountAndCurrency extracts an amount and currency from comma-separated key:amount:currency segments.
+func (f *Flex) getAmountAndCurrency(info []string, prefix string) (int, string) {
 	for _, item := range info {
 		if !strings.Contains(item, prefix) {
 			continue
 		}
-		// Split by comma to handle items that bundle multiple key:value:unit segments.
+
 		for _, segment := range strings.Split(item, ",") {
 			segment = strings.TrimSpace(segment)
-			if !strings.HasPrefix(segment, prefix) {
+
+			idx := strings.Index(segment, prefix)
+			if idx == -1 {
 				continue
 			}
 
-			// segment is now "YoungDriverFee:fee_amount:fee_currency"
+			segment = segment[idx:]
+
 			parts := strings.SplitN(segment, ":", 3)
 			if len(parts) != 3 {
 				return 0, ""
 			}
-			fee, err := strconv.ParseFloat(parts[1], 64)
+
+			amountRaw := strings.TrimSpace(parts[1])
+			currency := strings.TrimSpace(parts[2])
+
+			amount, err := strconv.ParseFloat(amountRaw, 64)
 			if err != nil {
 				return 0, ""
 			}
-			return int(fee), parts[2]
+
+			return int(amount), currency
 		}
 	}
 

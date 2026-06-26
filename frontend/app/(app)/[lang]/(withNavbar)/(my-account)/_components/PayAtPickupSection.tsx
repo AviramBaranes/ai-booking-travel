@@ -22,6 +22,7 @@ export function PayAtPickupSection({
   if (
     fees.dropCharge === 0 &&
     fees.youngDriverFee === 0 &&
+    fees.deposit === 0 &&
     (!selectedAddons || selectedAddons.length === 0)
   ) {
     return null;
@@ -40,6 +41,12 @@ export function PayAtPickupSection({
         <SummaryRow
           label={t("payAtPickup.youngDriverFee")}
           value={formatPrice(fees.youngDriverFee, fees.youngDriverFeeCurrency)}
+        />
+      )}
+      {fees.deposit > 0 && (
+        <SummaryRow
+          label={t("payAtPickup.deposit")}
+          value={formatPrice(fees.deposit, fees.depositCurrency)}
         />
       )}
 

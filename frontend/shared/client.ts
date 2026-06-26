@@ -1244,6 +1244,8 @@ export namespace broker {
         dropChargeCurrency: string
         youngDriverFee: number
         youngDriverFeeCurrency: string
+        deposit: number
+        depositCurrency: string
     }
 
     export interface Inclusions {
