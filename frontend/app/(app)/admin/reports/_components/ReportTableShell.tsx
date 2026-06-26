@@ -225,7 +225,7 @@ export function ReportTableShell<T extends { reservationId: number }>({
                     <th
                       key={column.key}
                       className={cn(
-                        "whitespace-nowrap px-3 py-3 align-middle",
+                        "whitespace-nowrap px-1 py-3 align-middle",
                         column.className,
                         column.headerClassName,
                         "font-bold",

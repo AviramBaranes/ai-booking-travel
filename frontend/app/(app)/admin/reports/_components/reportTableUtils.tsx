@@ -198,7 +198,7 @@ export function makeBaseColumns<
     {
       key: "countryCode",
       label: "מדינה",
-      className: "min-w-24 text-center font-semibold text-gray-600",
+      className: "w-12 text-center font-semibold text-gray-600",
       render: (row) => row.countryCode || "-",
     },
     {
@@ -216,7 +216,7 @@ export function makeBaseColumns<
     {
       key: "rentalDays",
       label: "ימים",
-      className: "min-w-20 text-center font-semibold",
+      className: "w-10 text-center font-semibold",
       render: (row) => row.rentalDays,
     },
     {
@@ -301,7 +301,7 @@ export function makeBaseColumns<
     {
       key: "createdAt",
       label: "נוצר בתאריך",
-      className: "min-w-44 text-gray-600",
+      className: "w-36 text-gray-600",
       render: (row) => formatDateTime(row.createdAt),
     },
   ];
