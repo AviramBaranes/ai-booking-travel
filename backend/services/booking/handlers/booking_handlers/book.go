@@ -141,7 +141,7 @@ func (s *BookingService) buildCreateReservationParams(
 		PickupLocationName:    pickupLocName,
 		DropoffLocationName:   dropoffLocName,
 		FlightNumber:          p.FlightNumber,
-		PayAtPickup:           getPayAtPickup(p, plan),
+		PayAtPickup:           GetPayAtPickup(p.SelectedAddOns, plan),
 	}
 }
 
@@ -251,13 +251,13 @@ func (s *BookingService) getLocationsNames(ctx context.Context, pickupBrokerLoca
 	return pickupLoc.Name, dropoffLoc.Name, nil
 }
 
-func getPayAtPickup(p BookParams, plan availability.PlanPriceDetails) reservation.PayAtPickup {
+func GetPayAtPickup(selectedAddOnsReq []broker.SelectAddOn, plan availability.PlanPriceDetails) reservation.PayAtPickup {
 	pap := reservation.PayAtPickup{
 		Fees: plan.Fees,
 	}
 
-	selectedAddOns := make([]reservation.SelectedAddon, 0, len(p.SelectedAddOns))
-	for _, selected := range p.SelectedAddOns {
+	selectedAddOns := make([]reservation.SelectedAddon, 0, len(selectedAddOnsReq))
+	for _, selected := range selectedAddOnsReq {
 		var addon broker.AddOn
 		for _, planAddOn := range plan.AvailableAddOns {
 			if planAddOn.ID == selected.ID {

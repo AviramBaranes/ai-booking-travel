@@ -13,19 +13,20 @@ import (
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
 	"encore.app/services/booking/handlers/availability"
-	"encore.app/services/reservation"
+	"encore.app/services/booking/handlers/booking_handlers"
 	"encore.dev/rlog"
 )
 
 // CreatePriceOfferParams defines the parameters required to create a price offer.
 type CreatePriceOfferParams struct {
-	SnapshotID          int64  `json:"snapshotId" validate:"required"`
-	RateQualifier       string `json:"rateQualifier" validate:"required"`
-	SupplierCode        string `json:"supplierCode" validate:"required"`
-	IncludeERP          bool   `json:"includeERP"`
-	Name                string `json:"name" validate:"required,notblank"`
-	OfferedCurrencyCode string `json:"offeredCurrencyCode" validate:"required,len=3,uppercase_only"`
-	OfferedPrice        int32  `json:"offeredPrice" validate:"required,gt=0"`
+	SnapshotID          int64                `json:"snapshotId" validate:"required"`
+	RateQualifier       string               `json:"rateQualifier" validate:"required"`
+	SupplierCode        string               `json:"supplierCode" validate:"required"`
+	IncludeERP          bool                 `json:"includeERP"`
+	SelectedAddOns      []broker.SelectAddOn `json:"selectedAddOns"`
+	Name                string               `json:"name" validate:"required,notblank"`
+	OfferedCurrencyCode string               `json:"offeredCurrencyCode" validate:"required,len=3,uppercase_only"`
+	OfferedPrice        int32                `json:"offeredPrice" validate:"required,gt=0"`
 }
 
 func (p CreatePriceOfferParams) Validate() error {
@@ -78,7 +79,7 @@ func (s *PriceOfferService) CreatePriceOffer(ctx context.Context, p CreatePriceO
 
 	totalPrice := pricing.CalculateTotalPrice(plan.CarPurchasePrice, plan.MarkupPercentage, brokerErpPrice, btErpPrice, plan.DiscountPercentage)
 
-	payAtPickup, err := json.Marshal(reservation.PayAtPickup{Fees: plan.Fees})
+	payAtPickup, err := json.Marshal(booking_handlers.GetPayAtPickup(p.SelectedAddOns, plan))
 	if err != nil {
 		rlog.Error("failed to marshal pay at pickup", "error", err)
 		return nil, api_errors.ErrInternalError

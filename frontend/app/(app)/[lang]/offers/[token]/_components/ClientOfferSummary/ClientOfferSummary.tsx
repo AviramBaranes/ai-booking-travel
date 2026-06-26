@@ -39,7 +39,7 @@ export async function ClientOfferSummary({
 
       <PayAtPickupSection
         fees={offer.payAtPickup.fees}
-        selectedAddons={[]}
+        selectedAddons={offer.payAtPickup.selectedAddons ?? []}
         currency={offer.currencyCode}
       />
 

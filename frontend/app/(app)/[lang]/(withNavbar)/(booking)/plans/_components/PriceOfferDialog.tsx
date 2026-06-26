@@ -34,6 +34,7 @@ export function PriceOfferDialog({
 
   const isErpSelected = useBookingSessionStore((s) => s.isErpSelected);
   const selectedPlanIndex = useBookingSessionStore((s) => s.selectedPlanIndex);
+  const selectedAddons = useBookingSessionStore((s) => s.selectedAddons);
   const selectedPlan = vehicle?.plans[selectedPlanIndex];
 
   const { mutate, error, isPending } = useMutation({
@@ -48,6 +49,7 @@ export function PriceOfferDialog({
     }) =>
       createPriceOffer({
         includeERP: isErpSelected,
+        selectedAddOns: selectedAddons,
         name,
         offeredCurrencyCode: currency,
         offeredPrice: price,

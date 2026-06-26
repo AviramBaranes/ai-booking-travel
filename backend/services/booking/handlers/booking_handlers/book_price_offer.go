@@ -139,6 +139,7 @@ func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, p BookPriceOffe
 	if p.FlightNumber != nil {
 		flightNumber = *p.FlightNumber
 	}
+
 	return broker.BookingParams{
 		RateQualifier:   offer.RateQualifier,
 		SupplierCode:    offer.SupplierCode,
@@ -147,7 +148,7 @@ func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, p BookPriceOffe
 		PickupLocation:  offer.PickupBrokerLocationID,
 		DropoffLocation: offer.DropoffBrokerLocationID,
 		IncludeERP:      isPriceOfferErpIncluded(offer),
-		SelectedAddOns:  []broker.SelectAddOn{},
+		SelectedAddOns:  getSelectedAddOns(offer.PayAtPickup),
 		DriverTitle:     p.DriverTitle,
 		DriverFirstName: p.DriverFirstName,
 		DriverLastName:  p.DriverLastName,
@@ -239,4 +240,18 @@ func unmarshalPayAtPickup(papJson []byte) reservation.PayAtPickup {
 		return reservation.PayAtPickup{}
 	}
 	return pap
+}
+
+// getSelectedAddOns returns the selected add-ons from the PayAtPickup JSON for the response.
+func getSelectedAddOns(papJson []byte) []broker.SelectAddOn {
+	pap := unmarshalPayAtPickup(papJson)
+	selectedAddOns := make([]broker.SelectAddOn, 0, len(pap.SelectedAddons))
+	for _, selected := range pap.SelectedAddons {
+		selectedAddOns = append(selectedAddOns, broker.SelectAddOn{
+			ID:       selected.ID,
+			Quantity: selected.Quantity,
+		})
+	}
+
+	return selectedAddOns
 }

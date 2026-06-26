@@ -37,7 +37,7 @@ export function PriceOfferSummary({ priceOfferId }: { priceOfferId: number }) {
       <PayAtPickupSection
         currency={priceOffer.currencyCode}
         fees={priceOffer.payAtPickup.fees}
-        selectedAddons={[]}
+        selectedAddons={priceOffer.payAtPickup.selectedAddons ?? []}
       />
 
       <CostBreakdownSection

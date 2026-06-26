@@ -1746,6 +1746,7 @@ export namespace price_offer {
         rateQualifier: string
         supplierCode: string
         includeERP: boolean
+        selectedAddOns: broker.SelectAddOn[]
         name: string
         offeredCurrencyCode: string
         offeredPrice: number
