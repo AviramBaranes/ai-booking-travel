@@ -1,4 +1,4 @@
-package reservation
+package reports
 
 import (
 	"context"
@@ -30,8 +30,7 @@ type BusinessesBalancesReportResponse struct {
 	Total      int64                         `json:"total"`
 }
 
-// encore:api auth tag:admin method=GET path=/reports/businesses-balances
-func (s *Service) GetBusinessesBalancesReport(ctx context.Context) (*BusinessesBalancesReportResponse, error) {
+func (s *ReportsService) GetBusinessesBalancesReport(ctx context.Context) (*BusinessesBalancesReportResponse, error) {
 	rows, err := s.query.ListBusinessesBalancesReport(ctx)
 	if err != nil {
 		rlog.Error("failed to list businesses balances report", "error", err)

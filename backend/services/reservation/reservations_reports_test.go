@@ -12,6 +12,7 @@ import (
 	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
+	"encore.app/services/reservation/handlers/reports"
 	"encore.dev/beta/auth"
 )
 
@@ -48,15 +49,15 @@ func adminAuthContext(userID int64) context.Context {
 
 func TestGetBusinessReport(t *testing.T) {
 	t.Run("validation rejects zero page", func(t *testing.T) {
-		api_errors.AssertApiError(t, invalidValueErr("page"), ReportParams{Page: 0, PageSize: 25}.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("page"), reports.ReportParams{Page: 0, PageSize: 25}.Validate())
 	})
 
 	t.Run("validation rejects zero page size", func(t *testing.T) {
-		api_errors.AssertApiError(t, invalidValueErr("pageSize"), ReportParams{PageSize: 0, Page: 1}.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("pageSize"), reports.ReportParams{PageSize: 0, Page: 1}.Validate())
 	})
 
 	t.Run("validation accepts valid params", func(t *testing.T) {
-		if err := (ReportParams{Page: 1, PageSize: 25}).Validate(); err != nil {
+		if err := (reports.ReportParams{Page: 1, PageSize: 25}).Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 	})
@@ -65,7 +66,7 @@ func TestGetBusinessReport(t *testing.T) {
 	query := testQuerier()
 	s := &Service{query: query}
 	seed := seedBusinessReportData(t, ctx, s)
-	baseParams := ReportParams{
+	baseParams := reports.ReportParams{
 		Page:           1,
 		PageSize:       25,
 		PickupDateFrom: "2099-01-01",
@@ -156,7 +157,7 @@ func TestGetBusinessReport(t *testing.T) {
 	})
 
 	t.Run("filters by pickup date range", func(t *testing.T) {
-		params := ReportParams{
+		params := reports.ReportParams{
 			Page:           1,
 			PickupDateFrom: "2099-02-01",
 			PickupDateTo:   "2099-02-28",
@@ -197,7 +198,7 @@ func TestGetProfitReport(t *testing.T) {
 	})
 
 	t.Run("returns shared report fields and profit fields", func(t *testing.T) {
-		resp, err := GetProfitReport(ctx, ReportParams{
+		resp, err := GetProfitReport(ctx, reports.ReportParams{
 			Page:           1,
 			PageSize:       25,
 			PickupDateFrom: "2099-01-01",
@@ -253,7 +254,7 @@ func TestGetBusinessesBalancesReport(t *testing.T) {
 		}
 
 		// Organic org: 2 USD (vouchered 77 + canceled 120 = 197), 1 EUR (100), 1 ILS canceled (50 * 3.6 = 180)
-		organicRow := requireBusinessesBalanceRow(t, resp.Businesses, BillingEntityBusiness, seed.organicOrg.ID)
+		organicRow := requireBusinessesBalanceRow(t, resp.Businesses, reports.BillingEntityBusiness, seed.organicOrg.ID)
 		if organicRow.BillingEntityName != seed.organicOrg.Name {
 			t.Fatalf("expected organic billing entity name %q, got %q", seed.organicOrg.Name, organicRow.BillingEntityName)
 		}
@@ -262,7 +263,7 @@ func TestGetBusinessesBalancesReport(t *testing.T) {
 		assertFloatEqual(t, organicRow.TotalInOtherCurrency, -180)    // 50 (ILS canceled) * rate 3.6
 
 		// Inorganic office: 2 USD only (vouchered 220 + canceled 33 = 253)
-		inorganicOfficeRow := requireBusinessesBalanceRow(t, resp.Businesses, BillingEntityOffice, seed.inorganicOffice.ID)
+		inorganicOfficeRow := requireBusinessesBalanceRow(t, resp.Businesses, reports.BillingEntityOffice, seed.inorganicOffice.ID)
 		if inorganicOfficeRow.BillingEntityName != seed.inorganicOffice.Name {
 			t.Fatalf("expected inorganic office billing entity name %q, got %q", seed.inorganicOffice.Name, inorganicOfficeRow.BillingEntityName)
 		}
@@ -566,7 +567,7 @@ func createBusinessReportAdmin(t *testing.T, ctx context.Context, email string) 
 	return admin
 }
 
-func assertBusinessReportBookings(t *testing.T, ctx context.Context, params ReportParams, wantBookings ...string) {
+func assertBusinessReportBookings(t *testing.T, ctx context.Context, params reports.ReportParams, wantBookings ...string) {
 	t.Helper()
 	resp, err := GetBusinessReport(ctx, params)
 	if err != nil {
@@ -611,7 +612,7 @@ func cancelReservationForTest(t *testing.T, ctx context.Context, s *Service, res
 	}
 }
 
-func requireBusinessesBalanceRow(t *testing.T, rows []BusinessesBalancesReportRow, entityType BillingEntity, entityID int64) BusinessesBalancesReportRow {
+func requireBusinessesBalanceRow(t *testing.T, rows []reports.BusinessesBalancesReportRow, entityType reports.BillingEntity, entityID int64) reports.BusinessesBalancesReportRow {
 	t.Helper()
 	for _, row := range rows {
 		if row.BillingEntityType == entityType && row.BillingEntityID == entityID {
@@ -619,7 +620,7 @@ func requireBusinessesBalanceRow(t *testing.T, rows []BusinessesBalancesReportRo
 		}
 	}
 	t.Fatalf("expected businesses balances row for %s %d", entityType, entityID)
-	return BusinessesBalancesReportRow{}
+	return reports.BusinessesBalancesReportRow{}
 }
 
 func assertFloatEqual(t *testing.T, got, want float64) {

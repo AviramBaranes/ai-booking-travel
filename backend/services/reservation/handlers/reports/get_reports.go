@@ -1,7 +1,8 @@
-package reservation
+package reports
 
 import (
 	"context"
+	"math"
 	"strings"
 	"time"
 
@@ -38,6 +39,17 @@ func nilIfZero(v int64) *int64 {
 	return &v
 }
 
+func nullStatusFromString(s string) db.NullReservationStatus {
+	if s == "" {
+		return db.NullReservationStatus{}
+	}
+	return db.NullReservationStatus{ReservationStatus: db.ReservationStatus(s), Valid: true}
+}
+
+func roundPrice(price float64) float64 {
+	return math.Round(price*100) / 100
+}
+
 func nullBrokerFromString(s string) db.NullBroker {
 	if s == "" {
 		return db.NullBroker{}
@@ -71,7 +83,7 @@ type getReportResult struct {
 	TotalBrokerErpCost float64
 }
 
-func (s *Service) getReports(ctx context.Context, p ReportParams, isBusiness bool) (*getReportResult, error) {
+func (s *ReportsService) getReports(ctx context.Context, p ReportParams, isBusiness bool) (*getReportResult, error) {
 	offset := int64(p.Page-1) * p.PageSize
 	if p.IsExport {
 		offset = 0

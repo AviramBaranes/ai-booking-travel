@@ -1,4 +1,4 @@
-package reservation
+package reports
 
 import (
 	"context"
@@ -59,8 +59,7 @@ type accountsSet struct {
 	userIDs         map[int64]struct{}
 }
 
-// encore:api auth tag:admin method=GET path=/reports/business
-func (s *Service) GetBusinessReport(ctx context.Context, p ReportParams) (*BusinessReportResponse, error) {
+func (s *ReportsService) GetBusinessReport(ctx context.Context, p ReportParams) (*BusinessReportResponse, error) {
 	result, err := s.getReports(ctx, p, true)
 	if err != nil {
 		return nil, err

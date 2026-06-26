@@ -1,4 +1,4 @@
-package reservation
+package reports
 
 import (
 	"context"
@@ -26,8 +26,7 @@ type ProfitReportResponse struct {
 	ProfitPercentage float64           `json:"profitPercentage"`
 }
 
-// encore:api auth tag:admin method=GET path=/reports/profit
-func (s *Service) GetProfitReport(ctx context.Context, p ReportParams) (*ProfitReportResponse, error) {
+func (s *ReportsService) GetProfitReport(ctx context.Context, p ReportParams) (*ProfitReportResponse, error) {
 	p.Status = "vouchered" // profit report only includes booked reservations
 	result, err := s.getReports(ctx, p, true)
 	if err != nil {
