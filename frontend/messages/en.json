@@ -314,6 +314,7 @@
   },
   "MyAccount": {
     "summary": {
+      "erpIncluded": "Full coverage is included in the rental price",
       "priceOfferDisclaimer": "Prices are dynamic and may change at any time",
       "includedIconAlt": "Included",
       "rentalSummary": {

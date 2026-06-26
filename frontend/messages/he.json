@@ -313,6 +313,7 @@
   },
   "MyAccount": {
     "summary": {
+      "erpIncluded": "הכיסוי המלא כלול במחיר ההשכרה",
       "priceOfferDisclaimer": "המחירים הינם דינמיים ועלולים להשתנות בכל עת",
       "includedIconAlt": "כלול",
       "rentalSummary": {

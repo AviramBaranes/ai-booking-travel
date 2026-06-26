@@ -40,11 +40,6 @@ export function SummarySkeleton() {
       <RowSkeleton />
       <RowSkeleton />
 
-      {/* Total bar */}
-      <div className="bg-brand-blue py-3 px-5 flex justify-between items-center rounded-xl mt-8">
-        <Bone variant="dark" className="h-4 w-24" />
-        <Bone variant="dark" className="h-6 w-20" />
-      </div>
 
       {/* Car details */}
       <SubTitleSkeleton />
@@ -62,6 +57,12 @@ export function SummarySkeleton() {
           </li>
         ))}
       </ul>
+      
+      {/* Total bar */}
+      <div className="bg-brand-blue py-3 px-5 flex justify-between items-center rounded-xl mt-8">
+        <Bone variant="dark" className="h-4 w-24" />
+        <Bone variant="dark" className="h-6 w-20" />
+      </div>
     </div>
   );
 }

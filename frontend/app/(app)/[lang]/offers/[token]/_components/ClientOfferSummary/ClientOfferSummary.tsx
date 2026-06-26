@@ -6,6 +6,7 @@ import { IncludedSection } from "@/app/(app)/[lang]/(withNavbar)/(my-account)/_c
 import { getTranslations } from "next-intl/server";
 import { formatPrice } from "@/shared/utils/formatPrice";
 import { PayAtPickupSection } from "@/app/(app)/[lang]/(withNavbar)/(my-account)/_components/PayAtPickupSection";
+import Image from "next/image";
 
 export async function ClientOfferSummary({
   offer,
@@ -42,7 +43,19 @@ export async function ClientOfferSummary({
         currency={offer.currencyCode}
       />
 
-      <div className="text-white mt-6 bg-brand py-3 5 px-5 flex justify-between items-center rounded-xl">
+      {offer.isErpIncluded && (
+        <div className="mt-2 rounded-md p-1 flex items-start gap-2 font-bold">
+          <Image
+            src="/assets/icons/stamp.gif"
+            alt="stamp"
+            width={24}
+            height={24}
+            className="w-6 h-6"
+          />
+          {t("summary.erpIncluded")}
+        </div>
+      )}
+      <div className="text-white bg-brand py-3 5 px-5 flex justify-between items-center rounded-xl">
         <span className="type-paragraph">
           {t("priceOffer.summary.labels.totalToPay")}
         </span>
