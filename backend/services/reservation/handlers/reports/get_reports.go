@@ -14,22 +14,23 @@ import (
 )
 
 type ReportParams struct {
-	Page            int32  `query:"page" validate:"required,gte=1"`
-	PageSize        int64  `query:"pageSize" validate:"required,gte=1"`
-	PickupDateFrom  string `query:"pickupDateFrom,omitempty" encore:"optional"`
-	PickupDateTo    string `query:"pickupDateTo,omitempty" encore:"optional"`
-	CreatedDateFrom string `query:"createdDateFrom,omitempty" encore:"optional"`
-	CreatedDateTo   string `query:"createdDateTo,omitempty" encore:"optional"`
-	VoucheredAtFrom string `query:"voucheredAtFrom,omitempty" encore:"optional"`
-	VoucheredAtTo   string `query:"voucheredAtTo,omitempty" encore:"optional"`
-	Status          string `query:"status,omitempty" encore:"optional"`
-	Broker          string `query:"broker,omitempty" encore:"optional"`
-	Supplier        string `query:"supplier,omitempty" encore:"optional"`
-	OrganizationID  int64  `query:"organizationId,omitempty" encore:"optional"`
-	OfficeID        int64  `query:"officeId,omitempty" encore:"optional"`
-	AgentID         int64  `query:"agentId,omitempty" encore:"optional"`
-	IsBusiness      bool   `query:"isBusiness,omitempty" encore:"optional"`
-	IsExport        bool   `query:"isExport,omitempty" encore:"optional"`
+	Page                int32  `query:"page" validate:"required,gte=1"`
+	PageSize            int64  `query:"pageSize" validate:"required,gte=1"`
+	BrokerReservationID string `query:"brokerReservationId,omitempty" encore:"optional"`
+	PickupDateFrom      string `query:"pickupDateFrom,omitempty" encore:"optional"`
+	PickupDateTo        string `query:"pickupDateTo,omitempty" encore:"optional"`
+	CreatedDateFrom     string `query:"createdDateFrom,omitempty" encore:"optional"`
+	CreatedDateTo       string `query:"createdDateTo,omitempty" encore:"optional"`
+	VoucheredAtFrom     string `query:"voucheredAtFrom,omitempty" encore:"optional"`
+	VoucheredAtTo       string `query:"voucheredAtTo,omitempty" encore:"optional"`
+	Status              string `query:"status,omitempty" encore:"optional"`
+	Broker              string `query:"broker,omitempty" encore:"optional"`
+	Supplier            string `query:"supplier,omitempty" encore:"optional"`
+	OrganizationID      int64  `query:"organizationId,omitempty" encore:"optional"`
+	OfficeID            int64  `query:"officeId,omitempty" encore:"optional"`
+	AgentID             int64  `query:"agentId,omitempty" encore:"optional"`
+	IsBusiness          bool   `query:"isBusiness,omitempty" encore:"optional"`
+	IsExport            bool   `query:"isExport,omitempty" encore:"optional"`
 }
 
 func nilIfZero(v int64) *int64 {
@@ -91,21 +92,22 @@ func (s *ReportsService) getReports(ctx context.Context, p ReportParams, isBusin
 	}
 
 	queryParams := db.ListReservationsReportParams{
-		PickupDateFrom:  dbadapters.DateFromString(p.PickupDateFrom),
-		PickupDateTo:    dbadapters.DateFromString(p.PickupDateTo),
-		CreatedDateFrom: timestamptzFromString(p.CreatedDateFrom, false),
-		CreatedDateTo:   timestamptzFromString(p.CreatedDateTo, true),
-		VoucheredAtFrom: timestamptzFromString(p.VoucheredAtFrom, false),
-		VoucheredAtTo:   timestamptzFromString(p.VoucheredAtTo, true),
-		Status:          nullStatusFromString(p.Status),
-		Broker:          nullBrokerFromString(p.Broker),
-		SupplierCodes:   splitSupplierCodes(p.Supplier),
-		OrganizationID:  nilIfZero(p.OrganizationID),
-		OfficeID:        nilIfZero(p.OfficeID),
-		AgentID:         nilIfZero(p.AgentID),
-		IsBusiness:      isBusiness,
-		PageSize:        p.PageSize,
-		PageOffset:      offset,
+		BrokerReservationID: &p.BrokerReservationID,
+		PickupDateFrom:      dbadapters.DateFromString(p.PickupDateFrom),
+		PickupDateTo:        dbadapters.DateFromString(p.PickupDateTo),
+		CreatedDateFrom:     timestamptzFromString(p.CreatedDateFrom, false),
+		CreatedDateTo:       timestamptzFromString(p.CreatedDateTo, true),
+		VoucheredAtFrom:     timestamptzFromString(p.VoucheredAtFrom, false),
+		VoucheredAtTo:       timestamptzFromString(p.VoucheredAtTo, true),
+		Status:              nullStatusFromString(p.Status),
+		Broker:              nullBrokerFromString(p.Broker),
+		SupplierCodes:       splitSupplierCodes(p.Supplier),
+		OrganizationID:      nilIfZero(p.OrganizationID),
+		OfficeID:            nilIfZero(p.OfficeID),
+		AgentID:             nilIfZero(p.AgentID),
+		IsBusiness:          isBusiness,
+		PageSize:            p.PageSize,
+		PageOffset:          offset,
 	}
 
 	reservations, err := s.query.ListReservationsReport(ctx, queryParams)
@@ -115,19 +117,20 @@ func (s *ReportsService) getReports(ctx context.Context, p ReportParams, isBusin
 	}
 
 	countParams := db.CountReservationsReportParams{
-		PickupDateFrom:  queryParams.PickupDateFrom,
-		PickupDateTo:    queryParams.PickupDateTo,
-		CreatedDateFrom: queryParams.CreatedDateFrom,
-		CreatedDateTo:   queryParams.CreatedDateTo,
-		VoucheredAtFrom: queryParams.VoucheredAtFrom,
-		VoucheredAtTo:   queryParams.VoucheredAtTo,
-		Status:          queryParams.Status,
-		Broker:          queryParams.Broker,
-		SupplierCodes:   queryParams.SupplierCodes,
-		OrganizationID:  queryParams.OrganizationID,
-		OfficeID:        queryParams.OfficeID,
-		AgentID:         queryParams.AgentID,
-		IsBusiness:      isBusiness,
+		BrokerReservationID: queryParams.BrokerReservationID,
+		PickupDateFrom:      queryParams.PickupDateFrom,
+		PickupDateTo:        queryParams.PickupDateTo,
+		CreatedDateFrom:     queryParams.CreatedDateFrom,
+		CreatedDateTo:       queryParams.CreatedDateTo,
+		VoucheredAtFrom:     queryParams.VoucheredAtFrom,
+		VoucheredAtTo:       queryParams.VoucheredAtTo,
+		Status:              queryParams.Status,
+		Broker:              queryParams.Broker,
+		SupplierCodes:       queryParams.SupplierCodes,
+		OrganizationID:      queryParams.OrganizationID,
+		OfficeID:            queryParams.OfficeID,
+		AgentID:             queryParams.AgentID,
+		IsBusiness:          isBusiness,
 	}
 
 	total, err := s.query.CountReservationsReport(ctx, countParams)

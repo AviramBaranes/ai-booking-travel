@@ -10,8 +10,10 @@ import {
   ReportAccountEntityCombobox,
 } from "./ReportAccountEntityCombobox";
 import { ReportSupplierCombobox } from "./ReportSupplierCombobox";
+import { Input } from "@/components/ui/input";
 
 export const RESERVATION_REPORT_FILTER_KEYS = [
+  "brokerReservationId",
   "pickupFrom",
   "pickupTo",
   "createdFrom",
@@ -46,6 +48,7 @@ interface ReservationsReportFilterBarProps {
 }
 
 export const emptyReservationReportFilters: ReservationReportFilters = {
+  brokerReservationId: "",
   pickupFrom: "",
   pickupTo: "",
   createdFrom: "",
@@ -128,6 +131,19 @@ export function ReservationsReportFilterBar({
 
   return (
     <form className="flex items-end gap-3 flex-wrap" onSubmit={handleSubmit}>
+      <div className="min-w-36">
+        <label className="block text-xs text-gray-500 mb-1">
+          מספר הזמנת ספק
+        </label>
+        <Input
+          className={inputClass}
+          placeholder="למשל 4H123456"
+          value={filters.brokerReservationId}
+          onChange={(event) =>
+            updateFilters({ brokerReservationId: event.target.value })
+          }
+        />
+      </div>
       <ReportDateRangeInput
         label="תאריך איסוף"
         fromValue={filters.pickupFrom}
@@ -168,7 +184,7 @@ export function ReservationsReportFilterBar({
         </div>
       )}
       <div className="min-w-36">
-        <label className="block text-xs text-gray-500 mb-1">ברוקר</label>
+        <label className="block text-xs text-gray-500 mb-1">ספק</label>
         <select
           className={inputClass}
           value={filters.broker}
@@ -180,7 +196,7 @@ export function ReservationsReportFilterBar({
         </select>
       </div>
       <div className="min-w-40">
-        <label className="block text-xs text-gray-500 mb-1">ספק</label>
+        <label className="block text-xs text-gray-500 mb-1">מותג</label>
         <ReportSupplierCombobox
           value={filters.supplier}
           onChange={(supplier) => updateFilters({ supplier })}

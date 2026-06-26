@@ -252,7 +252,8 @@ AND payment_status IN ('unpaid', 'refund_pending');
 SELECT *
 FROM reservations
 WHERE
-    (sqlc.narg(pickup_date_from)::DATE IS NULL OR pickup_date >= sqlc.narg(pickup_date_from)::DATE)
+    (sqlc.narg(broker_reservation_id)::TEXT IS NULL OR broker_reservation_id ILIKE '%' || sqlc.narg(broker_reservation_id)::TEXT || '%')
+    AND(sqlc.narg(pickup_date_from)::DATE IS NULL OR pickup_date >= sqlc.narg(pickup_date_from)::DATE)
     AND (sqlc.narg(pickup_date_to)::DATE IS NULL OR pickup_date <= sqlc.narg(pickup_date_to)::DATE)
     AND (sqlc.narg(created_date_from)::TIMESTAMPTZ IS NULL OR created_at >= sqlc.narg(created_date_from)::TIMESTAMPTZ)
     AND (sqlc.narg(created_date_to)::TIMESTAMPTZ IS NULL OR created_at <= sqlc.narg(created_date_to)::TIMESTAMPTZ)
@@ -277,7 +278,8 @@ COALESCE(SUM(purchase_price * currency_rate), 0)::DOUBLE PRECISION AS total_car_
 COALESCE(SUM(broker_erp_price * currency_rate), 0)::DOUBLE PRECISION AS total_broker_erp_cost
 FROM reservations
 WHERE
-    (sqlc.narg(pickup_date_from)::DATE IS NULL OR pickup_date >= sqlc.narg(pickup_date_from)::DATE)
+    (sqlc.narg(broker_reservation_id)::TEXT IS NULL OR broker_reservation_id ILIKE '%' || sqlc.narg(broker_reservation_id)::TEXT || '%')
+    AND (sqlc.narg(pickup_date_from)::DATE IS NULL OR pickup_date >= sqlc.narg(pickup_date_from)::DATE)
     AND (sqlc.narg(pickup_date_to)::DATE IS NULL OR pickup_date <= sqlc.narg(pickup_date_to)::DATE)
     AND (sqlc.narg(created_date_from)::TIMESTAMPTZ IS NULL OR created_at >= sqlc.narg(created_date_from)::TIMESTAMPTZ)
     AND (sqlc.narg(created_date_to)::TIMESTAMPTZ IS NULL OR created_at <= sqlc.narg(created_date_to)::TIMESTAMPTZ)

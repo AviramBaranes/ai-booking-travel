@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { cn } from "@/lib/utils";
 import { collectionsReport } from "@/shared/api/reservations-api";
-import { reservation } from "@/shared/client";
+import { reports } from "@/shared/client";
 import { formatPrice } from "@/shared/utils/formatPrice";
 
 import { MoneyCell, ReportColumn } from "../_components/reportTableUtils";
@@ -12,7 +12,7 @@ import { CollectionsDetailDialog } from "../_components/CollectionsDetailDialog"
 import { BillingEntity } from "@/app/(app)/accounting/billing/_components/BillingEntityCombobox";
 import { useState } from "react";
 
-type CollectionRow = reservation.BusinessesBalancesReportRow;
+type CollectionRow = reports.BusinessesBalancesReportRow;
 
 const columns: ReportColumn<CollectionRow>[] = [
   {

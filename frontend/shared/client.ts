@@ -894,92 +894,7 @@ export namespace notifications {
 }
 
 export namespace reservation {
-    export type BillingEntity = string
-
-    export interface BusinessReportResponse {
-        reservations: BusinessReservationReportRow[]
-        count: number
-        totalSales: number
-    }
-
-    export interface BusinessReservationReportRow {
-        reservationId: number
-        brokerReservationId: string
-        status: string
-        organizationName: string
-        officeName: string
-        agentName: string
-        adminName: string
-        brokerName: string
-        supplierName: string
-        countryCode: string
-        pickupDate: string
-        dropoffDate: string
-        rentalDays: number
-        driverName: string
-        currencyCode: string
-        currencyRate: number
-        carSellPriceWithBrokerERP: number
-        carSellPriceWithBrokerERPInILS: number
-        btERPPrice: number
-        btERPPriceInILS: number
-        totalPrice: number
-        totalPriceInILS: number
-        voucherNumber: string
-        voucheredAt: string
-        createdAt: string
-    }
-
-    export interface BusinessesBalancesReportResponse {
-        businesses: BusinessesBalancesReportRow[]
-        total: number
-    }
-
-    export interface BusinessesBalancesReportRow {
-        billingEntityType: BillingEntity
-        billingEntityId: number
-        billingEntityName: string
-        totalOpenBalanceInEuro: number
-        totalOpenBalanceInDollar: number
-        totalInOtherCurrency: number
-    }
-
     export type PayAtPickup = actions.PayAtPickup
-
-    export interface ProfitReportResponse {
-        reservations: ProfitReportRow[]
-        count: number
-        totalSales: number
-        totalProfit: number
-        profitPercentage: number
-    }
-
-    export interface ProfitReportRow {
-        purchasePrice: number
-        purchasePriceInILS: number
-        profit: number
-        profitInILS: number
-        profitPercentage: number
-    }
-
-    export interface ReportParams {
-        Page: number
-        PageSize: number
-        PickupDateFrom?: string
-        PickupDateTo?: string
-        CreatedDateFrom?: string
-        CreatedDateTo?: string
-        VoucheredAtFrom?: string
-        VoucheredAtTo?: string
-        Status?: string
-        Broker?: string
-        Supplier?: string
-        OrganizationID?: number
-        OfficeID?: number
-        AgentID?: number
-        IsBusiness?: boolean
-        IsExport?: boolean
-    }
 
     export class ServiceClient {
         private baseClient: BaseClient
@@ -1005,36 +920,37 @@ export namespace reservation {
             await this.baseClient.callTypedAPI("POST", `/api/reservation/${encodeURIComponent(id)}/cancel`)
         }
 
-        public async GetBusinessReport(params: ReportParams): Promise<BusinessReportResponse> {
+        public async GetBusinessReport(params: reports.ReportParams): Promise<reports.BusinessReportResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
-                agentId:         params.AgentID === undefined ? undefined : String(params.AgentID),
-                broker:          params.Broker,
-                createdDateFrom: params.CreatedDateFrom,
-                createdDateTo:   params.CreatedDateTo,
-                isBusiness:      params.IsBusiness === undefined ? undefined : String(params.IsBusiness),
-                isExport:        params.IsExport === undefined ? undefined : String(params.IsExport),
-                officeId:        params.OfficeID === undefined ? undefined : String(params.OfficeID),
-                organizationId:  params.OrganizationID === undefined ? undefined : String(params.OrganizationID),
-                page:            String(params.Page),
-                pageSize:        String(params.PageSize),
-                pickupDateFrom:  params.PickupDateFrom,
-                pickupDateTo:    params.PickupDateTo,
-                status:          params.Status,
-                supplier:        params.Supplier,
-                voucheredAtFrom: params.VoucheredAtFrom,
-                voucheredAtTo:   params.VoucheredAtTo,
+                agentId:             params.AgentID === undefined ? undefined : String(params.AgentID),
+                broker:              params.Broker,
+                brokerReservationId: params.BrokerReservationID,
+                createdDateFrom:     params.CreatedDateFrom,
+                createdDateTo:       params.CreatedDateTo,
+                isBusiness:          params.IsBusiness === undefined ? undefined : String(params.IsBusiness),
+                isExport:            params.IsExport === undefined ? undefined : String(params.IsExport),
+                officeId:            params.OfficeID === undefined ? undefined : String(params.OfficeID),
+                organizationId:      params.OrganizationID === undefined ? undefined : String(params.OrganizationID),
+                page:                String(params.Page),
+                pageSize:            String(params.PageSize),
+                pickupDateFrom:      params.PickupDateFrom,
+                pickupDateTo:        params.PickupDateTo,
+                status:              params.Status,
+                supplier:            params.Supplier,
+                voucheredAtFrom:     params.VoucheredAtFrom,
+                voucheredAtTo:       params.VoucheredAtTo,
             })
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/reports/business`, undefined, {query})
-            return await resp.json() as BusinessReportResponse
+            return await resp.json() as reports.BusinessReportResponse
         }
 
-        public async GetBusinessesBalancesReport(): Promise<BusinessesBalancesReportResponse> {
+        public async GetBusinessesBalancesReport(): Promise<reports.BusinessesBalancesReportResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/reports/businesses-balances`)
-            return await resp.json() as BusinessesBalancesReportResponse
+            return await resp.json() as reports.BusinessesBalancesReportResponse
         }
 
         public async GetFullReservation(id: number): Promise<queries.GetFullReservationResponse> {
@@ -1043,30 +959,31 @@ export namespace reservation {
             return await resp.json() as queries.GetFullReservationResponse
         }
 
-        public async GetProfitReport(params: ReportParams): Promise<ProfitReportResponse> {
+        public async GetProfitReport(params: reports.ReportParams): Promise<reports.ProfitReportResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
-                agentId:         params.AgentID === undefined ? undefined : String(params.AgentID),
-                broker:          params.Broker,
-                createdDateFrom: params.CreatedDateFrom,
-                createdDateTo:   params.CreatedDateTo,
-                isBusiness:      params.IsBusiness === undefined ? undefined : String(params.IsBusiness),
-                isExport:        params.IsExport === undefined ? undefined : String(params.IsExport),
-                officeId:        params.OfficeID === undefined ? undefined : String(params.OfficeID),
-                organizationId:  params.OrganizationID === undefined ? undefined : String(params.OrganizationID),
-                page:            String(params.Page),
-                pageSize:        String(params.PageSize),
-                pickupDateFrom:  params.PickupDateFrom,
-                pickupDateTo:    params.PickupDateTo,
-                status:          params.Status,
-                supplier:        params.Supplier,
-                voucheredAtFrom: params.VoucheredAtFrom,
-                voucheredAtTo:   params.VoucheredAtTo,
+                agentId:             params.AgentID === undefined ? undefined : String(params.AgentID),
+                broker:              params.Broker,
+                brokerReservationId: params.BrokerReservationID,
+                createdDateFrom:     params.CreatedDateFrom,
+                createdDateTo:       params.CreatedDateTo,
+                isBusiness:          params.IsBusiness === undefined ? undefined : String(params.IsBusiness),
+                isExport:            params.IsExport === undefined ? undefined : String(params.IsExport),
+                officeId:            params.OfficeID === undefined ? undefined : String(params.OfficeID),
+                organizationId:      params.OrganizationID === undefined ? undefined : String(params.OrganizationID),
+                page:                String(params.Page),
+                pageSize:            String(params.PageSize),
+                pickupDateFrom:      params.PickupDateFrom,
+                pickupDateTo:        params.PickupDateTo,
+                status:              params.Status,
+                supplier:            params.Supplier,
+                voucheredAtFrom:     params.VoucheredAtFrom,
+                voucheredAtTo:       params.VoucheredAtTo,
             })
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/reports/profit`, undefined, {query})
-            return await resp.json() as ProfitReportResponse
+            return await resp.json() as reports.ProfitReportResponse
         }
 
         public async GetReservation(id: number): Promise<queries.GetReservationResponse> {
@@ -2152,6 +2069,94 @@ export namespace queries {
         name: string
         price: number
         quantity: number
+    }
+}
+
+export namespace reports {
+    export type BillingEntity = string
+
+    export interface BusinessReportResponse {
+        reservations: BusinessReservationReportRow[]
+        count: number
+        totalSales: number
+    }
+
+    export interface BusinessReservationReportRow {
+        reservationId: number
+        brokerReservationId: string
+        status: string
+        organizationName: string
+        officeName: string
+        agentName: string
+        adminName: string
+        brokerName: string
+        supplierName: string
+        countryCode: string
+        pickupDate: string
+        dropoffDate: string
+        rentalDays: number
+        driverName: string
+        currencyCode: string
+        currencyRate: number
+        carSellPriceWithBrokerERP: number
+        carSellPriceWithBrokerERPInILS: number
+        btERPPrice: number
+        btERPPriceInILS: number
+        totalPrice: number
+        totalPriceInILS: number
+        voucherNumber: string
+        voucheredAt: string
+        createdAt: string
+    }
+
+    export interface BusinessesBalancesReportResponse {
+        businesses: BusinessesBalancesReportRow[]
+        total: number
+    }
+
+    export interface BusinessesBalancesReportRow {
+        billingEntityType: BillingEntity
+        billingEntityId: number
+        billingEntityName: string
+        totalOpenBalanceInEuro: number
+        totalOpenBalanceInDollar: number
+        totalInOtherCurrency: number
+    }
+
+    export interface ProfitReportResponse {
+        reservations: ProfitReportRow[]
+        count: number
+        totalSales: number
+        totalProfit: number
+        profitPercentage: number
+    }
+
+    export interface ProfitReportRow {
+        purchasePrice: number
+        purchasePriceInILS: number
+        profit: number
+        profitInILS: number
+        profitPercentage: number
+    }
+
+    export interface ReportParams {
+        Page: number
+        PageSize: number
+        BrokerReservationID?: string
+        PickupDateFrom?: string
+        PickupDateTo?: string
+        CreatedDateFrom?: string
+        CreatedDateTo?: string
+        VoucheredAtFrom?: string
+        VoucheredAtTo?: string
+        Status?: string
+        Broker?: string
+        Supplier?: string
+        OrganizationID?: number
+        OfficeID?: number
+        AgentID?: number
+        IsBusiness?: boolean
+        IsExport?: boolean
     }
 }
 

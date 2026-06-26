@@ -1,15 +1,16 @@
 "use client";
 
 import { businessReservationReport } from "@/shared/api/reservations-api";
-import { reservation } from "@/shared/client";
+import { reports } from "@/shared/client";
 
 import { ReportTableShell } from "../_components/ReportTableShell";
 import { ReservationReportFilters } from "../_components/ReservationsReportFilterBar";
-import { makeBaseColumns } from "../_components/reportTableUtils";
+import { limitColumns, makeBaseColumns } from "../_components/reportTableUtils";
 
-type ReportRow = reservation.BusinessReservationReportRow;
+type ReportRow = reports.BusinessReservationReportRow;
 
 const columns = makeBaseColumns<ReportRow>();
+const limitedColumns = limitColumns(columns)
 
 interface ReservationsReportTableProps {
   showFilters?: boolean;
@@ -22,7 +23,8 @@ export default function ReservationsReportTable({
 }: ReservationsReportTableProps) {
   return (
     <ReportTableShell
-      columns={columns}
+      fullColumns={columns}
+      limitedColumns={limitedColumns}
       queryKey="reservations-report"
       queryFn={businessReservationReport}
       showFilters={showFilters}

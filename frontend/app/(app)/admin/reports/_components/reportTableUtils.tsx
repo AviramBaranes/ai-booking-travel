@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
-import { reservation } from "@/shared/client";
+import { reports } from "@/shared/client";
 import { formatPriceFloat } from "@/shared/utils/formatPrice";
 
 import { ReservationReportFilters } from "./ReservationsReportFilterBar";
@@ -61,7 +61,10 @@ export function MoneyCell({
   );
 }
 
-export function buildPageNumbers(current: number, total: number): (number | "...")[] {
+export function buildPageNumbers(
+  current: number,
+  total: number,
+): (number | "...")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   const pages: (number | "...")[] = [1];
   if (current > 3) pages.push("...");
@@ -106,10 +109,11 @@ export function buildRequest(
   pageSize: number,
   filters: ReservationReportFilters,
   isExport = false,
-): reservation.ReportParams {
+): reports.ReportParams {
   return {
     Page: page,
     PageSize: pageSize,
+    BrokerReservationID: filters.brokerReservationId || undefined,
     PickupDateFrom: filters.pickupFrom || undefined,
     PickupDateTo: filters.pickupTo || undefined,
     CreatedDateFrom: filters.createdFrom || undefined,
@@ -128,7 +132,7 @@ export function buildRequest(
 }
 
 export function makeBaseColumns<
-  T extends reservation.BusinessReservationReportRow,
+  T extends reports.BusinessReservationReportRow,
 >(): ReportColumn<T>[] {
   return [
     {
@@ -238,7 +242,8 @@ export function makeBaseColumns<
       key: "carSellPriceWithBrokerERP",
       label: "מחיר רכב",
       className: "min-w-36 tabular-nums",
-      render: (row) => formatPriceFloat(row.carSellPriceWithBrokerERP, row.currencyCode),
+      render: (row) =>
+        formatPriceFloat(row.carSellPriceWithBrokerERP, row.currencyCode),
       exportValue: (row) => exportFloat(row.carSellPriceWithBrokerERP),
     },
     {
@@ -276,7 +281,9 @@ export function makeBaseColumns<
       label: 'סה"כ בש"ח',
       className: "min-w-44 bg-emerald-50/70",
       headerClassName: "bg-emerald-100/80 text-emerald-900",
-      render: (row) => <MoneyCell value={row.totalPriceInILS} currency="ILS" strong />,
+      render: (row) => (
+        <MoneyCell value={row.totalPriceInILS} currency="ILS" strong />
+      ),
       exportValue: (row) => exportFloat(row.totalPriceInILS),
     },
     {
@@ -298,4 +305,28 @@ export function makeBaseColumns<
       render: (row) => formatDateTime(row.createdAt),
     },
   ];
+}
+
+export const LIMITED_COLUMNS_KEYS = [
+  "reservationId",
+  "brokerReservationId",
+  "status",
+  "organizationName",
+  "countryCode",
+  "pickupDate",
+  "rentalDays",
+  "currencyCode",
+  "totalPrice",
+  "totalPriceInILS",
+  "createdAt",
+  "purchasePrice",
+  "profit",
+  "profitInILS",
+  "profitPercentage",
+];
+
+export function limitColumns<T extends reports.BusinessReservationReportRow>(
+  columns: ReportColumn<T>[],
+): ReportColumn<T>[] {
+  return columns.filter((col) => LIMITED_COLUMNS_KEYS.includes(col.key));
 }

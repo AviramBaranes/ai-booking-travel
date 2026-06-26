@@ -98,35 +98,37 @@ COALESCE(SUM(purchase_price * currency_rate), 0)::DOUBLE PRECISION AS total_car_
 COALESCE(SUM(broker_erp_price * currency_rate), 0)::DOUBLE PRECISION AS total_broker_erp_cost
 FROM reservations
 WHERE
-    ($1::DATE IS NULL OR pickup_date >= $1::DATE)
-    AND ($2::DATE IS NULL OR pickup_date <= $2::DATE)
-    AND ($3::TIMESTAMPTZ IS NULL OR created_at >= $3::TIMESTAMPTZ)
-    AND ($4::TIMESTAMPTZ IS NULL OR created_at <= $4::TIMESTAMPTZ)
-    AND ($5::TIMESTAMPTZ IS NULL OR vouchered_at >= $5::TIMESTAMPTZ)
-    AND ($6::TIMESTAMPTZ IS NULL OR vouchered_at <= $6::TIMESTAMPTZ)
-    AND ($7::reservation_status IS NULL OR reservation_status = $7::reservation_status)
-    AND ($8::broker IS NULL OR broker = $8::broker)
-    AND (COALESCE(cardinality($9::TEXT[]), 0) = 0 OR supplier_code = ANY($9::TEXT[]))
-    AND ($10::BIGINT IS NULL OR organization_id = $10::BIGINT)
-    AND ($11::BIGINT IS NULL OR office_id = $11::BIGINT)
-    AND ($12::BIGINT IS NULL OR user_id = $12::BIGINT)
-    AND (NOT $13::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+    ($1::TEXT IS NULL OR broker_reservation_id ILIKE '%' || $1::TEXT || '%')
+    AND ($2::DATE IS NULL OR pickup_date >= $2::DATE)
+    AND ($3::DATE IS NULL OR pickup_date <= $3::DATE)
+    AND ($4::TIMESTAMPTZ IS NULL OR created_at >= $4::TIMESTAMPTZ)
+    AND ($5::TIMESTAMPTZ IS NULL OR created_at <= $5::TIMESTAMPTZ)
+    AND ($6::TIMESTAMPTZ IS NULL OR vouchered_at >= $6::TIMESTAMPTZ)
+    AND ($7::TIMESTAMPTZ IS NULL OR vouchered_at <= $7::TIMESTAMPTZ)
+    AND ($8::reservation_status IS NULL OR reservation_status = $8::reservation_status)
+    AND ($9::broker IS NULL OR broker = $9::broker)
+    AND (COALESCE(cardinality($10::TEXT[]), 0) = 0 OR supplier_code = ANY($10::TEXT[]))
+    AND ($11::BIGINT IS NULL OR organization_id = $11::BIGINT)
+    AND ($12::BIGINT IS NULL OR office_id = $12::BIGINT)
+    AND ($13::BIGINT IS NULL OR user_id = $13::BIGINT)
+    AND (NOT $14::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
 `
 
 type CountReservationsReportParams struct {
-	PickupDateFrom  pgtype.Date
-	PickupDateTo    pgtype.Date
-	CreatedDateFrom pgtype.Timestamptz
-	CreatedDateTo   pgtype.Timestamptz
-	VoucheredAtFrom pgtype.Timestamptz
-	VoucheredAtTo   pgtype.Timestamptz
-	Status          NullReservationStatus
-	Broker          NullBroker
-	SupplierCodes   []string
-	OrganizationID  *int64
-	OfficeID        *int64
-	AgentID         *int64
-	IsBusiness      bool
+	BrokerReservationID *string
+	PickupDateFrom      pgtype.Date
+	PickupDateTo        pgtype.Date
+	CreatedDateFrom     pgtype.Timestamptz
+	CreatedDateTo       pgtype.Timestamptz
+	VoucheredAtFrom     pgtype.Timestamptz
+	VoucheredAtTo       pgtype.Timestamptz
+	Status              NullReservationStatus
+	Broker              NullBroker
+	SupplierCodes       []string
+	OrganizationID      *int64
+	OfficeID            *int64
+	AgentID             *int64
+	IsBusiness          bool
 }
 
 type CountReservationsReportRow struct {
@@ -138,6 +140,7 @@ type CountReservationsReportRow struct {
 
 func (q *Queries) CountReservationsReport(ctx context.Context, arg CountReservationsReportParams) (CountReservationsReportRow, error) {
 	row := q.db.QueryRow(ctx, countReservationsReport,
+		arg.BrokerReservationID,
 		arg.PickupDateFrom,
 		arg.PickupDateTo,
 		arg.CreatedDateFrom,
@@ -834,44 +837,47 @@ const listReservationsReport = `-- name: ListReservationsReport :many
 SELECT id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num
 FROM reservations
 WHERE
-    ($1::DATE IS NULL OR pickup_date >= $1::DATE)
-    AND ($2::DATE IS NULL OR pickup_date <= $2::DATE)
-    AND ($3::TIMESTAMPTZ IS NULL OR created_at >= $3::TIMESTAMPTZ)
-    AND ($4::TIMESTAMPTZ IS NULL OR created_at <= $4::TIMESTAMPTZ)
-    AND ($5::TIMESTAMPTZ IS NULL OR vouchered_at >= $5::TIMESTAMPTZ)
-    AND ($6::TIMESTAMPTZ IS NULL OR vouchered_at <= $6::TIMESTAMPTZ)
-    AND ($7::reservation_status IS NULL OR reservation_status = $7::reservation_status)
-    AND ($8::broker IS NULL OR broker = $8::broker)
-    AND (COALESCE(cardinality($9::TEXT[]), 0) = 0 OR supplier_code = ANY($9::TEXT[]))
-    AND ($10::BIGINT IS NULL OR organization_id = $10::BIGINT)
-    AND ($11::BIGINT IS NULL OR office_id = $11::BIGINT)
-    AND ($12::BIGINT IS NULL OR user_id = $12::BIGINT)
-    AND (NOT $13::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+    ($1::TEXT IS NULL OR broker_reservation_id ILIKE '%' || $1::TEXT || '%')
+    AND($2::DATE IS NULL OR pickup_date >= $2::DATE)
+    AND ($3::DATE IS NULL OR pickup_date <= $3::DATE)
+    AND ($4::TIMESTAMPTZ IS NULL OR created_at >= $4::TIMESTAMPTZ)
+    AND ($5::TIMESTAMPTZ IS NULL OR created_at <= $5::TIMESTAMPTZ)
+    AND ($6::TIMESTAMPTZ IS NULL OR vouchered_at >= $6::TIMESTAMPTZ)
+    AND ($7::TIMESTAMPTZ IS NULL OR vouchered_at <= $7::TIMESTAMPTZ)
+    AND ($8::reservation_status IS NULL OR reservation_status = $8::reservation_status)
+    AND ($9::broker IS NULL OR broker = $9::broker)
+    AND (COALESCE(cardinality($10::TEXT[]), 0) = 0 OR supplier_code = ANY($10::TEXT[]))
+    AND ($11::BIGINT IS NULL OR organization_id = $11::BIGINT)
+    AND ($12::BIGINT IS NULL OR office_id = $12::BIGINT)
+    AND ($13::BIGINT IS NULL OR user_id = $13::BIGINT)
+    AND (NOT $14::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
 ORDER BY created_at DESC
-LIMIT  $15::BIGINT
-OFFSET $14::BIGINT
+LIMIT  $16::BIGINT
+OFFSET $15::BIGINT
 `
 
 type ListReservationsReportParams struct {
-	PickupDateFrom  pgtype.Date
-	PickupDateTo    pgtype.Date
-	CreatedDateFrom pgtype.Timestamptz
-	CreatedDateTo   pgtype.Timestamptz
-	VoucheredAtFrom pgtype.Timestamptz
-	VoucheredAtTo   pgtype.Timestamptz
-	Status          NullReservationStatus
-	Broker          NullBroker
-	SupplierCodes   []string
-	OrganizationID  *int64
-	OfficeID        *int64
-	AgentID         *int64
-	IsBusiness      bool
-	PageOffset      int64
-	PageSize        int64
+	BrokerReservationID *string
+	PickupDateFrom      pgtype.Date
+	PickupDateTo        pgtype.Date
+	CreatedDateFrom     pgtype.Timestamptz
+	CreatedDateTo       pgtype.Timestamptz
+	VoucheredAtFrom     pgtype.Timestamptz
+	VoucheredAtTo       pgtype.Timestamptz
+	Status              NullReservationStatus
+	Broker              NullBroker
+	SupplierCodes       []string
+	OrganizationID      *int64
+	OfficeID            *int64
+	AgentID             *int64
+	IsBusiness          bool
+	PageOffset          int64
+	PageSize            int64
 }
 
 func (q *Queries) ListReservationsReport(ctx context.Context, arg ListReservationsReportParams) ([]Reservation, error) {
 	rows, err := q.db.Query(ctx, listReservationsReport,
+		arg.BrokerReservationID,
 		arg.PickupDateFrom,
 		arg.PickupDateTo,
 		arg.CreatedDateFrom,

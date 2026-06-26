@@ -1,7 +1,7 @@
 "use client";
 
 import { profitabilityReport } from "@/shared/api/reservations-api";
-import { reservation } from "@/shared/client";
+import { reports } from "@/shared/client";
 import { formatPriceFloat } from "@/shared/utils/formatPrice";
 
 import {
@@ -10,6 +10,7 @@ import {
 } from "../_components/ReportTableShell";
 import {
   exportFloat,
+  limitColumns,
   makeBaseColumns,
   MoneyCell,
   ReportColumn,
@@ -19,8 +20,8 @@ import {
 // client generator doesn't flatten Go embedded structs. At runtime the JSON response
 // is flat and includes all BusinessReservationReportRow fields, so we model the full
 // shape here via an intersection.
-type ProfitRow = reservation.BusinessReservationReportRow &
-  reservation.ProfitReportRow;
+type ProfitRow = reports.BusinessReservationReportRow &
+  reports.ProfitReportRow;
 
 const profitExtraColumns: ReportColumn<ProfitRow>[] = [
   {
@@ -68,12 +69,14 @@ const columns: ReportColumn<ProfitRow>[] = [
   ...makeBaseColumns<ProfitRow>(),
   ...profitExtraColumns,
 ];
+const limitedColumns = limitColumns(columns);
 
 export default function ProfitReportTable() {
   return (
     <ReportTableShell
       showStatusFilter={false}
-      columns={columns}
+      fullColumns={columns}
+      limitedColumns={limitedColumns}
       queryKey="profit-report"
       queryFn={profitabilityReport as ReportQueryFn<ProfitRow>}
     />
