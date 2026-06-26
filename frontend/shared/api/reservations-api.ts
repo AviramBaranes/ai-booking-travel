@@ -1,4 +1,4 @@
-import { queries, reservation } from "../client";
+import { queries, reports } from "../client";
 import { withErrorHandler } from "./_api";
 
 export function listReservations(params: queries.ListReservationsParams) {
@@ -35,13 +35,13 @@ export function listOpenReservations(
   );
 }
 
-export function businessReservationReport(params: reservation.ReportParams) {
+export function businessReservationReport(params: reports.ReportParams) {
   return withErrorHandler((client) =>
     client.reservation.GetBusinessReport(params),
   );
 }
 
-export function profitabilityReport(params: reservation.ReportParams) {
+export function profitabilityReport(params: reports.ReportParams) {
   return withErrorHandler((client) =>
     client.reservation.GetProfitReport(params),
   );
