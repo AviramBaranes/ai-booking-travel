@@ -2,26 +2,14 @@ package availability
 
 import (
 	"context"
-	"time"
 
 	"encore.app/services/booking/db"
-	"github.com/jackc/pgx/v5/pgtype"
 )
-
-func parseDate(s string) pgtype.Date {
-	t, _ := time.Parse("2006-01-02", s)
-	return pgtype.Date{Time: t, Valid: true}
-}
 
 // MarkupProvider calculates markup for a single vehicle.
 // Constructed per-search with all static params already resolved.
 type MarkupProvider interface {
-	GetMarkup(isAgent bool, carGroup, brand string) float64
-}
-
-type hertzMarkupKey struct {
-	CarGroup string
-	Brand    string
+	GetMarkup(isAgent bool) float64
 }
 
 type markupRates struct {
@@ -29,68 +17,39 @@ type markupRates struct {
 	Net   float64
 }
 
-// HertzMarkupProvider fetches all matching markup rates from the DB at construction,
-// then does pure map lookups per car.
-type HertzMarkupProvider struct {
-	rates map[hertzMarkupKey]markupRates
+// markupProvider is the type that implements MarkupProvider
+type markupProvider struct {
+	netRate   float64
+	grossRate float64
+}
+
+func NewMarkupProviderFromCfg(netRate, grossRate float64) MarkupProvider {
+	return &markupProvider{
+		netRate:   netRate,
+		grossRate: grossRate,
+	}
 }
 
 // NewHertzMarkupProvider constructs a HertzMarkupProvider by fetching the relevant rates from the DB based on the search parameters.
-func NewHertzMarkupProvider(ctx context.Context, q db.Querier, country, pickupDate string, rentalDays int, carGroups []string) (*HertzMarkupProvider, error) {
-	return nil, nil
-	// rows, err := q.GetMarkupRates(ctx, db.GetMarkupRatesParams{
-	// 	CountryCode: country,
-	// 	PickupDate:  pgtype.Date{Time: parseDate(pickupDate).Time, Valid: true},
-	// 	RentalDays:  int32(rentalDays),
-	// 	CarGroups:   carGroups,
-	// })
-	// if err != nil {
-	// 	return nil, err
-	// }
+func NewMarkupProviderFromDB(ctx context.Context, q db.Querier, countryCode, broker string) (MarkupProvider, error) {
+	ratesRow, err := q.GetBrokerMarkupRateByCountryCode(ctx, db.GetBrokerMarkupRateByCountryCodeParams{
+		CountryCode: countryCode,
+		Broker:      db.Broker(broker),
+	})
+	if err != nil {
+		return nil, err
+	}
 
-	// // log the rates for debugging:
-	// rlog.Info("fetched Hertz markup rates", "country", country, "pickupDate", pickupDate, "rentalDays", rentalDays, "carGroups", carGroups, "rates", rows)
-
-	// rates := make(map[hertzMarkupKey]markupRates, len(rows))
-	// for _, r := range rows {
-	// 	rates[hertzMarkupKey{CarGroup: r.CarGroup, Brand: r.Brand}] = markupRates{
-	// 		Gross: r.MarkUpGross,
-	// 		Net:   r.MarkUpNet,
-	// 	}
-	// }
-	// return &HertzMarkupProvider{rates: rates}, nil
+	return &markupProvider{
+		netRate:   ratesRow.MarkUpNet,
+		grossRate: ratesRow.MarkUpGross,
+	}, nil
 }
 
 // GetMarkup returns the markup percentage for the given car group and brand, or false if no specific rate is found.
-func (h *HertzMarkupProvider) GetMarkup(isAgent bool, carGroup, brand string) float64 {
-	r, ok := h.rates[hertzMarkupKey{CarGroup: carGroup, Brand: brand}]
-	if !ok {
-		return 0
-	}
+func (h *markupProvider) GetMarkup(isAgent bool) float64 {
 	if isAgent {
-		return r.Net
+		return h.netRate
 	}
-	return r.Gross
-}
-
-// --- Flex ---
-
-// FlexMarkupProvider uses config-driven markup percentages.
-type FlexMarkupProvider struct {
-	markUpGross float64
-	markUpNet   float64
-}
-
-func NewFlexMarkupProvider(MarkUpGross, MarkUpNet float64) *FlexMarkupProvider {
-	return &FlexMarkupProvider{
-		markUpGross: MarkUpGross,
-		markUpNet:   MarkUpNet,
-	}
-}
-
-func (f *FlexMarkupProvider) GetMarkup(isAgent bool, _, _ string) float64 {
-	if isAgent {
-		return f.markUpNet
-	}
-	return f.markUpGross
+	return h.grossRate
 }

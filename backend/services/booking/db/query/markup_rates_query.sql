@@ -1,4 +1,4 @@
--- name: GetMarkupRates :many
+-- name: GetBrokerMarkupRateByCountryCode :one
 -- Used by the markup logic to fetch rates for a given search.
 SELECT mark_up_gross, mark_up_net
 FROM markup_rates

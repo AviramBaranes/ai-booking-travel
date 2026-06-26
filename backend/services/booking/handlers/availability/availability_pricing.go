@@ -2,7 +2,6 @@ package availability
 
 import (
 	"context"
-	"fmt"
 	"math/rand/v2"
 	"sort"
 
@@ -44,11 +43,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 		return artifacts, api_errors.ErrInternalError
 	}
 
-	markupProviders, err := s.getMarkupProviderMap(ctx, locs, daysCount, p.PickupDate, extractCarGroups(avResp.AvailableVehicles))
-	if err != nil {
-		rlog.Error("failed to get markup provider map", "error", err)
-		return artifacts, api_errors.ErrInternalError
-	}
+	markupProviders := s.getMarkupProviderMap(ctx, locs, daysCount, p.PickupDate, extractCarGroups(avResp.AvailableVehicles))
 
 	grossMarkupResp, err := accounts.GetUserMarkupGross(ctx)
 	if err != nil {
@@ -75,7 +70,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 		mp, ok := markupProviders[v.Broker]
 		if !ok {
 			rlog.Warn("no markup provider found for broker, skipping applying markup", "broker", v.Broker)
-			mp = NewFlexMarkupProvider(s.cfg.MarkUpGross(), s.cfg.MarkUpNet()) // default to flex markup provider with 0% markup
+			mp = NewMarkupProviderFromCfg(s.cfg.MarkUpGross(), s.cfg.MarkUpNet())
 		}
 
 		av := AvailableVehicle{
@@ -94,7 +89,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				continue
 			}
 
-			markupPercentage := mp.GetMarkup(isAgent, v.CarDetails.CarGroup, p.SupplierCode)
+			markupPercentage := mp.GetMarkup(isAgent)
 			if markupPercentage <= 0 {
 				rlog.Warn("calculated car price with markup is less than or equal to 0, skipping plan", "carGroup", v.CarDetails.CarGroup, "brand", p.SupplierCode)
 				continue
@@ -241,26 +236,18 @@ func sortPlansByPrice(plans []Plan) {
 }
 
 // getMarkupProviderMap returns a MarkupProvider for each broker present in the availability locations.
-func (s *AvailabilityService) getMarkupProviderMap(ctx context.Context, locs availabilityLocations, rentalDays int, pickupDate string, carGroups []string) (map[broker.Name]MarkupProvider, error) {
+func (s *AvailabilityService) getMarkupProviderMap(ctx context.Context, locs availabilityLocations, rentalDays int, pickupDate string, carGroups []string) map[broker.Name]MarkupProvider {
 	markupProviderMap := make(map[broker.Name]MarkupProvider)
 	for brokerName := range locs {
-		var provider MarkupProvider
-		switch brokerName {
-		case broker.BrokerFlex:
-			provider = NewFlexMarkupProvider(s.cfg.MarkUpGross(), s.cfg.MarkUpNet())
-		case broker.BrokerHertz:
-			hp, err := NewHertzMarkupProvider(ctx, s.query, locs[brokerName].pickupCountryCode, pickupDate, rentalDays, carGroups)
-			if err != nil {
-				return nil, fmt.Errorf("initializing hertz markup provider: %w", err)
-			}
-			provider = hp
-		default:
-			return nil, fmt.Errorf("unsupported broker: %s", brokerName)
+		provider, err := NewMarkupProviderFromDB(ctx, s.query, locs[brokerName].pickupCountryCode, string(brokerName))
+		if err != nil {
+			rlog.Error("initializing flex markup provider: %w", err)
+			provider = NewMarkupProviderFromCfg(s.cfg.MarkUpGross(), s.cfg.MarkUpNet())
 		}
-		markupProviderMap[broker.Name(brokerName)] = provider
+		markupProviderMap[brokerName] = provider
 	}
 
-	return markupProviderMap, nil
+	return markupProviderMap
 }
 
 // extractCarGroups returns a deduplicated slice of car group codes from the given vehicles.

@@ -41,42 +41,29 @@ func (q *Queries) DeleteMarkupRate(ctx context.Context, id int64) (int64, error)
 	return id, err
 }
 
-const getMarkupRates = `-- name: GetMarkupRates :many
+const getBrokerMarkupRateByCountryCode = `-- name: GetBrokerMarkupRateByCountryCode :one
 SELECT mark_up_gross, mark_up_net
 FROM markup_rates
 WHERE country_code = $1
   AND broker = $2::broker
 `
 
-type GetMarkupRatesParams struct {
+type GetBrokerMarkupRateByCountryCodeParams struct {
 	CountryCode string
 	Broker      Broker
 }
 
-type GetMarkupRatesRow struct {
+type GetBrokerMarkupRateByCountryCodeRow struct {
 	MarkUpGross float64
 	MarkUpNet   float64
 }
 
 // Used by the markup logic to fetch rates for a given search.
-func (q *Queries) GetMarkupRates(ctx context.Context, arg GetMarkupRatesParams) ([]GetMarkupRatesRow, error) {
-	rows, err := q.db.Query(ctx, getMarkupRates, arg.CountryCode, arg.Broker)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetMarkupRatesRow
-	for rows.Next() {
-		var i GetMarkupRatesRow
-		if err := rows.Scan(&i.MarkUpGross, &i.MarkUpNet); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetBrokerMarkupRateByCountryCode(ctx context.Context, arg GetBrokerMarkupRateByCountryCodeParams) (GetBrokerMarkupRateByCountryCodeRow, error) {
+	row := q.db.QueryRow(ctx, getBrokerMarkupRateByCountryCode, arg.CountryCode, arg.Broker)
+	var i GetBrokerMarkupRateByCountryCodeRow
+	err := row.Scan(&i.MarkUpGross, &i.MarkUpNet)
+	return i, err
 }
 
 const insertMarkupRate = `-- name: InsertMarkupRate :one

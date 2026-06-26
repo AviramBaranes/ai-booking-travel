@@ -35,13 +35,13 @@ type Querier interface {
 	GetAllLocationBrokerCodesByLocationIDs(ctx context.Context, locationIds []int64) ([]GetAllLocationBrokerCodesByLocationIDsRow, error)
 	GetAllTranslationSourceTexts(ctx context.Context) ([]string, error)
 	GetAllVerifiedTranslations(ctx context.Context) ([]GetAllVerifiedTranslationsRow, error)
+	// Used by the markup logic to fetch rates for a given search.
+	GetBrokerMarkupRateByCountryCode(ctx context.Context, arg GetBrokerMarkupRateByCountryCodeParams) (GetBrokerMarkupRateByCountryCodeRow, error)
 	GetLocationBrokerCode(ctx context.Context, arg GetLocationBrokerCodeParams) (LocationBrokerCode, error)
 	GetLocationByBrokerLocationID(ctx context.Context, brokerLocationID string) (Location, error)
 	GetLocationById(ctx context.Context, id int64) (Location, error)
 	GetLocationIDByBrokerCode(ctx context.Context, arg GetLocationIDByBrokerCodeParams) (int64, error)
 	GetLocationIDByLocationBrokerCodeID(ctx context.Context, id int64) (int64, error)
-	// Used by the markup logic to fetch rates for a given search.
-	GetMarkupRates(ctx context.Context, arg GetMarkupRatesParams) ([]GetMarkupRatesRow, error)
 	GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdParams) (GetPriceOfferByIdRow, error)
 	GetPriceOfferByToken(ctx context.Context, token pgtype.UUID) (GetPriceOfferByTokenRow, error)
 	GetSnapshotByID(ctx context.Context, id int64) (AvailablePlansSnapshot, error)

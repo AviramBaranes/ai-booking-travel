@@ -381,6 +381,21 @@ func (mr *MockQuerierMockRecorder) GetAllVerifiedTranslations(ctx any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllVerifiedTranslations", reflect.TypeOf((*MockQuerier)(nil).GetAllVerifiedTranslations), ctx)
 }
 
+// GetBrokerMarkupRateByCountryCode mocks base method.
+func (m *MockQuerier) GetBrokerMarkupRateByCountryCode(ctx context.Context, arg db.GetBrokerMarkupRateByCountryCodeParams) (db.GetBrokerMarkupRateByCountryCodeRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBrokerMarkupRateByCountryCode", ctx, arg)
+	ret0, _ := ret[0].(db.GetBrokerMarkupRateByCountryCodeRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBrokerMarkupRateByCountryCode indicates an expected call of GetBrokerMarkupRateByCountryCode.
+func (mr *MockQuerierMockRecorder) GetBrokerMarkupRateByCountryCode(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBrokerMarkupRateByCountryCode", reflect.TypeOf((*MockQuerier)(nil).GetBrokerMarkupRateByCountryCode), ctx, arg)
+}
+
 // GetLocationBrokerCode mocks base method.
 func (m *MockQuerier) GetLocationBrokerCode(ctx context.Context, arg db.GetLocationBrokerCodeParams) (db.LocationBrokerCode, error) {
 	m.ctrl.T.Helper()
@@ -454,21 +469,6 @@ func (m *MockQuerier) GetLocationIDByLocationBrokerCodeID(ctx context.Context, i
 func (mr *MockQuerierMockRecorder) GetLocationIDByLocationBrokerCodeID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLocationIDByLocationBrokerCodeID", reflect.TypeOf((*MockQuerier)(nil).GetLocationIDByLocationBrokerCodeID), ctx, id)
-}
-
-// GetMarkupRates mocks base method.
-func (m *MockQuerier) GetMarkupRates(ctx context.Context, arg db.GetMarkupRatesParams) ([]db.GetMarkupRatesRow, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetMarkupRates", ctx, arg)
-	ret0, _ := ret[0].([]db.GetMarkupRatesRow)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetMarkupRates indicates an expected call of GetMarkupRates.
-func (mr *MockQuerierMockRecorder) GetMarkupRates(ctx, arg any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMarkupRates", reflect.TypeOf((*MockQuerier)(nil).GetMarkupRates), ctx, arg)
 }
 
 // GetPriceOfferById mocks base method.
