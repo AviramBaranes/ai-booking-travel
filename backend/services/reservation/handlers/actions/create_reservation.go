@@ -181,8 +181,8 @@ func buildReservationPDFData(id int64, p CreateReservationParams, totalPrice flo
 		FlightNumber:        p.FlightNumber,
 		PickupLocationName:  p.PickupLocationName,
 		DropoffLocationName: p.DropoffLocationName,
-		PickupDate:          p.PickupDate,
-		DropoffDate:         p.DropoffDate,
+		PickupDate:          formatDate(p.PickupDate),
+		DropoffDate:         formatDate(p.DropoffDate),
 		PickupTime:          p.PickupTime,
 		DropoffTime:         p.DropoffTime,
 		RentalDays:          int32(p.RentalDays),
@@ -194,6 +194,15 @@ func buildReservationPDFData(id int64, p CreateReservationParams, totalPrice flo
 		VoucheredAt:         nil,
 		CreatedAt:           time.Now().Format("02/01/2006 15:04"),
 	}
+}
+
+func formatDate(dateStr string) string {
+	t, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return dateStr
+	}
+	return t.Format("02/01/2006")
+
 }
 
 func getCurrencyCode(currencyCode string) string {
