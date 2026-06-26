@@ -2,6 +2,7 @@ package booking
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"encore.app/internal/api_errors"
@@ -86,58 +87,57 @@ func TestListMarkupRates(t *testing.T) {
 	})
 
 	t.Run("filters by country", func(t *testing.T) {
-		for i := 0; i < 3; i++ {
+		// Each row needs a unique (country_code, broker) combo.
+		// Use unique country codes that all match ILIKE '%DEFC%' or '%ITFC%'.
+		for i := 1; i <= 3; i++ {
 			p := validCreateParams()
-			p.CountryCode = "DE"
-			p.MarkUpGross = float64(10 + i)
+			p.CountryCode = fmt.Sprintf("DEFC%d", i)
 			if _, err := s.CreateMarkupRate(ctx, p); err != nil {
-				t.Fatalf("failed to seed DE: %v", err)
+				t.Fatalf("failed to seed DEFC: %v", err)
 			}
 		}
-		for i := 0; i < 2; i++ {
+		for i := 1; i <= 2; i++ {
 			p := validCreateParams()
-			p.CountryCode = "IT"
-			p.MarkUpGross = float64(10 + i)
+			p.CountryCode = fmt.Sprintf("ITFC%d", i)
 			if _, err := s.CreateMarkupRate(ctx, p); err != nil {
-				t.Fatalf("failed to seed IT: %v", err)
+				t.Fatalf("failed to seed ITFC: %v", err)
 			}
 		}
 
-		resp, err := s.ListMarkupRates(ctx, markup_rate.ListMarkupRatesParams{Country: "DE", Page: 1})
+		resp, err := s.ListMarkupRates(ctx, markup_rate.ListMarkupRatesParams{Country: "DEFC", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 		if len(resp.Rates) != 3 {
-			t.Fatalf("expected 3 DE rates, got %d", len(resp.Rates))
+			t.Fatalf("expected 3 DEFC rates, got %d", len(resp.Rates))
 		}
 		for _, r := range resp.Rates {
-			if r.CountryCode != "DE" {
-				t.Fatalf("expected countryCode DE, got %s", r.CountryCode)
+			if r.CountryCode[:4] != "DEFC" {
+				t.Fatalf("expected countryCode starting with DEFC, got %s", r.CountryCode)
 			}
 		}
 	})
 
 	t.Run("filters by broker", func(t *testing.T) {
-		for i := 0; i < 2; i++ {
+		// (country_code, broker) is unique — use distinct country codes per broker.
+		for i := 1; i <= 2; i++ {
 			p := validCreateParams()
-			p.CountryCode = "BF"
+			p.CountryCode = fmt.Sprintf("BKFL%d", i)
 			p.Broker = "flex"
-			p.MarkUpGross = float64(10 + i)
 			if _, err := s.CreateMarkupRate(ctx, p); err != nil {
 				t.Fatalf("failed to seed flex: %v", err)
 			}
 		}
-		for i := 0; i < 2; i++ {
+		for i := 1; i <= 2; i++ {
 			p := validCreateParams()
-			p.CountryCode = "BF"
+			p.CountryCode = fmt.Sprintf("BKHZ%d", i)
 			p.Broker = "hertz"
-			p.MarkUpGross = float64(10 + i)
 			if _, err := s.CreateMarkupRate(ctx, p); err != nil {
 				t.Fatalf("failed to seed hertz: %v", err)
 			}
 		}
 
-		resp, err := s.ListMarkupRates(ctx, markup_rate.ListMarkupRatesParams{Country: "BF", Broker: "flex", Page: 1})
+		resp, err := s.ListMarkupRates(ctx, markup_rate.ListMarkupRatesParams{Country: "BKFL", Broker: "flex", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -152,17 +152,16 @@ func TestListMarkupRates(t *testing.T) {
 	})
 
 	t.Run("paginates results", func(t *testing.T) {
-		// Seed 16 rates under unique filter so page 1 = 15, page 2 = 1
-		for i := 0; i < 16; i++ {
+		// Each row needs a unique (country_code, broker). Use indexed country codes all matching ILIKE '%PGPG%'.
+		for i := 1; i <= 16; i++ {
 			p := validCreateParams()
-			p.CountryCode = "PG"
-			p.MarkUpGross = float64(10 + i)
+			p.CountryCode = fmt.Sprintf("PGPG%02d", i)
 			if _, err := s.CreateMarkupRate(ctx, p); err != nil {
 				t.Fatalf("failed to seed: %v", err)
 			}
 		}
 
-		page1, err := s.ListMarkupRates(ctx, markup_rate.ListMarkupRatesParams{Country: "PG", Page: 1})
+		page1, err := s.ListMarkupRates(ctx, markup_rate.ListMarkupRatesParams{Country: "PGPG", Page: 1})
 		if err != nil {
 			t.Fatalf("page 1 error: %v", err)
 		}
@@ -170,7 +169,7 @@ func TestListMarkupRates(t *testing.T) {
 			t.Fatalf("expected 15 rates on page 1, got %d", len(page1.Rates))
 		}
 
-		page2, err := s.ListMarkupRates(ctx, markup_rate.ListMarkupRatesParams{Country: "PG", Page: 2})
+		page2, err := s.ListMarkupRates(ctx, markup_rate.ListMarkupRatesParams{Country: "PGPG", Page: 2})
 		if err != nil {
 			t.Fatalf("page 2 error: %v", err)
 		}
@@ -178,7 +177,7 @@ func TestListMarkupRates(t *testing.T) {
 			t.Fatalf("expected 1 rate on page 2, got %d", len(page2.Rates))
 		}
 
-		page3, err := s.ListMarkupRates(ctx, markup_rate.ListMarkupRatesParams{Country: "PG", Page: 3})
+		page3, err := s.ListMarkupRates(ctx, markup_rate.ListMarkupRatesParams{Country: "PGPG", Page: 3})
 		if err != nil {
 			t.Fatalf("page 3 error: %v", err)
 		}
@@ -199,7 +198,8 @@ func TestListMarkupRates(t *testing.T) {
 	})
 
 	t.Run("defaults sort to country ascending", func(t *testing.T) {
-		for _, c := range []string{"FR", "CA", "GB"} {
+		// Use unique country codes with prefix "SRT" to isolate from other tests.
+		for _, c := range []string{"SRTFR", "SRTCA", "SRTGB"} {
 			p := validCreateParams()
 			p.CountryCode = c
 			p.Broker = "hertz"
@@ -208,7 +208,7 @@ func TestListMarkupRates(t *testing.T) {
 			}
 		}
 
-		resp, err := s.ListMarkupRates(ctx, markup_rate.ListMarkupRatesParams{Broker: "hertz", Page: 1})
+		resp, err := s.ListMarkupRates(ctx, markup_rate.ListMarkupRatesParams{Country: "SRT", Page: 1})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -244,15 +244,17 @@ func TestCreateMarkupRate(t *testing.T) {
 	})
 
 	t.Run("creates rate successfully", func(t *testing.T) {
-		resp, err := s.CreateMarkupRate(ctx, validCreateParams())
+		p := validCreateParams()
+		p.CountryCode = "CRST" // unique to this test
+		resp, err := s.CreateMarkupRate(ctx, p)
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 		if resp.ID == 0 {
 			t.Fatal("expected non-zero ID")
 		}
-		if resp.CountryCode != "US" {
-			t.Fatalf("expected countryCode US, got %s", resp.CountryCode)
+		if resp.CountryCode != "CRST" {
+			t.Fatalf("expected countryCode CRST, got %s", resp.CountryCode)
 		}
 		if resp.Broker != "flex" {
 			t.Fatalf("expected broker flex, got %s", resp.Broker)
@@ -268,7 +270,7 @@ func TestUpdateMarkupRate(t *testing.T) {
 	t.Run("validation rejects missing country", func(t *testing.T) {
 		p := validUpdateParams()
 		p.CountryCode = ""
-		api_errors.AssertApiError(t, invalidValueErr("country"), p.Validate())
+		api_errors.AssertApiError(t, invalidValueErr("countryCode"), p.Validate())
 	})
 
 	t.Run("validation rejects missing broker", func(t *testing.T) {
@@ -284,12 +286,19 @@ func TestUpdateMarkupRate(t *testing.T) {
 	})
 
 	t.Run("updates rate successfully", func(t *testing.T) {
-		created, err := s.CreateMarkupRate(ctx, validCreateParams())
+		p := validCreateParams()
+		p.CountryCode = "UPDT" // unique to this test
+		created, err := s.CreateMarkupRate(ctx, p)
 		if err != nil {
 			t.Fatalf("failed to seed: %v", err)
 		}
 
-		resp, err := s.UpdateMarkupRate(ctx, created.ID, validUpdateParams())
+		resp, err := s.UpdateMarkupRate(ctx, created.ID, markup_rate.UpdateMarkupRateParams{
+			CountryCode: "UPDT", // keep same to avoid unique constraint conflict
+			Broker:      "flex",
+			MarkUpGross: 20.0,
+			MarkUpNet:   12.0,
+		})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
@@ -313,7 +322,9 @@ func TestDeleteMarkupRate(t *testing.T) {
 	s := &Service{query: testQuerier()}
 
 	t.Run("deletes rate successfully", func(t *testing.T) {
-		created, err := s.CreateMarkupRate(ctx, validCreateParams())
+		p := validCreateParams()
+		p.CountryCode = "DELT" // unique to this test
+		created, err := s.CreateMarkupRate(ctx, p)
 		if err != nil {
 			t.Fatalf("failed to seed: %v", err)
 		}

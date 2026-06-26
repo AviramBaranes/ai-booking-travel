@@ -105,10 +105,18 @@ FROM markup_rates
 WHERE ($1::text IS NULL OR country_code ILIKE '%' || $1 || '%')
   AND ($2::text IS NULL OR broker::text ILIKE '%' || $2 || '%')
 ORDER BY
-  CASE WHEN $3::text = 'country_code' AND $4::text = 'asc' THEN country_code END ASC,
-  CASE WHEN $3::text = 'country_code' AND $4::text = 'desc' THEN country_code END DESC,
+  CASE WHEN $3::text = 'country' AND $4::text = 'asc' THEN country_code END ASC,
+  CASE WHEN $3::text = 'country' AND $4::text = 'desc' THEN country_code END DESC,
   CASE WHEN $3::text = 'broker' AND $4::text = 'asc' THEN broker::text END ASC,
   CASE WHEN $3::text = 'broker' AND $4::text = 'desc' THEN broker::text END DESC,
+  CASE WHEN $3::text = 'mark_up_gross' AND $4::text = 'asc' THEN mark_up_gross END ASC,
+  CASE WHEN $3::text = 'mark_up_gross' AND $4::text = 'desc' THEN mark_up_gross END DESC,
+  CASE WHEN $3::text = 'mark_up_net' AND $4::text = 'asc' THEN mark_up_net END ASC,
+  CASE WHEN $3::text = 'mark_up_net' AND $4::text = 'desc' THEN mark_up_net END DESC,
+  CASE WHEN $3::text = 'created_at' AND $4::text = 'asc' THEN created_at END ASC,
+  CASE WHEN $3::text = 'created_at' AND $4::text = 'desc' THEN created_at END DESC,
+  CASE WHEN $3::text = 'updated_at' AND $4::text = 'asc' THEN updated_at END ASC,
+  CASE WHEN $3::text = 'updated_at' AND $4::text = 'desc' THEN updated_at END DESC,
   id ASC
 LIMIT $6::int
 OFFSET $5::int

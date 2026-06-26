@@ -19,10 +19,18 @@ FROM markup_rates
 WHERE (sqlc.narg(country_code)::text IS NULL OR country_code ILIKE '%' || sqlc.narg(country_code) || '%')
   AND (sqlc.narg(broker)::text IS NULL OR broker::text ILIKE '%' || sqlc.narg(broker) || '%')
 ORDER BY
-  CASE WHEN sqlc.arg(sort_field)::text = 'country_code' AND sqlc.arg(sort_dir)::text = 'asc' THEN country_code END ASC,
-  CASE WHEN sqlc.arg(sort_field)::text = 'country_code' AND sqlc.arg(sort_dir)::text = 'desc' THEN country_code END DESC,
+  CASE WHEN sqlc.arg(sort_field)::text = 'country' AND sqlc.arg(sort_dir)::text = 'asc' THEN country_code END ASC,
+  CASE WHEN sqlc.arg(sort_field)::text = 'country' AND sqlc.arg(sort_dir)::text = 'desc' THEN country_code END DESC,
   CASE WHEN sqlc.arg(sort_field)::text = 'broker' AND sqlc.arg(sort_dir)::text = 'asc' THEN broker::text END ASC,
   CASE WHEN sqlc.arg(sort_field)::text = 'broker' AND sqlc.arg(sort_dir)::text = 'desc' THEN broker::text END DESC,
+  CASE WHEN sqlc.arg(sort_field)::text = 'mark_up_gross' AND sqlc.arg(sort_dir)::text = 'asc' THEN mark_up_gross END ASC,
+  CASE WHEN sqlc.arg(sort_field)::text = 'mark_up_gross' AND sqlc.arg(sort_dir)::text = 'desc' THEN mark_up_gross END DESC,
+  CASE WHEN sqlc.arg(sort_field)::text = 'mark_up_net' AND sqlc.arg(sort_dir)::text = 'asc' THEN mark_up_net END ASC,
+  CASE WHEN sqlc.arg(sort_field)::text = 'mark_up_net' AND sqlc.arg(sort_dir)::text = 'desc' THEN mark_up_net END DESC,
+  CASE WHEN sqlc.arg(sort_field)::text = 'created_at' AND sqlc.arg(sort_dir)::text = 'asc' THEN created_at END ASC,
+  CASE WHEN sqlc.arg(sort_field)::text = 'created_at' AND sqlc.arg(sort_dir)::text = 'desc' THEN created_at END DESC,
+  CASE WHEN sqlc.arg(sort_field)::text = 'updated_at' AND sqlc.arg(sort_dir)::text = 'asc' THEN updated_at END ASC,
+  CASE WHEN sqlc.arg(sort_field)::text = 'updated_at' AND sqlc.arg(sort_dir)::text = 'desc' THEN updated_at END DESC,
   id ASC
 LIMIT sqlc.arg(query_limit)::int
 OFFSET sqlc.arg(query_offset)::int;
