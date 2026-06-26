@@ -9,44 +9,32 @@ import {
   SortState,
 } from "@/app/(app)/admin/_components/crud-table/types";
 import {
-  listHertzMarkupRates,
-  createHertzMarkupRate,
-  updateHertzMarkupRate,
-  deleteHertzMarkupRate,
-} from "@/shared/api/hertz-rates-api";
+  listMarkupRates,
+  createMarkupRate,
+  updateMarkupRate,
+  deleteMarkupRate,
+} from "@/shared/api/markup-rates-api";
 
-const columns: ColumnDef<markup_rate.HertzMarkupRateResponse>[] = [
+const columns: ColumnDef<markup_rate.MarkupRateResponse>[] = [
   { key: "id", label: "מזהה", type: "number", editable: false },
-  { key: "country", label: "מדינה", type: "text", sortable: true },
-  { key: "brand", label: "מותג", type: "text", sortable: true },
+  { key: "countryCode", label: "קוד מדינה", type: "text", sortable: true },
   {
-    key: "pickupDateFrom",
-    label: "מתאריך איסוף",
-    type: "date",
+    key: "broker",
+    label: "ספק",
+    type: "select",
     sortable: true,
+    options: [
+      { label: "Flex", value: "flex" },
+      { label: "Hertz", value: "hertz" },
+    ],
   },
-  { key: "pickupDateTo", label: "עד תאריך איסוף", type: "date" },
-  { key: "carGroup", label: "קבוצת רכב", type: "text", sortable: true },
-  { key: "numOfRentalDaysFrom", label: "מימים", type: "number" },
-  { key: "numOfRentalDaysTo", label: "עד ימים", type: "number" },
-  { key: "markUpGross", label: "מרווח ברוטו", type: "number" },
-  { key: "markUpNet", label: "מרווח נטו", type: "number" },
+  { key: "markUpGross", label: "מרווח ברוטו", type: "number", sortable: true },
+  { key: "markUpNet", label: "מרווח נטו", type: "number", sortable: true },
 ];
 
-const hertzRateSchema = z.object({
-  country: z.string().min(1, "שדה חובה"),
-  brand: z.string().min(1, "שדה חובה"),
-  pickupDateFrom: z.string().min(1, "שדה חובה"),
-  pickupDateTo: z.string().min(1, "שדה חובה"),
-  carGroup: z.string().min(1, "שדה חובה"),
-  numOfRentalDaysFrom: z
-    .number({ error: "מספר נדרש" })
-    .int("מספר שלם נדרש")
-    .min(0, "ערך מינימלי 0"),
-  numOfRentalDaysTo: z
-    .number({ error: "מספר נדרש" })
-    .int("מספר שלם נדרש")
-    .min(0, "ערך מינימלי 0"),
+const rateSchema = z.object({
+  countryCode: z.string().min(1, "שדה חובה"),
+  broker: z.string().min(1, "שדה חובה"),
   markUpGross: z.number({ error: "מספר נדרש" }),
   markUpNet: z.number({ error: "מספר נדרש" }),
 });
@@ -54,27 +42,24 @@ const hertzRateSchema = z.object({
 // Map camelCase frontend keys to snake_case backend sort fields
 const sortKeyMap: Record<string, string> = {
   country: "country",
-  brand: "brand",
-  pickupDateFrom: "pickup_date_from",
-  carGroup: "car_group",
-  numOfRentalDaysFrom: "num_of_rental_days_from",
+  broker: "broker",
+  markUpGross: "mark_up_gross",
+  markUpNet: "mark_up_net",
 };
 
 interface Filters {
   country: string;
-  brand: string;
-  carGroup: string;
+  broker: string;
 }
 
 function buildListParams(
   sort: SortState | null,
   page: number,
   filters: Filters,
-): markup_rate.ListHertzMarkupRatesParams {
+): markup_rate.ListMarkupRatesParams {
   return {
     Country: filters.country,
-    Brand: filters.brand,
-    CarGroup: filters.carGroup,
+    Broker: filters.broker,
     SortBy: sort ? (sortKeyMap[sort.key] ?? "") : "",
     SortDir: sort?.dir ?? "",
     Page: page,
@@ -108,19 +93,9 @@ function FilterBar({
         <input
           type="text"
           className={inputClass}
-          value={filters.brand}
-          onChange={(e) => onChange({ ...filters, brand: e.target.value })}
-          placeholder="סינון לפי מותג"
-        />
-      </div>
-      <div>
-        <label className="block text-xs text-gray-500 mb-1">קבוצת רכב</label>
-        <input
-          type="text"
-          className={inputClass}
-          value={filters.carGroup}
-          onChange={(e) => onChange({ ...filters, carGroup: e.target.value })}
-          placeholder="סינון לפי קבוצה"
+          value={filters.broker}
+          onChange={(e) => onChange({ ...filters, broker: e.target.value })}
+          placeholder="סינון לפי ספק"
         />
       </div>
     </div>
@@ -130,34 +105,33 @@ function FilterBar({
 export default function PricingTable() {
   const [filters, setFilters] = useState<Filters>({
     country: "",
-    brand: "",
-    carGroup: "",
+    broker: "",
   });
 
   return (
     <CrudTable<
-      markup_rate.HertzMarkupRateResponse,
-      markup_rate.CreateHertzMarkupRateParams,
-      markup_rate.UpdateHertzMarkupRateParams
+      markup_rate.MarkupRateResponse,
+      markup_rate.CreateMarkupRateParams,
+      markup_rate.UpdateMarkupRateParams
     >
       columns={columns}
-      queryKey="hertz-markup-rates"
-      queryKeyDeps={[filters.country, filters.brand, filters.carGroup]}
+      queryKey="-markup-rates"
+      queryKeyDeps={[filters.country, filters.broker]}
       getId={(r) => r.id}
       listFn={(sort, page) =>
-        listHertzMarkupRates(buildListParams(sort, page, filters))
+        listMarkupRates(buildListParams(sort, page, filters))
       }
       extractList={(r) =>
-        (r as markup_rate.ListHertzMarkupRatesResponse | undefined)?.rates ?? []
+        (r as markup_rate.ListMarkupRatesResponse | undefined)?.rates ?? []
       }
       extractTotal={(r) =>
-        (r as markup_rate.ListHertzMarkupRatesResponse | undefined)?.total ?? 0
+        (r as markup_rate.ListMarkupRatesResponse | undefined)?.total ?? 0
       }
-      createFn={createHertzMarkupRate}
-      updateFn={updateHertzMarkupRate}
-      deleteFn={deleteHertzMarkupRate}
-      createSchema={hertzRateSchema}
-      updateSchema={hertzRateSchema}
+      createFn={createMarkupRate}
+      updateFn={updateMarkupRate}
+      deleteFn={deleteMarkupRate}
+      createSchema={rateSchema}
+      updateSchema={rateSchema}
       filterSlot={<FilterBar filters={filters} onChange={setFilters} />}
     />
   );

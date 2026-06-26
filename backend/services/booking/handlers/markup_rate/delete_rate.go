@@ -9,13 +9,13 @@ import (
 	"encore.dev/rlog"
 )
 
-func (s *HertzMarkupRateService) DeleteHertzMarkupRate(ctx context.Context, id int64) error {
-	_, err := s.query.DeleteHertzMarkupRate(ctx, id)
+func (s *MarkupRateService) DeleteMarkupRate(ctx context.Context, id int64) error {
+	_, err := s.query.DeleteMarkupRate(ctx, id)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
 			return api_errors.ErrNotFound
 		}
-		rlog.Error("failed to delete hertz markup rate", "error", err, "id", id)
+		rlog.Error("failed to delete markup rate", "error", err, "id", id)
 		return api_errors.ErrInternalError
 	}
 	return nil

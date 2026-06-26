@@ -477,13 +477,13 @@ export namespace booking {
             this.BulkToggleLocations = this.BulkToggleLocations.bind(this)
             this.CreateCoupon = this.CreateCoupon.bind(this)
             this.CreateCurrency = this.CreateCurrency.bind(this)
-            this.CreateHertzMarkupRate = this.CreateHertzMarkupRate.bind(this)
+            this.CreateMarkupRate = this.CreateMarkupRate.bind(this)
             this.CreatePriceOffer = this.CreatePriceOffer.bind(this)
             this.DeleteBrokerTranslation = this.DeleteBrokerTranslation.bind(this)
             this.DeleteCoupon = this.DeleteCoupon.bind(this)
             this.DeleteCurrency = this.DeleteCurrency.bind(this)
-            this.DeleteHertzMarkupRate = this.DeleteHertzMarkupRate.bind(this)
             this.DeleteLocation = this.DeleteLocation.bind(this)
+            this.DeleteMarkupRate = this.DeleteMarkupRate.bind(this)
             this.GetAgentPriceOffer = this.GetAgentPriceOffer.bind(this)
             this.GetClientPriceOffer = this.GetClientPriceOffer.bind(this)
             this.GetPendingTranslations = this.GetPendingTranslations.bind(this)
@@ -493,9 +493,9 @@ export namespace booking {
             this.ListBrokerTranslations = this.ListBrokerTranslations.bind(this)
             this.ListCoupons = this.ListCoupons.bind(this)
             this.ListCurrencies = this.ListCurrencies.bind(this)
-            this.ListHertzMarkupRates = this.ListHertzMarkupRates.bind(this)
             this.ListLocations = this.ListLocations.bind(this)
             this.ListLocationsWithoutAlias = this.ListLocationsWithoutAlias.bind(this)
+            this.ListMarkupRates = this.ListMarkupRates.bind(this)
             this.ListPriceOffers = this.ListPriceOffers.bind(this)
             this.RenewPriceOffer = this.RenewPriceOffer.bind(this)
             this.SearchAvailability = this.SearchAvailability.bind(this)
@@ -506,7 +506,7 @@ export namespace booking {
             this.UpdateBrokerTranslation = this.UpdateBrokerTranslation.bind(this)
             this.UpdateCoupon = this.UpdateCoupon.bind(this)
             this.UpdateCurrency = this.UpdateCurrency.bind(this)
-            this.UpdateHertzMarkupRate = this.UpdateHertzMarkupRate.bind(this)
+            this.UpdateMarkupRate = this.UpdateMarkupRate.bind(this)
             this.UpdatePriceOffer = this.UpdatePriceOffer.bind(this)
             this.VerifyBrokerTranslation = this.VerifyBrokerTranslation.bind(this)
         }
@@ -556,12 +556,12 @@ export namespace booking {
         }
 
         /**
-         * CreateHertzMarkupRate creates a new hertz markup rate.
+         * CreateMarkupRate creates a new  markup rate.
          */
-        public async CreateHertzMarkupRate(params: markup_rate.CreateHertzMarkupRateParams): Promise<markup_rate.HertzMarkupRateResponse> {
+        public async CreateMarkupRate(params: markup_rate.CreateMarkupRateParams): Promise<markup_rate.MarkupRateResponse> {
             // Now make the actual call to the API
-            const resp = await this.baseClient.callTypedAPI("POST", `/hertz-markup-rates`, JSON.stringify(params))
-            return await resp.json() as markup_rate.HertzMarkupRateResponse
+            const resp = await this.baseClient.callTypedAPI("POST", `/-markup-rates`, JSON.stringify(params))
+            return await resp.json() as markup_rate.MarkupRateResponse
         }
 
         /**
@@ -595,18 +595,18 @@ export namespace booking {
         }
 
         /**
-         * DeleteHertzMarkupRate deletes a hertz markup rate by its ID.
-         */
-        public async DeleteHertzMarkupRate(id: number): Promise<void> {
-            await this.baseClient.callTypedAPI("DELETE", `/hertz-markup-rates/${encodeURIComponent(id)}`)
-        }
-
-        /**
          * DeleteLocation deletes a location broker code by ID. If no other broker codes
          * reference the same location, the location is also deleted.
          */
         public async DeleteLocation(id: number): Promise<void> {
             await this.baseClient.callTypedAPI("DELETE", `/locations/${encodeURIComponent(id)}`)
+        }
+
+        /**
+         * DeleteMarkupRate deletes a  markup rate by its ID.
+         */
+        public async DeleteMarkupRate(id: number): Promise<void> {
+            await this.baseClient.callTypedAPI("DELETE", `/-markup-rates/${encodeURIComponent(id)}`)
         }
 
         /**
@@ -692,25 +692,6 @@ export namespace booking {
         }
 
         /**
-         * ListHertzMarkupRates lists hertz markup rates with pagination, optional filtering, and sorting.
-         */
-        public async ListHertzMarkupRates(params: markup_rate.ListHertzMarkupRatesParams): Promise<markup_rate.ListHertzMarkupRatesResponse> {
-            // Convert our params into the objects we need for the request
-            const query = makeRecord<string, string | string[]>({
-                brand:    params.Brand,
-                carGroup: params.CarGroup,
-                country:  params.Country,
-                page:     String(params.Page),
-                sortBy:   params.SortBy,
-                sortDir:  params.SortDir,
-            })
-
-            // Now make the actual call to the API
-            const resp = await this.baseClient.callTypedAPI("GET", `/hertz-markup-rates`, undefined, {query})
-            return await resp.json() as markup_rate.ListHertzMarkupRatesResponse
-        }
-
-        /**
          * ListLocations lists location broker codes with optional filters.
          */
         public async ListLocations(params: location.ListLocationsParams): Promise<location.ListLocationsResponse> {
@@ -739,6 +720,24 @@ export namespace booking {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/locations-without-alias`, undefined, {query})
             return await resp.json() as location.ListLocationsMissingAliasesResponse
+        }
+
+        /**
+         * ListMarkupRates lists  markup rates with pagination, optional filtering, and sorting.
+         */
+        public async ListMarkupRates(params: markup_rate.ListMarkupRatesParams): Promise<markup_rate.ListMarkupRatesResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                broker:  params.Broker,
+                country: params.Country,
+                page:    String(params.Page),
+                sortBy:  params.SortBy,
+                sortDir: params.SortDir,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/-markup-rates`, undefined, {query})
+            return await resp.json() as markup_rate.ListMarkupRatesResponse
         }
 
         /**
@@ -848,12 +847,12 @@ export namespace booking {
         }
 
         /**
-         * UpdateHertzMarkupRate updates an existing hertz markup rate.
+         * UpdateMarkupRate updates an existing  markup rate.
          */
-        public async UpdateHertzMarkupRate(id: number, params: markup_rate.UpdateHertzMarkupRateParams): Promise<markup_rate.HertzMarkupRateResponse> {
+        public async UpdateMarkupRate(id: number, params: markup_rate.UpdateMarkupRateParams): Promise<markup_rate.MarkupRateResponse> {
             // Now make the actual call to the API
-            const resp = await this.baseClient.callTypedAPI("PUT", `/hertz-markup-rates/${encodeURIComponent(id)}`, JSON.stringify(params))
-            return await resp.json() as markup_rate.HertzMarkupRateResponse
+            const resp = await this.baseClient.callTypedAPI("PUT", `/-markup-rates/${encodeURIComponent(id)}`, JSON.stringify(params))
+            return await resp.json() as markup_rate.MarkupRateResponse
         }
 
         /**
@@ -1550,53 +1549,37 @@ export namespace location {
 }
 
 export namespace markup_rate {
-    export interface CreateHertzMarkupRateParams {
-        country: string
-        brand: string
-        pickupDateFrom: string
-        pickupDateTo: string
-        carGroup: string
-        numOfRentalDaysFrom: number
-        numOfRentalDaysTo: number
+    export interface CreateMarkupRateParams {
+        countryCode: string
+        broker: string
         markUpGross: number
         markUpNet: number
     }
 
-    export interface HertzMarkupRateResponse {
-        id: number
-        country: string
-        brand: string
-        pickupDateFrom: string
-        pickupDateTo: string
-        carGroup: string
-        numOfRentalDaysFrom: number
-        numOfRentalDaysTo: number
-        markUpGross: number
-        markUpNet: number
-    }
-
-    export interface ListHertzMarkupRatesParams {
+    export interface ListMarkupRatesParams {
         Country: string
-        Brand: string
-        CarGroup: string
+        Broker: string
         SortBy: string
         SortDir: string
         Page: number
     }
 
-    export interface ListHertzMarkupRatesResponse {
-        rates: HertzMarkupRateResponse[]
+    export interface ListMarkupRatesResponse {
+        rates: MarkupRateResponse[]
         total: number
     }
 
-    export interface UpdateHertzMarkupRateParams {
-        country: string
-        brand: string
-        pickupDateFrom: string
-        pickupDateTo: string
-        carGroup: string
-        numOfRentalDaysFrom: number
-        numOfRentalDaysTo: number
+    export interface MarkupRateResponse {
+        id: number
+        countryCode: string
+        broker: string
+        markUpGross: number
+        markUpNet: number
+    }
+
+    export interface UpdateMarkupRateParams {
+        countryCode: string
+        broker: string
         markUpGross: number
         markUpNet: number
     }

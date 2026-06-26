@@ -182,21 +182,6 @@ type Currency struct {
 	UpdatedAt       pgtype.Timestamptz
 }
 
-type HertzMarkupRate struct {
-	ID                  int64
-	Country             string
-	Brand               string
-	PickupDateFrom      pgtype.Date
-	PickupDateTo        pgtype.Date
-	CarGroup            string
-	NumOfRentalDaysFrom int32
-	NumOfRentalDaysTo   int32
-	MarkUpGross         float64
-	MarkUpNet           float64
-	CreatedAt           pgtype.Timestamptz
-	UpdatedAt           pgtype.Timestamptz
-}
-
 type Location struct {
 	ID          int64
 	Country     string
@@ -225,6 +210,16 @@ type LocationBrokerCode struct {
 	Enabled          bool
 	CreatedAt        pgtype.Timestamptz
 	UpdatedAt        pgtype.Timestamptz
+}
+
+type MarkupRate struct {
+	ID          int64
+	CountryCode string
+	MarkUpGross float64
+	MarkUpNet   float64
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	Broker      Broker
 }
 
 type PriceOffer struct {

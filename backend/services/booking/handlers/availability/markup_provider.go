@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"encore.app/services/booking/db"
-	"encore.dev/rlog"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -38,27 +37,28 @@ type HertzMarkupProvider struct {
 
 // NewHertzMarkupProvider constructs a HertzMarkupProvider by fetching the relevant rates from the DB based on the search parameters.
 func NewHertzMarkupProvider(ctx context.Context, q db.Querier, country, pickupDate string, rentalDays int, carGroups []string) (*HertzMarkupProvider, error) {
-	rows, err := q.GetHertzMarkupRates(ctx, db.GetHertzMarkupRatesParams{
-		Country:    country,
-		PickupDate: pgtype.Date{Time: parseDate(pickupDate).Time, Valid: true},
-		RentalDays: int32(rentalDays),
-		CarGroups:  carGroups,
-	})
-	if err != nil {
-		return nil, err
-	}
+	return nil, nil
+	// rows, err := q.GetMarkupRates(ctx, db.GetMarkupRatesParams{
+	// 	CountryCode: country,
+	// 	PickupDate:  pgtype.Date{Time: parseDate(pickupDate).Time, Valid: true},
+	// 	RentalDays:  int32(rentalDays),
+	// 	CarGroups:   carGroups,
+	// })
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	// log the rates for debugging:
-	rlog.Info("fetched Hertz markup rates", "country", country, "pickupDate", pickupDate, "rentalDays", rentalDays, "carGroups", carGroups, "rates", rows)
+	// // log the rates for debugging:
+	// rlog.Info("fetched Hertz markup rates", "country", country, "pickupDate", pickupDate, "rentalDays", rentalDays, "carGroups", carGroups, "rates", rows)
 
-	rates := make(map[hertzMarkupKey]markupRates, len(rows))
-	for _, r := range rows {
-		rates[hertzMarkupKey{CarGroup: r.CarGroup, Brand: r.Brand}] = markupRates{
-			Gross: r.MarkUpGross,
-			Net:   r.MarkUpNet,
-		}
-	}
-	return &HertzMarkupProvider{rates: rates}, nil
+	// rates := make(map[hertzMarkupKey]markupRates, len(rows))
+	// for _, r := range rows {
+	// 	rates[hertzMarkupKey{CarGroup: r.CarGroup, Brand: r.Brand}] = markupRates{
+	// 		Gross: r.MarkUpGross,
+	// 		Net:   r.MarkUpNet,
+	// 	}
+	// }
+	// return &HertzMarkupProvider{rates: rates}, nil
 }
 
 // GetMarkup returns the markup percentage for the given car group and brand, or false if no specific rate is found.
