@@ -9,6 +9,8 @@ import (
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/accounts"
+	"encore.app/services/accounts/handlers/office"
+	"encore.app/services/accounts/handlers/organization"
 	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation/db"
 	"encore.dev/beta/errs"
@@ -57,6 +59,11 @@ func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
 	if err := db.WithTx(ctx, s.pool, func(q db.Querier, tx pgx.Tx) error {
 		if err := q.CancelReservation(ctx, id); err != nil {
 			rlog.Error("failed to cancel reservation", "error", err, "reservationId", id)
+			return err
+		}
+
+		if err := updateBalanceDue(ctx, reservation); err != nil {
+			rlog.Error("failed to update balance due after cancellation", "error", err, "reservationId", id)
 			return err
 		}
 
@@ -112,4 +119,42 @@ func canCancel(reservation db.Reservation) bool {
 
 	cancellationDeadline := pickupDateTime.Add(-cancellationWindowHours * time.Hour)
 	return time.Now().Before(cancellationDeadline)
+}
+
+func updateBalanceDue(ctx context.Context, reservation db.Reservation) error {
+	if reservation.ReservationStatus != db.ReservationStatusVouchered {
+		return nil // only update balance due for vouchered reservations
+	}
+
+	if reservation.PaymentConfirmationCode != nil {
+		return nil // if reservation paid by credit card, we don't update balance due
+	}
+
+	if reservation.OrganizationID == nil {
+		return nil // private customer has no due.
+	}
+
+	isOrganic := *reservation.IsOrganizationOrganic
+	total := dbadapters.NumericToFloat64(reservation.TotalPrice) * dbadapters.NumericToFloat64(reservation.CurrencyRate)
+
+	if !isOrganic {
+		if err := accounts.UpdateOfficeBalanceDue(ctx, office.UpdateOfficeBalanceDueParams{
+			ID:            *reservation.OfficeID,
+			BalanceChange: total * -1,
+		}); err != nil {
+			rlog.Error("failed to update office balance due after billing", "error", err, "office_id", *reservation.OfficeID, "amount", total)
+			return api_errors.ErrInternalError
+		}
+		return nil
+	}
+
+	if err := accounts.UpdateOrganizationBalanceDue(ctx, organization.UpdateOrganizationBalanceDueParams{
+		ID:            *reservation.OrganizationID,
+		BalanceChange: total * -1,
+	}); err != nil {
+		rlog.Error("failed to update organization balance due after billing", "error", err, "organization_id", *reservation.OrganizationID, "amount", total)
+		return api_errors.ErrInternalError
+	}
+
+	return nil
 }

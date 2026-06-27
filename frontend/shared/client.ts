@@ -728,7 +728,7 @@ export namespace booking {
         public async ListMarkupRates(params: markup_rate.ListMarkupRatesParams): Promise<markup_rate.ListMarkupRatesResponse> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
-                broker:  params.Broker,
+                broker:  params.broker,
                 country: params.Country,
                 page:    String(params.Page),
                 sortBy:  params.SortBy,
@@ -1558,7 +1558,7 @@ export namespace markup_rate {
 
     export interface ListMarkupRatesParams {
         Country: string
-        Broker: string
+        broker: string
         SortBy: string
         SortDir: string
         Page: number

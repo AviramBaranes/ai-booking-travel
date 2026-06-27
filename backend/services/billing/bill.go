@@ -240,14 +240,11 @@ func resolveReservations(ctx context.Context, p BillParams, total float64) error
 			}
 			return nil
 		}
-		if err != nil {
-			rlog.Error("failed to resolve reservations", "error", err, "reservation_ids", p.IDs)
-			return api_errors.ErrInternalError
-		}
+		rlog.Error("failed to resolve reservations", "error", err, "reservation_ids", p.IDs)
+		return api_errors.ErrInternalError
 	}
 
 	if p.OfficeID != nil {
-		rlog.Info("updating office balance due after billing", "office_id", p.OfficeID, "amount", total)
 		if err := accounts.UpdateOfficeBalanceDue(ctx, office.UpdateOfficeBalanceDueParams{
 			ID:            *p.OfficeID,
 			BalanceChange: total * -1,
@@ -258,7 +255,6 @@ func resolveReservations(ctx context.Context, p BillParams, total float64) error
 		return nil
 	}
 
-	rlog.Info("updating organization balance due after billing", "organization_id", p.OrganizationID, "amount", total)
 	if err := accounts.UpdateOrganizationBalanceDue(ctx, organization.UpdateOrganizationBalanceDueParams{
 		ID:            *p.OrganizationID,
 		BalanceChange: total * -1,

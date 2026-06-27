@@ -59,7 +59,7 @@ function buildListParams(
 ): markup_rate.ListMarkupRatesParams {
   return {
     Country: filters.country,
-    Broker: filters.broker,
+    broker: filters.broker,
     SortBy: sort ? (sortKeyMap[sort.key] ?? "") : "",
     SortDir: sort?.dir ?? "",
     Page: page,
