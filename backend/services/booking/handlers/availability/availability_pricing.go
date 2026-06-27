@@ -37,13 +37,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 		plansDetails:  make([]PlanPriceDetails, 0, len(avResp.AvailableVehicles)*2), //most cars have 1-2 plans
 	}
 
-	daysCount, err := broker.CalculateDaysCount(p.PickupDate, p.PickupTime, p.DropoffDate, p.DropoffTime)
-	if err != nil {
-		rlog.Error("failed to calculate rental days count", "error", err)
-		return artifacts, api_errors.ErrInternalError
-	}
-
-	markupProviders := s.getMarkupProviderMap(ctx, locs, daysCount, p.PickupDate, extractCarGroups(avResp.AvailableVehicles))
+	markupProviders := s.getMarkupProviderMap(ctx, locs)
 
 	grossMarkupResp, err := accounts.GetUserMarkupGross(ctx)
 	if err != nil {
@@ -70,7 +64,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 		mp, ok := markupProviders[v.Broker]
 		if !ok {
 			rlog.Warn("no markup provider found for broker, skipping applying markup", "broker", v.Broker)
-			mp = NewMarkupProviderFromCfg(s.cfg.MarkUpGross(), s.cfg.MarkUpNet())
+			mp = NewMarkupProviderFromCfg(s.cfg.MarkUpNet(), s.cfg.MarkUpGross())
 		}
 
 		av := AvailableVehicle{
@@ -236,13 +230,13 @@ func sortPlansByPrice(plans []Plan) {
 }
 
 // getMarkupProviderMap returns a MarkupProvider for each broker present in the availability locations.
-func (s *AvailabilityService) getMarkupProviderMap(ctx context.Context, locs availabilityLocations, rentalDays int, pickupDate string, carGroups []string) map[broker.Name]MarkupProvider {
+func (s *AvailabilityService) getMarkupProviderMap(ctx context.Context, locs availabilityLocations) map[broker.Name]MarkupProvider {
 	markupProviderMap := make(map[broker.Name]MarkupProvider)
 	for brokerName := range locs {
 		provider, err := NewMarkupProviderFromDB(ctx, s.query, locs[brokerName].pickupCountryCode, string(brokerName))
 		if err != nil {
 			rlog.Error("initializing flex markup provider: %w", err)
-			provider = NewMarkupProviderFromCfg(s.cfg.MarkUpGross(), s.cfg.MarkUpNet())
+			provider = NewMarkupProviderFromCfg(s.cfg.MarkUpNet(), s.cfg.MarkUpGross())
 		}
 		markupProviderMap[brokerName] = provider
 	}
