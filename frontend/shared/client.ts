@@ -1030,6 +1030,8 @@ export namespace actions {
     }
 
     export interface PayAtPickup {
+        deposit: number
+        depositCurrency: string
         fees: broker.Fees
         selectedAddons?: SelectedAddon[]
     }
@@ -1150,6 +1152,8 @@ export namespace availability {
         rateQualifier: string
         supplierName: string
         supplierCode: string
+        deposit: number
+        depositCurrency: string
     }
 
     /**
@@ -1243,8 +1247,6 @@ export namespace broker {
         dropChargeCurrency: string
         youngDriverFee: number
         youngDriverFeeCurrency: string
-        deposit: number
-        depositCurrency: string
     }
 
     export interface Inclusions {

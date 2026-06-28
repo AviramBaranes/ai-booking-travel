@@ -5,24 +5,46 @@ import { SummarySubTitle } from "./SummarySubTitle";
 import { SummaryRow } from "./SummaryRow";
 import { broker, reservation } from "@/shared/client";
 import { formatPrice } from "@/shared/utils/formatPrice";
+import { AddonsGallery } from "@/payload-types";
+import { useMemo } from "react";
+import { useParams } from "next/navigation";
 
 interface PayAtPickupSectionProps {
   currency: string;
-  fees: broker.Fees;
-  selectedAddons: reservation.PayAtPickup["selectedAddons"];
+  payAtPickup: reservation.PayAtPickup;
+  addonsGallery: AddonsGallery;
 }
 
 export function PayAtPickupSection({
   currency,
-  fees,
-  selectedAddons,
+  payAtPickup,
+  addonsGallery,
 }: PayAtPickupSectionProps) {
+  const { lang } = useParams();
+  const { fees, deposit, depositCurrency } = payAtPickup;
+  const selectedAddons = useMemo(
+    () =>
+      payAtPickup.selectedAddons?.map((addon) => {
+        const addonGalleryItem = addonsGallery.addons?.find(
+          (item) => item.addonId === addon.id.toString(),
+        );
+        return {
+          ...addon,
+          name: addonGalleryItem
+            ? lang === "he"
+              ? addonGalleryItem.hebrewName
+              : addonGalleryItem.englishName
+            : addon.name,
+        };
+      }),
+    [addonsGallery, lang, payAtPickup.selectedAddons],
+  );
   const t = useTranslations("MyAccount.summary");
 
   if (
     fees.dropCharge === 0 &&
     fees.youngDriverFee === 0 &&
-    fees.deposit === 0 &&
+    deposit === 0 &&
     (!selectedAddons || selectedAddons.length === 0)
   ) {
     return null;
@@ -43,10 +65,10 @@ export function PayAtPickupSection({
           value={formatPrice(fees.youngDriverFee, fees.youngDriverFeeCurrency)}
         />
       )}
-      {fees.deposit > 0 && (
+      {deposit > 0 && (
         <SummaryRow
           label={t("payAtPickup.deposit")}
-          value={formatPrice(fees.deposit, fees.depositCurrency)}
+          value={formatPrice(deposit, depositCurrency)}
         />
       )}
 

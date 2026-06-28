@@ -8,14 +8,12 @@ import { RentalSummary } from "../../../../_components/RentalSummary";
 import { useReservation } from "../../_hooks/useReservation";
 import { PayAtPickupSection } from "../../../../_components/PayAtPickupSection";
 import { useAddonsGallery } from "@/shared/hooks/useAddonsGallery";
-import { useParams } from "next/navigation";
 
 export function ReservationSummary({
   reservationId,
 }: {
   reservationId: number;
 }) {
-  const { lang } = useParams();
   const { data: reservation } = useReservation(reservationId);
   const { data: addonsGallery } = useAddonsGallery();
 
@@ -41,20 +39,8 @@ export function ReservationSummary({
       <IncludedSection planInclusions={reservation.planInclusions} />
       <PayAtPickupSection
         currency={reservation.currencyCode}
-        fees={reservation.payAtPickup.fees}
-        selectedAddons={reservation.payAtPickup.selectedAddons?.map((addon) => {
-          const addonGalleryItem = addonsGallery.addons?.find(
-            (item) => item.addonId === addon.id.toString(),
-          );
-          return {
-            ...addon,
-            name: addonGalleryItem
-              ? lang === "he"
-                ? addonGalleryItem.hebrewName
-                : addonGalleryItem.englishName
-              : addon.name,
-          };
-        })}
+        payAtPickup={reservation.payAtPickup}
+        addonsGallery={addonsGallery}
       />
       <CostBreakdownSection
         priceBefDesc={reservation.priceBefDesc}
