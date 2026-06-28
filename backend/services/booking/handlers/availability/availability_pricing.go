@@ -135,6 +135,8 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				Inclusions:             incs,
 				AvailableAddOns:        sp.AddOns,
 				Fees:                   v.PriceDetails.Fees,
+				Deposit:                p.Deposit,
+				DepositCurrency:        p.DepositCurrency,
 			}
 
 			artifacts.plansDetails = append(artifacts.plansDetails, pd)
@@ -151,16 +153,18 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 			chargedErpPriceWithVat := pricing.ApplyMarkup(p.ChargedErpPriceWithVat, grossMarkupResp.GrossMarkup)
 
 			avPlan := Plan{
-				PlanID:        p.PlanID,
-				PlanName:      p.PlanName,
-				FullPrice:     pricing.RoundToInt(carPriceWithMarkup),
-				Discount:      pricing.RoundToInt(couponDiscount),
-				Price:         pricing.RoundToInt(discountedCarPrice),
-				ErpPrice:      pricing.RoundToInt(discountedErp + chargedErpPriceWithVat), // no discount on charged erp
-				Info:          p.Info,
-				RateQualifier: p.RateQualifier,
-				SupplierName:  sp.Name,
-				SupplierCode:  p.SupplierCode,
+				PlanID:          p.PlanID,
+				PlanName:        p.PlanName,
+				FullPrice:       pricing.RoundToInt(carPriceWithMarkup),
+				Discount:        pricing.RoundToInt(couponDiscount),
+				Price:           pricing.RoundToInt(discountedCarPrice),
+				ErpPrice:        pricing.RoundToInt(discountedErp + chargedErpPriceWithVat), // no discount on charged erp
+				Info:            p.Info,
+				RateQualifier:   p.RateQualifier,
+				SupplierName:    sp.Name,
+				SupplierCode:    p.SupplierCode,
+				Deposit:         p.Deposit,
+				DepositCurrency: p.DepositCurrency,
 			}
 			avPlans = append(avPlans, avPlan)
 		}

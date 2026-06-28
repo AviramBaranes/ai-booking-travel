@@ -253,7 +253,9 @@ func (s *BookingService) getLocationsNames(ctx context.Context, pickupBrokerLoca
 
 func GetPayAtPickup(selectedAddOnsReq []broker.SelectAddOn, plan availability.PlanPriceDetails) reservation.PayAtPickup {
 	pap := reservation.PayAtPickup{
-		Fees: plan.Fees,
+		Deposit:         plan.Deposit,
+		DepositCurrency: plan.DepositCurrency,
+		Fees:            plan.Fees,
 	}
 
 	selectedAddOns := make([]reservation.SelectedAddon, 0, len(selectedAddOnsReq))

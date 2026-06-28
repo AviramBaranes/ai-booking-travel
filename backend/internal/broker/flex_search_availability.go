@@ -94,12 +94,7 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResp
 		}
 
 		carDetails := flexCarToBrokerCar(c, s.name)
-
 		ydFee, ydFeeCurrency := f.getYoungDriverFee(c.Information)
-		deposit, depositCurrency := f.getDeposit(c.Information)
-		if deposit == 0 {
-			rlog.Info("deposit found in CarAvailability response", "car_name", c.Name, "deposit", deposit, "currency", depositCurrency)
-		}
 
 		car := AvailableVehicle{
 			Broker:     BrokerFlex,
@@ -115,8 +110,6 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResp
 					DropChargeCurrency:     c.DropChargeCurrency,
 					YoungDriverFee:         ydFee,
 					YoungDriverFeeCurrency: ydFeeCurrency,
-					Deposit:                deposit,
-					DepositCurrency:        depositCurrency,
 				},
 			},
 		}
@@ -240,6 +233,7 @@ func (f *Flex) getInsuranceExtraCost(days int) float64 {
 // getPlans returns the list of plans for a given car
 func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDetails) []Plan {
 	plans := make([]Plan, 0, len(c.Costs))
+	deposit, depositCurrency := f.getDeposit(c.Information)
 	for _, p := range c.Costs {
 		planID, ok := flexProductMap[p.Product]
 		if !ok {
@@ -262,6 +256,8 @@ func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDet
 			RateQualifier:          c.RateQualifier,
 			SupplierName:           supplierDetails.Supplier,
 			SupplierCode:           c.SupplierCode,
+			Deposit:                deposit,
+			DepositCurrency:        depositCurrency,
 		})
 	}
 

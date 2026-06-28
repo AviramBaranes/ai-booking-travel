@@ -149,8 +149,6 @@ type Fees struct {
 	DropChargeCurrency     string `json:"dropChargeCurrency"`
 	YoungDriverFee         int    `json:"youngDriverFee"`
 	YoungDriverFeeCurrency string `json:"youngDriverFeeCurrency"`
-	Deposit                int    `json:"deposit"`
-	DepositCurrency        string `json:"depositCurrency"`
 }
 
 // LocationDetails holds the locationType of a rental location
@@ -186,6 +184,8 @@ type Plan struct {
 	RateQualifier          string
 	SupplierName           string
 	SupplierCode           string
+	Deposit                int
+	DepositCurrency        string
 }
 
 // AddOn represents an additional service or product that can be added to a rental, including its ID, name, price, allowed quantity, and rental period.
