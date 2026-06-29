@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export function HomepageDecorations() {
   return (
-    <div dir="rtl">
+    <div dir="rtl" className="hidden lg:block">
       <div className="absolute -z-10 top-150">
         <Image
           src="/assets/home/paper-plane.png"

@@ -22,11 +22,12 @@ export async function Hero({ lang, title, subtitle, image }: Props) {
         alt={image.alt}
         width={image.width ?? 1200}
         height={image.height ?? 630}
-        style={{ width: "100%", height: "auto" }}
+        sizes="(max-width: 768px) 390px, 100vw"
+        className="w-full h-177.5 object-cover object-center md:h-auto"
         priority
       />
-      <div className="w-full absolute top-38 -translate-x-1/2 left-1/2">
-        <h1 className="text-[55px] text-center type-h1 text-white">{title}</h1>
+      <div className="w-full absolute top-14 lg:top-38 -translate-x-1/2 left-1/2">
+        <h1 className="text-[28px] lg:text-[55px] text-center type-h1 text-white">{title}</h1>
         <h6 className="text-center mt-2 type-h6 text-white">{subtitle}</h6>
         <AppProviders lang={lang} messages={messages}>
           <SearchForm />
