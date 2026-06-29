@@ -12,7 +12,7 @@ import (
 
 const (
 	Issuer          = "ai-booking-api"
-	accessTokenTTL  = 15 * time.Minute
+	accessTokenTTL  = 30 * time.Minute
 	refreshTokenTTL = 30 * 24 * time.Hour
 )
 

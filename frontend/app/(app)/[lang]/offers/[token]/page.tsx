@@ -9,13 +9,13 @@ import { suppliersGalleryKey } from "@/shared/hooks/useSuppliersGallery";
 import { fetchAddonsGallery, fetchSuppliersGallery } from "@/shared/server/cms";
 import { ClientOfferSummary } from "./_components/ClientOfferSummary/ClientOfferSummary";
 import { addonsGalleryKey } from "@/shared/hooks/useAddonsGallery";
+import { notFound } from "next/navigation";
 export default async function OfferPage({
   params,
 }: {
   params: Promise<{ token: string; lang: string }>;
 }) {
   const { token, lang } = await params;
-  const offer = await getClientPriceOffer(token);
 
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -26,7 +26,11 @@ export default async function OfferPage({
       },
     },
   });
-  const [_, addonsGallery] = await Promise.all([
+  const [offer, _, addonsGallery] = await Promise.all([
+    queryClient.fetchQuery({
+      queryKey: ["priceOffer", token],
+      queryFn: () => getClientPriceOffer(token, () => notFound()),
+    }),
     queryClient.fetchQuery({
       queryKey: suppliersGalleryKey,
       queryFn: fetchSuppliersGallery,

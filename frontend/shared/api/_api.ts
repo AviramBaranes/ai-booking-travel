@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import Client, { isAPIError, Local, Environment } from "../client";
+import Client, { isAPIError, Local, Environment, APIError } from "../client";
 import { authOptions } from "../auth/authOptions";
 import { getLang } from "../lang/lang";
 import { AppError } from "./AppError";
@@ -12,30 +12,51 @@ export function getBaseURL(): string {
   return Environment(env);
 }
 
-let globalClientSideToken = "";
-let isAuthLoading = true; // Tracks Next-Auth initialization state in browser
+// --- Client-side access token (in-memory, fed by AuthTokenProvider) ---
+// The token is exposed as an awaitable value so requests made during Next-Auth
+// initialization wait for the first session resolution instead of racing it
+// (which previously caused token-less 401s and a spurious redirect to login).
+let clientToken: string | null = null;
+let sessionSettled = false;
+let resolveSessionReady: () => void;
+const sessionReady = new Promise<void>((resolve) => {
+  resolveSessionReady = resolve;
+});
 
-export function setAuthorizationHeader(token: string) {
-  if (typeof window !== "undefined") {
-    globalClientSideToken = token;
+type SessionStatus = "authenticated" | "unauthenticated" | "loading";
+
+/**
+ * Pushes the latest Next-Auth session token into the API engine. Called by
+ * AuthTokenProvider. The transient "loading" status is ignored so that
+ * getClientToken() only resumes once the session has actually resolved.
+ */
+export function setClientSession(
+  accessToken: string | null,
+  status: SessionStatus,
+) {
+  if (typeof window === "undefined" || status === "loading") return;
+  clientToken = accessToken;
+  if (!sessionSettled) {
+    sessionSettled = true;
+    resolveSessionReady();
   }
 }
 
-export function removeAuthorizationHeader() {
-  if (typeof window !== "undefined") {
-    globalClientSideToken = "";
-  }
-}
-
-export function setAuthLoadingState(loading: boolean) {
-  if (typeof window !== "undefined") {
-    isAuthLoading = loading;
-  }
+/**
+ * Resolves the current client access token, waiting for Next-Auth to finish
+ * initializing on the first call. Returns null when the user is unauthenticated.
+ */
+async function getClientToken(): Promise<string | null> {
+  if (!sessionSettled) await sessionReady;
+  return clientToken;
 }
 
 export async function withErrorHandler<T>(
   apiCall: (client: Client) => Promise<T>,
-  options?: { skipAuthRedirect?: boolean },
+  options?: {
+    skipAuthRedirect?: boolean;
+    onExpectedError?: { [status: number]: (error: APIError) => void };
+  },
 ) {
   const isServer = typeof window === "undefined";
   const lang = await getLang();
@@ -53,8 +74,11 @@ export async function withErrorHandler<T>(
       localClient = localClient.with({ auth: session.user.accessToken });
     }
   } else {
-    if (globalClientSideToken) {
-      localClient = localClient.with({ auth: globalClientSideToken });
+    // Resolve the token, waiting for Next-Auth to finish initializing so the
+    // request never goes out token-less during hydration.
+    const token = await getClientToken();
+    if (token) {
+      localClient = localClient.with({ auth: token });
     }
   }
 
@@ -63,18 +87,20 @@ export async function withErrorHandler<T>(
   } catch (error) {
     if (!isAPIError(error)) throw error;
 
-    if (error.status === 401 && !options?.skipAuthRedirect) {
-      if (typeof window !== "undefined") {
-        // CRITICAL SAFETY VALVE: If Next-Auth is still loading its session,
-        // do NOT hard reload the browser. Throw the error and let React-Query retry.
-        if (isAuthLoading) {
-          throw error;
-        }
+    if (options?.onExpectedError?.[error.status]) {
+      options.onExpectedError[error.status](error);
+      return null as unknown as T; // Return a dummy value to satisfy the return type
+    }
 
-        removeAuthorizationHeader();
-        const targetUrl = `/${lang}?login=open`;
-        window.location.href = targetUrl;
-      }
+    if (
+      error.status === 401 &&
+      !options?.skipAuthRedirect &&
+      typeof window !== "undefined"
+    ) {
+      // The token is resolved before the request is sent, so a 401 here means a
+      // genuinely invalid or expired session rather than an initialization race.
+      clientToken = null;
+      window.location.href = `/${lang}?login=open`;
     }
 
     if (process.env.NODE_ENV === "development") console.log({ error });

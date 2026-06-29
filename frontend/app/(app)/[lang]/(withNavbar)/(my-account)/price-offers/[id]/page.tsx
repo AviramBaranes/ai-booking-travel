@@ -16,6 +16,7 @@ import { PriceOfferSummary } from "./_components/PriceOfferSummary/PriceOfferSum
 import { SummarySkeleton } from "@/shared/components/booking/SummarySkeleton";
 import { bookingSettingsKey } from "@/shared/hooks/useBookingSettings";
 import { addonsGalleryKey } from "@/shared/hooks/useAddonsGallery";
+import { getAgentPriceOffer } from "@/shared/api/price-offers-api";
 
 export default async function PriceOfferPage({
   params,
@@ -31,6 +32,10 @@ export default async function PriceOfferPage({
 
   const queryClient = getQueryClient();
   await Promise.all([
+    queryClient.fetchQuery({
+      queryKey: ["priceOffer", Number(id)],
+      queryFn: () => getAgentPriceOffer(Number(id), ()=> redirect(`/${lang}/price-offers`)),
+    }),
     queryClient.fetchQuery({
       queryKey: suppliersGalleryKey,
       queryFn: fetchSuppliersGallery,

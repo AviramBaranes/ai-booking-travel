@@ -2,35 +2,21 @@
 
 import { signOut, useSession } from "next-auth/react";
 import { useEffect } from "react";
-import {
-  removeAuthorizationHeader,
-  setAuthorizationHeader,
-  setAuthLoadingState,
-} from "@/shared/api/_api";
+import { setClientSession } from "@/shared/api/_api";
 
 export function AuthTokenProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    // Synchronize the loading state immediately with the API engine
-    if (status === "loading") {
-      setAuthLoadingState(true);
-      return;
-    }
-    
-    setAuthLoadingState(false);
+    if (status === "loading") return;
 
     if (session?.user?.error === "RefreshTokenExpired") {
-      removeAuthorizationHeader();
+      setClientSession(null, "unauthenticated");
       signOut({ redirect: false });
       return;
     }
 
-    if (session?.user?.accessToken) {
-      setAuthorizationHeader(session.user.accessToken);
-    } else {
-      removeAuthorizationHeader();
-    }
+    setClientSession(session?.user?.accessToken ?? null, status);
   }, [session, status]);
 
   return <>{children}</>;
