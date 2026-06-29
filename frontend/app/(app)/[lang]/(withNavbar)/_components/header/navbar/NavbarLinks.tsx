@@ -2,35 +2,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { MegaDropdown } from "./MegaDropdown";
 import type { Populated } from "@/shared/types/payload";
-import { getCachedPayload } from "@/shared/server/cms";
-
-async function getHeaderData(lang: string) {
-  const payload = await getCachedPayload();
-  return payload.findGlobal({
-    slug: "header",
-    locale: lang as "he" | "en",
-    draft: false,
-  });
-}
+import { Header } from "@/payload-types";
+import { Logo } from "./Logo";
 
 interface NavbarLinksProps {
   lang: string;
+  headerData: Header
+  className?: string;
 }
 
-export async function NavbarLinks({ lang }: NavbarLinksProps) {
-  const headerData = await getHeaderData(lang);
+export async function NavbarLinks({ lang, headerData, className }: NavbarLinksProps) {
   return (
-    <div className="flex items-center gap-8">
-      <Link href={`/${lang}`}>
-        <Image
-          src="/logo.png"
-          alt="AIBookingTravel"
-          width={168}
-          height={32}
-          className="object-contain"
-          priority
-        />
-      </Link>
+    <div className={`flex items-center gap-8 ${className}`}>
+      <Logo lang={lang} />
 
       {headerData.links?.map((link) =>
         link.type === "link" ? (

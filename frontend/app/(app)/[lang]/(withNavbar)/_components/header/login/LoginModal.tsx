@@ -57,12 +57,9 @@ export function LoginModal() {
     setOpen(true);
   }, []);
 
-  const registerClearQueryFlag = useCallback(
-    (clearQueryFlag: () => void) => {
-      clearQueryFlagRef.current = clearQueryFlag;
-    },
-    [],
-  );
+  const registerClearQueryFlag = useCallback((clearQueryFlag: () => void) => {
+    clearQueryFlagRef.current = clearQueryFlag;
+  }, []);
 
   const handleOpenChange = (next: boolean) => {
     if (!next) {
@@ -124,10 +121,15 @@ export function LoginModal() {
       </Suspense>
 
       <DialogTrigger asChild>
-        <Button size="outline" variant="outline">
-          <User className="size-5" />
-          {t("openModal")}
-        </Button>
+        <div>
+          <Button size="outline" variant="outline" className="hidden lg:flex">
+            <User className="size-5" />
+            {t("openModal")}
+          </Button>
+          <Button variant="ghost" className="lg:hidden px-0">
+            <User className="size-5" />
+          </Button>
+        </div>
       </DialogTrigger>
 
       <DialogContent
@@ -206,9 +208,7 @@ export function LoginModal() {
               <ForgotPasswordForm
                 onBackToLogin={() => setAgentStep("credentials")}
                 onSuccess={() => {
-                  setPasswordResetSuccess(
-                    t("agent.passwordResetSuccess"),
-                  );
+                  setPasswordResetSuccess(t("agent.passwordResetSuccess"));
                   setAgentStep("credentials");
                 }}
               />

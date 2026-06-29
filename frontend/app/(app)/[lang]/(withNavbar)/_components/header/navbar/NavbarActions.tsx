@@ -13,7 +13,7 @@ export function NavbarActions() {
     !!session.data?.user && session.data.user.role !== "admin";
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-3 lg:gap-4">
       <LangSwitcher lang={lang as string} />
       {isAuthenticated ? <AuthenticatedDropdown /> : <LoginModal />}
     </div>

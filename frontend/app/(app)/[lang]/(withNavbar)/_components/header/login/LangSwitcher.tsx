@@ -31,12 +31,16 @@ export function LangSwitcher({ lang }: { lang: string }) {
   return (
     <DropdownMenu dir={dir}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="outline">
-          {/* <GlobeIcon className="size-4" /> */}
-          {current?.flag} {t(lang as "he" | "en")}
-        </Button>
+        <div>
+          <Button variant="outline" size="outline" className="hidden lg:flex">
+            {current?.flag} {t(lang as "he" | "en")}
+          </Button>
+          <Button variant="ghost" className="lg:hidden px-0 text-2xl">
+            {current?.flag}
+          </Button>
+        </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent align="center">
         {languages.map((l) => (
           <DropdownMenuItem
             key={l.code}
