@@ -2,9 +2,9 @@ import { AppProviders } from "../../../../_components/providers/AppProviders";
 import { getMessages } from "next-intl/server";
 import { NavbarActions } from "./NavbarActions";
 import { NavbarLinks } from "./NavbarLinks";
+import { MobileMenuDrawer } from "./MobileMenuDrawer";
 import { getCachedPayload } from "@/shared/server/cms";
 import { Logo } from "./Logo";
-import { Menu } from "lucide-react";
 
 interface NavbarProps {
   lang: string;
@@ -36,7 +36,7 @@ export async function Navbar({ lang }: NavbarProps) {
           <AppProviders showDevtools={false} lang={lang} messages={messages}>
             <NavbarActions />
           </AppProviders>
-          <Menu className="lg:hidden size-6" />
+          <MobileMenuDrawer lang={lang} links={headerData.links ?? []} />
         </div>
       </nav>
     </header>

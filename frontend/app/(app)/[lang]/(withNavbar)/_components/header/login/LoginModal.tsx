@@ -40,7 +40,11 @@ function LoginQuerySync({ open, registerClearQueryFlag }: LoginQuerySyncProps) {
   return null;
 }
 
-export function LoginModal() {
+interface LoginModalProps {
+  trigger?: React.ReactNode;
+}
+
+export function LoginModal({ trigger }: LoginModalProps = {}) {
   const t = useTranslations("Login");
 
   const [open, setOpen] = useState(false);
@@ -121,15 +125,17 @@ export function LoginModal() {
       </Suspense>
 
       <DialogTrigger asChild>
-        <div>
-          <Button size="outline" variant="outline" className="hidden lg:flex">
-            <User className="size-5" />
-            {t("openModal")}
-          </Button>
-          <Button variant="ghost" className="lg:hidden px-0">
-            <User className="size-5" />
-          </Button>
-        </div>
+        {trigger ?? (
+          <div>
+            <Button size="outline" variant="outline" className="hidden lg:flex">
+              <User className="size-5" />
+              {t("openModal")}
+            </Button>
+            <Button variant="ghost" className="lg:hidden px-0">
+              <User className="size-5" />
+            </Button>
+          </div>
+        )}
       </DialogTrigger>
 
       <DialogContent
