@@ -225,7 +225,7 @@ func (s *BookingService) markPriceOfferBooked(ctx context.Context, priceOfferID 
 		ID:            priceOfferID,
 		AgentID:       agentID,
 		ReservationID: &reservationID,
-		Status:        db.NullOfferStatus{OfferStatus: db.OfferStatusBooked, Valid: true},
+		Status:        dbadapters.StringToNullStatus[db.OfferStatus](string(db.OfferStatusBooked)),
 	})
 	if err != nil {
 		rlog.Error("failed to mark price offer as booked", "id", priceOfferID, "reservationID", reservationID, "error", err)

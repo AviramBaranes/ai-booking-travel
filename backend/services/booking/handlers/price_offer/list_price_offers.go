@@ -73,7 +73,7 @@ func (s *PriceOfferService) listPriceOffersByAgent(ctx context.Context, p ListPr
 
 	rows, err := s.query.ListPriceOffersByAgent(ctx, db.ListPriceOffersByAgentParams{
 		AgentID:    authData.UserID,
-		Status:     nullOfferStatusFromString(p.Status),
+		Status:     dbadapters.StringToNullStatus[db.OfferStatus](p.Status),
 		NameSearch: nilIfEmpty(p.Name),
 		PageSize:   listPriceOffersLimit,
 		PageOffset: offset,
@@ -94,7 +94,7 @@ func (s *PriceOfferService) countPriceOffersByAgent(ctx context.Context, p ListP
 
 	count, err := s.query.CountPriceOffersByAgent(ctx, db.CountPriceOffersByAgentParams{
 		AgentID:    authData.UserID,
-		Status:     nullOfferStatusFromString(p.Status),
+		Status:     dbadapters.StringToNullStatus[db.OfferStatus](p.Status),
 		NameSearch: nilIfEmpty(p.Name),
 	})
 	if err != nil {

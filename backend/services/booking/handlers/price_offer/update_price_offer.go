@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/validation"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
@@ -26,9 +27,9 @@ func (p UpdatePriceOfferParams) Validate() error {
 func (s *PriceOfferService) UpdatePriceOffer(ctx context.Context, id int64, p UpdatePriceOfferParams) error {
 	authData := auth.GetAuthData()
 
-	var status db.NullOfferStatus
+	var status *db.OfferStatus
 	if p.Status != nil {
-		status = nullOfferStatusFromString(*p.Status)
+		status = dbadapters.StringToNullStatus[db.OfferStatus](*p.Status)
 	}
 
 	err := s.query.UpdatePriceOffer(ctx, db.UpdatePriceOfferParams{

@@ -69,7 +69,7 @@ func (s *QueryService) listReservationsByUser(ctx context.Context, p ListReserva
 
 	rows, err := s.query.ListReservationsByUser(ctx, db.ListReservationsByUserParams{
 		UserID:     authData.UserID,
-		Status:     nullStatusFromString(p.Status),
+		Status:     dbadapters.StringToNullStatus[db.ReservationStatus](p.Status),
 		Name:       nilIfEmpty(p.Name),
 		BookingID:  nilIfEmpty(p.BookingID),
 		PickupDate: dbadapters.DateFromString(p.PickupDate),
@@ -94,7 +94,7 @@ func (s *QueryService) countReservationsByUser(ctx context.Context, p ListReserv
 
 	count, err := s.query.CountReservationsByUser(ctx, db.CountReservationsByUserParams{
 		UserID:     authData.UserID,
-		Status:     nullStatusFromString(p.Status),
+		Status:     dbadapters.StringToNullStatus[db.ReservationStatus](p.Status),
 		Name:       nilIfEmpty(p.Name),
 		BookingID:  nilIfEmpty(p.BookingID),
 		PickupDate: dbadapters.DateFromString(p.PickupDate),
@@ -129,13 +129,6 @@ func mapRowsToSummaries(rows []db.ListReservationsByUserRow) []ReservationSummar
 		}
 	}
 	return summaries
-}
-
-func nullStatusFromString(s string) db.NullReservationStatus {
-	if s == "" {
-		return db.NullReservationStatus{}
-	}
-	return db.NullReservationStatus{ReservationStatus: db.ReservationStatus(s), Valid: true}
 }
 
 func nilIfEmpty(s string) *string {
