@@ -31,16 +31,18 @@ type BookingSignals struct {
 
 // Plan represents a rental plan, including its ID, name, description, full price, discount, and other pricing details.
 type Plan struct {
-	PlanID        int      `json:"planId"`
-	PlanName      string   `json:"planName"`
-	FullPrice     int      `json:"fullPrice"`
-	Discount      int      `json:"discount"`
-	Price         int      `json:"price"`
-	ErpPrice      int      `json:"erpPrice"`
-	Info          []string `json:"info"`
-	RateQualifier string   `json:"rateQualifier"`
-	SupplierName  string   `json:"supplierName"`
-	SupplierCode  string   `json:"supplierCode"`
+	PlanID          int      `json:"planId"`
+	PlanName        string   `json:"planName"`
+	FullPrice       int      `json:"fullPrice"`
+	Discount        int      `json:"discount"`
+	Price           int      `json:"price"`
+	ErpPrice        int      `json:"erpPrice"`
+	Info            []string `json:"info"`
+	RateQualifier   string   `json:"rateQualifier"`
+	SupplierName    string   `json:"supplierName"`
+	SupplierCode    string   `json:"supplierCode"`
+	Deposit         int      `json:"deposit"`
+	DepositCurrency string   `json:"depositCurrency"`
 }
 
 // AvailableVehiclesConfig holds markup percentages and ERP day-charge values per broker.

@@ -6,15 +6,16 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { suppliersGalleryKey } from "@/shared/hooks/useSuppliersGallery";
-import { fetchSuppliersGallery } from "@/shared/server/cms";
+import { fetchAddonsGallery, fetchSuppliersGallery } from "@/shared/server/cms";
 import { ClientOfferSummary } from "./_components/ClientOfferSummary/ClientOfferSummary";
+import { addonsGalleryKey } from "@/shared/hooks/useAddonsGallery";
+import { notFound } from "next/navigation";
 export default async function OfferPage({
   params,
 }: {
-  params: Promise<{ token: string, lang: string }>;
+  params: Promise<{ token: string; lang: string }>;
 }) {
   const { token, lang } = await params;
-  const offer = await getClientPriceOffer(token);
 
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -25,17 +26,31 @@ export default async function OfferPage({
       },
     },
   });
-  await queryClient.fetchQuery({
-    queryKey: suppliersGalleryKey,
-    queryFn: fetchSuppliersGallery,
-  });
+  const [offer, _, addonsGallery] = await Promise.all([
+    queryClient.fetchQuery({
+      queryKey: ["priceOffer", token],
+      queryFn: () => getClientPriceOffer(token, () => notFound()),
+    }),
+    queryClient.fetchQuery({
+      queryKey: suppliersGalleryKey,
+      queryFn: fetchSuppliersGallery,
+    }),
+    queryClient.fetchQuery({
+      queryKey: addonsGalleryKey,
+      queryFn: fetchAddonsGallery,
+    }),
+  ]);
 
   return (
     <main className="w-2/3 mx-auto pt-4 pb-6">
       <HydrationBoundary state={dehydrate(queryClient)}>
         <div className="flex gap-2 mt-6">
           <div className="w-3/4">
-          <ClientOfferSummary offer={offer} lang={lang} />
+            <ClientOfferSummary
+              offer={offer}
+              lang={lang}
+              addonsGallery={addonsGallery}
+            />
           </div>
           <div className="w-1/4">
             <ClientOfferCarCard offer={offer} />

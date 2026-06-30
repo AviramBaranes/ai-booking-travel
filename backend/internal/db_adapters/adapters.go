@@ -116,3 +116,12 @@ func TimeFromDB(t pgtype.Timestamptz) time.Time {
 	}
 	return t.Time
 }
+
+func StringToNullStatus[T ~string](s string) *T {
+	if s == "" {
+		return nil
+	}
+
+	status := T(s)
+	return &status
+}

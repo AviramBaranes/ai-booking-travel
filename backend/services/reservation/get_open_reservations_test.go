@@ -98,6 +98,11 @@ func TestGetOpenReservations(t *testing.T) {
 			return nil
 		})
 
+		// Seed the currency rate so ApplyVoucher can resolve it from cache.
+		if err := currenciesRates.Set(ctx, "USD", 3.65); err != nil {
+			t.Fatalf("failed to seed USD rate: %v", err)
+		}
+
 		authCtx := authContextWithOrgCtx(userID, 1, 1, false)
 		if err := ApplyVoucher(authCtx, vouchID, ApplyVoucherParams{
 			Voucher: voucherNumber,

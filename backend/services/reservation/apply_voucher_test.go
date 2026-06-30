@@ -83,7 +83,9 @@ func TestApplyVoucher(t *testing.T) {
 		if err != nil {
 			t.Fatalf("creating reservation failed: %v", err)
 		}
-
+		if err := currenciesRates.Set(ctx, "USD", 3.65); err != nil {
+			t.Fatalf("failed to seed USD rate: %v", err)
+		}
 		err = ApplyVoucher(authCtx, res.ID, ApplyVoucherParams{Voucher: "123"})
 		if err != nil {
 			t.Fatalf("expected applying voucher to succeed, got error: %v", err)
@@ -143,7 +145,9 @@ func TestApplyVoucher(t *testing.T) {
 				et.MockEndpoint(accounts.GetUserCredit, func(ctx context.Context) (*user.GetUserCreditResponse, error) {
 					return tt.resp, nil
 				})
-
+				if err := currenciesRates.Set(ctx, "USD", 3.65); err != nil {
+					t.Fatalf("failed to seed USD rate: %v", err)
+				}
 				err = ApplyVoucher(ctx, res.ID, ApplyVoucherParams{Voucher: "123"})
 				if err == nil {
 					t.Fatal("expected applying voucher to fail")
@@ -206,6 +210,10 @@ func TestApplyVoucher(t *testing.T) {
 				res, err := CreateReservation(context.Background(), *reservation)
 				if err != nil {
 					t.Fatalf("creating reservation failed: %v", err)
+				}
+
+				if err := currenciesRates.Set(authCtx, "USD", 3.65); err != nil {
+					t.Fatalf("failed to seed USD rate: %v", err)
 				}
 
 				err = ApplyVoucher(authCtx, res.ID, ApplyVoucherParams{Voucher: "123"})

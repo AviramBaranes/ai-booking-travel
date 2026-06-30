@@ -28,6 +28,8 @@ type PlanPriceDetails struct {
 	ChargedERPPriceWithVat float64           `json:"chargedErpPriceWithVat"`
 	CarDetails             broker.CarDetails `json:"carDetails"`
 	AvailableAddOns        []broker.AddOn    `json:"availableAddOns"`
+	Deposit                int               `json:"deposit"`
+	DepositCurrency        string            `json:"depositCurrency"`
 	Fees                   broker.Fees       `json:"fees"`
 	Inclusions             []string          `json:"inclusions"`
 }

@@ -9,10 +9,12 @@ import { usePriceOffer } from "../../_hooks/usePriceOffer";
 import { HeaderSection } from "./HeaderSection";
 import { useTranslations } from "next-intl";
 import { PayAtPickupSection } from "../../../../_components/PayAtPickupSection";
+import { useAddonsGallery } from "@/shared/hooks/useAddonsGallery";
 
 export function PriceOfferSummary({ priceOfferId }: { priceOfferId: number }) {
   const t = useTranslations("MyAccount.priceOffer.summary.labels");
   const { data: priceOffer } = usePriceOffer(priceOfferId);
+  const { data: addonsGallery } = useAddonsGallery();
 
   return (
     <div className="flex flex-col gap-2 shadow-card rounded-xl p-6 bg-white border border-cars-border">
@@ -36,8 +38,8 @@ export function PriceOfferSummary({ priceOfferId }: { priceOfferId: number }) {
 
       <PayAtPickupSection
         currency={priceOffer.currencyCode}
-        fees={priceOffer.payAtPickup.fees}
-        selectedAddons={priceOffer.payAtPickup.selectedAddons ?? []}
+        payAtPickup={priceOffer.payAtPickup}
+        addonsGallery={addonsGallery}
       />
 
       <CostBreakdownSection

@@ -1,5 +1,6 @@
 import { availability } from "@/shared/client";
 import { useBookingSettings } from "@/shared/hooks/useBookingSettings";
+import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import { formatPrice } from "@/shared/utils/formatPrice";
 import { useTranslations } from "next-intl";
 
@@ -10,11 +11,12 @@ export function FeesNote({
 }) {
   const t = useTranslations("booking.plansPage");
   const { data } = useBookingSettings();
+  const selectedPlan = useBookingSessionStore((s) => s.selectedPlanIndex);
 
   if (
     !vehicle.priceDetails.fees.dropCharge &&
     !vehicle.priceDetails.fees.youngDriverFee &&
-    !vehicle.priceDetails.fees.deposit
+    !vehicle.plans[selectedPlan].deposit
   ) {
     return null;
   }
@@ -38,12 +40,12 @@ export function FeesNote({
           currency={vehicle.priceDetails.fees.dropChargeCurrency}
         />
       )}
-      {!!vehicle.priceDetails.fees.deposit && (
+      {!!vehicle.plans[selectedPlan].deposit && (
         <FeeDisplay
           title={"פיקדון"}
           content={"הפיקדון יוחזר לאחר סיום ההשכרה, בהתאם למדיניות ההשכרה"}
-          amount={vehicle.priceDetails.fees.deposit}
-          currency={vehicle.priceDetails.fees.depositCurrency}
+          amount={vehicle.plans[selectedPlan].deposit}
+          currency={vehicle.plans[selectedPlan].depositCurrency}
         />
       )}
     </div>

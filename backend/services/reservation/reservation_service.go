@@ -2,13 +2,17 @@ package reservation
 
 import (
 	"context"
+	"time"
 
+	"encore.app/internal/currency"
+	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
 	actions "encore.app/services/reservation/handlers/actions"
 	queries "encore.app/services/reservation/handlers/queries"
 	"encore.app/services/reservation/handlers/reservation_pricing"
 	"encore.dev/config"
 	"encore.dev/pubsub"
+	"encore.dev/storage/cache"
 	"encore.dev/storage/sqldb"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"x.encore.dev/infra/pubsub/outbox"
@@ -60,11 +64,18 @@ var BookingCancellationEvents = pubsub.NewTopic[*actions.BookingCancellationEven
 	DeliveryGuarantee: pubsub.AtLeastOnce,
 })
 
+// currenciesRates is a cache for storing currency rates with a default expiry of 12 hours.
+var currenciesRates = cache.NewFloatKeyspace[string](accounts.GlobalCache, cache.KeyspaceConfig{
+	KeyPattern:    "reservation-currencies/:key",
+	DefaultExpiry: cache.ExpireIn(12 * time.Hour),
+})
+
 // encore:service
 type Service struct {
 	query             db.Querier
 	pool              *pgxpool.Pool
 	cancellationTopic pubsub.Publisher[*actions.BookingCancellationEvent]
+	currencyCache     *currency.CurrenciesCache
 }
 
 var reservationsDB = sqldb.NewDatabase("reservations", sqldb.DatabaseConfig{
@@ -100,5 +111,6 @@ func initService() (*Service, error) {
 		query:             query,
 		pool:              pgxdb,
 		cancellationTopic: cancellationTopic,
+		currencyCache:     currency.NewCurrenciesCache(currenciesRates),
 	}, nil
 }

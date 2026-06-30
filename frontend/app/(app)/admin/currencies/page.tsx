@@ -1,6 +1,8 @@
+import { redirect } from "next/navigation";
 import CurrenciesTable from "./CurrenciesTable";
 
 export default function CurrenciesPage() {
+  redirect("/admin")
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-gray-700">מטבעות</h1>

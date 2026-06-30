@@ -25,8 +25,10 @@ type SelectedAddon struct {
 }
 
 type PayAtPickup struct {
-	Fees           broker.Fees     `json:"fees"`
-	SelectedAddons []SelectedAddon `json:"selectedAddons" encore:"optional"`
+	Deposit         int             `json:"deposit"`
+	DepositCurrency string          `json:"depositCurrency"`
+	Fees            broker.Fees     `json:"fees"`
+	SelectedAddons  []SelectedAddon `json:"selectedAddons" encore:"optional"`
 }
 
 // CreateReservationParams defines the parameters required to create a reservation.

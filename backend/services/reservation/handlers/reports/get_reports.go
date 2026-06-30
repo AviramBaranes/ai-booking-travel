@@ -2,7 +2,6 @@ package reports
 
 import (
 	"context"
-	"math"
 	"strings"
 	"time"
 
@@ -31,6 +30,7 @@ type ReportParams struct {
 	AgentID             int64  `query:"agentId,omitempty" encore:"optional"`
 	IsBusiness          bool   `query:"isBusiness,omitempty" encore:"optional"`
 	IsExport            bool   `query:"isExport,omitempty" encore:"optional"`
+	SkipCanceled        bool   `query:"skipCanceled,omitempty" encore:"optional"`
 }
 
 func nilIfZero(v int64) *int64 {
@@ -38,24 +38,6 @@ func nilIfZero(v int64) *int64 {
 		return nil
 	}
 	return &v
-}
-
-func nullStatusFromString(s string) db.NullReservationStatus {
-	if s == "" {
-		return db.NullReservationStatus{}
-	}
-	return db.NullReservationStatus{ReservationStatus: db.ReservationStatus(s), Valid: true}
-}
-
-func roundPrice(price float64) float64 {
-	return math.Round(price*100) / 100
-}
-
-func nullBrokerFromString(s string) db.NullBroker {
-	if s == "" {
-		return db.NullBroker{}
-	}
-	return db.NullBroker{Broker: db.Broker(s), Valid: true}
 }
 
 func timestamptzFromString(s string, endOfDay bool) pgtype.Timestamptz {
@@ -99,8 +81,8 @@ func (s *ReportsService) getReports(ctx context.Context, p ReportParams, isBusin
 		CreatedDateTo:       timestamptzFromString(p.CreatedDateTo, true),
 		VoucheredAtFrom:     timestamptzFromString(p.VoucheredAtFrom, false),
 		VoucheredAtTo:       timestamptzFromString(p.VoucheredAtTo, true),
-		Status:              nullStatusFromString(p.Status),
-		Broker:              nullBrokerFromString(p.Broker),
+		Status:              dbadapters.StringToNullStatus[db.ReservationStatus](p.Status),
+		Broker:              dbadapters.StringToNullStatus[db.Broker](p.Broker),
 		SupplierCodes:       splitSupplierCodes(p.Supplier),
 		OrganizationID:      nilIfZero(p.OrganizationID),
 		OfficeID:            nilIfZero(p.OfficeID),
@@ -108,6 +90,7 @@ func (s *ReportsService) getReports(ctx context.Context, p ReportParams, isBusin
 		IsBusiness:          isBusiness,
 		PageSize:            p.PageSize,
 		PageOffset:          offset,
+		SkipCanceled:        p.SkipCanceled,
 	}
 
 	reservations, err := s.query.ListReservationsReport(ctx, queryParams)
@@ -131,6 +114,7 @@ func (s *ReportsService) getReports(ctx context.Context, p ReportParams, isBusin
 		OfficeID:            queryParams.OfficeID,
 		AgentID:             queryParams.AgentID,
 		IsBusiness:          isBusiness,
+		SkipCanceled:        p.SkipCanceled,
 	}
 
 	total, err := s.query.CountReservationsReport(ctx, countParams)

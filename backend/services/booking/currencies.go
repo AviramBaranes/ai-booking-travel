@@ -5,7 +5,6 @@ import (
 
 	currency "encore.app/services/booking/handlers/currency"
 	"encore.dev/config"
-	"encore.dev/cron"
 )
 
 type icountConfig struct {
@@ -50,13 +49,13 @@ func (s *Service) DeleteCurrency(ctx context.Context, id int64) error {
 // UpdateCurrenciesRates updates the exchange rates for all currencies from iCount, it runs via a cron job.
 //
 //encore:api private
-func (s *Service) UpdateCurrenciesRates(ctx context.Context) error {
-	cs := currency.NewCurrencyService(s.query)
-	return cs.UpdateCurrenciesRates(ctx, icountCfg.CID(), icountCfg.User())
-}
+// func (s *Service) UpdateCurrenciesRates(ctx context.Context) error {
+// 	cs := currency.NewCurrencyService(s.query)
+// 	return cs.UpdateCurrenciesRates(ctx, icountCfg.CID(), icountCfg.User())
+// }
 
-var _ = cron.NewJob("currencies-sync", cron.JobConfig{
-	Title:    "Sync Currencies Rates",
-	Schedule: "0 0 * * *", // At 00:00 every day.
-	Endpoint: UpdateCurrenciesRates,
-})
+// var _ = cron.NewJob("currencies-sync", cron.JobConfig{
+// 	Title:    "Sync Currencies Rates",
+// 	Schedule: "0 0 * * *", // At 00:00 every day.
+// 	Endpoint: UpdateCurrenciesRates,
+// })

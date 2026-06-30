@@ -1,4 +1,4 @@
-import { booking_handlers, price_offer } from "../client";
+import { APIError, booking_handlers, price_offer } from "../client";
 import { withErrorHandler } from "./_api";
 
 export function createPriceOffer(params: price_offer.CreatePriceOfferParams) {
@@ -9,13 +9,19 @@ export function listPriceOffers(params: price_offer.ListPriceOffersRequest) {
   return withErrorHandler((client) => client.booking.ListPriceOffers(params));
 }
 
-export function getAgentPriceOffer(id: number) {
-  return withErrorHandler((client) => client.booking.GetAgentPriceOffer(id));
+export function getAgentPriceOffer(
+  id: number,
+  onNotFound?: (error: APIError) => void,
+) {
+  const options = onNotFound ? { onExpectedError: { 404: onNotFound } } : undefined;
+  return withErrorHandler((client) => client.booking.GetAgentPriceOffer(id), options);
 }
 
-export function getClientPriceOffer(token: string) {
+export function getClientPriceOffer(token: string, onNotFound?: (error: APIError) => void) {
+  const options = onNotFound ? { onExpectedError: { 404: onNotFound } } : undefined;
   return withErrorHandler((client) =>
     client.booking.GetClientPriceOffer(token),
+    options
   );
 }
 

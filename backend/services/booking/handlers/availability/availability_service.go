@@ -1,15 +1,19 @@
 package availability
 
-import "encore.app/services/booking/db"
+import (
+	"encore.app/internal/currency"
+	"encore.app/services/booking/db"
+)
 
 type AvailabilityService struct {
 	query db.Querier
 	tc    TranslationCacher
+	c     *currency.CurrenciesCache
 	cfg   *AvailableVehiclesConfig
 }
 
-func NewAvailabilityService(query db.Querier, tc TranslationCacher, cfg *AvailableVehiclesConfig) *AvailabilityService {
-	return &AvailabilityService{query: query, tc: tc, cfg: cfg}
+func NewAvailabilityService(query db.Querier, tc TranslationCacher, c *currency.CurrenciesCache, cfg *AvailableVehiclesConfig) *AvailabilityService {
+	return &AvailabilityService{query: query, tc: tc, c: c, cfg: cfg}
 }
 
 type TranslationCacher interface {

@@ -32,7 +32,7 @@ const navItems = [
   { label: "סוכנים", href: "/admin/agents", icon: Users },
   { label: "מחירונים", href: "/admin/pricing", icon: Receipt },
   { label: "קופונים", href: "/admin/coupons", icon: Ticket },
-  { label: "מטבעות", href: "/admin/currencies", icon: Coins },
+  // { label: "מטבעות", href: "/admin/currencies", icon: Coins },
   { label: "מיקומים", href: "/admin/locations", icon: MapPin },
   { label: "תרגומים", href: "/admin/translations", icon: Languages },
   { label: "דוח הזמנות עסקי", href: "/admin/reports/reservations", icon: CalendarCheck },

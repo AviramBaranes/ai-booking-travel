@@ -935,6 +935,7 @@ export namespace reservation {
                 pageSize:            String(params.PageSize),
                 pickupDateFrom:      params.PickupDateFrom,
                 pickupDateTo:        params.PickupDateTo,
+                skipCanceled:        params.SkipCanceled === undefined ? undefined : String(params.SkipCanceled),
                 status:              params.Status,
                 supplier:            params.Supplier,
                 voucheredAtFrom:     params.VoucheredAtFrom,
@@ -974,6 +975,7 @@ export namespace reservation {
                 pageSize:            String(params.PageSize),
                 pickupDateFrom:      params.PickupDateFrom,
                 pickupDateTo:        params.PickupDateTo,
+                skipCanceled:        params.SkipCanceled === undefined ? undefined : String(params.SkipCanceled),
                 status:              params.Status,
                 supplier:            params.Supplier,
                 voucheredAtFrom:     params.VoucheredAtFrom,
@@ -1030,6 +1032,8 @@ export namespace actions {
     }
 
     export interface PayAtPickup {
+        deposit: number
+        depositCurrency: string
         fees: broker.Fees
         selectedAddons?: SelectedAddon[]
     }
@@ -1150,6 +1154,8 @@ export namespace availability {
         rateQualifier: string
         supplierName: string
         supplierCode: string
+        deposit: number
+        depositCurrency: string
     }
 
     /**
@@ -1243,8 +1249,6 @@ export namespace broker {
         dropChargeCurrency: string
         youngDriverFee: number
         youngDriverFeeCurrency: string
-        deposit: number
-        depositCurrency: string
     }
 
     export interface Inclusions {
@@ -2143,6 +2147,7 @@ export namespace reports {
         AgentID?: number
         IsBusiness?: boolean
         IsExport?: boolean
+        SkipCanceled?: boolean
     }
 }
 

@@ -8,16 +8,19 @@ import { formatPrice } from "@/shared/utils/formatPrice";
 import { PayAtPickupSection } from "@/app/(app)/[lang]/(withNavbar)/(my-account)/_components/PayAtPickupSection";
 import Image from "next/image";
 import { clsx } from "clsx";
+import { AddonsGallery } from "@/payload-types";
 
 export async function ClientOfferSummary({
   offer,
   lang,
+  addonsGallery,
 }: {
   offer: price_offer.GetPriceOfferResponse;
   lang: string;
+  addonsGallery: AddonsGallery
 }) {
   const t = await getTranslations("MyAccount");
-
+  
   return (
     <div className="flex flex-col gap-2 shadow-card rounded-xl p-6 bg-white border border-cars-border">
       <HeaderSection offer={offer} lang={lang} />
@@ -39,9 +42,9 @@ export async function ClientOfferSummary({
       <IncludedSection planInclusions={offer.planInclusions} />
 
       <PayAtPickupSection
-        fees={offer.payAtPickup.fees}
-        selectedAddons={offer.payAtPickup.selectedAddons ?? []}
         currency={offer.currencyCode}
+        payAtPickup={offer.payAtPickup}
+        addonsGallery={addonsGallery}
       />
 
       {offer.isErpIncluded && (
@@ -56,9 +59,14 @@ export async function ClientOfferSummary({
           {t("summary.erpIncluded")}
         </div>
       )}
-      <div className={clsx("text-white bg-brand py-3 5 px-5 flex justify-between items-center rounded-xl",{
-        "mt-6": !offer.isErpIncluded,
-      })}>
+      <div
+        className={clsx(
+          "text-white bg-brand py-3 5 px-5 flex justify-between items-center rounded-xl",
+          {
+            "mt-6": !offer.isErpIncluded,
+          },
+        )}
+      >
         <span className="type-paragraph">
           {t("priceOffer.summary.labels.totalToPay")}
         </span>

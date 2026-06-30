@@ -266,6 +266,7 @@ WHERE
     AND (sqlc.narg(office_id)::BIGINT IS NULL OR office_id = sqlc.narg(office_id)::BIGINT)
     AND (sqlc.narg(agent_id)::BIGINT IS NULL OR user_id = sqlc.narg(agent_id)::BIGINT)
     AND (NOT sqlc.arg(is_business)::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+    AND (NOT sqlc.arg(skip_canceled)::BOOLEAN OR reservation_status != 'canceled')
 ORDER BY created_at DESC
 LIMIT  sqlc.arg(page_size)::BIGINT
 OFFSET sqlc.arg(page_offset)::BIGINT;
@@ -291,7 +292,8 @@ WHERE
     AND (sqlc.narg(organization_id)::BIGINT IS NULL OR organization_id = sqlc.narg(organization_id)::BIGINT)
     AND (sqlc.narg(office_id)::BIGINT IS NULL OR office_id = sqlc.narg(office_id)::BIGINT)
     AND (sqlc.narg(agent_id)::BIGINT IS NULL OR user_id = sqlc.narg(agent_id)::BIGINT)
-    AND (NOT sqlc.arg(is_business)::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL));
+    AND (NOT sqlc.arg(is_business)::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+    AND (NOT sqlc.arg(skip_canceled)::BOOLEAN OR reservation_status != 'canceled');
 
 -- name: GetOpenReservationsPickingUpWithinWeek :many
 SELECT

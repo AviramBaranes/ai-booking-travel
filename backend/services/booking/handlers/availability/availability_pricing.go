@@ -7,7 +7,6 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
-	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/lang"
 	"encore.app/internal/pricing"
 	"encore.app/services/accounts"
@@ -47,11 +46,6 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 
 	authData := auth.GetAuthData()
 	isAgent := authData != nil && (authData.Role == auth.UserRoleAgent)
-	currenciesMap, err := s.buildCurrencyMap(ctx)
-	if err != nil {
-		rlog.Error("failed to build currency map", "error", err)
-		return artifacts, api_errors.ErrInternalError
-	}
 
 	spMap := make(map[string]*broker.SupplierInfo)
 	translatedSuppliers := make(map[string]bool)
@@ -59,6 +53,8 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 		spMap[sp.Name] = &avResp.SuppliersInfo[i]
 		translatedSuppliers[sp.Name] = false
 	}
+
+	currenciesMap := make(map[string]float64)
 
 	for i, v := range avResp.AvailableVehicles {
 		mp, ok := markupProviders[v.Broker]
@@ -88,10 +84,15 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				rlog.Warn("calculated car price with markup is less than or equal to 0, skipping plan", "carGroup", v.CarDetails.CarGroup, "brand", p.SupplierCode)
 				continue
 			}
-			cr, ok := currenciesMap[v.PriceDetails.Currency]
-			if !ok {
-				rlog.Warn("no currency rate found for currency, skipping plan", "currency", v.PriceDetails.Currency)
-				continue
+
+			var cr float64
+			if cr, ok = currenciesMap[v.PriceDetails.Currency]; !ok {
+				cr, err = s.c.GetCurrencyRate(ctx, v.PriceDetails.Currency)
+				if err != nil {
+					rlog.Error("no currency rate found for currency, skipping plan", "currency", v.PriceDetails.Currency, "error", err)
+					continue
+				}
+				currenciesMap[v.PriceDetails.Currency] = cr
 			}
 
 			brokerLoc, ok := locs[v.Broker]
@@ -135,6 +136,8 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				Inclusions:             incs,
 				AvailableAddOns:        sp.AddOns,
 				Fees:                   v.PriceDetails.Fees,
+				Deposit:                p.Deposit,
+				DepositCurrency:        p.DepositCurrency,
 			}
 
 			artifacts.plansDetails = append(artifacts.plansDetails, pd)
@@ -151,16 +154,18 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 			chargedErpPriceWithVat := pricing.ApplyMarkup(p.ChargedErpPriceWithVat, grossMarkupResp.GrossMarkup)
 
 			avPlan := Plan{
-				PlanID:        p.PlanID,
-				PlanName:      p.PlanName,
-				FullPrice:     pricing.RoundToInt(carPriceWithMarkup),
-				Discount:      pricing.RoundToInt(couponDiscount),
-				Price:         pricing.RoundToInt(discountedCarPrice),
-				ErpPrice:      pricing.RoundToInt(discountedErp + chargedErpPriceWithVat), // no discount on charged erp
-				Info:          p.Info,
-				RateQualifier: p.RateQualifier,
-				SupplierName:  sp.Name,
-				SupplierCode:  p.SupplierCode,
+				PlanID:          p.PlanID,
+				PlanName:        p.PlanName,
+				FullPrice:       pricing.RoundToInt(carPriceWithMarkup),
+				Discount:        pricing.RoundToInt(couponDiscount),
+				Price:           pricing.RoundToInt(discountedCarPrice),
+				ErpPrice:        pricing.RoundToInt(discountedErp + chargedErpPriceWithVat), // no discount on charged erp
+				Info:            p.Info,
+				RateQualifier:   p.RateQualifier,
+				SupplierName:    sp.Name,
+				SupplierCode:    p.SupplierCode,
+				Deposit:         p.Deposit,
+				DepositCurrency: p.DepositCurrency,
 			}
 			avPlans = append(avPlans, avPlan)
 		}
@@ -264,20 +269,6 @@ func sortAvailableVehiclesByCheapestPlan(vs []AvailableVehicle) {
 	sort.Slice(vs, func(i, j int) bool {
 		return vs[i].Plans[0].Price < vs[j].Plans[0].Price
 	})
-}
-
-// buildCurrencyMap query all currencies and returns a map of currency code to currency rates
-func (s *AvailabilityService) buildCurrencyMap(ctx context.Context) (map[string]float64, error) {
-	currencyMap := make(map[string]float64)
-	rows, err := s.query.ListCurrencies(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, r := range rows {
-		currencyMap[r.CurrencyIsoName] = dbadapters.NumericToFloat64(r.Rate)
-	}
-
-	return currencyMap, nil
 }
 
 // translatePlanDetails translates the plan details using the service's translator, returning the original detail if no translation is found after inserting it to db.

@@ -89,7 +89,7 @@ func TestAuthHandler(t *testing.T) {
 		defer func() { jwtgo.TimeFunc = originalTimeFunc }()
 
 		jwtgo.TimeFunc = func() time.Time {
-			return time.Now().Add(20 * time.Minute)
+			return time.Now().Add(40 * time.Minute)
 		}
 
 		_, _, err = AuthHandler(ctx, token)

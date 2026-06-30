@@ -128,6 +128,7 @@ export function buildRequest(
     AgentID: toNumber(filters.agentId),
     IsBusiness: true,
     IsExport: isExport,
+    SkipCanceled: filters.skipCanceled === "true",
   };
 }
 
@@ -311,7 +312,8 @@ export const LIMITED_COLUMNS_KEYS = [
   "reservationId",
   "brokerReservationId",
   "status",
-  "organizationName",
+  "officeName",
+  "agentName",
   "countryCode",
   "pickupDate",
   "rentalDays",
