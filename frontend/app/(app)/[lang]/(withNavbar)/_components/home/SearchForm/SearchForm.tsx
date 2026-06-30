@@ -356,11 +356,43 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
             />
           </div>
         </div>
+        <div className="flex flex-col md:hidden gap-y-3 my-2">
+          <div>
+            <Controller
+              name="driverAge"
+              control={control}
+              render={({ field }) => (
+                <AgePopover
+                  saveButtonText={t("save")}
+                  driverAge={field.value}
+                  setDriverAge={field.onChange}
+                />
+              )}
+            />
+          </div>
+          {!isAgent && (
+            <div>
+              <Controller
+                name="couponCode"
+                control={control}
+                render={({ field }) => (
+                  <CouponPopover
+                    checkboxLabel={t("hasCoupon")}
+                    inputLabel={t("couponPlaceholder")}
+                    saveButtonText={t("save")}
+                    couponCode={field.value ?? ""}
+                    setCouponCode={field.onChange}
+                  />
+                )}
+              />
+            </div>
+          )}
+        </div>
         <div className="w-full lg:w-1/9">
           <Button
             type="submit"
             variant="brand"
-            className="w-full py-6 type-paragraph font-bold cursor-pointer"
+            className="w-full py-8 lg:py-6 type-paragraph font-bold cursor-pointer"
             loading={loading}
           >
             {t("searchButton")}

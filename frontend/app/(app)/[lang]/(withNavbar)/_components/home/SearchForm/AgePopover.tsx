@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { useTranslations } from "next-intl";
+import { SearchFormCheckbox } from "./SearchFormCheckbox";
 
 interface AgePopoverProps {
   saveButtonText: string;
@@ -31,27 +32,22 @@ export function AgePopover({
   return (
     <Popover open={!isAgeApproved}>
       <PopoverTrigger asChild>
-        <Field orientation="horizontal" className="w-auto shrink-0">
-          <Checkbox
-            checked={isAgeApproved}
-            onCheckedChange={(checked) => {
-              if (!checked) {
-                setIsAgeApproved(false);
-              }
-            }}
-            id="age-above-30"
-            name="age-above-30"
-            className="border-white w-3 h-3 rounded-xs bg-navy data-checked:bg-white data-checked:text-navy data-checked:border-white"
-          />
-          <FieldLabel htmlFor="age-above-30" className="text-white">
-            {t("ageRange", {
-              ageRange:
-                isChangedAge && driverAge >= 18 && driverAge <= 99
-                  ? driverAge
-                  : "30 - 65",
-            })}
-          </FieldLabel>
-        </Field>
+        <SearchFormCheckbox
+          label={t("ageRange", {
+            ageRange:
+              isChangedAge && driverAge >= 18 && driverAge <= 99
+                ? driverAge
+                : "30 - 65",
+          })}
+          value={isAgeApproved}
+          setValue={(checked) => {
+            if (!checked) {
+              setIsAgeApproved(false);
+            }
+          }}
+          id="age-above-30"
+          name="age-above-30"
+        />
       </PopoverTrigger>
       <PopoverContent className="py-2 w-auto min-w-max" align="end">
         <Field orientation="horizontal" className="flex items-start">

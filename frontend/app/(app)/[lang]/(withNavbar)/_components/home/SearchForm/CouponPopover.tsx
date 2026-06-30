@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { SearchFormCheckbox } from "./SearchFormCheckbox";
 
 interface CouponPopoverProps {
   checkboxLabel: string;
@@ -29,24 +30,19 @@ export function CouponPopover({
   return (
     <Popover open={hasCoupon && !isCouponSaved}>
       <PopoverTrigger asChild>
-        <Field orientation="horizontal" className="w-auto shrink-0">
-          <Checkbox
-            checked={hasCoupon}
-            onCheckedChange={(checked) => {
-              setHasCoupon(!!checked);
-              if (!checked) {
-                setIsCouponSaved(false);
-                setCouponCode("");
-              }
-            }}
-            id="has-coupon"
-            name="has-coupon"
-            className="border-white w-3 h-3 rounded-xs bg-navy data-checked:bg-white data-checked:text-navy data-checked:border-white"
-          />
-          <FieldLabel htmlFor="has-coupon" className="text-white">
-            {checkboxLabel}
-          </FieldLabel>
-        </Field>
+        <SearchFormCheckbox
+          label={checkboxLabel}
+          value={hasCoupon}
+          setValue={(checked) => {
+            setHasCoupon(!!checked);
+            if (!checked) {
+              setIsCouponSaved(false);
+              setCouponCode("");
+            }
+          }}
+          id="has-coupon"
+          name="has-coupon"
+        />
       </PopoverTrigger>
       <PopoverContent className="py-2" align="start">
         <Field orientation="horizontal">
