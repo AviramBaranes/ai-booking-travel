@@ -114,6 +114,7 @@ func (s *ReportsService) getReports(ctx context.Context, p ReportParams, isBusin
 		OfficeID:            queryParams.OfficeID,
 		AgentID:             queryParams.AgentID,
 		IsBusiness:          isBusiness,
+		SkipCanceled:        p.SkipCanceled,
 	}
 
 	total, err := s.query.CountReservationsReport(ctx, countParams)

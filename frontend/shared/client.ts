@@ -935,6 +935,7 @@ export namespace reservation {
                 pageSize:            String(params.PageSize),
                 pickupDateFrom:      params.PickupDateFrom,
                 pickupDateTo:        params.PickupDateTo,
+                skipCanceled:        params.SkipCanceled === undefined ? undefined : String(params.SkipCanceled),
                 status:              params.Status,
                 supplier:            params.Supplier,
                 voucheredAtFrom:     params.VoucheredAtFrom,
@@ -974,6 +975,7 @@ export namespace reservation {
                 pageSize:            String(params.PageSize),
                 pickupDateFrom:      params.PickupDateFrom,
                 pickupDateTo:        params.PickupDateTo,
+                skipCanceled:        params.SkipCanceled === undefined ? undefined : String(params.SkipCanceled),
                 status:              params.Status,
                 supplier:            params.Supplier,
                 voucheredAtFrom:     params.VoucheredAtFrom,
@@ -2145,6 +2147,7 @@ export namespace reports {
         AgentID?: number
         IsBusiness?: boolean
         IsExport?: boolean
+        SkipCanceled?: boolean
     }
 }
 

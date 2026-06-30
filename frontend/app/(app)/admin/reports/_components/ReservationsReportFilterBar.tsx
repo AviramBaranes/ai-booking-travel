@@ -26,6 +26,7 @@ export const RESERVATION_REPORT_FILTER_KEYS = [
   "organizationId",
   "officeId",
   "agentId",
+  "skipCanceled",
 ] as const;
 
 export type ReservationReportFilterKey =
@@ -61,6 +62,7 @@ export const emptyReservationReportFilters: ReservationReportFilters = {
   organizationId: "",
   officeId: "",
   agentId: "",
+  skipCanceled: "true",
 };
 
 const inputClass =
@@ -223,6 +225,19 @@ export function ReservationsReportFilterBar({
               {size}
             </option>
           ))}
+        </select>
+      </div>
+      <div className="min-w-36">
+        <label className="block text-xs text-gray-500 mb-1">דלג על מבוטלים</label>
+        <select
+          className={inputClass}
+          value={filters.skipCanceled}
+          onChange={(event) =>
+            updateFilters({ skipCanceled: event.target.value })
+          }
+        >
+          <option value="true">כן</option>
+          <option value="false">לא</option>
         </select>
       </div>
       <div className="flex gap-2">

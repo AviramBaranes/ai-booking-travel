@@ -112,6 +112,7 @@ WHERE
     AND ($12::BIGINT IS NULL OR office_id = $12::BIGINT)
     AND ($13::BIGINT IS NULL OR user_id = $13::BIGINT)
     AND (NOT $14::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+    AND (NOT $15::BOOLEAN OR reservation_status != 'canceled')
 `
 
 type CountReservationsReportParams struct {
@@ -129,6 +130,7 @@ type CountReservationsReportParams struct {
 	OfficeID            *int64
 	AgentID             *int64
 	IsBusiness          bool
+	SkipCanceled        bool
 }
 
 type CountReservationsReportRow struct {
@@ -154,6 +156,7 @@ func (q *Queries) CountReservationsReport(ctx context.Context, arg CountReservat
 		arg.OfficeID,
 		arg.AgentID,
 		arg.IsBusiness,
+		arg.SkipCanceled,
 	)
 	var i CountReservationsReportRow
 	err := row.Scan(

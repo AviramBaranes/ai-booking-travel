@@ -66,7 +66,11 @@ export function ReportTableShell<T extends { reservationId: number }>({
   const [urlFilters, setUrlFilters] = useUrlFilters<ReservationReportFilterKey>(
     [...RESERVATION_REPORT_FILTER_KEYS],
   );
-  const filters = showFilters ? urlFilters : emptyReservationReportFilters;
+  const urlFiltersWithDefaults: ReservationReportFilters = {
+    ...urlFilters,
+    skipCanceled: urlFilters.skipCanceled || emptyReservationReportFilters.skipCanceled,
+  };
+  const filters = showFilters ? urlFiltersWithDefaults : emptyReservationReportFilters;
   const effectiveFilters = {
     ...filters,
     ...fixedFilters,

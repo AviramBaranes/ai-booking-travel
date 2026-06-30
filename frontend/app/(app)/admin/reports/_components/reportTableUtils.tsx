@@ -128,6 +128,7 @@ export function buildRequest(
     AgentID: toNumber(filters.agentId),
     IsBusiness: true,
     IsExport: isExport,
+    SkipCanceled: filters.skipCanceled === "true",
   };
 }
 
