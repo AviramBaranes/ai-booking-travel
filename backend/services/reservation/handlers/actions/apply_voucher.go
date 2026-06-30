@@ -47,7 +47,7 @@ func (s *ActionService) ApplyVoucher(ctx context.Context, id int64, p ApplyVouch
 		return err
 	}
 
-	currencyRate, err := s.currencyCache.Get(ctx, reservation.CurrencyCode)
+	currencyRate, err := s.currencyCache.GetCurrencyRate(ctx, reservation.CurrencyCode)
 	if err != nil {
 		rlog.Error("failed to get currency rate", "error", err, "currency_code", reservation.CurrencyCode)
 		return api_errors.ErrInternalError

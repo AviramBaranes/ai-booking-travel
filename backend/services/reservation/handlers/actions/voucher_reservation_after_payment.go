@@ -70,7 +70,7 @@ func (s *ActionService) VoucherReservationAfterPayment(ctx context.Context, p *V
 }
 
 func (s *ActionService) updateReservationCurrencyRate(ctx context.Context, reservationID int64, currencyCode string) {
-	rate, err := s.currencyCache.Get(ctx, currencyCode)
+	rate, err := s.currencyCache.GetCurrencyRate(ctx, currencyCode)
 	if err != nil {
 		rlog.Error("failed to get currency rate", "error", err, "currency_code", currencyCode)
 		return

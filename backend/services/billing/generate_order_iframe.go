@@ -41,7 +41,7 @@ var (
 // It should be used for agents that can't voucher an order because of a finished obligo.
 //
 // encore:api auth path=/billing/generate-order-iframe method=POST tag:agent
-func (s *BillingService) GenerateOrderIframe(ctx context.Context, p GenerateOrderIframeParams) (*GenerateOrderIframeResponse, error) {
+func (s *Service) GenerateOrderIframe(ctx context.Context, p GenerateOrderIframeParams) (*GenerateOrderIframeResponse, error) {
 	authData := auth.Data().(*accounts.AuthData)
 
 	g, groupCtx := errgroup.WithContext(ctx)
@@ -80,7 +80,7 @@ func (s *BillingService) GenerateOrderIframe(ctx context.Context, p GenerateOrde
 	}
 
 	baseURL := encore.Meta().APIBaseURL.String()
-	// baseURL = "https://43fc-31-154-63-122.ngrok-free.app"
+	baseURL = "https://2d9b-31-154-63-122.ngrok-free.app"
 
 	langCode := lang.FromContext(ctx, "he")
 	ic := icount.NewIcount()
@@ -146,7 +146,7 @@ func getOrder(ctx context.Context, orderID int64) (*reservation.GetReservationRe
 }
 
 // getPrice calculates the price of the order. If isILS is false, it returns the total price of the order and its currency code. If isILS is true, it converts the total price to ILS using the exchange rate from iCount and returns the converted price and "ILS" as the currency code.
-func (s *BillingService) getPrice(ctx context.Context, order *reservation.GetReservationResponse, isILS bool) (float64, string, error) {
+func (s *Service) getPrice(ctx context.Context, order *reservation.GetReservationResponse, isILS bool) (float64, string, error) {
 	if !isILS {
 		return order.TotalPriceFloat, order.CurrencyCode, nil
 	}

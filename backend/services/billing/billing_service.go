@@ -1,6 +1,7 @@
 package billing
 
 import (
+	"fmt"
 	"time"
 
 	"encore.app/internal/currency"
@@ -10,7 +11,7 @@ import (
 )
 
 // encore:service
-type BillingService struct {
+type Service struct {
 	ratesCache *currency.CurrenciesCache
 }
 
@@ -20,9 +21,12 @@ var currenciesRates = cache.NewFloatKeyspace[string](accounts.GlobalCache, cache
 	DefaultExpiry: cache.ExpireIn(12 * time.Hour),
 })
 
-func initService() (*BillingService, error) {
+func initService() (*Service, error) {
+	if currenciesRates == nil {
+		return nil, fmt.Errorf("currenciesRates cache is not initialized")
+	}
 	ratesCache := currency.NewCurrenciesCache(currenciesRates)
-	return &BillingService{
+	return &Service{
 		ratesCache: ratesCache,
 	}, nil
 }
