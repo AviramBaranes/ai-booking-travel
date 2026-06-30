@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"encore.app/internal/api_errors"
+	"encore.app/services/accounts"
 	"encore.app/services/notifications/email"
 	"encore.dev/beta/errs"
+	"encore.dev/rlog"
 )
 
 type SendMonthlyReportParams struct {
@@ -36,10 +38,19 @@ func (s *Service) SendMonthlyReport(ctx context.Context, p SendMonthlyReportPara
 		},
 	}
 
+	res, err := accounts.ListAdminsEmails(ctx)
+	if err != nil {
+		rlog.Error("failed to get admins emails for monthly report", "error", err)
+	}
+
+	emails := make([]string, 0, len(res.Emails)+1)
+	emails = append(emails, res.Emails...)
+	emails = append(emails, p.ContactEmail)
+
 	return email.SendEmail(
 		ctx,
 		s.accountsEmailSender,
-		[]string{p.ContactEmail},
+		emails,
 		subject,
 		email.MonthlyReportTemplate,
 		email.MonthlyReportData{ContactName: p.ContactName},
