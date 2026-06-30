@@ -1,6 +1,31 @@
 package billing
 
-import "encore.dev/config"
+import (
+	"time"
+
+	"encore.app/internal/currency"
+	"encore.app/services/accounts"
+	"encore.dev/config"
+	"encore.dev/storage/cache"
+)
+
+// encore:service
+type BillingService struct {
+	ratesCache *currency.CurrenciesCache
+}
+
+// currenciesRates is a cache for storing currency rates with a default expiry of 24 hours.
+var currenciesRates = cache.NewFloatKeyspace[string](accounts.GlobalCache, cache.KeyspaceConfig{
+	KeyPattern:    "billing-currencies/:key",
+	DefaultExpiry: cache.ExpireIn(12 * time.Hour),
+})
+
+func initService() (*BillingService, error) {
+	ratesCache := currency.NewCurrenciesCache(currenciesRates)
+	return &BillingService{
+		ratesCache: ratesCache,
+	}, nil
+}
 
 type billingConfig struct {
 	MonthlyReport monthlyReportConfig

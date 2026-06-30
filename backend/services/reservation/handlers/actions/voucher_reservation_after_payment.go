@@ -5,7 +5,6 @@ import (
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
-	"encore.app/internal/icount"
 	"encore.app/services/reservation/db"
 	"encore.app/services/reservation/handlers/reservation_pricing"
 	"encore.dev/rlog"
@@ -71,15 +70,9 @@ func (s *ActionService) VoucherReservationAfterPayment(ctx context.Context, p *V
 }
 
 func (s *ActionService) updateReservationCurrencyRate(ctx context.Context, reservationID int64, currencyCode string) {
-	ic := icount.NewIcount()
-	resp, err := ic.FetchCurrencies()
+	rate, err := s.currencyCache.Get(ctx, currencyCode)
 	if err != nil {
-		rlog.Error("failed to fetch currencies from iCount", "error", err)
-	}
-
-	rate, ok := resp.Rates[currencyCode]
-	if !ok {
-		rlog.Error("currency not found in iCount response", "currency", currencyCode)
+		rlog.Error("failed to get currency rate", "error", err, "currency_code", currencyCode)
 		return
 	}
 

@@ -16,7 +16,7 @@ import (
 
 var _ = cron.NewJob("alert-open-reservations", cron.JobConfig{
 	Title:    "Alert open reservations",
-	Schedule: "0 7 * * *",
+	Schedule: "0 5 * * *",
 	Endpoint: AlertOpenReservations,
 })
 
@@ -24,9 +24,10 @@ var emailRequestedTopic = pubsub.TopicRef[pubsub.Publisher[*emailevents.EmailEve
 var emailPublisher = emailevents.NewPublisher(emailRequestedTopic)
 
 func (s *Service) newActionService() *actions.ActionService {
-	return actions.NewActionService(s.query, s.pool, s.cancellationTopic, actions.Config{
+	return actions.NewActionService(s.query, s.pool, s.cancellationTopic, s.currencyCache, actions.Config{
 		VAT: cfg.VAT(),
-	})
+	},
+	)
 }
 
 // encore:api private

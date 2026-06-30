@@ -41,14 +41,14 @@ var (
 // It should be used for agents that can't voucher an order because of a finished obligo.
 //
 // encore:api auth path=/billing/generate-order-iframe method=POST tag:agent
-func GenerateOrderIframe(ctx context.Context, p GenerateOrderIframeParams) (*GenerateOrderIframeResponse, error) {
+func (s *BillingService) GenerateOrderIframe(ctx context.Context, p GenerateOrderIframeParams) (*GenerateOrderIframeResponse, error) {
 	authData := auth.Data().(*accounts.AuthData)
 
 	g, groupCtx := errgroup.WithContext(ctx)
 
 	var clientName string
 	var order *reservation.GetReservationResponse
-	var rates map[string]float64
+	// var rates map[string]float64
 
 	g.Go(func() error {
 		cn, err := getClientName(groupCtx, authData.UserID)
@@ -68,25 +68,12 @@ func GenerateOrderIframe(ctx context.Context, p GenerateOrderIframeParams) (*Gen
 		return nil
 	})
 
-	if p.IsILS {
-		g.Go(func() error {
-			ic := icount.NewIcount()
-			r, err := ic.FetchCurrencies()
-			if err != nil {
-				rlog.Error("failed to fetch currency rates", "error", err)
-				return api_errors.ErrInternalError
-			}
-			rates = r.Rates
-			return nil
-		})
-	}
-
 	if err := g.Wait(); err != nil {
 		rlog.Error("failed to get data for generating order iframe", "error", err)
 		return nil, err
 	}
 
-	sum, currency, err := getPrice(order, p.IsILS, rates)
+	sum, currency, err := s.getPrice(ctx, order, p.IsILS)
 	if err != nil {
 		rlog.Error("failed to get price", "error", err)
 		return nil, err
@@ -159,14 +146,14 @@ func getOrder(ctx context.Context, orderID int64) (*reservation.GetReservationRe
 }
 
 // getPrice calculates the price of the order. If isILS is false, it returns the total price of the order and its currency code. If isILS is true, it converts the total price to ILS using the exchange rate from iCount and returns the converted price and "ILS" as the currency code.
-func getPrice(order *reservation.GetReservationResponse, isILS bool, rates map[string]float64) (float64, string, error) {
+func (s *BillingService) getPrice(ctx context.Context, order *reservation.GetReservationResponse, isILS bool) (float64, string, error) {
 	if !isILS {
 		return order.TotalPriceFloat, order.CurrencyCode, nil
 	}
 
-	rate, ok := rates[order.CurrencyCode]
+	rate, err := s.ratesCache.GetCurrencyRate(ctx, order.CurrencyCode)
 	rlog.Info("currency rates", "rate", rate)
-	if !ok {
+	if err != nil {
 		rlog.Error("currency code not found in rates", "currency_code", order.CurrencyCode)
 		return 0, "", api_errors.ErrInternalError
 	}

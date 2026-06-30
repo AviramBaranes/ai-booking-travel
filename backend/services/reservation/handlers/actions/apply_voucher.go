@@ -10,7 +10,6 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	dbadapters "encore.app/internal/db_adapters"
-	"encore.app/internal/icount"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
 	"encore.app/services/accounts/handlers/office"
@@ -48,9 +47,10 @@ func (s *ActionService) ApplyVoucher(ctx context.Context, id int64, p ApplyVouch
 		return err
 	}
 
-	currencyRate, err := s.getCurrencyRate(ctx, reservation.CurrencyCode)
+	currencyRate, err := s.currencyCache.Get(ctx, reservation.CurrencyCode)
 	if err != nil {
-		return err
+		rlog.Error("failed to get currency rate", "error", err, "currency_code", reservation.CurrencyCode)
+		return api_errors.ErrInternalError
 	}
 
 	tp := dbadapters.NumericToFloat64(reservation.TotalPrice)
@@ -205,24 +205,6 @@ func toVoucherData(reservation db.Reservation) (*broker.VoucherData, error) {
 		Suitcases:          carDetails.Bags,
 		PrepaidIncludes:    reservation.PlanInclusions,
 	}, nil
-}
-
-// getCurrencyRate retrieves the currency code for the reservation and fetches the corresponding exchange rate from Icount.
-func (s *ActionService) getCurrencyRate(ctx context.Context, currencyCode string) (float64, error) {
-	ic := icount.NewIcount()
-	resp, err := ic.FetchCurrencies()
-	if err != nil {
-		rlog.Error("fetching currency rates from icount", "error", err)
-		return 0, api_errors.ErrInternalError
-	}
-
-	rate, ok := resp.Rates[currencyCode]
-	if !ok {
-		rlog.Error("currency code not found in icount rates", "currencyCode", currencyCode)
-		return 0, api_errors.ErrInternalError
-	}
-
-	return rate, nil
 }
 
 // checkCredit retrieves the balance of the user billing entity and checks if it is sufficient to cover the total price of the reservation after applying the currency rate.
