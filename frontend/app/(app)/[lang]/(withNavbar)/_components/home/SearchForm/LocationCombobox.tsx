@@ -7,11 +7,14 @@ import {
   ComboboxList,
   ComboboxEmpty,
   ComboboxItem,
+  useComboboxAnchor,
 } from "@/components/ui/combobox";
 import { Building2, MapPin, Plane } from "lucide-react";
 import { location } from "@/shared/client";
 import { FieldError } from "react-hook-form";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
+import { useDirection } from "@/shared/hooks/useDirection";
+import { clsx } from "clsx";
 
 interface LocationComboboxProps {
   placeholder: string;
@@ -29,7 +32,9 @@ export function LocationCombobox({
   value,
   initializedLocations,
 }: LocationComboboxProps) {
+  const dir = useDirection()
   const [search, setSearch] = useState("");
+  const anchorRef = useComboboxAnchor();
   const [selectedName, setSelectedName] = useState(value ?? "");
   const { locations } = useLocations(search);
 
@@ -48,22 +53,31 @@ export function LocationCombobox({
         }
       }}
     >
-      <div className="flex flex-col">
+      <div ref={anchorRef} className="flex w-full flex-col">
         <ComboboxInput
           showClear={!!selectedName}
           placeholder={placeholder}
           aria-invalid={error ? "true" : "false"}
-          className="search-form-input"
+          inputClassName="text-sm" 
+          className="search-form-input md:text-base px-7"
+          clearClassName={clsx("p-0 absolute",{
+            "left-3": dir === "rtl",
+            "right-3": dir === "ltr",
+          })}
           showTrigger={false}
           onChange={(e) => setSearch(e.target.value)}
           readOnly={!!selectedName}
           ref={ref}
         >
-          <MapPin className="absolute top-1/2 -translate-y-1/2 inset-s-3 size-4.5 text-brand pointer-events-none" />
+          <MapPin className="pointer-events-none absolute inset-s-3 top-1/2 size-4.5 -translate-y-1/2 text-brand" />
         </ComboboxInput>
         <ErrorDisplay>{error?.message}</ErrorDisplay>
       </div>
-      <ComboboxContent className="rounded-xl p-4">
+      <ComboboxContent
+        anchor={anchorRef}
+        align="start"
+        className="w-(--anchor-width)! min-w-(--anchor-width)! max-w-(--anchor-width)! rounded-xl p-1"
+      >
         <ComboboxEmpty>לא נמצאו מיקומים</ComboboxEmpty>
         <ComboboxList className="divide-y divide-border" dir="ltr">
           {(loc: location.LocationResult) => (

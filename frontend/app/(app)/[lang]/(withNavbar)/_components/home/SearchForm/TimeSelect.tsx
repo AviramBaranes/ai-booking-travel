@@ -89,7 +89,7 @@ export function TimeSelect({
                   aria-invalid={!!error}
                   placeholder={placeholder}
                   readOnly
-                  className="text-start px-2 cursor-pointer"
+                  className="text-start px-2 cursor-pointer text-sm"
                 />
                 <InputGroupAddon align="inline-start" className="pl-1 pr-0">
                   <Clock className="size-5 mr-2 text-brand" />

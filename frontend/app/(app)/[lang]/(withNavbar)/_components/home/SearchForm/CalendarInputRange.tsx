@@ -68,7 +68,7 @@ export function CalendarInputRange({
                 aria-invalid={!!error}
                 value={displayValue}
                 placeholder={placeholder}
-                className="text-start px-2"
+                className="text-start px-2 text-sm"
                 ref={triggerRef}
                 readOnly
               />

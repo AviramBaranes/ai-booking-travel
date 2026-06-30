@@ -10,7 +10,7 @@ interface NavbarProps {
   lang: string;
 }
 
-async function getHeaderData(lang: string) {
+export async function getHeaderData(lang: string) {
   const payload = await getCachedPayload();
   return payload.findGlobal({
     slug: "header",

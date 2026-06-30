@@ -19,9 +19,9 @@ export function DifferentLocCheckbox({
         onCheckedChange={(checked) => setIsDropoffDifferentLoc(!!checked)}
         id="dropoff-different-loc"
         name="dropoff-different-loc"
-        className="border-white w-3 h-3 rounded-xs bg-navy data-checked:bg-white data-checked:text-navy data-checked:border-white"
+        className="border-navy border-2 lg:border lg:border-white w-4 h-4 lg:w-3 lg:h-3 rounded-xs bg-transparent lg:bg-navy data-checked:bg-white data-checked:text-navy lg:data-checked:border-white"
       />
-      <FieldLabel htmlFor="dropoff-different-loc" className="text-white">
+      <FieldLabel htmlFor="dropoff-different-loc" className="text-navy lg:text-white">
         {label}
       </FieldLabel>
     </Field>

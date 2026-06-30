@@ -71,9 +71,9 @@ export function CalendarInput({
                 aria-invalid={!!error}
                 value={displayValue}
                 placeholder={placeholder}
-                className={clsx("text-start", {
-                  "px-2": showIcon,
-                  "px-4": !showIcon,
+                className={clsx("text-start text-sm", {
+                  "lg:px-2 px-1": showIcon,
+                  "lg:px-4 px-2": !showIcon,
                 })}
                 ref={triggerRef}
                 readOnly

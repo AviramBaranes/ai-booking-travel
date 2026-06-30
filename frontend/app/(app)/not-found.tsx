@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import { Footer } from "./[lang]/(withNavbar)/_components/footer/Footer";
 import { NavbarLinks } from "./[lang]/(withNavbar)/_components/header/navbar/NavbarLinks";
 import { getCachedPayload } from "@/shared/server/cms";
+import { getHeaderData } from "./[lang]/(withNavbar)/_components/header/navbar/Navbar";
 
 const polin = localFont({
   src: [
@@ -29,6 +30,7 @@ export async function getNotFoundData(lang: string) {
 
 export default async function NotFound() {
   const notFoundData = await getNotFoundData("he");
+  const headerData = await getHeaderData("he");
 
   return (
     <html
@@ -37,7 +39,7 @@ export default async function NotFound() {
       className={`h-full antialiased ${polin.variable}`}
     >
       <body>
-        <NavbarLinks lang="he" />
+        <NavbarLinks lang="he" headerData={headerData}/>
         <NotFoundContent
           title={notFoundData.title ?? ""}
           subtitle={notFoundData.subtitle ?? ""}
