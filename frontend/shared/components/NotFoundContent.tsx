@@ -16,7 +16,7 @@ export function NotFoundContent({
   return (
     <div className="flex mt-30 mb-10 items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-6.5 w-175 max-w-full px-4">
-        <h1 className="text-[220px] leading-none font-black text-navy text-center">
+        <h1 className="text-[64px] lg:text-[220px] leading-none font-black text-navy text-center">
           404
         </h1>
         <h3 className="type-h3 text-navy text-center">{title}</h3>

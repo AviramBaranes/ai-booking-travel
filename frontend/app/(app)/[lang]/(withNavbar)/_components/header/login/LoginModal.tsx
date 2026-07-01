@@ -139,7 +139,7 @@ export function LoginModal({ trigger }: LoginModalProps = {}) {
       </DialogTrigger>
 
       <DialogContent
-        className="min-w-96 max-w-md p-6 flex flex-col gap-6 bg-white border-border-light/50 rounded-2xl shadow-modal"
+        className="lg:min-w-96 w-80 max-w-md lg:p-6 p-3 flex flex-col lg:gap-6 gap-3 bg-white border-border-light/50 rounded-2xl shadow-modal"
         showCloseButton={false}
       >
         {/* Header — title on inline-start, close on inline-end */}
@@ -175,7 +175,7 @@ export function LoginModal({ trigger }: LoginModalProps = {}) {
               <Button
                 onClick={() => handleModeSwitch("agent")}
                 className={cn(
-                  "flex-1 py-4 px-9 rounded-xl type-paragraph font-bold h-auto transition-colors",
+                  "flex-1 lg:py-4 lg:px-9 py-3 px-5 rounded-xl type-paragraph font-bold h-auto transition-colors",
                   mode === "agent"
                     ? "bg-navy text-white hover:bg-navy/90"
                     : "bg-background border border-navy text-navy hover:bg-navy/5",
@@ -186,7 +186,7 @@ export function LoginModal({ trigger }: LoginModalProps = {}) {
               <Button
                 onClick={() => handleModeSwitch("customer")}
                 className={cn(
-                  "flex-1 py-4 px-9 rounded-xl type-paragraph font-bold h-auto transition-colors",
+                  "flex-1 lg:py-4 lg:px-9 py-3 px-5 rounded-xl type-paragraph font-bold h-auto transition-colors",
                   mode === "customer"
                     ? "bg-navy text-white hover:bg-navy/90"
                     : "bg-background border border-navy text-navy hover:bg-navy/5",

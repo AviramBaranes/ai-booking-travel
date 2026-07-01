@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon } from "@/components/ui/input-group";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
-import { Loading } from "@/shared/components/Loading";
 import { sendOTP } from "@/shared/api/accounts-api";
 
 const ISRAELI_MOBILE_RE = /^0[5][0-9][\s-]?\d{3}[\s-]?\d{4}$/;

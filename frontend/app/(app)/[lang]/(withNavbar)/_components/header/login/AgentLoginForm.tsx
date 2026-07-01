@@ -21,8 +21,8 @@ function schema(t: (key: string) => string) {
 }
 type FormData = z.infer<ReturnType<typeof schema>>;
 
-const inputClass =
-  "h-15 bg-background border-border-light rounded-xl px-6 text-start type-paragraph text-text-secondary placeholder:text-text-secondary focus-visible:border-navy aria-invalid:bg-destructive/10";
+export const inputClass =
+  "lg:h-15 h-12 bg-background border-border-light rounded-xl px-6 text-start type-paragraph text-text-secondary placeholder:text-text-secondary focus-visible:border-navy aria-invalid:bg-destructive/10";
 
 interface AgentLoginFormProps {
   onSuccess: () => void;
@@ -105,7 +105,7 @@ export function AgentLoginForm({
         className="w-1/3 underline mx-auto"
         onClick={onForgotPassword}
       >
-        איפוס סיסמה
+        {t("agent.forgotPassword")}
       </Button>
 
       <Button

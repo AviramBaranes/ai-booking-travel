@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { sendPasswordReset } from "@/shared/api/accounts-api";
+import { inputClass } from "./AgentLoginForm";
 
 function schema(t: (key: string) => string) {
   return z.object({
@@ -18,9 +19,6 @@ function schema(t: (key: string) => string) {
   });
 }
 type FormData = z.infer<ReturnType<typeof schema>>;
-
-const inputClass =
-  "h-15 bg-background border-border-light rounded-xl px-6 text-start type-paragraph text-text-secondary placeholder:text-text-secondary focus-visible:border-navy aria-invalid:bg-destructive/10";
 
 interface ForgotPasswordFormProps {
   onSuccess: () => void;
