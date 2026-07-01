@@ -9,7 +9,7 @@ interface FooterFirstFloorProps {
 
 export function FooterFirstFloor({ links, lang }: FooterFirstFloorProps) {
   return (
-    <div className="flex items-start gap-6 flex-wrap bg-dark-navy py-6 px-20">
+    <div className="flex items-start gap-6 flex-wrap bg-dark-navy py-7 px-5 lg:px-20">
       {links?.map((link) => (
         <Link
           key={link.id}

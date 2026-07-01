@@ -13,8 +13,8 @@ export function FooterSecondFloor({
   lang,
 }: FooterSecondFloorProps) {
   return (
-    <div className="flex justify-between items-center gap-6 flex-wrap border-b border-light-white bg-navy pt-24 pb-28 pl-16 pr-4">
-      <div className="flex flex-1 flex-col gap-2">
+    <div className="flex flex-col lg:flex-row justify-between items-center gap-6 flex-wrap border-b border-light-white bg-navy lg:pl-16 lg:pr-4">
+      <div className="flex flex-1 flex-col items-center lg:items-start gap-2 py-7 px-5 mx-auto lg:pt-24 lg:pb-28">
         <Link href={`/${lang}`}>
           <Image
             src="/logo-dark.png"
@@ -40,23 +40,60 @@ export function FooterSecondFloor({
           ))}
         </div>
       </div>
-      <div className="flex justify-around items-center flex-5">
+      {/* Desktop */}
+      <div className="hidden flex-5 items-center justify-around lg:flex lg:flex-row">
         {footerData.linkGroups?.map((group) => (
           <div className="flex flex-col" key={group.id}>
-            <span className="bg-brand w-5 h-0.5 border-none"></span>
-            <h6 className="text-white type-h6 mb-4">{group.title}</h6>
+            <span className="h-0.5 w-5 border-none bg-brand" />
+
+            <h6 className="mb-4 type-h6 text-white">{group.title}</h6>
+
             <div className="flex flex-col gap-2">
               {group.links?.map((link) => (
                 <Link
                   key={link.id}
                   href={`/${lang}/${(link.page as Populated<typeof link.page>)?.slug ?? ""}`}
-                  className="text-white opacity-52 type-paragraph"
+                  className="type-paragraph text-white opacity-52"
                 >
                   {link.label}
                 </Link>
               ))}
             </div>
           </div>
+        ))}
+      </div>
+
+      {/* Mobile */}
+      <div className="flex w-full flex-col lg:hidden">
+        {footerData.linkGroups?.map((group) => (
+          <details
+            key={group.id}
+            className="group border-b border-white/10 py-4 px-5"
+          >
+            <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
+              <h6 className="type-h6 text-white">{group.title}</h6>
+
+              <span className="text-2xl leading-none text-brand group-open:hidden">
+                +
+              </span>
+
+              <span className="hidden text-2xl leading-none text-brand group-open:block">
+                −
+              </span>
+            </summary>
+
+            <div className="mt-4 flex flex-col gap-2">
+              {group.links?.map((link) => (
+                <Link
+                  key={link.id}
+                  href={`/${lang}/${(link.page as Populated<typeof link.page>)?.slug ?? ""}`}
+                  className="type-paragraph text-white opacity-52"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </details>
         ))}
       </div>
     </div>

@@ -14,8 +14,8 @@ export function FooterThirdFloor({
   lang,
 }: FooterThirdFloorProps) {
   return (
-    <div className="flex items-center justify-between bg-navy py-8 px-20">
-      <div className="flex items-start gap-7">
+    <div className="flex flex-col lg:flex-row items-center justify-between bg-navy py-8 px-5 lg:px-20">
+      <div className="flex items-start gap-2.5 lg:gap-7 flex-wrap my-4">
         {links?.map((link) => (
           <Link
             key={link.id}
