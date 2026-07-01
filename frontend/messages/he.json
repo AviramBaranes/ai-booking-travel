@@ -133,6 +133,8 @@
     "dropoffDatePlaceholder": "מתי מחזירים?",
     "timePlaceholder": "בחרו שעה",
     "searchButton": "יאללה, בוא נזוז",
+    "selectDates": "בחירת תאריכים",
+    "confirmDates": "אישור",
     "validation": {
       "required": "שדה חובה",
       "dateInPast": "התאריך לא יכול להיות בעבר",

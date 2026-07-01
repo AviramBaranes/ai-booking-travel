@@ -2,16 +2,15 @@
 import { useTranslations } from "next-intl";
 import { LocationCombobox } from "./LocationCombobox";
 import { Button } from "@/components/ui/button";
-import { CalendarInput } from "./CalendarInput";
 import { TimeSelect } from "./TimeSelect";
 import { Controller, useWatch, useFormContext } from "react-hook-form";
 import { DifferentLocCheckbox } from "./DifferentLocCheckbox";
 import { AgePopover } from "./AgePopover";
 import { CouponPopover } from "./CouponPopover";
 import { SearchFormValues } from "./searchFormSchema";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import clsx from "clsx";
-import { CalendarInputRange } from "./CalendarInputRange";
+import { CalendarSheet, CalendarInputTrigger } from "./CalendarSheet";
 import { LocationComboboxSheet } from "./LocationComboboxSheet";
 
 export type SearchFieldHandle = {
@@ -47,21 +46,13 @@ export function SearchFormMobile({
   const t = useTranslations("SearchForm");
 
   const dropoffLocationRef = useRef<HTMLInputElement | null>(null);
-  const pickupDateRef = useRef<SearchFieldHandle>(null);
-  const dropoffDateRef = useRef<SearchFieldHandle>(null);
   const pickupTimeRef = useRef<SearchFieldHandle>(null);
   const dropoffTimeRef = useRef<SearchFieldHandle>(null);
 
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
   const { control, setValue } = useFormContext<SearchFormValues>();
 
-
-  const pickupLocation = useWatch({
-    control,
-    name: "pickupLocation",
-  });
-
-  console.log({ pickupLocation });
-  
   const isDropoffDifferentLoc =
     useWatch({
       control,
@@ -73,9 +64,14 @@ export function SearchFormMobile({
     name: "pickupDate",
   });
 
+  const dropoffDate = useWatch({
+    control,
+    name: "dropoffDate",
+  });
+
   return (
-    <div className="flex flex-col lg:flex-row items-start justify-center gap-2 bg-white/95 w-full py-6 rounded-xl lg:max-h-35 min-h-25 lg:rounded-tr-none px-5">
-      <div className="flex flex-col lg:flex-row gap-2 flex-1 *:flex-1 w-full">
+    <div className="flex flex-col items-start justify-center gap-2 bg-white/95 w-full rounded-xl p-2">
+      <div className="flex flex-col gap-2 w-full">
         <Controller
           name="pickupLocation"
           control={control}
@@ -87,7 +83,7 @@ export function SearchFormMobile({
                 if (isDropoffDifferentLoc) {
                   dropoffLocationRef.current?.focus();
                 } else {
-                  pickupDateRef.current?.focus();
+                  setCalendarOpen(true);
                 }
               }}
               error={fieldState.error}
@@ -115,14 +111,13 @@ export function SearchFormMobile({
             name="dropoffLocation"
             control={control}
             render={({ field, fieldState }) => (
-              <LocationCombobox
+              <LocationComboboxSheet
                 placeholder={t("dropoffLocationPlaceholder")}
                 onSelect={(id) => {
                   field.onChange(id);
-                  pickupDateRef.current?.focus();
+                  setCalendarOpen(true);
                 }}
                 error={fieldState.error}
-                ref={dropoffLocationRef}
                 value={fields.dropOffLocation?.name ?? ""}
                 initializedLocations={
                   fields.dropOffLocation ? [fields.dropOffLocation] : undefined
@@ -134,31 +129,16 @@ export function SearchFormMobile({
       </div>
 
       <div className="flex w-full gap-2 lg:contents">
-        <div
-          className="w-1/2"
-        >
+        <div className="w-1/2">
           <Controller
             name="pickupDate"
             control={control}
             render={({ field, fieldState }) => (
-              <CalendarInput
+              <CalendarInputTrigger
                 placeholder={t("pickupDatePlaceholder")}
                 value={field.value}
-                onSelect={(e) => {
-                  field.onChange(e);
-                  setValue("dropoffDate", null);
-                  pickupTimeRef.current?.focus();
-                }}
                 error={fieldState.error}
-                ref={pickupDateRef}
-                disabledFn={(date) => {
-                  const yesterday = new Date();
-                  yesterday.setDate(yesterday.getDate() - 1);
-                  return (
-                    date < yesterday ||
-                    date > new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-                  );
-                }}
+                onClick={() => setCalendarOpen(true)}
               />
             )}
           />
@@ -182,7 +162,7 @@ export function SearchFormMobile({
 
                   requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                      dropoffDateRef.current?.focus();
+                      dropoffTimeRef.current?.focus();
                     });
                   });
                 }}
@@ -203,15 +183,11 @@ export function SearchFormMobile({
             name="dropoffDate"
             control={control}
             render={({ field, fieldState }) => (
-              <CalendarInputRange
-                ref={dropoffDateRef}
+              <CalendarInputTrigger
                 placeholder={t("dropoffDatePlaceholder")}
-                value={{ from: pickupDate, to: field.value }}
-                onSelect={(e) => {
-                  field.onChange(e?.to);
-                  dropoffTimeRef.current?.focus();
-                }}
+                value={field.value}
                 error={fieldState.error}
+                onClick={() => setCalendarOpen(true)}
               />
             )}
           />
@@ -247,6 +223,21 @@ export function SearchFormMobile({
           {t("searchButton")}
         </Button>
       </div>
+
+      <CalendarSheet
+        open={calendarOpen}
+        onOpenChange={setCalendarOpen}
+        value={{ from: pickupDate, to: dropoffDate }}
+        onConfirm={(range) => {
+          setValue("pickupDate", range?.from ?? null, {
+            shouldValidate: true,
+          });
+          setValue("dropoffDate", range?.to ?? null, {
+            shouldValidate: true,
+          });
+          pickupTimeRef.current?.focus();
+        }}
+      />
     </div>
   );
 }

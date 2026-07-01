@@ -134,6 +134,8 @@
     "dropoffDatePlaceholder": "Return date",
     "timePlaceholder": "Time",
     "searchButton": "Search",
+    "selectDates": "Select dates",
+    "confirmDates": "Confirm",
     "validation": {
       "required": "Required field",
       "dateInPast": "Date cannot be in the past",
