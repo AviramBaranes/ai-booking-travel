@@ -15,7 +15,7 @@ export function ContactSection({ section }: ContactSectionProps) {
 
   return (
     <section
-      className="relative w-2/3 mx-auto overflow-hidden rounded-[20px] px-7 py-11 bg-cover bg-center bg-no-repeat"
+      className="relative lg:w-2/3 lg:mx-auto mx-5"
       style={{ backgroundImage: "url('/assets/contact/contact-bg.png')" }}
     >
       <SectionHeader
@@ -23,8 +23,8 @@ export function ContactSection({ section }: ContactSectionProps) {
         title={title ?? ""}
         subtitle={subtitle}
       />
-      <div className="flex gap-12 my-8 items-start">
-        <div className="w-1/2 rounded-xl border border-border-light bg-white p-12">
+      <div className="flex flex-col lg:flex-row gap-12 my-8 items-start">
+        <div className="lg:w-1/2 rounded-xl border border-border-light bg-white p-4 lg:p-12">
           {typeof populatedContactForm === "object" && populatedContactForm && (
             <PayloadFormRenderer
               form={populatedContactForm}
@@ -32,7 +32,7 @@ export function ContactSection({ section }: ContactSectionProps) {
             />
           )}
         </div>
-        <div className="w-1/2">
+        <div className="lg:w-1/2">
           <div className="flex flex-col gap-4 justify-between h-full">
             {contactInfo?.map((info) => (
               <div className="py-8 px-6 shadow-card flex gap-5 bg-white rounded-xl items-center border border-border" key={info.id}>

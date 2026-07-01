@@ -79,7 +79,7 @@ export function SidebarNav({ sections }: SidebarNavProps) {
   };
 
   return (
-    <nav className="sticky top-40 w-72 shrink-0 rounded-xl border border-border-light bg-white p-6 shadow-sm">
+    <nav className="sticky top-40 w-72 shrink-0 rounded-xl border border-border-light bg-white p-6 shadow-sm hidden lg:block">
       {sections.map((section) => {
         const anchor = slugify(section.title);
         const isActive = activeAnchor === anchor;

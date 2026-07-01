@@ -88,7 +88,7 @@ export default async function SlugPage({ params }: Props) {
           />
         )}
         {page.renderTitle && (
-          <div className="w-4/10 mx-auto pb-8 mt-10">
+          <div className="lg:w-4/10 lg:mx-auto mx-5 pb-8 mt-10">
             <h3 className="type-h3 mb-4 pb-8 text-navy">{page.title}</h3>
             <hr />
           </div>

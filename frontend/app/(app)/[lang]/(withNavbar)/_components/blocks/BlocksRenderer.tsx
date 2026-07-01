@@ -35,7 +35,7 @@ export function BlocksRenderer({
           case "richText":
             return (
               <section
-                className="w-4/10 mx-auto prose prose-headings:font-bold max-w-none"
+                className="lg:w-4/10 lg:mx-auto mx-5 prose prose-headings:font-bold max-w-none"
                 key={block.id}
               >
                 <RichText data={block.content} />

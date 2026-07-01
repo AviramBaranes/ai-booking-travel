@@ -18,9 +18,9 @@ export function SidebarSection({ block }: SidebarSectionProps) {
 
   return (
     <div
-      className={clsx("flex items-start gap-12 mb-20 mx-auto", {
+      className={clsx("flex items-start gap-12 mb-20 lg:mx-auto", {
         "flex-col": type === "toc",
-        "w-2/3": type === "anchor",
+        "lg:w-2/3 mx-5": type === "anchor",
       })}
     >
       {type === "anchor" ? (
