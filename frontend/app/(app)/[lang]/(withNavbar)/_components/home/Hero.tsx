@@ -25,7 +25,7 @@ export async function Hero({ lang, title, subtitle, image }: Props) {
         width={image.width ?? 1200}
         height={image.height ?? 630}
         sizes="(max-width: 768px) 390px, 100vw"
-        className="w-full h-177.5 object-cover object-center md:h-auto"
+        className="w-full h-177.5 object-cover object-top lg:object-center md:h-auto"
         priority
       />
       <div className="w-full absolute top-14 lg:top-38 -translate-x-1/2 left-1/2">
