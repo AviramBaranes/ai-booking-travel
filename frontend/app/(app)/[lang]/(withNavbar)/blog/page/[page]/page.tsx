@@ -134,7 +134,7 @@ export default async function BlogPaginatedPage({ params }: Props) {
           />
         )}
 
-        <div className="my-10">
+        <div className="my-10 mx-5">
           <SectionHeader
             pillText={pillText}
             title={title}
@@ -142,9 +142,9 @@ export default async function BlogPaginatedPage({ params }: Props) {
           />
         </div>
 
-        <div className="flex flex-wrap justify-start w-2/3 mx-auto">
+        <div className="flex flex-wrap flex-col lg:flex-row justify-start lg:w-2/3 lg:mx-auto mx-5">
           {posts.map((post) => (
-            <div key={post.id} className="w-1/4 items-stretch flex">
+            <div key={post.id} className="lg:w-1/4 items-stretch flex">
               {post.featuredImage && (
                 <div className="p-4 shadow-card m-3 rounded-xl border border-border flex flex-col justify-between gap-4">
                   <div className="relative aspect-275/195 w-full overflow-hidden rounded-xl">

@@ -3,7 +3,6 @@ import { SectionHeader } from "../blocks/SectionHeader";
 import Image from "next/image";
 import { Populated } from "@/shared/types/payload";
 import Link from "next/link";
-import clsx from "clsx";
 import { Button } from "@/components/ui/button";
 
 interface RelatedPostsProps {
@@ -44,7 +43,7 @@ export function RelatedPosts({
         {posts.map((post) => (
           <div
             key={post.id}
-            className="flex shrink-0 basis-[85%] items-stretch sm:basis-[360px] lg:basis-[calc((100%-4.5rem)/4)]"
+            className="flex shrink-0 basis-[85%] items-stretch sm:basis-90 lg:basis-[calc((100%-4.5rem)/4)]"
           >
             {post.featuredImage && (
               <div className="flex h-full flex-col justify-between gap-4 rounded-xl border border-border p-4 shadow-card">
@@ -73,6 +72,13 @@ export function RelatedPosts({
           </div>
         ))}
       </div>
+      {showButton && (
+        <Link href={`/${lang}/blog`} className="text-center w-full">
+          <Button variant="outline" className="mx-auto mt-6 rounded-md p-5">
+            {lang === "he" ? "לכל הכתבות" : "All posts"}
+          </Button>
+        </Link>
+      )}
     </>
   );
 }

@@ -13,6 +13,7 @@ import {
 import { getCachedPayload } from "@/shared/server/cms";
 import { PayloadFormRenderer } from "@/shared/components/forms/FormRenderer";
 import { RelatedPosts } from "../../_components/posts/RelatedPosts";
+import Link from "next/link";
 
 type Props = {
   params: Promise<{ lang: string; slug: string }>;
@@ -137,29 +138,38 @@ export default async function SlugPage({ params }: Props) {
     <>
       <PayloadLivePreview />
       <div className="relative isolate">
-        <div className="bg-navy py-20 px-72 flex flex-col gap-5.5">
-          <p className="type-paragraph text-white/55">
-            ראשי / {(post.category as BlogCategory).title}
-          </p>
-          <h3 className="type-h3 text-white w-2/3">{post.title}</h3>
+        <div className="bg-navy lg:py-20 lg:px-72 px-5 py-10 flex flex-col gap-5.5">
+          <Link href={`/${lang}/blog/page/1`}>
+            <p className="type-paragraph text-white/55">
+              ראשי / {(post.category as BlogCategory).title}
+            </p>
+          </Link>
+          <h3 className="type-h3 text-white lg:w-2/3">{post.title}</h3>
           <p className="type-paragraph text-white font-semibold">
             {post.excerpt}
           </p>
         </div>
         <PagesDecorations />
-        <div className="w-2/3 mx-auto">
-          <div className="shadow-card bg-white p-10 flex justify-between gap-24 rounded-b-xl">
-            <div className="w-7/10">
+        <div className="lg:w-2/3 lg:mx-auto mx-5">
+          <div className="lg:shadow-card lg:bg-white lg:p-10 flex justify-between lg:gap-24 rounded-b-xl">
+            <div className="lg:w-7/10">
               {image?.url && (
-                <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
-                  <Image
-                    src={image.sizes?.blogHero?.url || image.url || ""}
-                    alt={image.alt}
-                    width={image.width ?? 780}
-                    height={image.height ?? 280}
-                    className="h-auto w-full object-cover"
-                    priority
-                  />
+                <div className="overflow-hidden mt-5 lg:mt-0 rounded-2xl shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
+                  <picture>
+                    <source
+                      media="(max-width: 1023px)"
+                      srcSet={image.sizes?.blogCard?.url || image.url || ""}
+                    />
+
+                    <Image
+                      src={image.sizes?.blogHero?.url || image.url || ""}
+                      alt={image.alt}
+                      width={image.width ?? 780}
+                      height={image.height ?? 280}
+                      className="h-auto w-full object-cover"
+                      priority
+                    />
+                  </picture>
                 </div>
               )}
               <BlocksRenderer blocks={post.layout} />
@@ -179,8 +189,8 @@ export default async function SlugPage({ params }: Props) {
                 </>
               )}
             </div>
-            <div className="w-3/10">
-              <div className="sticky top-24 flex flex-col gap-6">
+            <div className="w-3/10 hidden lg:block">
+              <div className="sticky hidden lg:flex top-24 flex-col gap-6">
                 <>
                   {post.form && (
                     <div className="rounded-xl border border-border-light pb-8">
