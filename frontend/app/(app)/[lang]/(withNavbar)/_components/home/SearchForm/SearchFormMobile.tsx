@@ -1,0 +1,252 @@
+"use client";
+import { useTranslations } from "next-intl";
+import { LocationCombobox } from "./LocationCombobox";
+import { Button } from "@/components/ui/button";
+import { CalendarInput } from "./CalendarInput";
+import { TimeSelect } from "./TimeSelect";
+import { Controller, useWatch, useFormContext } from "react-hook-form";
+import { DifferentLocCheckbox } from "./DifferentLocCheckbox";
+import { AgePopover } from "./AgePopover";
+import { CouponPopover } from "./CouponPopover";
+import { SearchFormValues } from "./searchFormSchema";
+import { useRef } from "react";
+import clsx from "clsx";
+import { CalendarInputRange } from "./CalendarInputRange";
+import { LocationComboboxSheet } from "./LocationComboboxSheet";
+
+export type SearchFieldHandle = {
+  focus: () => void;
+};
+
+interface Location {
+  id: number;
+  name: string;
+}
+
+export interface SearchFormFields {
+  loading: boolean;
+  pickUpLocation: Location;
+  dropOffLocation?: Location;
+  pickUpDate: Date;
+  dropOffDate: Date;
+  pickUpTime: string;
+  dropOffTime: string;
+  driverAge: number;
+  couponCode?: string;
+}
+
+interface SearchFormMobileProps extends Partial<SearchFormFields> {
+  className?: string;
+}
+
+export function SearchFormMobile({
+  className,
+  loading,
+  ...fields
+}: SearchFormMobileProps) {
+  const t = useTranslations("SearchForm");
+
+  const dropoffLocationRef = useRef<HTMLInputElement | null>(null);
+  const pickupDateRef = useRef<SearchFieldHandle>(null);
+  const dropoffDateRef = useRef<SearchFieldHandle>(null);
+  const pickupTimeRef = useRef<SearchFieldHandle>(null);
+  const dropoffTimeRef = useRef<SearchFieldHandle>(null);
+
+  const { control, setValue } = useFormContext<SearchFormValues>();
+
+
+  const pickupLocation = useWatch({
+    control,
+    name: "pickupLocation",
+  });
+
+  console.log({ pickupLocation });
+  
+  const isDropoffDifferentLoc =
+    useWatch({
+      control,
+      name: "isDropoffDifferentLoc",
+    }) ?? false;
+
+  const pickupDate = useWatch({
+    control,
+    name: "pickupDate",
+  });
+
+  return (
+    <div className="flex flex-col lg:flex-row items-start justify-center gap-2 bg-white/95 w-full py-6 rounded-xl lg:max-h-35 min-h-25 lg:rounded-tr-none px-5">
+      <div className="flex flex-col lg:flex-row gap-2 flex-1 *:flex-1 w-full">
+        <Controller
+          name="pickupLocation"
+          control={control}
+          render={({ field, fieldState }) => (
+            <LocationComboboxSheet
+              placeholder={t("pickupLocationPlaceholder")}
+              onSelect={(id) => {
+                field.onChange(id);
+                if (isDropoffDifferentLoc) {
+                  dropoffLocationRef.current?.focus();
+                } else {
+                  pickupDateRef.current?.focus();
+                }
+              }}
+              error={fieldState.error}
+              value={fields.pickUpLocation?.name ?? ""}
+              initializedLocations={
+                fields.pickUpLocation ? [fields.pickUpLocation] : undefined
+              }
+            />
+          )}
+        />
+
+        <Controller
+          name="isDropoffDifferentLoc"
+          control={control}
+          render={({ field }) => (
+            <DifferentLocCheckbox
+              label={t("dropoffDifferentLoc")}
+              isDropoffDifferentLoc={field.value ?? false}
+              setIsDropoffDifferentLoc={field.onChange}
+            />
+          )}
+        />
+        {isDropoffDifferentLoc && (
+          <Controller
+            name="dropoffLocation"
+            control={control}
+            render={({ field, fieldState }) => (
+              <LocationCombobox
+                placeholder={t("dropoffLocationPlaceholder")}
+                onSelect={(id) => {
+                  field.onChange(id);
+                  pickupDateRef.current?.focus();
+                }}
+                error={fieldState.error}
+                ref={dropoffLocationRef}
+                value={fields.dropOffLocation?.name ?? ""}
+                initializedLocations={
+                  fields.dropOffLocation ? [fields.dropOffLocation] : undefined
+                }
+              />
+            )}
+          />
+        )}
+      </div>
+
+      <div className="flex w-full gap-2 lg:contents">
+        <div
+          className="w-1/2"
+        >
+          <Controller
+            name="pickupDate"
+            control={control}
+            render={({ field, fieldState }) => (
+              <CalendarInput
+                placeholder={t("pickupDatePlaceholder")}
+                value={field.value}
+                onSelect={(e) => {
+                  field.onChange(e);
+                  setValue("dropoffDate", null);
+                  pickupTimeRef.current?.focus();
+                }}
+                error={fieldState.error}
+                ref={pickupDateRef}
+                disabledFn={(date) => {
+                  const yesterday = new Date();
+                  yesterday.setDate(yesterday.getDate() - 1);
+                  return (
+                    date < yesterday ||
+                    date > new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+                  );
+                }}
+              />
+            )}
+          />
+        </div>
+        <div
+          className={clsx("w-1/2", {
+            "lg:w-1/12": isDropoffDifferentLoc,
+            "lg:w-1/10": !isDropoffDifferentLoc,
+          })}
+        >
+          <Controller
+            name="pickupTime"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TimeSelect
+                ref={pickupTimeRef}
+                placeholder={t("timePlaceholder")}
+                value={field.value}
+                onChange={(e) => {
+                  field.onChange(e);
+
+                  requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                      dropoffDateRef.current?.focus();
+                    });
+                  });
+                }}
+                error={fieldState.error}
+              />
+            )}
+          />
+        </div>
+      </div>
+      <div className="flex w-full gap-2 lg:contents">
+        <div
+          className={clsx("w-1/2", {
+            "lg:w-1/10": isDropoffDifferentLoc,
+            "lg:w-1/6": !isDropoffDifferentLoc,
+          })}
+        >
+          <Controller
+            name="dropoffDate"
+            control={control}
+            render={({ field, fieldState }) => (
+              <CalendarInputRange
+                ref={dropoffDateRef}
+                placeholder={t("dropoffDatePlaceholder")}
+                value={{ from: pickupDate, to: field.value }}
+                onSelect={(e) => {
+                  field.onChange(e?.to);
+                  dropoffTimeRef.current?.focus();
+                }}
+                error={fieldState.error}
+              />
+            )}
+          />
+        </div>
+        <div
+          className={clsx("w-1/2", {
+            "lg:w-1/12": isDropoffDifferentLoc,
+            "lg:w-1/10": !isDropoffDifferentLoc,
+          })}
+        >
+          <Controller
+            name="dropoffTime"
+            control={control}
+            render={({ field, fieldState }) => (
+              <TimeSelect
+                ref={dropoffTimeRef}
+                placeholder={t("timePlaceholder")}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                error={fieldState.error}
+              />
+            )}
+          />
+        </div>
+      </div>
+      <div className="w-full lg:w-1/9">
+        <Button
+          type="submit"
+          variant="brand"
+          className="w-full py-8 lg:py-6 type-paragraph font-bold cursor-pointer"
+          loading={loading}
+        >
+          {t("searchButton")}
+        </Button>
+      </div>
+    </div>
+  );
+}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocations } from "./useLocations";
 import {
   Combobox,
@@ -19,10 +19,12 @@ import { clsx } from "clsx";
 interface LocationComboboxProps {
   placeholder: string;
   error: FieldError | undefined;
-  onSelect: (locationId: number) => void;
+  onSelect: (locationId: number, name: string) => void;
   ref?: React.Ref<HTMLInputElement | null>;
   initializedLocations?: { id: number; name: string }[];
   value?: string;
+  open?: boolean;
+  container?: HTMLElement | null;
 }
 export function LocationCombobox({
   placeholder,
@@ -31,12 +33,18 @@ export function LocationCombobox({
   ref,
   value,
   initializedLocations,
+  open,
+  container,
 }: LocationComboboxProps) {
-  const dir = useDirection()
+  const dir = useDirection();
   const [search, setSearch] = useState("");
   const anchorRef = useComboboxAnchor();
   const [selectedName, setSelectedName] = useState(value ?? "");
   const { locations } = useLocations(search);
+
+  useEffect(() => {
+    setSelectedName(value ?? "");
+  }, [value]);
 
   const items = locations?.length ? locations : initializedLocations || [];
 
@@ -45,11 +53,12 @@ export function LocationCombobox({
       items={items}
       filteredItems={items}
       value={selectedName}
+      open={open}
       onValueChange={(val) => {
         setSelectedName(val ?? "");
         const loc = locations.find((l) => l.name === val);
         if (loc) {
-          onSelect(loc.id);
+          onSelect(loc.id, loc.name);
         }
       }}
     >
@@ -58,9 +67,9 @@ export function LocationCombobox({
           showClear={!!selectedName}
           placeholder={placeholder}
           aria-invalid={error ? "true" : "false"}
-          inputClassName="text-sm" 
+          inputClassName="text-sm"
           className="search-form-input md:text-base px-7"
-          clearClassName={clsx("p-0 absolute",{
+          clearClassName={clsx("p-0 absolute", {
             "left-3": dir === "rtl",
             "right-3": dir === "ltr",
           })}
@@ -75,6 +84,7 @@ export function LocationCombobox({
       </div>
       <ComboboxContent
         anchor={anchorRef}
+        container={container}
         align="start"
         className="w-(--anchor-width)! min-w-(--anchor-width)! max-w-(--anchor-width)! rounded-xl p-1"
       >

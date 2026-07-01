@@ -1,26 +1,15 @@
 "use client";
 import { useTranslations } from "next-intl";
-import { LocationCombobox } from "./LocationCombobox";
-import { Button } from "@/components/ui/button";
-import { CalendarInput } from "./CalendarInput";
-import { TimeSelect } from "./TimeSelect";
-import { useForm, Controller, useWatch } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { DifferentLocCheckbox } from "./DifferentLocCheckbox";
-import { AgePopover } from "./AgePopover";
-import { CouponPopover } from "./CouponPopover";
 import { SearchFormValues, searchSchema } from "./searchFormSchema";
-import { useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { useParams } from "next/navigation";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import clsx from "clsx";
-import { CalendarInputRange } from "./CalendarInputRange";
-import { useSession } from "next-auth/react";
-import {
-  OPEN_DIALOG_QUERY_KEY,
-  OPEN_DIALOG_QUERY_VALUE,
-} from "../../header/login/useDialogOpenFromQuery";
 import { formatDate } from "@/shared/utils/formatDate";
+import { SearchFormDesktop } from "./SearchFormDesktop";
+import { SearchFormMobile } from "./SearchFormMobile";
 
 export type SearchFieldHandle = {
   focus: () => void;
@@ -47,7 +36,6 @@ interface SearchFormProps extends Partial<SearchFormFields> {
 }
 
 export function SearchForm({ className, ...fields }: SearchFormProps) {
-  const router = useRouter();
   const { lang } = useParams();
   const clearSession = useBookingSessionStore((s) => s.clearSession);
   const clearCarGroupFilters = useBookingSessionStore(
@@ -60,17 +48,7 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
   const searchFormSchema = searchSchema(t);
   const [loading, setLoading] = useState(false);
 
-  const session = useSession();
-  const isAuthenticated = session.status === "authenticated";
-  const isAgent = session.data?.user?.role === "agent";
-
-  const dropoffLocationRef = useRef<HTMLInputElement | null>(null);
-  const pickupDateRef = useRef<SearchFieldHandle>(null);
-  const dropoffDateRef = useRef<SearchFieldHandle>(null);
-  const pickupTimeRef = useRef<SearchFieldHandle>(null);
-  const dropoffTimeRef = useRef<SearchFieldHandle>(null);
-
-  const { control, handleSubmit, setValue } = useForm<SearchFormValues>({
+  const formMethods = useForm<SearchFormValues>({
     resolver: zodResolver(searchFormSchema),
     defaultValues: {
       isDropoffDifferentLoc:
@@ -85,17 +63,6 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
       pickupDate: fields.pickUpDate ?? undefined,
       dropoffDate: fields.dropOffDate ?? undefined,
     },
-  });
-
-  const isDropoffDifferentLoc =
-    useWatch({
-      control,
-      name: "isDropoffDifferentLoc",
-    }) ?? false;
-
-  const pickupDate = useWatch({
-    control,
-    name: "pickupDate",
   });
 
   function onSubmit(data: SearchFormValues) {
@@ -132,273 +99,24 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
   return (
     <form
       className={clsx("flex flex-col w-10/12 mx-auto mt-4", className)}
-      onSubmit={handleSubmit(onSubmit)}
-      onClick={(e) => {
-        if (!isAuthenticated) {
-          e.stopPropagation();
-          router.push(
-            `/${lang}?${OPEN_DIALOG_QUERY_KEY}=${OPEN_DIALOG_QUERY_VALUE}`,
-          );
-        }
-      }}
+      onSubmit={formMethods.handleSubmit(onSubmit)}
     >
-      <div className="hidden lg:flex bg-navy w-fit py-2 rounded-t-xl items-center text-white type-h6 px-6 gap-5">
-        <Controller
-          name="isDropoffDifferentLoc"
-          control={control}
-          render={({ field }) => (
-            <DifferentLocCheckbox
-              label={t("dropoffDifferentLoc")}
-              isDropoffDifferentLoc={field.value ?? false}
-              setIsDropoffDifferentLoc={field.onChange}
-            />
-          )}
-        />
-        <div className="h-4 w-px bg-white/40 shrink-0" />
-        <Controller
-          name="driverAge"
-          control={control}
-          render={({ field }) => (
-            <AgePopover
-              saveButtonText={t("save")}
-              driverAge={field.value}
-              setDriverAge={field.onChange}
-            />
-          )}
-        />
-        {!isAgent && (
-          <>
-            <div className="h-4 w-px bg-white/40 shrink-0" />
-
-            <Controller
-              name="couponCode"
-              control={control}
-              render={({ field }) => (
-                <CouponPopover
-                  checkboxLabel={t("hasCoupon")}
-                  inputLabel={t("couponPlaceholder")}
-                  saveButtonText={t("save")}
-                  couponCode={field.value ?? ""}
-                  setCouponCode={field.onChange}
-                />
-              )}
-            />
-          </>
-        )}
-      </div>
-      <div className="flex flex-col lg:flex-row items-start justify-center gap-2 bg-white/95 w-full py-6 rounded-xl lg:max-h-35 min-h-25 lg:rounded-tr-none px-5">
-        <div className="flex flex-col lg:flex-row gap-2 flex-1 *:flex-1 w-full">
-          <Controller
-            name="pickupLocation"
-            control={control}
-            render={({ field, fieldState }) => (
-              <LocationCombobox
-                placeholder={t("pickupLocationPlaceholder")}
-                onSelect={(id) => {
-                  field.onChange(id);
-                  if (isDropoffDifferentLoc) {
-                    dropoffLocationRef.current?.focus();
-                  } else {
-                    pickupDateRef.current?.focus();
-                  }
-                }}
-                error={fieldState.error}
-                value={fields.pickUpLocation?.name ?? ""}
-                initializedLocations={
-                  fields.pickUpLocation ? [fields.pickUpLocation] : undefined
-                }
-              />
-            )}
-          />
-
-          <div className="lg:hidden">
-            <Controller
-              name="isDropoffDifferentLoc"
-              control={control}
-              render={({ field }) => (
-                <DifferentLocCheckbox
-                  label={t("dropoffDifferentLoc")}
-                  isDropoffDifferentLoc={field.value ?? false}
-                  setIsDropoffDifferentLoc={field.onChange}
-                />
-              )}
-            />
-          </div>
-          {isDropoffDifferentLoc && (
-            <Controller
-              name="dropoffLocation"
-              control={control}
-              render={({ field, fieldState }) => (
-                <LocationCombobox
-                  placeholder={t("dropoffLocationPlaceholder")}
-                  onSelect={(id) => {
-                    field.onChange(id);
-                    pickupDateRef.current?.focus();
-                  }}
-                  error={fieldState.error}
-                  ref={dropoffLocationRef}
-                  value={fields.dropOffLocation?.name ?? ""}
-                  initializedLocations={
-                    fields.dropOffLocation
-                      ? [fields.dropOffLocation]
-                      : undefined
-                  }
-                />
-              )}
-            />
-          )}
-        </div>
-
-        <div className="flex w-full gap-2 lg:contents">
-          <div
-            className={clsx("w-1/2", {
-              "lg:w-1/10": isDropoffDifferentLoc,
-              "lg:w-1/6": !isDropoffDifferentLoc,
-            })}
-          >
-            <Controller
-              name="pickupDate"
-              control={control}
-              render={({ field, fieldState }) => (
-                <CalendarInput
-                  placeholder={t("pickupDatePlaceholder")}
-                  value={field.value}
-                  onSelect={(e) => {
-                    field.onChange(e);
-                    setValue("dropoffDate", null);
-                    pickupTimeRef.current?.focus();
-                  }}
-                  error={fieldState.error}
-                  ref={pickupDateRef}
-                  disabledFn={(date) => {
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    return (
-                      date < yesterday ||
-                      date > new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-                    );
-                  }}
-                />
-              )}
-            />
-          </div>
-          <div
-            className={clsx("w-1/2", {
-              "lg:w-1/12": isDropoffDifferentLoc,
-              "lg:w-1/10": !isDropoffDifferentLoc,
-            })}
-          >
-            <Controller
-              name="pickupTime"
-              control={control}
-              render={({ field, fieldState }) => (
-                <TimeSelect
-                  ref={pickupTimeRef}
-                  placeholder={t("timePlaceholder")}
-                  value={field.value}
-                  onChange={(e) => {
-                    field.onChange(e);
-
-                    requestAnimationFrame(() => {
-                      requestAnimationFrame(() => {
-                        dropoffDateRef.current?.focus();
-                      });
-                    });
-                  }}
-                  error={fieldState.error}
-                />
-              )}
-            />
-          </div>
-        </div>
-        <div className="flex w-full gap-2 lg:contents">
-          <div
-            className={clsx("w-1/2", {
-              "lg:w-1/10": isDropoffDifferentLoc,
-              "lg:w-1/6": !isDropoffDifferentLoc,
-            })}
-          >
-            <Controller
-              name="dropoffDate"
-              control={control}
-              render={({ field, fieldState }) => (
-                <CalendarInputRange
-                  ref={dropoffDateRef}
-                  placeholder={t("dropoffDatePlaceholder")}
-                  value={{ from: pickupDate, to: field.value }}
-                  onSelect={(e) => {
-                    field.onChange(e?.to);
-                    dropoffTimeRef.current?.focus();
-                  }}
-                  error={fieldState.error}
-                />
-              )}
-            />
-          </div>
-          <div
-            className={clsx("w-1/2", {
-              "lg:w-1/12": isDropoffDifferentLoc,
-              "lg:w-1/10": !isDropoffDifferentLoc,
-            })}
-          >
-            <Controller
-              name="dropoffTime"
-              control={control}
-              render={({ field, fieldState }) => (
-                <TimeSelect
-                  ref={dropoffTimeRef}
-                  placeholder={t("timePlaceholder")}
-                  value={field.value ?? ""}
-                  onChange={field.onChange}
-                  error={fieldState.error}
-                />
-              )}
-            />
-          </div>
-        </div>
-        <div className="flex flex-col md:hidden gap-y-3 my-2">
-          <div>
-            <Controller
-              name="driverAge"
-              control={control}
-              render={({ field }) => (
-                <AgePopover
-                  saveButtonText={t("save")}
-                  driverAge={field.value}
-                  setDriverAge={field.onChange}
-                />
-              )}
-            />
-          </div>
-          {!isAgent && (
-            <div>
-              <Controller
-                name="couponCode"
-                control={control}
-                render={({ field }) => (
-                  <CouponPopover
-                    checkboxLabel={t("hasCoupon")}
-                    inputLabel={t("couponPlaceholder")}
-                    saveButtonText={t("save")}
-                    couponCode={field.value ?? ""}
-                    setCouponCode={field.onChange}
-                  />
-                )}
-              />
-            </div>
-          )}
-        </div>
-        <div className="w-full lg:w-1/9">
-          <Button
-            type="submit"
-            variant="brand"
-            className="w-full py-8 lg:py-6 type-paragraph font-bold cursor-pointer"
+      <FormProvider {...formMethods}>
+        <div className="hidden lg:block">
+          <SearchFormDesktop
             loading={loading}
-          >
-            {t("searchButton")}
-          </Button>
+            className={className}
+            {...fields}
+          />
         </div>
-      </div>
+        <div className="block lg:hidden">
+          <SearchFormMobile
+            loading={loading}
+            className={className}
+            {...fields}
+          />
+        </div>
+      </FormProvider>
     </form>
   );
 }
