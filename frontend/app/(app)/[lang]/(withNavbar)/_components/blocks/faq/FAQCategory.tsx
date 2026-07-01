@@ -14,7 +14,7 @@ export function FAQCategory({ category, columns }: FAQCategoryProps) {
       {category.heading && (
         <h5 className="type-h5 text-navy">{category.heading}</h5>
       )}
-      <div className="flex gap-x-8">
+      <div className="flex gap-x-8 flex-col md:flex-row">
         {Array.from({ length: columns }, (_, col) => (
           <div key={col} className="flex flex-1 flex-col">
             {category.items

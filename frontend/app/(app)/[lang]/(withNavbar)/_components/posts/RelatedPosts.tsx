@@ -40,16 +40,14 @@ export function RelatedPosts({
       <div className="my-10">
         <SectionHeader pillText={pillText} title={title} subtitle={subtitle} />
       </div>
-      <div
-        className={clsx("flex flex-wrap", {
-          "justify-start": posts.length < 4,
-          "justify-between": posts.length >= 4,
-        })}
-      >
+      <div className="flex w-full flex-nowrap gap-6 overflow-x-auto pb-4">
         {posts.map((post) => (
-          <div key={post.id} className="w-1/4 items-stretch flex">
+          <div
+            key={post.id}
+            className="flex shrink-0 basis-[85%] items-stretch sm:basis-[360px] lg:basis-[calc((100%-4.5rem)/4)]"
+          >
             {post.featuredImage && (
-              <div className="p-4 shadow-card m-3 rounded-xl border border-border flex flex-col justify-between gap-4">
+              <div className="flex h-full flex-col justify-between gap-4 rounded-xl border border-border p-4 shadow-card">
                 <div className="relative aspect-275/195 w-full overflow-hidden rounded-xl">
                   <Image
                     src={getCardImageUrl(post)}
@@ -58,12 +56,15 @@ export function RelatedPosts({
                     className="object-cover"
                   />
                 </div>
+
                 <h6 className="type-h6 text-navy">{post.title}</h6>
+
                 <p className="type-paragraph text-text-secondary">
                   {post.excerpt}
                 </p>
+
                 <Link href={`/${lang}/blog/${post.slug}`}>
-                  <span className="type-paragraph text-brand-blue font-semibold hover:underline">
+                  <span className="type-paragraph font-semibold text-brand-blue hover:underline">
                     קרא עוד &gt;
                   </span>
                 </Link>
@@ -71,16 +72,6 @@ export function RelatedPosts({
             )}
           </div>
         ))}
-        {showButton && (
-          <Link
-            href={`/${lang}/blog`}
-            className="text-center w-full"
-          >
-            <Button variant="outline" className="mx-auto mt-6 rounded-md p-5">
-              לכל הכתבות
-            </Button>
-          </Link>
-        )}
       </div>
     </>
   );

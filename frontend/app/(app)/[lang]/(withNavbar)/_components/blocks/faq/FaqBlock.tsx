@@ -12,10 +12,10 @@ export function FAQBlock({ data, className }: FAQBlockProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center gap-12 mx-auto mb-20",
+        "mx-5 mb-20 flex flex-col items-center gap-12 max-lg:w-auto! lg:mx-auto",
         className,
       )}
-      style={{width: data.width ?? "100%"}}
+      style={{ width: data.width ?? "100%" }}
     >
       <SectionHeader
         pillText={data.eyebrow ?? ""}

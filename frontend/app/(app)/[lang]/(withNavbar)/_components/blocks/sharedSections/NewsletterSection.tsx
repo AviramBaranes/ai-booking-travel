@@ -25,18 +25,17 @@ export function NewsletterSection({ section }: NewsletterSectionProps) {
 
   return (
     <section
-      className="relative w-2/3 mx-auto overflow-hidden rounded-[20px] px-7 py-11 bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: "url('/assets/newsletter/newsletter-bg.png')" }}
+      className="relative lg:w-2/3 mx-auto rounded-t-3xl lg:mb-16 lg:rounded-[20px] px-7 py-14 bg-navy"
     >
       <div className="relative flex flex-col items-center gap-10 md:flex-row md:items-center md:justify-center md:gap-20">
         {/* ── Right (in RTL): hero text + benefits ── */}
         <div className="flex w-full flex-col items-start gap-5 text-start md:w-100.25">
-          <h3 className="type-h3 font-black leading-tight text-background">
+          <h3 className="type-h4 lg:type-h3 w-3/4 lg:w-full font-black leading-tight text-background">
             {title}
           </h3>
           {subtitle && <p className="type-p text-muted">{subtitle}</p>}
           {benefits && benefits.length > 0 && (
-            <div className="flex flex-wrap items-center gap-5">
+            <div className="flex flex-wrap items-center gap-2 lg:gap-5">
               {benefits.map((b) => (
                 <div key={b.id} className="flex items-start gap-1.5">
                   <span className="text-xs font-bold text-green-600">✓</span>

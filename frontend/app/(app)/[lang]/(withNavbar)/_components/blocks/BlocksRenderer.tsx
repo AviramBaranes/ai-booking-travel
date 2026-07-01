@@ -55,7 +55,7 @@ export function BlocksRenderer({
             return <BenefitsBlock key={block.id} block={block} />;
           case "related-posts":
             return (
-              <section className="w-2/3 mx-auto mb-10" key={block.id}>
+              <section className="lg:w-2/3 mx-5 lg:mx-auto mb-10" key={block.id}>
                 <RelatedPosts
                   showButton
                   pillText={block.eyebrow ?? ""}

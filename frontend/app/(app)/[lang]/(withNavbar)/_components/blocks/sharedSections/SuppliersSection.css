@@ -1,0 +1,36 @@
+.suppliers-logos-viewport {
+  width: 100%;
+  overflow: hidden;
+  container-type: inline-size;
+  direction: ltr;
+}
+
+.suppliers-logos-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3.5rem;
+
+  animation: suppliers-logos-slide 12s linear infinite alternate;
+}
+
+.suppliers-logo-item {
+  flex-shrink: 0;
+}
+
+@keyframes suppliers-logos-slide {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(min(0px, calc(100cqw - 100%)));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .suppliers-logos-track {
+    animation: none;
+  }
+}
