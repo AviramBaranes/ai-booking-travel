@@ -195,7 +195,7 @@ func sendReports(ctx context.Context, reports []Report) {
 
 var _ = cron.NewJob("monthly-billing", cron.JobConfig{
 	Title:    "Send Monthly Billing",
-	Schedule: "0 8 1 * *", // At 08:00 on day-of-month 1.
+	Schedule: "0 7 1 * *", // At 08:00 on day-of-month 1.
 	Endpoint: GenerateMonthlyReport,
 })
 
