@@ -22,6 +22,7 @@
   --color-success: #16A34A;
   --color-border-muted: #676767;
   --color-value: #121212;
+  --color-mobile-input: #F1F5F9;
 
   --color-medium-white: rgba(255, 255, 255, 0.75);
   --color-light-white: rgba(255, 255, 255, 0.25);
@@ -347,7 +348,7 @@ body {
 
 
 @utility search-form-input {
-  @apply w-full rounded-md border-[1.5px] border-input-border bg-white px-1 lg:px-8 py-6 text-navy placeholder:text-secondary focus-within:border-brand-blue/50 [&_input]:bg-transparent;
+  @apply w-full rounded-md border-[1.5px] border-input-border bg-mobile-input lg:bg-white px-1 lg:px-8 py-6 text-navy placeholder:text-secondary focus-within:border-brand-blue/50 [&_input]:bg-transparent;
 }
 
 @layer base {

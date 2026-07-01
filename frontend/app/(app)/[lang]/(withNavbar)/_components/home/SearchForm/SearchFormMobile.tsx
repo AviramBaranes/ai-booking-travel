@@ -12,6 +12,8 @@ import { useRef, useState } from "react";
 import clsx from "clsx";
 import { CalendarSheet, CalendarInputTrigger } from "./CalendarSheet";
 import { LocationComboboxSheet } from "./LocationComboboxSheet";
+import { AgeCheckbox } from "./AgeCheckbox";
+import { CouponCheckbox } from "./CouponCheckbox";
 
 export type SearchFieldHandle = {
   focus: () => void;
@@ -70,7 +72,7 @@ export function SearchFormMobile({
   });
 
   return (
-    <div className="flex flex-col items-start justify-center gap-2 bg-white/95 w-full rounded-xl p-2">
+    <div className="flex flex-col items-start justify-center gap-2 bg-white w-full rounded-xl p-2">
       <div className="flex flex-col gap-2 w-full">
         <Controller
           name="pickupLocation"
@@ -213,6 +215,30 @@ export function SearchFormMobile({
           />
         </div>
       </div>
+      <Controller
+        name="driverAge"
+        control={control}
+        render={({ field }) => (
+          <AgeCheckbox
+            saveButtonText={t("save")}
+            driverAge={field.value}
+            setDriverAge={field.onChange}
+          />
+        )}
+      />
+      <Controller
+          name="couponCode"
+          control={control}
+          render={({ field }) => (
+            <CouponCheckbox
+              checkboxLabel={t("hasCoupon")}
+              inputLabel={t("couponPlaceholder")}
+              saveButtonText={t("save")}
+              couponCode={field.value ?? ""}
+              setCouponCode={field.onChange}
+            />
+          )}
+        />
       <div className="w-full lg:w-1/9">
         <Button
           type="submit"
