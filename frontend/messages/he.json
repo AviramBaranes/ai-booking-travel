@@ -265,6 +265,10 @@
       "carGroupsFiltersTitle": "באפשרותך לסנן תוצאות לפי קבוצות רכבים:",
       "clearFilters": "נקה פילטר",
       "filters": {
+        "mobileSheet": {
+          "title": "סינון תוצאות:",
+          "buttonTitle": "סינון תוצאות"
+        },
         "pickupLocation": {
           "title": "מיקום איסוף",
           "Airport": "טרמינל",

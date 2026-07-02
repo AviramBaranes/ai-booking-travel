@@ -19,7 +19,7 @@ export function CarCard({ vehicle, daysCount, searchRequest }: CarCardProps) {
   const t = useTranslations("booking.results");
 
   return (
-    <div className="shadow-[0_4px_12px_0_rgba(63,63,63,0.10)] rounded-2xl h-100 lg:h-80 border-cars-border relative pr-4 flex flex-col-reverse items-start lg:flex-row gap-2 bg-white overflow-hidden">
+    <div className="shadow-[0_4px_12px_0_rgba(63,63,63,0.10)] rounded-2xl h-100 lg:h-80 border-cars-border relative px-4 flex flex-col-reverse items-start lg:flex-row gap-2 bg-white overflow-hidden">
       <div className="flex flex-col items-start lg:items-center gap-2 lg:gap-6 lg:mt-10 mb-4 lg:mb-12">
         <SupplierLogo supplierName={vehicle.carDetails.supplierName} />
         <Image

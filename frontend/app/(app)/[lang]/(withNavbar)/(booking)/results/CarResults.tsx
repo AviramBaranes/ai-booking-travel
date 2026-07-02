@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import { useEffect } from "react";
+import { FiltersSheet } from "./_components/filters/FiltersSheet";
 
 interface CarResultsProps {
   searchRequest: availability.SearchAvailabilityParams;
@@ -34,11 +35,7 @@ export function CarResults({ searchRequest }: CarResultsProps) {
     filterFn: devFilterFn,
   } = useDevFilters();
 
-  const {
-    clearAll,
-    filterFunctions,
-    hasActiveFilters,
-  } = useCheckboxFilters();
+  const { clearAll, filterFunctions, hasActiveFilters } = useCheckboxFilters();
 
   const cars = data?.availableVehicles ?? [];
 
@@ -55,7 +52,10 @@ export function CarResults({ searchRequest }: CarResultsProps) {
 
   return (
     <div>
-      <CarGroupsFilter title={t("carGroupsFiltersTitle")} />
+      <FiltersSheet cars={cars} hasActiveFilters={hasActiveFilters} />
+      <div className="lg:block hidden">
+        <CarGroupsFilter title={t("carGroupsFiltersTitle")} />
+      </div>
 
       {isDevelopment && (
         <DevFilters
@@ -67,11 +67,8 @@ export function CarResults({ searchRequest }: CarResultsProps) {
       )}
 
       <div className="mt-10 flex gap-6 justify-between">
-        <div className="w-1/4 hidden">
-          <FiltersPanel
-            cars={cars}
-            hasActiveFilters={hasActiveFilters}
-          />
+        <div className="w-1/4 hidden lg:flex">
+          <FiltersPanel cars={cars} hasActiveFilters={hasActiveFilters} />
         </div>
 
         {filteredCars.length ? (

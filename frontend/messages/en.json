@@ -266,6 +266,10 @@
       "carGroupsFiltersTitle": "You can filter results by car groups:",
       "clearFilters": "Clear filters",
       "filters": {
+        "mobileSheet": {
+          "title": "Filter Results:",
+          "buttonTitle": "Filter Results"
+        },
         "pickupLocation": {
           "title": "Pickup location",
           "Airport": "Terminal",
