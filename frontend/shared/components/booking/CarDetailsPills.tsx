@@ -65,7 +65,7 @@ export function CarDetailsPills({
 }) {
   const t = useTranslations("booking.results");
   return (
-    <div className="flex flex-wrap items-center gap-2 mt-4">
+    <div className="flex flex-wrap items-center gap-1 lg:gap-2 lg:mt-4">
       {CAR_DETAILS_PILLS.map((config) => {
           const { key, icon: Icon } = config;
           const label = config.getLabel(carDetails, t);
@@ -74,7 +74,7 @@ export function CarDetailsPills({
           return (
             <div
               key={key}
-              className="flex items-center gap-1 bg-[#E7E9F5] px-4 py-1 rounded-full text-sm font-normal"
+              className="flex items-center gap-1 bg-[#E7E9F5] px-2 lg:px-4 py-1 rounded-full text-sm font-normal"
             >
               {Icon ? (
                 <Icon size={16} className="text-black/80" />

@@ -35,7 +35,7 @@ export function BookingStepper({ currentStep }: BookingStepperProps) {
   };
 
   return (
-    <div className="flex">
+    <div className="hidden lg:flex">
       {BOOKING_STEPS.map((step, i) => (
         <div key={step.key} className="flex items-center">
           {currentStepIndex > i ? (

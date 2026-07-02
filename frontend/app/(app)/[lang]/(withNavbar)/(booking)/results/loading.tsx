@@ -24,7 +24,7 @@ export default async function LoadingPage() {
      <LoadingPageTitle />
       <div
         dir="ltr"
-        className="relative flex items-center py-30 overflow-hidden"
+        className="relative flex items-center py-20 lg:py-30 overflow-hidden"
       >
         <div className="w-full overflow-hidden">
           <div className="animate-scroll-left">
@@ -45,7 +45,7 @@ export default async function LoadingPage() {
           </div>
         </div>
 
-        <div className="absolute z-10 bottom-13 animate-slide-right pointer-events-none">
+        <div className="absolute z-10 bottom-3 lg:bottom-13 animate-slide-right pointer-events-none">
           <div
             id="blur-bg"
             className="absolute rounded-full backdrop-blur-[1.5px] w-39 h-39 top-22 left-22 -translate-x-1/2 -translate-y-1/2"
@@ -67,7 +67,7 @@ async function LoadingPageTitle() {
   const t = await getTranslations("ResultsPage");
 
   return (
-    <div className="mt-5 self-stretch text-center justify-start text-indigo-950 text-5xl font-black leading-12">
+    <div className="mt-5 self-stretch text-center justify-start text-indigo-950 text-3xl mx-5 lg:text-5xl font-black leading-12">
       {t("loadingTitle")}
     </div>
   );

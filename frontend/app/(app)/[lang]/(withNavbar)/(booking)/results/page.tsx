@@ -59,10 +59,10 @@ export default async function ResultsPage({
   }
 
   return (
-    <main className="w-2/3 mx-auto pt-15 pb-6">
+    <main className="lg:w-2/3 mx-auto lg:pt-15 pb-6">
       <BookingStepper currentStep="results" />
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <div className="my-4">
+        <div className="lg:my-4">
           <SearchDataBanner
             pickUpLocationId={query.pickupLocationId}
             dropOffLocationId={query.dropoffLocationId}
@@ -76,7 +76,7 @@ export default async function ResultsPage({
             showButton
           />
         </div>
-        <ExpiredSearchGate >
+        <ExpiredSearchGate>
           <CarResults searchRequest={searchRequest} />
         </ExpiredSearchGate>
       </HydrationBoundary>

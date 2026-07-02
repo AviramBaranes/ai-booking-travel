@@ -19,24 +19,24 @@ export function CarCard({ vehicle, daysCount, searchRequest }: CarCardProps) {
   const t = useTranslations("booking.results");
 
   return (
-    <div className="shadow-[0_4px_12px_0_rgba(63,63,63,0.10)] rounded-2xl h-80 border-cars-border relative pr-4 flex gap-2 bg-white overflow-hidden">
-      <div className="flex flex-col items-center gap-6 mt-10 mb-12">
+    <div className="shadow-[0_4px_12px_0_rgba(63,63,63,0.10)] rounded-2xl h-100 lg:h-80 border-cars-border relative pr-4 flex flex-col-reverse items-start lg:flex-row gap-2 bg-white overflow-hidden">
+      <div className="flex flex-col items-start lg:items-center gap-2 lg:gap-6 lg:mt-10 mb-4 lg:mb-12">
         <SupplierLogo supplierName={vehicle.carDetails.supplierName} />
         <Image
           src={vehicle.carDetails.imageUrl}
           alt={vehicle.carDetails.model}
           width={176}
           height={100}
-          className="w-44 h-25 object-contain"
+          className="lg:w-44 w-30 h-25 object-contain"
         />
       </div>
-      <div className="flex flex-col items-start gap-2 my-auto">
+      <div className="flex flex-col items-start gap-2 my-2 lg:my-auto">
         <CarTags vehicle={vehicle} />
         <CarModel
           model={vehicle.carDetails.model}
           orSimilarText={t("carDetails.orSimilar")}
         />
-        <div className="max-w-2/3">
+        <div className="lg:max-w-2/3">
           <CarDetailsPills carDetails={vehicle.carDetails} />
         </div>
         <CarChecks

@@ -5,7 +5,7 @@ interface CarChecksProps {
 }
 export function CarChecks({ checks }: CarChecksProps) {
   return (
-    <div className="flex flex-col mt-4">
+    <div className="flex flex-col lg:mt-4">
       {checks.map((check) => (
         <div className="flex gap-2 items-center" key={check.text}>
           <Image

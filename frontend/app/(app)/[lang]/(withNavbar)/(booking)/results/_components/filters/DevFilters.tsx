@@ -82,7 +82,7 @@ export function DevFilters({
   const hasActive = plansCountFilter !== null || addOnsFilter !== null;
 
   return (
-    <div className="fixed bottom-20 z-50 right-4">
+    <div className="fixed hidden lg:flex bottom-20 z-50 right-4">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button

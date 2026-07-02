@@ -49,7 +49,7 @@ export function AgePopover({
           name="age-above-30"
         />
       </PopoverTrigger>
-      <PopoverContent className="py-2 w-auto min-w-max" align="end">
+      <PopoverContent className="py-2 w-auto min-w-max hidden lg:flex" align="end">
         <Field orientation="horizontal" className="flex items-start">
           <FieldLabel htmlFor="age" className="w-fit whitespace-nowrap py-2">
             {t("agePopoverLabel")}

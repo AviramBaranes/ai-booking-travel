@@ -25,7 +25,7 @@ export function SupplierLogo({ supplierName }: { supplierName: string }) {
       alt={supplier.name}
       width={112}
       height={40}
-      className="w-28 h-10 object-contain"
+      className="w-16 lg:w-28 h-10 object-contain"
     />
   );
 }

@@ -12,7 +12,7 @@ export function CarGroupsFilter({ title }: CarGroupFiltersProps) {
   const toggleGroup = useBookingSessionStore((state) => state.toggleCarGroupFilter);
   
   return (
-    <div className="mt-12">
+    <div className="mt-12 hidden">
       <h5 className="type-h5 mb-8 text-navy">{title}</h5>
       <div className="flex items-center justify-between">
         {CAR_GROUPS_FILTERS.map((group) => (

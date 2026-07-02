@@ -67,7 +67,7 @@ export function CarResults({ searchRequest }: CarResultsProps) {
       )}
 
       <div className="mt-10 flex gap-6 justify-between">
-        <div className="w-1/4">
+        <div className="w-1/4 hidden">
           <FiltersPanel
             cars={cars}
             hasActiveFilters={hasActiveFilters}
@@ -75,7 +75,7 @@ export function CarResults({ searchRequest }: CarResultsProps) {
         </div>
 
         {filteredCars.length ? (
-          <div className="w-3/4 flex flex-col gap-6">
+          <div className="lg:w-3/4 mx-5 lg:mx-0 flex flex-col gap-6">
             {filteredCars.map((vehicle) => (
               <CarCard
                 key={vehicle.id}

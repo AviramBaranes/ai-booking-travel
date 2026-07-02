@@ -23,7 +23,7 @@ export function CarPriceDetails({
 
   return (
     <div
-      className={clsx("absolute bottom-0 flex flex-col items-end gap-2", {
+      className={clsx("absolute bottom-0 flex flex-col items-end gap-0.5 lg:gap-2 w-full", {
         "right-0": dir === "ltr",
         "left-0": dir === "rtl",
       })}
@@ -74,9 +74,9 @@ export function CarPriceDetails({
       </div>
       <ContinueToPlansLink
         carIndex={vehicle.id}
-        className={clsx("bg-brand type-label p-6 text-white", {
-          "rounded-tr-2xl": dir === "rtl",
-          "rounded-tl-2xl": dir === "ltr",
+        className={clsx("bg-brand type-label p-1.5 lg:p-6 text-white lg:w-fit w-full text-center", {
+          "lg:rounded-tr-2xl": dir === "rtl",
+          "lg:rounded-tl-2xl": dir === "ltr",
         })}
       >
         {t("continueCta")}

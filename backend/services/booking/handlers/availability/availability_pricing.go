@@ -37,15 +37,18 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 	}
 
 	markupProviders := s.getMarkupProviderMap(ctx, locs)
-
-	grossMarkupResp, err := accounts.GetUserMarkupGross(ctx)
-	if err != nil {
-		rlog.Error("failed to get user gross markup", "error", err)
-		return artifacts, api_errors.ErrInternalError
-	}
-
 	authData := auth.GetAuthData()
 	isAgent := authData != nil && (authData.Role == auth.UserRoleAgent)
+	var grossMarkup float64
+
+	if isAgent {
+		grossMarkupResp, err := accounts.GetUserMarkupGross(ctx)
+		if err != nil {
+			rlog.Error("failed to get user gross markup", "error", err)
+			return artifacts, api_errors.ErrInternalError
+		}
+		grossMarkup = grossMarkupResp.GrossMarkup
+	}
 
 	spMap := make(map[string]*broker.SupplierInfo)
 	translatedSuppliers := make(map[string]bool)
@@ -87,7 +90,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 
 			var cr float64
 			if cr, ok = currenciesMap[v.PriceDetails.Currency]; !ok {
-				cr, err = s.c.GetCurrencyRate(ctx, v.PriceDetails.Currency)
+				cr, err := s.c.GetCurrencyRate(ctx, v.PriceDetails.Currency)
 				if err != nil {
 					rlog.Error("no currency rate found for currency, skipping plan", "currency", v.PriceDetails.Currency, "error", err)
 					continue
@@ -148,10 +151,10 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 			discountedCarPrice := pricing.CalculateDiscountedPrice(carPriceWithMarkup, couponDiscount) // no discount on charged erp
 
 			// with gross:
-			carPriceWithMarkup = pricing.ApplyMarkup(carPriceWithMarkup, grossMarkupResp.GrossMarkup)
-			discountedCarPrice = pricing.ApplyMarkup(discountedCarPrice, grossMarkupResp.GrossMarkup)
-			discountedErp = pricing.ApplyMarkup(discountedErp, grossMarkupResp.GrossMarkup)
-			chargedErpPriceWithVat := pricing.ApplyMarkup(p.ChargedErpPriceWithVat, grossMarkupResp.GrossMarkup)
+			carPriceWithMarkup = pricing.ApplyMarkup(carPriceWithMarkup, grossMarkup)
+			discountedCarPrice = pricing.ApplyMarkup(discountedCarPrice, grossMarkup)
+			discountedErp = pricing.ApplyMarkup(discountedErp, grossMarkup)
+			chargedErpPriceWithVat := pricing.ApplyMarkup(p.ChargedErpPriceWithVat, grossMarkup)
 
 			avPlan := Plan{
 				PlanID:          p.PlanID,

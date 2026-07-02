@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/input-group";
 import { FieldError } from "react-hook-form";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
+import { formatRangeDate } from "@/shared/utils/formatDate";
 
 interface CalendarInputTriggerProps {
   placeholder: string;
@@ -37,7 +38,7 @@ export function CalendarInputTrigger({
   error,
   onClick,
 }: CalendarInputTriggerProps) {
-  const { lang } = useParams();
+  const { lang } = useParams() as { lang: string };
   const locale = lang === "he" ? he : undefined;
   const displayValue = value ? value.toLocaleDateString(locale?.code) : "";
 
@@ -72,18 +73,6 @@ interface CalendarSheetProps {
   onConfirm: (range: DateRange | undefined) => void;
 }
 
-const formatRangeDate = (locale: DayPickerLocale | undefined, date: Date) => {
-  const parts = new Intl.DateTimeFormat(locale?.code ?? "en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  }).formatToParts(date);
-
-  const get = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((p) => p.type === type)?.value ?? "";
-
-  return `${get("weekday")} ${get("day")} ${get("month")}`;
-};
 
 export function CalendarSheet({
   open,
@@ -146,7 +135,7 @@ export function CalendarSheet({
         <div className="p-4 border-t border-border-light shrink-0">
           <p className="type-paragraph text-center">
             {range?.from && range?.to
-              ? `${formatRangeDate(locale, range.from)} - ${formatRangeDate(locale, range.to)}`
+              ? `${formatRangeDate(lang as string, range.from)} - ${formatRangeDate(lang as string, range.to)}`
               : t("selectDates")}
           </p>
           <Button

@@ -44,7 +44,7 @@ export function CouponPopover({
           name="has-coupon"
         />
       </PopoverTrigger>
-      <PopoverContent className="py-2" align="start">
+      <PopoverContent className="py-2 hidden lg:flex" align="start">
         <Field orientation="horizontal">
           <Input
             id="coupon"

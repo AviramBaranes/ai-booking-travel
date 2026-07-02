@@ -268,6 +268,26 @@ body {
     scroll-left-loop 6s linear 3s infinite;
 }
 
+@media (max-width: 767px) {
+  .animate-scroll-left {
+    animation: scroll-left-loop 8s linear infinite;
+  }
+
+  .animate-slide-right {
+    animation: slide-right-mobile 1.8s linear infinite alternate;
+  }
+
+  @keyframes slide-right-mobile {
+    0% {
+      transform: translateX(0vw);
+    }
+
+    100% {
+      transform: translateX(50vw);
+    }
+  }
+}
+
 @utility type-h1 {
   font-size: var(--type-h1-size);
   line-height: var(--type-h1-line-height);
