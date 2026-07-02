@@ -14,9 +14,16 @@ import (
 	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation"
 	"encore.dev/beta/errs"
+	"encore.dev/config"
 	"encore.dev/pubsub"
 	"encore.dev/rlog"
 )
+
+type invoiceConfig struct {
+	PurchaseItemDescription     config.String
+	ProfitItemDescription       config.String
+	ProfitAndErpItemDescription config.String
+}
 
 var (
 	ErrExactlyOneOfOfficeIDOrOrgIDRequired = api_errors.NewValidationError("exactly one of office_id or organization_id must be provided")

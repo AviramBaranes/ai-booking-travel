@@ -3,9 +3,41 @@ package billing
 import (
 	"fmt"
 
+	"encore.dev/config"
 	"encore.dev/rlog"
 	"github.com/xuri/excelize/v2"
 )
+
+type monthlyReportConfig struct {
+	Headers monthlyReportHeadersConfig
+	Styles  monthlyReportStylesConfig
+}
+
+type monthlyReportHeadersConfig struct {
+	OfficeName           config.String
+	AgentName            config.String
+	DriverName           config.String
+	ReservationCreatedAt config.String
+	ReservationID        config.String
+	VoucherDate          config.String
+	VoucherNumber        config.String
+	AgentVoucherNumber   config.String
+	PickupDate           config.String
+	DropoffDate          config.String
+	CountryCode          config.String
+	RentalDays           config.String
+	Currency             config.String
+	NetPrice             config.String
+	FullCoverage         config.String
+	TotalNetPrice        config.String
+}
+
+type monthlyReportStylesConfig struct {
+	HeaderBackgroundColor    config.String
+	RefundRowBackgroundColor config.String
+	TotalRowBackgroundColor  config.String
+	BorderColor              config.String
+}
 
 // excelize doesn't support an "outline" border type; borders must be declared
 // per side. Style 1 is a thin solid line.
