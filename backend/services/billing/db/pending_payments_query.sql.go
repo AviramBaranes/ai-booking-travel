@@ -9,8 +9,71 @@ import (
 	"context"
 )
 
+const createPendingPayment = `-- name: CreatePendingPayment :one
+INSERT INTO pending_customer_payments (
+    user_id,
+    phone,
+    user_first_name,
+    user_last_name,
+    user_email,
+    snapshot_id,
+    rate_qualifier,
+    supplier_code,
+    plan_id,
+    include_erp,
+    selected_addons,
+    driver_title,
+    driver_first_name,
+    driver_last_name,
+    flight_number
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+) RETURNING id
+`
+
+type CreatePendingPaymentParams struct {
+	UserID          *int64
+	Phone           string
+	UserFirstName   string
+	UserLastName    string
+	UserEmail       string
+	SnapshotID      int64
+	RateQualifier   string
+	SupplierCode    string
+	PlanID          string
+	IncludeErp      bool
+	SelectedAddons  []byte
+	DriverTitle     string
+	DriverFirstName string
+	DriverLastName  string
+	FlightNumber    *string
+}
+
+func (q *Queries) CreatePendingPayment(ctx context.Context, arg CreatePendingPaymentParams) (int64, error) {
+	row := q.db.QueryRow(ctx, createPendingPayment,
+		arg.UserID,
+		arg.Phone,
+		arg.UserFirstName,
+		arg.UserLastName,
+		arg.UserEmail,
+		arg.SnapshotID,
+		arg.RateQualifier,
+		arg.SupplierCode,
+		arg.PlanID,
+		arg.IncludeErp,
+		arg.SelectedAddons,
+		arg.DriverTitle,
+		arg.DriverFirstName,
+		arg.DriverLastName,
+		arg.FlightNumber,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const getPendingPaymentByID = `-- name: GetPendingPaymentByID :one
-SELECT id, user_id, phone, snapshot_id, rate_qualifier, supplier_code, plan_id, include_erp, selected_addons, driver_title, driver_first_name, driver_last_name, flight_number, status, reservation_id, created_at, expires_at FROM pending_customer_payments WHERE id = $1 AND status = 'pending'
+SELECT id, user_id, phone, user_first_name, user_last_name, user_email, snapshot_id, rate_qualifier, supplier_code, plan_id, include_erp, selected_addons, driver_title, driver_first_name, driver_last_name, flight_number, status, reservation_id, created_at FROM pending_customer_payments WHERE id = $1 AND status = 'pending'
 `
 
 func (q *Queries) GetPendingPaymentByID(ctx context.Context, id int64) (PendingCustomerPayment, error) {
@@ -20,6 +83,9 @@ func (q *Queries) GetPendingPaymentByID(ctx context.Context, id int64) (PendingC
 		&i.ID,
 		&i.UserID,
 		&i.Phone,
+		&i.UserFirstName,
+		&i.UserLastName,
+		&i.UserEmail,
 		&i.SnapshotID,
 		&i.RateQualifier,
 		&i.SupplierCode,
@@ -33,7 +99,6 @@ func (q *Queries) GetPendingPaymentByID(ctx context.Context, id int64) (PendingC
 		&i.Status,
 		&i.ReservationID,
 		&i.CreatedAt,
-		&i.ExpiresAt,
 	)
 	return i, err
 }

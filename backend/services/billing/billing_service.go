@@ -52,8 +52,9 @@ type billingConfig struct {
 }
 
 type icountConfig struct {
-	AccountID config.Int
-	PaypageID config.Int
+	AccountID          config.Int
+	AgentsPaypageID    config.Int
+	CustomersPaypageID config.Int
 }
 
 var cfg = config.Load[*billingConfig]()

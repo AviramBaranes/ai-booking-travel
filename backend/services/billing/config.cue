@@ -30,14 +30,16 @@ MonthlyReport: {
 if #Meta.Environment.Type != "production" && #Meta.Environment.Name != "staging" {
 	Icount: {
 		AccountID: 4,
-		PaypageID: 3,
+		AgentsPaypageID: 3,
+		CustomersPaypageID: 4,
 	}
 }
 
 if #Meta.Environment.Type == "production" || #Meta.Environment.Name == "staging" {
 	Icount: {
 		AccountID: 4,
-		PaypageID: 14,
+		AgentsPaypageID: 14,
+		CustomersPaypageID: 14,
 	}
 }
 

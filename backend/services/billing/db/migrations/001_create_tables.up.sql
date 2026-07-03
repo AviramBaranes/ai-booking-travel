@@ -5,6 +5,9 @@ CREATE TABLE
         id BIGSERIAL PRIMARY KEY,
         user_id BIGINT,
         phone TEXT NOT NULL,
+        user_first_name TEXT NOT NULL,
+        user_last_name TEXT NOT NULL,
+        user_email TEXT NOT NULL,
         snapshot_id BIGINT NOT NULL,
         rate_qualifier TEXT NOT NULL,
         supplier_code TEXT NOT NULL,
@@ -17,6 +20,5 @@ CREATE TABLE
         flight_number TEXT,
         status payment_status NOT NULL DEFAULT 'pending',
         reservation_id BIGINT,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW (),
-        expires_at TIMESTAMPTZ NOT NULL
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW ()
     );

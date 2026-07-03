@@ -86,10 +86,10 @@ func (s *Service) GenerateOrderIframe(ctx context.Context, p GenerateOrderIframe
 	ic := icount.NewIcount()
 	resp, err := ic.GenerateIframe(icount.GenerateIframeParams{
 		ClientName:   clientName,
-		PaypageID:    cfg.Icount.PaypageID(),
+		PaypageID:    cfg.Icount.AgentsPaypageID(),
 		Sum:          sum,
 		CurrencyCode: currency,
-		Description:  getOrderDescription(order, langCode),
+		Description:  buildOrderDescription(order.CarDetails.Model, order.PickupDate, order.PickupTime, order.DropoffDate, order.DropoffTime, order.PickupLocationName, order.DropoffLocationName, langCode),
 		OrderID:      p.OrderID,
 		PageLang:     langCode,
 		SuccessURL:   fmt.Sprintf("%s%s", baseURL, SuccessPaymentGatewayPath),
@@ -170,66 +170,32 @@ func getIpnURL(baseURL string, orderID int64, authData *accounts.AuthData) strin
 	return fmt.Sprintf("%s%s?id=%d%s", baseURL, OrderPaymentIPNGatewayPath, orderID, billingEntityParam)
 }
 
-// getOrderDescription generates a description for the order based on its details and the given language.
-// It returns the generated description with embedded line breaks.
-func getOrderDescription(order *reservation.GetReservationResponse, lang string) string {
-	pickupTime := order.PickupTime
-	pickupDate := order.PickupDate
-	dropoffTime := order.DropoffTime
-	dropoffDate := order.DropoffDate
-	pickupLocation := order.PickupLocationName
-	dropoffLocation := order.DropoffLocationName
-	model := order.CarDetails.Model
-
+// buildOrderDescription generates a localised car rental description for iCount payment pages.
+func buildOrderDescription(model, pickupDate, pickupTime, dropoffDate, dropoffTime, pickupLocation, dropoffLocation, langCode string) string {
 	sameLocation := pickupLocation == dropoffLocation
 
-	switch lang {
+	switch langCode {
 	case "he":
 		if sameLocation {
 			return fmt.Sprintf(
 				"השכרת רכב %s או דומה.\nאיסוף והחזרה ב%s.\nאיסוף: %s בשעה %s\nהחזרה: %s בשעה %s",
-				model,
-				pickupLocation,
-				pickupDate,
-				pickupTime,
-				dropoffDate,
-				dropoffTime,
+				model, pickupLocation, pickupDate, pickupTime, dropoffDate, dropoffTime,
 			)
 		}
-
 		return fmt.Sprintf(
 			"השכרת רכב %s או דומה.\nאיסוף מ%s בתאריך %s בשעה %s.\nהחזרה ב%s בתאריך %s בשעה %s.",
-			model,
-			pickupLocation,
-			pickupDate,
-			pickupTime,
-			dropoffLocation,
-			dropoffDate,
-			dropoffTime,
+			model, pickupLocation, pickupDate, pickupTime, dropoffLocation, dropoffDate, dropoffTime,
 		)
-
 	default:
 		if sameLocation {
 			return fmt.Sprintf(
 				"Car rental for %s or similar.\nPickup and return at %s.\nPickup: %s at %s\nReturn: %s at %s",
-				model,
-				pickupLocation,
-				pickupDate,
-				pickupTime,
-				dropoffDate,
-				dropoffTime,
+				model, pickupLocation, pickupDate, pickupTime, dropoffDate, dropoffTime,
 			)
 		}
-
 		return fmt.Sprintf(
 			"Car rental for %s or similar.\nPickup at %s on %s at %s.\nReturn at %s on %s at %s.",
-			model,
-			pickupLocation,
-			pickupDate,
-			pickupTime,
-			dropoffLocation,
-			dropoffDate,
-			dropoffTime,
+			model, pickupLocation, pickupDate, pickupTime, dropoffLocation, dropoffDate, dropoffTime,
 		)
 	}
 }

@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	CreatePendingPayment(ctx context.Context, arg CreatePendingPaymentParams) (int64, error)
 	GetPendingPaymentByID(ctx context.Context, id int64) (PendingCustomerPayment, error)
 }
 

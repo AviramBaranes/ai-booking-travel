@@ -58,6 +58,9 @@ type PendingCustomerPayment struct {
 	ID              int64
 	UserID          *int64
 	Phone           string
+	UserFirstName   string
+	UserLastName    string
+	UserEmail       string
 	SnapshotID      int64
 	RateQualifier   string
 	SupplierCode    string
@@ -71,5 +74,4 @@ type PendingCustomerPayment struct {
 	Status          PaymentStatus
 	ReservationID   *int64
 	CreatedAt       pgtype.Timestamptz
-	ExpiresAt       pgtype.Timestamptz
 }
