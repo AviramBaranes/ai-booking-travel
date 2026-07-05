@@ -24,33 +24,39 @@ func OrderPaymentIPNGateway(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	reqData, err := parseRequest(r)
 	if err != nil {
+		rlog.Error("failed to parse request", "error", err)
 		http.NotFound(w, r)
 		return
 	}
 
+	orderID := reqData.ID
 	ic := icount.NewIcount()
 	transaction, err := getTransaction(ic, reqData.confirmationCode)
 	if err != nil {
-		sendInvoiceCreationFailureEmail(ctx, reqData.orderID, err)
+		rlog.Error("failed to get transaction", "error", err, "orderID", orderID)
+		sendInvoiceCreationFailureEmail(ctx, orderID, err)
 		http.NotFound(w, r)
 		return
 	}
 
-	BillingReservation, err := getBillingReservation(ctx, reqData, transaction)
+	BillingReservation, err := getBillingReservation(ctx, orderID, reqData, transaction)
 	if err != nil {
-		sendVoucherReservationFailureEmail(ctx, reqData.orderID, err)
+		rlog.Error("failed to get billing reservation after payment", "error", err, "orderID", orderID)
+		sendVoucherReservationFailureEmail(ctx, orderID, err)
 		return
 	}
 
 	clientID, err := getIcountClientID(ctx, reqData)
 	if err != nil {
-		sendInvoiceCreationFailureEmail(ctx, reqData.orderID, err)
+		rlog.Error("failed to get iCount client ID", "error", err, "orderID", orderID)
+		sendInvoiceCreationFailureEmail(ctx, orderID, err)
 		return
 	}
 
 	err = createInvoice(ic, BillingReservation, clientID, transaction)
 	if err != nil {
-		sendInvoiceCreationFailureEmail(ctx, reqData.orderID, err)
+		rlog.Error("failed to create invoice", "error", err, "orderID", orderID)
+		sendInvoiceCreationFailureEmail(ctx, orderID, err)
 		return
 	}
 
@@ -99,7 +105,7 @@ func sendVoucherReservationFailureEmail(ctx context.Context, reservationID int64
 }
 
 type ipnReqData struct {
-	orderID          int64
+	ID               int64
 	confirmationCode string
 	officeID         *int64
 	organizationID   *int64
@@ -133,7 +139,7 @@ func parseRequest(r *http.Request) (*ipnReqData, error) {
 	}
 
 	return &ipnReqData{
-		orderID:          orderID,
+		ID:               orderID,
 		confirmationCode: confCode,
 		officeID:         offID,
 		organizationID:   orgID,
@@ -158,15 +164,15 @@ func getTransaction(ic *icount.Icount, confirmationCode string) (*icount.Transac
 }
 
 // getBillingReservation retrieves the billing reservation after payment using the provided request data and transaction details.
-func getBillingReservation(ctx context.Context, reqData *ipnReqData, transaction *icount.Transaction) (reservation.BillingReservation, error) {
-	resp, err := reservation.VoucherReservationAfterPayment(ctx, &reservation.VoucherReservationAfterPaymentParams{
-		ReservationID:           reqData.orderID,
+func getBillingReservation(ctx context.Context, id int64, reqData *ipnReqData, transaction *icount.Transaction) (reservation.BillingReservation, error) {
+	resp, err := reservation.VoucherReservationAfterPayment(ctx, reservation.VoucherReservationAfterPaymentParams{
+		ReservationID:           id,
 		PaymentConfirmationCode: reqData.confirmationCode,
 		PaymentDocNum:           transaction.DocNumber,
 		UserEmail:               transaction.ClientEmail,
 	})
 	if err != nil {
-		rlog.Error("failed to voucher reservation after payment", "error", err, "orderID", reqData.orderID)
+		rlog.Error("failed to voucher reservation after payment", "error", err, "orderID", id)
 		return reservation.BillingReservation{}, err
 	}
 
@@ -180,7 +186,7 @@ func getIcountClientID(ctx context.Context, reqData *ipnReqData) (int, error) {
 		OrganizationID: reqData.organizationID,
 	})
 	if err != nil {
-		rlog.Error("failed to get iCount client ID", "error", err, "orderID", reqData.orderID)
+		rlog.Error("failed to get iCount client ID", "error", err, "orderID", reqData.ID)
 		return 0, err
 	}
 

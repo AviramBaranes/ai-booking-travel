@@ -91,6 +91,6 @@ func (s *Service) SeedReservations(ctx context.Context) (*actions.SeedReservatio
 }
 
 // encore:api private
-func (s *Service) VoucherReservationAfterPayment(ctx context.Context, p *actions.VoucherReservationAfterPaymentParams) (*actions.VoucherReservationAfterPaymentResponse, error) {
+func (s *Service) VoucherReservationAfterPayment(ctx context.Context, p actions.VoucherReservationAfterPaymentParams) (*actions.VoucherReservationAfterPaymentResponse, error) {
 	return s.newActionService().VoucherReservationAfterPayment(ctx, p)
 }

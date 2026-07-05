@@ -7,18 +7,18 @@ import (
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/internal/icount"
 	"encore.app/internal/lang"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
+	"encore.app/services/accounts/handlers/user"
 	"encore.app/services/billing/db"
 	"encore.app/services/booking"
 	"encore.dev"
 	"encore.dev/beta/auth"
 	"encore.dev/rlog"
 )
-
-const CustomerPaymentIPNGatewayPath = "/customer-payment-ipn-gateway"
 
 type GenerateCustomerPaymentIframeParams struct {
 	Phone           string               `json:"phone" validate:"required,israeli_phone"`
@@ -42,8 +42,8 @@ func (p GenerateCustomerPaymentIframeParams) Validate() error {
 }
 
 type GenerateCustomerPaymentIframeResponse struct {
-	URL              string `json:"url"`
-	PendingPaymentID int64  `json:"pendingPaymentId"`
+	URL                 string `json:"url"`
+	PendingPaymentToken string `json:"pendingPaymentToken"`
 }
 
 // GenerateCustomerPaymentIframe creates a pending payment record and returns an iCount iframe URL for the customer to complete payment.
@@ -53,15 +53,10 @@ type GenerateCustomerPaymentIframeResponse struct {
 // Unauthenticated requests proceed without a user ID (guest checkout).
 //
 // encore:api public path=/billing/generate-customer-payment-iframe method=POST
-func (s *Service) GenerateCustomerPaymentIframe(ctx context.Context, p *GenerateCustomerPaymentIframeParams) (*GenerateCustomerPaymentIframeResponse, error) {
-	var userID *int64
-	if auth.Data() != nil {
-		authData := auth.Data().(*accounts.AuthData)
-		if authData.Role != accounts.UserRoleCustomer {
-			return nil, api_errors.ErrUnauthorized
-		}
-		uid := authData.UserID
-		userID = &uid
+func (s *Service) GenerateCustomerPaymentIframe(ctx context.Context, p GenerateCustomerPaymentIframeParams) (*GenerateCustomerPaymentIframeResponse, error) {
+	userID, err := getUserID(ctx, p)
+	if err != nil {
+		return nil, err
 	}
 
 	planSummary, err := booking.GetSnapshotPlanSummary(ctx, &booking.GetSnapshotPlanSummaryParams{
@@ -82,12 +77,13 @@ func (s *Service) GenerateCustomerPaymentIframe(ctx context.Context, p *Generate
 		return nil, api_errors.ErrInternalError
 	}
 
-	pendingID, err := s.query.CreatePendingPayment(ctx, db.CreatePendingPaymentParams{
+	planILSPrice, err := s.getILSPrice(ctx, planSummary.TotalPrice, planSummary.CurrencyCode)
+	if err != nil {
+		return nil, err
+	}
+
+	row, err := s.query.CreatePendingPayment(ctx, db.CreatePendingPaymentParams{
 		UserID:          userID,
-		Phone:           p.Phone,
-		UserFirstName:   p.FirstName,
-		UserLastName:    p.LastName,
-		UserEmail:       p.Email,
 		SnapshotID:      p.SnapshotID,
 		RateQualifier:   p.RateQualifier,
 		SupplierCode:    p.SupplierCode,
@@ -115,21 +111,59 @@ func (s *Service) GenerateCustomerPaymentIframe(ctx context.Context, p *Generate
 		Email:        p.Email,
 		Phone:        p.Phone,
 		PaypageID:    cfg.Icount.CustomersPaypageID(),
-		Sum:          planSummary.TotalPrice,
-		CurrencyCode: planSummary.CurrencyCode,
+		Sum:          planILSPrice,
+		CurrencyCode: "ILS", //customers always pay in ILS, regardless of the plan's currency
 		Description:  buildOrderDescription(planSummary.CarModel, planSummary.PickupDate, planSummary.PickupTime, planSummary.DropoffDate, planSummary.DropoffTime, planSummary.PickupLocationName, planSummary.DropoffLocationName, langCode),
-		OrderID:      pendingID,
+		OrderID:      row.ID,
 		PageLang:     langCode,
 		SuccessURL:   fmt.Sprintf("%s%s", baseURL, SuccessPaymentGatewayPath),
-		IpnURL:       fmt.Sprintf("%s%s?pending_id=%d", baseURL, CustomerPaymentIPNGatewayPath, pendingID),
+		IpnURL:       fmt.Sprintf("%s%s?id=%d", baseURL, CustomerPaymentIPNGatewayPath, row.ID),
 	})
 	if err != nil {
-		rlog.Error("failed to generate paypage iframe for customer", "error", err, "pendingPaymentID", pendingID)
+		rlog.Error("failed to generate paypage iframe for customer", "error", err, "pendingPaymentID", row.ID)
 		return nil, api_errors.ErrInternalError
 	}
 
 	return &GenerateCustomerPaymentIframeResponse{
-		URL:              resp.SaleURL,
-		PendingPaymentID: pendingID,
+		URL:                 resp.SaleURL,
+		PendingPaymentToken: dbadapters.UuidToString(row.Token),
 	}, nil
+}
+
+// getILSPrice calculates the price of the order in ILS based on the plan's price and currency code.
+func (s *Service) getILSPrice(ctx context.Context, planPrice float64, currencyCode string) (float64, error) {
+	rate, err := s.ratesCache.GetCurrencyRate(ctx, currencyCode)
+	rlog.Info("currency rates", "rate", rate)
+	if err != nil {
+		rlog.Error("currency code not found in rates", "currency_code", currencyCode)
+		return 0, api_errors.ErrInternalError
+	}
+
+	return planPrice * rate, nil
+}
+
+// getUserID retrieves the user ID from the auth context if the request is authenticated as a customer.
+// If the request is unauthenticated, it attempts to get or create a customer using the provided first name, last name, email, and phone.
+func getUserID(ctx context.Context, p GenerateCustomerPaymentIframeParams) (int64, error) {
+	if auth.Data() != nil {
+		authData := auth.Data().(*accounts.AuthData)
+		if authData.Role != accounts.UserRoleCustomer {
+			return 0, api_errors.ErrUnauthorized
+		}
+
+		return authData.UserID, nil
+	}
+
+	resp, err := accounts.GetOrCreateCustomer(ctx, user.GetOrCreateCustomerParams{
+		FirstName: p.FirstName,
+		LastName:  p.LastName,
+		Email:     p.Email,
+		Phone:     p.Phone,
+	})
+	if err != nil {
+		rlog.Error("failed to get or create customer", "error", err, "phone", p.Phone, "email", p.Email)
+		return 0, err
+	}
+
+	return resp.UserID, nil
 }

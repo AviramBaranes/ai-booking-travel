@@ -165,3 +165,20 @@ WHERE u.id = $1;
 UPDATE users
 SET last_login = CURRENT_TIMESTAMP
 WHERE id = $1;
+
+-- name: GetCustomerByPhoneAndEmail :one
+SELECT
+  id,
+  role,
+  first_name,
+  last_name,
+  email,
+  phone_number,
+  office_id,
+  last_login,
+  created_at,
+  updated_at
+FROM users
+WHERE role = 'customer'
+  AND phone_number = $1
+  AND email = $2;

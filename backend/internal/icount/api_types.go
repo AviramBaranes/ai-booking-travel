@@ -5,7 +5,7 @@ import "strconv"
 // ------- Create Document -------
 
 type ICountCreateDocRequest struct {
-	ClientID     int                        `json:"client_id"`
+	ClientID     int                        `json:"client_id,omitempty"`
 	DocType      string                     `json:"doctype"`
 	CurrencyID   int                        `json:"currency_id"`
 	Rate         float64                    `json:"rate,omitempty"`

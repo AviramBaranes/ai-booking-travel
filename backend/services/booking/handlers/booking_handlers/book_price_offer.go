@@ -59,7 +59,7 @@ func (s *BookingService) BookPriceOffer(ctx context.Context, p BookPriceOfferPar
 		}); publishErr != nil {
 			rlog.Error("failed to publish critical error email event", "confirmationNumber", bookingRes.ConfirmationNumber, "error", publishErr)
 		}
-		return nil, errReservationCreationFailed
+		return nil, ErrReservationCreationFailed
 	}
 
 	s.markPriceOfferBooked(ctx, p.PriceOfferID, reservation.ID, authData.UserID)

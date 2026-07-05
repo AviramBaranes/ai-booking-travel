@@ -9,8 +9,9 @@ import (
 )
 
 type Querier interface {
-	CreatePendingPayment(ctx context.Context, arg CreatePendingPaymentParams) (int64, error)
+	CreatePendingPayment(ctx context.Context, arg CreatePendingPaymentParams) (CreatePendingPaymentRow, error)
 	GetPendingPaymentByID(ctx context.Context, id int64) (PendingCustomerPayment, error)
+	ResolvePendingPayment(ctx context.Context, arg ResolvePendingPaymentParams) error
 }
 
 var _ Querier = (*Queries)(nil)

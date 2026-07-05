@@ -22,7 +22,7 @@ type VoucherReservationAfterPaymentResponse struct {
 	BillingReservation reservation_pricing.BillingReservation
 }
 
-func (s *ActionService) VoucherReservationAfterPayment(ctx context.Context, p *VoucherReservationAfterPaymentParams) (*VoucherReservationAfterPaymentResponse, error) {
+func (s *ActionService) VoucherReservationAfterPayment(ctx context.Context, p VoucherReservationAfterPaymentParams) (*VoucherReservationAfterPaymentResponse, error) {
 	reservation, err := s.query.VoucherReservationAfterPayment(ctx, db.VoucherReservationAfterPaymentParams{
 		ID:                      p.ReservationID,
 		PaymentConfirmationCode: &p.PaymentConfirmationCode,

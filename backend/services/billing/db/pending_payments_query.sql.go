@@ -7,15 +7,13 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createPendingPayment = `-- name: CreatePendingPayment :one
 INSERT INTO pending_customer_payments (
     user_id,
-    phone,
-    user_first_name,
-    user_last_name,
-    user_email,
     snapshot_id,
     rate_qualifier,
     supplier_code,
@@ -27,16 +25,12 @@ INSERT INTO pending_customer_payments (
     driver_last_name,
     flight_number
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
-) RETURNING id
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+) RETURNING id, token
 `
 
 type CreatePendingPaymentParams struct {
-	UserID          *int64
-	Phone           string
-	UserFirstName   string
-	UserLastName    string
-	UserEmail       string
+	UserID          int64
 	SnapshotID      int64
 	RateQualifier   string
 	SupplierCode    string
@@ -49,13 +43,14 @@ type CreatePendingPaymentParams struct {
 	FlightNumber    *string
 }
 
-func (q *Queries) CreatePendingPayment(ctx context.Context, arg CreatePendingPaymentParams) (int64, error) {
+type CreatePendingPaymentRow struct {
+	ID    int64
+	Token pgtype.UUID
+}
+
+func (q *Queries) CreatePendingPayment(ctx context.Context, arg CreatePendingPaymentParams) (CreatePendingPaymentRow, error) {
 	row := q.db.QueryRow(ctx, createPendingPayment,
 		arg.UserID,
-		arg.Phone,
-		arg.UserFirstName,
-		arg.UserLastName,
-		arg.UserEmail,
 		arg.SnapshotID,
 		arg.RateQualifier,
 		arg.SupplierCode,
@@ -67,13 +62,13 @@ func (q *Queries) CreatePendingPayment(ctx context.Context, arg CreatePendingPay
 		arg.DriverLastName,
 		arg.FlightNumber,
 	)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
+	var i CreatePendingPaymentRow
+	err := row.Scan(&i.ID, &i.Token)
+	return i, err
 }
 
 const getPendingPaymentByID = `-- name: GetPendingPaymentByID :one
-SELECT id, user_id, phone, user_first_name, user_last_name, user_email, snapshot_id, rate_qualifier, supplier_code, plan_id, include_erp, selected_addons, driver_title, driver_first_name, driver_last_name, flight_number, status, reservation_id, created_at FROM pending_customer_payments WHERE id = $1 AND status = 'pending'
+SELECT id, token, user_id, snapshot_id, rate_qualifier, supplier_code, plan_id, include_erp, selected_addons, driver_title, driver_first_name, driver_last_name, flight_number, status, reservation_id, created_at FROM pending_customer_payments WHERE id = $1 AND status = 'pending'
 `
 
 func (q *Queries) GetPendingPaymentByID(ctx context.Context, id int64) (PendingCustomerPayment, error) {
@@ -81,11 +76,8 @@ func (q *Queries) GetPendingPaymentByID(ctx context.Context, id int64) (PendingC
 	var i PendingCustomerPayment
 	err := row.Scan(
 		&i.ID,
+		&i.Token,
 		&i.UserID,
-		&i.Phone,
-		&i.UserFirstName,
-		&i.UserLastName,
-		&i.UserEmail,
 		&i.SnapshotID,
 		&i.RateQualifier,
 		&i.SupplierCode,
@@ -101,4 +93,20 @@ func (q *Queries) GetPendingPaymentByID(ctx context.Context, id int64) (PendingC
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const resolvePendingPayment = `-- name: ResolvePendingPayment :exec
+UPDATE pending_customer_payments SET 
+status = 'completed', reservation_id = $2 
+WHERE id = $1 AND status = 'pending'
+`
+
+type ResolvePendingPaymentParams struct {
+	ID            int64
+	ReservationID *int64
+}
+
+func (q *Queries) ResolvePendingPayment(ctx context.Context, arg ResolvePendingPaymentParams) error {
+	_, err := q.db.Exec(ctx, resolvePendingPayment, arg.ID, arg.ReservationID)
+	return err
 }

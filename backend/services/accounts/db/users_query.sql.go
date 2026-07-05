@@ -289,6 +289,60 @@ func (q *Queries) GetAgentsBillingContacts(ctx context.Context, usersIds []int64
 	return items, nil
 }
 
+const getCustomerByPhoneAndEmail = `-- name: GetCustomerByPhoneAndEmail :one
+SELECT
+  id,
+  role,
+  first_name,
+  last_name,
+  email,
+  phone_number,
+  office_id,
+  last_login,
+  created_at,
+  updated_at
+FROM users
+WHERE role = 'customer'
+  AND phone_number = $1
+  AND email = $2
+`
+
+type GetCustomerByPhoneAndEmailParams struct {
+	PhoneNumber *string
+	Email       string
+}
+
+type GetCustomerByPhoneAndEmailRow struct {
+	ID          int64
+	Role        UserRole
+	FirstName   string
+	LastName    string
+	Email       string
+	PhoneNumber *string
+	OfficeID    *int64
+	LastLogin   pgtype.Timestamptz
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
+func (q *Queries) GetCustomerByPhoneAndEmail(ctx context.Context, arg GetCustomerByPhoneAndEmailParams) (GetCustomerByPhoneAndEmailRow, error) {
+	row := q.db.QueryRow(ctx, getCustomerByPhoneAndEmail, arg.PhoneNumber, arg.Email)
+	var i GetCustomerByPhoneAndEmailRow
+	err := row.Scan(
+		&i.ID,
+		&i.Role,
+		&i.FirstName,
+		&i.LastName,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.OfficeID,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT users.id, users.first_name, users.last_name, users.role, users.email, users.phone_number, users.otp, users.office_id, users.password_hash, users.last_login, users.created_at, users.updated_at, organization.id AS organization_id, organization.is_organic
 FROM users

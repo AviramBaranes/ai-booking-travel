@@ -56,7 +56,7 @@ func (s *BookingService) Book(ctx context.Context, p BookParams) (*BookResponse,
 		if errors.Is(err, broker.ErrFlightNumberRequired) {
 			return nil, errFlightNumberRequired
 		}
-		return nil, errBookingFailed
+		return nil, ErrBookingFailed
 	}
 
 	reservationReq := s.buildCreateReservationParams(snapshot, plan, p, confID)
@@ -70,7 +70,7 @@ func (s *BookingService) Book(ctx context.Context, p BookParams) (*BookResponse,
 		}); publishErr != nil {
 			rlog.Error("failed to publish critical error email event", "confirmationNumber", confID, "error", publishErr)
 		}
-		return nil, errReservationCreationFailed
+		return nil, ErrReservationCreationFailed
 	}
 
 	err = s.query.DeleteSnapshotByID(ctx, snapshot.ID)

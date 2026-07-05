@@ -56,11 +56,8 @@ func (ns NullPaymentStatus) Value() (driver.Value, error) {
 
 type PendingCustomerPayment struct {
 	ID              int64
-	UserID          *int64
-	Phone           string
-	UserFirstName   string
-	UserLastName    string
-	UserEmail       string
+	Token           pgtype.UUID
+	UserID          int64
 	SnapshotID      int64
 	RateQualifier   string
 	SupplierCode    string
