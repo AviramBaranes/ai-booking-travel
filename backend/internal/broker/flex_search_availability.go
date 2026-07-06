@@ -237,7 +237,7 @@ func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDet
 	for _, p := range c.Costs {
 		planID, ok := flexProductMap[p.Product]
 		if !ok {
-			planID = 1
+			continue
 		}
 
 		price := parseFloat(p.Price)
