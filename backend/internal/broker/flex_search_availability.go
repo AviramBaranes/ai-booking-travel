@@ -80,7 +80,7 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResp
 			continue
 		}
 
-		plans := f.getPlans(c, dayCount, supplierDetails)
+		plans := f.getPlans(c, dayCount, supplierDetails, p.CountryCode)
 		if len(plans) == 0 {
 			rlog.Warn("no valid plans found for car in CarAvailability response, skipping vehicle", "car_name", c.Name)
 			continue
@@ -231,13 +231,17 @@ func (f *Flex) getInsuranceExtraCost(days int) float64 {
 }
 
 // getPlans returns the list of plans for a given car
-func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDetails) []Plan {
+func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDetails, cc string) []Plan {
 	plans := make([]Plan, 0, len(c.Costs))
 	deposit, depositCurrency := f.getDeposit(c.Information)
 	for _, p := range c.Costs {
-		planID, ok := flexProductMap[p.Product]
-		if !ok {
-			planID = 1
+		planID := 1
+		if cc == "US" || cc == "CA" {
+			id, ok := flexProductMap[p.Product]
+			if !ok {
+				continue
+			}
+			planID = id
 		}
 
 		price := parseFloat(p.Price)
