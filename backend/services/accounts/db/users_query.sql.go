@@ -289,6 +289,32 @@ func (q *Queries) GetAgentsBillingContacts(ctx context.Context, usersIds []int64
 	return items, nil
 }
 
+const getCustomerByID = `-- name: GetCustomerByID :one
+SELECT id, first_name, last_name, role, email, phone_number, otp, office_id, password_hash, last_login, created_at, updated_at FROM users
+WHERE role = 'customer'
+  AND id = $1
+`
+
+func (q *Queries) GetCustomerByID(ctx context.Context, id int64) (User, error) {
+	row := q.db.QueryRow(ctx, getCustomerByID, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Role,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.Otp,
+		&i.OfficeID,
+		&i.PasswordHash,
+		&i.LastLogin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getCustomerByPhoneAndEmail = `-- name: GetCustomerByPhoneAndEmail :one
 SELECT
   id,

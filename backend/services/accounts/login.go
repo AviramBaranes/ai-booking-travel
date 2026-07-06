@@ -43,3 +43,9 @@ func (s *Service) RefreshTokens(ctx context.Context, p auth.RefreshTokensParams)
 	h := auth.NewAuthService(s.query)
 	return h.RefreshTokens(ctx, p)
 }
+
+// encore:api private
+func (s *Service) GetCustomerToken(ctx context.Context, p auth.GetCustomerTokenParams) (*auth.LoginResponse, error) {
+	h := auth.NewAuthService(s.query)
+	return h.GetCustomerToken(ctx, p)
+}

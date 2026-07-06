@@ -68,7 +68,7 @@ func (q *Queries) CreatePendingPayment(ctx context.Context, arg CreatePendingPay
 }
 
 const getPendingPaymentByID = `-- name: GetPendingPaymentByID :one
-SELECT id, token, user_id, snapshot_id, rate_qualifier, supplier_code, plan_id, include_erp, selected_addons, driver_title, driver_first_name, driver_last_name, flight_number, status, reservation_id, created_at FROM pending_customer_payments WHERE id = $1 AND status = 'pending'
+SELECT id, token, user_id, snapshot_id, rate_qualifier, supplier_code, plan_id, include_erp, selected_addons, driver_title, driver_first_name, driver_last_name, flight_number, status, reservation_id, expires_at, created_at FROM pending_customer_payments WHERE id = $1 AND status = 'pending'
 `
 
 func (q *Queries) GetPendingPaymentByID(ctx context.Context, id int64) (PendingCustomerPayment, error) {
@@ -90,9 +90,40 @@ func (q *Queries) GetPendingPaymentByID(ctx context.Context, id int64) (PendingC
 		&i.FlightNumber,
 		&i.Status,
 		&i.ReservationID,
+		&i.ExpiresAt,
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getPendingPaymentByToken = `-- name: GetPendingPaymentByToken :one
+SELECT user_id, reservation_id, status FROM pending_customer_payments 
+WHERE token = $1
+AND expires_at > NOW()
+`
+
+type GetPendingPaymentByTokenRow struct {
+	UserID        int64
+	ReservationID *int64
+	Status        PaymentStatus
+}
+
+func (q *Queries) GetPendingPaymentByToken(ctx context.Context, token pgtype.UUID) (GetPendingPaymentByTokenRow, error) {
+	row := q.db.QueryRow(ctx, getPendingPaymentByToken, token)
+	var i GetPendingPaymentByTokenRow
+	err := row.Scan(&i.UserID, &i.ReservationID, &i.Status)
+	return i, err
+}
+
+const markPendingPaymentAsFailed = `-- name: MarkPendingPaymentAsFailed :exec
+UPDATE pending_customer_payments SET 
+status = 'failed'
+WHERE id = $1
+`
+
+func (q *Queries) MarkPendingPaymentAsFailed(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, markPendingPaymentAsFailed, id)
+	return err
 }
 
 const resolvePendingPayment = `-- name: ResolvePendingPayment :exec

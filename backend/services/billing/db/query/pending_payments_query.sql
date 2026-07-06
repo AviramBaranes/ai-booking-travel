@@ -22,3 +22,13 @@ INSERT INTO pending_customer_payments (
 UPDATE pending_customer_payments SET 
 status = 'completed', reservation_id = $2 
 WHERE id = $1 AND status = 'pending';
+
+-- name: MarkPendingPaymentAsFailed :exec
+UPDATE pending_customer_payments SET 
+status = 'failed'
+WHERE id = $1;
+
+-- name: GetPendingPaymentByToken :one
+SELECT user_id, reservation_id, status FROM pending_customer_payments 
+WHERE token = $1
+AND expires_at > NOW();

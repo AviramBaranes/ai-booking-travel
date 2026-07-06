@@ -182,3 +182,8 @@ FROM users
 WHERE role = 'customer'
   AND phone_number = $1
   AND email = $2;
+
+-- name: GetCustomerByID :one
+SELECT * FROM users
+WHERE role = 'customer'
+  AND id = $1;

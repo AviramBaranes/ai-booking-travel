@@ -190,4 +190,5 @@ type Reservation struct {
 	UpdatedAt               pgtype.Timestamptz
 	PaymentConfirmationCode *string
 	PaymentDocNum           *string
+	InvoiceDocNum           *string
 }

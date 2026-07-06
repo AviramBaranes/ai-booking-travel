@@ -292,6 +292,21 @@ func (mr *MockQuerierMockRecorder) GetAgentsBillingContacts(ctx, usersIds any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAgentsBillingContacts", reflect.TypeOf((*MockQuerier)(nil).GetAgentsBillingContacts), ctx, usersIds)
 }
 
+// GetCustomerByID mocks base method.
+func (m *MockQuerier) GetCustomerByID(ctx context.Context, id int64) (db.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCustomerByID", ctx, id)
+	ret0, _ := ret[0].(db.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCustomerByID indicates an expected call of GetCustomerByID.
+func (mr *MockQuerierMockRecorder) GetCustomerByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCustomerByID", reflect.TypeOf((*MockQuerier)(nil).GetCustomerByID), ctx, id)
+}
+
 // GetCustomerByPhoneAndEmail mocks base method.
 func (m *MockQuerier) GetCustomerByPhoneAndEmail(ctx context.Context, arg db.GetCustomerByPhoneAndEmailParams) (db.GetCustomerByPhoneAndEmailRow, error) {
 	m.ctrl.T.Helper()

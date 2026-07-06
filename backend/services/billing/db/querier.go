@@ -6,11 +6,15 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
 	CreatePendingPayment(ctx context.Context, arg CreatePendingPaymentParams) (CreatePendingPaymentRow, error)
 	GetPendingPaymentByID(ctx context.Context, id int64) (PendingCustomerPayment, error)
+	GetPendingPaymentByToken(ctx context.Context, token pgtype.UUID) (GetPendingPaymentByTokenRow, error)
+	MarkPendingPaymentAsFailed(ctx context.Context, id int64) error
 	ResolvePendingPayment(ctx context.Context, arg ResolvePendingPaymentParams) error
 }
 

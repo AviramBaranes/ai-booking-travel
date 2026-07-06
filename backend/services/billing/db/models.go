@@ -70,5 +70,6 @@ type PendingCustomerPayment struct {
 	FlightNumber    *string
 	Status          PaymentStatus
 	ReservationID   *int64
+	ExpiresAt       pgtype.Timestamptz
 	CreatedAt       pgtype.Timestamptz
 }

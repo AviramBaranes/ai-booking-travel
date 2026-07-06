@@ -68,7 +68,11 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		rlog.Error("failed to book car after payment", "error", err, "pendingPaymentID", pp.ID)
 		sendBookingFailureEmail(ctx, &pp, err)
+		if err := s.query.MarkPendingPaymentAsFailed(ctx, reqData.ID); err != nil {
+			rlog.Error("failed to mark pending payment as failed", "error", err, "pendingPaymentID", reqData.ID)
+		}
 		refundPayment(transaction, "failed to book car after payment")
+		return
 	}
 
 	if err = s.query.ResolvePendingPayment(ctx, db.ResolvePendingPaymentParams{
