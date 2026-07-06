@@ -38,6 +38,7 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 	ic := icount.NewIcount()
 	transaction, err := getTransaction(ic, reqData.confirmationCode)
 	if err != nil {
+		rlog.Error("failed to get transaction from iCount", "error", err, "confirmationCode", reqData.confirmationCode)
 		sendBookingFailureEmail(ctx, &pp, err)
 		http.NotFound(w, r)
 		return
@@ -47,7 +48,6 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 	err = json.Unmarshal(pp.SelectedAddons, &SelectedAddons)
 	if err != nil {
 		rlog.Error("failed to unmarshal selected addons", "error", err, "pendingPaymentID", reqData.ID)
-		sendBookingFailureEmail(ctx, &pp, err) // continue without selected addons
 	}
 
 	resp, err := booking.CustomerBook(ctx, booking_handlers.CustomerBookParams{
@@ -65,6 +65,11 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 		},
 		UserID: pp.UserID,
 	})
+	if err != nil {
+		rlog.Error("failed to book car after payment", "error", err, "pendingPaymentID", pp.ID)
+		sendBookingFailureEmail(ctx, &pp, err)
+		refundPayment(transaction, "failed to book car after payment")
+	}
 
 	if err = s.query.ResolvePendingPayment(ctx, db.ResolvePendingPaymentParams{
 		ID:            pp.ID,
@@ -73,8 +78,6 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 		rlog.Error("failed to resolve pending payment", "error", err, "pendingPaymentID", pp.ID)
 		sendBookingFailureEmail(ctx, &pp, err) // continue without resolving pending payment
 	}
-
-	_ = transaction
 
 	BillingReservation, err := getBillingReservation(ctx, resp.ReservationID, reqData, transaction)
 	if err != nil {
@@ -99,5 +102,18 @@ func sendBookingFailureEmail(ctx context.Context, pp *db.PendingCustomerPayment,
 			pp.UserID, pp.DriverFirstName, pp.DriverLastName, pp.SnapshotID, pp.RateQualifier, pp.SupplierCode, pp.PlanID, err),
 	}); publishErr != nil {
 		rlog.Error("failed to publish critical error email event", "pendingPaymentID", pp.ID, "error", publishErr)
+	}
+}
+
+func refundPayment(t *icount.Transaction, reason string) {
+	ic := icount.NewIcount()
+	_, err := ic.CancelDocument(icount.CancelDocumentParams{
+		DocType:  t.DocType,
+		DocNum:   t.DocNumber,
+		RefundCC: true,
+		Reason:   reason,
+	})
+	if err != nil {
+		rlog.Error("failed to refund payment", "error", err, "docNum", t.DocNumber)
 	}
 }

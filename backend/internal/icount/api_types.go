@@ -170,3 +170,19 @@ func (r *Transaction) ToCCPayment(isCharged bool) *ICountCCPayment {
 		AlreadyCharged:   isCharged,
 	}
 }
+
+// ------- Cancel Document -------
+
+type ICountCancelDocumentRequest struct {
+	DocType  string `json:"doctype"`
+	DocNum   string `json:"docnum"`
+	RefundCC bool   `json:"refund_cc"`
+	Reason   string `json:"reason,omitempty"`
+}
+
+type ICountCancelDocumentResponse struct {
+	Status           bool     `json:"status"`
+	Reason           string   `json:"reason,omitempty"`
+	ErrorDescription string   `json:"error_description,omitempty"`
+	ErrorDetails     []string `json:"error_details,omitempty"`
+}
