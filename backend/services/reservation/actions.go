@@ -35,7 +35,7 @@ func (s *Service) CreateReservation(ctx context.Context, p actions.CreateReserva
 	return s.newActionService().CreateReservation(ctx, p)
 }
 
-// encore:api auth method=POST path=/api/reservation/:id/cancel tag:agent
+// encore:api auth method=POST path=/api/reservation/:id/cancel tag:agent_customer
 func (s *Service) CancelReservation(ctx context.Context, id int64) error {
 	return s.newActionService().CancelReservation(ctx, id)
 }
