@@ -4,6 +4,9 @@ import { revalidateOnGlobalChange } from "../hooks/revalidate";
 export const NotFoundConfig: GlobalConfig = {
   slug: "not-found",
   label: "404 - לא נמצא",
+  access: {
+    read: () => true,
+  },
   hooks: {
     afterChange: [revalidateOnGlobalChange],
   },

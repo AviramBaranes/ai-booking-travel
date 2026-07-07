@@ -3,6 +3,9 @@ import type { GlobalConfig } from "payload";
 export const BookingSettings: GlobalConfig = {
   slug: "booking-settings",
   label: "הגדרות הזמנה",
+  access: {
+    read: () => true,
+  },
   fields: [
     // ── ERP Section ──
     {
