@@ -418,6 +418,28 @@ export namespace billing {
         docNum: string
     }
 
+    export interface GenerateCustomerPaymentIframeParams {
+        phone: string
+        firstName: string
+        lastName: string
+        email: string
+        snapshotId: number
+        rateQualifier: string
+        supplierCode: string
+        planId: string
+        includeERP: boolean
+        selectedAddOns: broker.SelectAddOn[]
+        driverTitle: string
+        driverFirstName: string
+        driverLastName: string
+        flightNumber?: string
+    }
+
+    export interface GenerateCustomerPaymentIframeResponse {
+        url: string
+        pendingPaymentToken: string
+    }
+
     export interface GenerateOrderIframeParams {
         orderId: number
         isIls: boolean
@@ -427,13 +449,22 @@ export namespace billing {
         url: string
     }
 
+    export interface GetPaymentStatusResponse {
+        paymentStatus: string
+        reservationId?: number
+        login?: auth.LoginResponse
+    }
+
     export class ServiceClient {
         private baseClient: BaseClient
 
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
             this.Bill = this.Bill.bind(this)
+            this.CustomerPaymentIPNGateway = this.CustomerPaymentIPNGateway.bind(this)
+            this.GenerateCustomerPaymentIframe = this.GenerateCustomerPaymentIframe.bind(this)
             this.GenerateOrderIframe = this.GenerateOrderIframe.bind(this)
+            this.GetPaymentStatus = this.GetPaymentStatus.bind(this)
             this.OrderPaymentIPNGateway = this.OrderPaymentIPNGateway.bind(this)
             this.SuccessPaymentGateway = this.SuccessPaymentGateway.bind(this)
         }
@@ -444,6 +475,23 @@ export namespace billing {
             return await resp.json() as BillResponse
         }
 
+        public async CustomerPaymentIPNGateway(method: "POST", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
+            return this.baseClient.callAPI(method, `/customer-payment-ipn-gateway`, body, options)
+        }
+
+        /**
+         * GenerateCustomerPaymentIframe creates a pending payment record and returns an iCount iframe URL for the customer to complete payment.
+         * Pricing and booking details are derived server-side from the snapshot.
+         * If the request is authenticated as a customer, the user ID is stored on the pending record.
+         * Requests authenticated under any other role are rejected.
+         * Unauthenticated requests proceed without a user ID (guest checkout).
+         */
+        public async GenerateCustomerPaymentIframe(params: GenerateCustomerPaymentIframeParams): Promise<GenerateCustomerPaymentIframeResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/billing/generate-customer-payment-iframe`, JSON.stringify(params))
+            return await resp.json() as GenerateCustomerPaymentIframeResponse
+        }
+
         /**
          * GenerateOrderIframe generates an iframe for the order page. It returns the URL of the iframe and an error if any occurs.
          * It should be used for agents that can't voucher an order because of a finished obligo.
@@ -452,6 +500,12 @@ export namespace billing {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/billing/generate-order-iframe`, JSON.stringify(params))
             return await resp.json() as GenerateOrderIframeResponse
+        }
+
+        public async GetPaymentStatus(token: string): Promise<GetPaymentStatusResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/billing/customer-payment-status/${encodeURIComponent(token)}`)
+            return await resp.json() as GetPaymentStatusResponse
         }
 
         public async OrderPaymentIPNGateway(method: "POST", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {

@@ -128,6 +128,20 @@ export const authOptions: NextAuthOptions = {
         return null;
       },
     }),
+    CredentialsProvider({
+      id: "customer-login-after-payment",
+      name: "Customer Login After Payment",
+      type: "credentials",
+      credentials: {
+        login: { type: "object" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.login) return null;
+        const user = JSON.parse(credentials.login) as auth.LoginResponse;
+
+        return { ...user, id: String(user.id) };
+      },
+    }),
   ],
   callbacks: {
     async jwt({ token, user, trigger }) {

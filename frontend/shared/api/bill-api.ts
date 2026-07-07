@@ -33,3 +33,15 @@ export function getOrderPaymentIframe(reservationId: number, isIls: boolean) {
     }),
   );
 }
+
+export function getCustomerPaymentIframe(
+  p: billing.GenerateCustomerPaymentIframeParams,
+) {
+  return withErrorHandler((client) =>
+    client.billing.GenerateCustomerPaymentIframe(p),
+  );
+}
+
+export function getCustomerPaymentStatus(token: string) {
+  return withErrorHandler((client) => client.billing.GetPaymentStatus(token));
+}

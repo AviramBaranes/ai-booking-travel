@@ -21,12 +21,15 @@ import { ErpDialog } from "./ErpDialog";
 import { FeesNote } from "./FeesNote";
 import { PriceOfferDialog } from "./PriceOfferDialog";
 import { useSearchRequest } from "../../_hooks/useSearchRequest";
+import { useSession } from "next-auth/react";
 
 export function PlansPageContent() {
   const t = useTranslations("booking.plansPage");
   const { lang } = useParams();
   const router = useRouter();
   const currentSearchParams = useSearchParams();
+  const { data: session } = useSession();
+  const isAgent = session?.user?.role === "agent";
 
   const selectedPlan = useBookingSessionStore((s) => s.selectedPlanIndex);
   const isErpSelected = useBookingSessionStore((s) => s.isErpSelected);
@@ -55,7 +58,7 @@ export function PlansPageContent() {
     const selectedPlanInclusions = supplier?.inclusions.find(
       (inc) => inc.productName === selectedPlanName,
     )?.productInclusions;
-    
+
     return {
       planInclusions: selectedPlanInclusions ?? [],
       addOns: supplier?.addOns ?? [],
@@ -162,15 +165,17 @@ export function PlansPageContent() {
             >
               {t("continueCta")}
             </Button>
-            <Button
-              variant="brand"
-              className="type-paragraph font-bold py-6 px-8 cursor-pointer bg-navy"
-              onClick={() => {
-                setIsPriceOfferDialogOpen(true);
-              }}
-            >
-              {t("createPriceOffer")}
-            </Button>
+            {isAgent && (
+              <Button
+                variant="brand"
+                className="type-paragraph font-bold py-6 px-8 cursor-pointer bg-navy"
+                onClick={() => {
+                  setIsPriceOfferDialogOpen(true);
+                }}
+              >
+                {t("createPriceOffer")}
+              </Button>
+            )}
           </>
         </SelectedCarCard>
       </div>
@@ -186,11 +191,13 @@ export function PlansPageContent() {
         erpPrice={vehicle.plans[selectedPlan].erpPrice}
         erpPriceCurrency={vehicle.priceDetails.currency}
       />
-      <PriceOfferDialog
-        open={isPriceOfferDialogOpen}
-        onOpenChange={setIsPriceOfferDialogOpen}
-        searchRequest={searchRequest}
-      />
+      {isAgent && (
+        <PriceOfferDialog
+          open={isPriceOfferDialogOpen}
+          onOpenChange={setIsPriceOfferDialogOpen}
+          searchRequest={searchRequest}
+        />
+      )}
     </div>
   );
 }
