@@ -39,11 +39,9 @@ func (s *BookingService) CustomerBook(ctx context.Context, p CustomerBookParams)
 	}
 
 	reservationReq := s.buildCreateCustomerReservationParams(snapshot, plan, p, confID)
-	res, err := reservation.CreateReservation(ctx, reservationReq)
+	rID, err := s.createReservation(ctx, reservationReq)
 	if err != nil {
-		rlog.Error("failed to create reservation after successful booking",
-			"confirmationNumber", confID, "error", err)
-		return nil, ErrReservationCreationFailed
+		return nil, err
 	}
 
 	err = s.query.DeleteSnapshotByID(ctx, snapshot.ID)
@@ -51,7 +49,7 @@ func (s *BookingService) CustomerBook(ctx context.Context, p CustomerBookParams)
 		rlog.Error("failed to delete snapshot after successful booking", "snapshotID", snapshot.ID, "error", err)
 	}
 
-	return &BookResponse{ReservationID: res.ID}, nil
+	return &BookResponse{ReservationID: rID}, nil
 }
 
 func (s *BookingService) buildCreateCustomerReservationParams(

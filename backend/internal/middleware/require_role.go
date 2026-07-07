@@ -50,3 +50,9 @@ func RequireCustomerMiddleware(req middleware.Request, next middleware.Next) mid
 func RequireAccountantMiddleware(req middleware.Request, next middleware.Next) middleware.Response {
 	return RequireRoleMiddleware([]a.UserRole{a.UserRoleAccountant, a.UserRoleAdmin}, req, next)
 }
+
+// RequireAgentOrCustomerMiddleware allows both agents and customers
+// encore:middleware global target=tag:agent_customer
+func RequireAgentOrCustomerMiddleware(req middleware.Request, next middleware.Next) middleware.Response {
+	return RequireRoleMiddleware([]a.UserRole{a.UserRoleAgent, a.UserRoleCustomer}, req, next)
+}

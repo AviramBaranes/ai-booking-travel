@@ -16,6 +16,7 @@ import (
 	availability "encore.app/services/booking/handlers/availability"
 	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation"
+	"encore.app/services/reservation/handlers/actions"
 	"encore.dev/rlog"
 )
 
@@ -60,17 +61,9 @@ func (s *BookingService) Book(ctx context.Context, p BookParams) (*BookResponse,
 	}
 
 	reservationReq := s.buildCreateReservationParams(snapshot, plan, p, confID)
-	res, err := reservation.CreateReservation(ctx, reservationReq)
+	rID, err := s.createReservation(ctx, reservationReq)
 	if err != nil {
-		rlog.Error("failed to create reservation after successful booking",
-			"confirmationNumber", confID, "error", err)
-		if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
-			Subject: "Reservation creation failed after successful booking",
-			Message: fmt.Sprintf("failed to create reservation after successful booking, confirmationNumber: %s, error: %v", confID, err),
-		}); publishErr != nil {
-			rlog.Error("failed to publish critical error email event", "confirmationNumber", confID, "error", publishErr)
-		}
-		return nil, ErrReservationCreationFailed
+		return nil, err
 	}
 
 	err = s.query.DeleteSnapshotByID(ctx, snapshot.ID)
@@ -78,7 +71,7 @@ func (s *BookingService) Book(ctx context.Context, p BookParams) (*BookResponse,
 		rlog.Error("failed to delete snapshot after successful booking", "snapshotID", snapshot.ID, "error", err)
 	}
 
-	return &BookResponse{ReservationID: res.ID}, nil
+	return &BookResponse{ReservationID: rID}, nil
 }
 
 func (s *BookingService) buildCreateReservationParams(
@@ -278,4 +271,24 @@ func GetPayAtPickup(selectedAddOnsReq []broker.SelectAddOn, plan availability.Pl
 
 	pap.SelectedAddons = selectedAddOns
 	return pap
+}
+
+func (s *BookingService) createReservation(
+	ctx context.Context,
+	reservationReq actions.CreateReservationParams,
+) (int64, error) {
+	res, err := reservation.CreateReservation(ctx, reservationReq)
+	if err != nil {
+		rlog.Error("failed to create reservation after successful booking",
+			"confirmationNumber", reservationReq.BrokerReservationID, "error", err)
+		if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
+			Subject: "Reservation creation failed after successful booking",
+			Message: fmt.Sprintf("failed to create reservation after successful booking, confirmationNumber: %s, error: %v", reservationReq.BrokerReservationID, err),
+		}); publishErr != nil {
+			rlog.Error("failed to publish critical error email event", "confirmationNumber", reservationReq.BrokerReservationID, "error", publishErr)
+		}
+		return 0, ErrReservationCreationFailed
+	}
+
+	return res.ID, nil
 }

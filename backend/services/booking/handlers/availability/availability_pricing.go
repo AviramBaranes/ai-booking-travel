@@ -97,6 +97,10 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				}
 				currenciesMap[v.PriceDetails.Currency] = cr
 			}
+			if cr <= 0 {
+				rlog.Warn("calculated currency rate is less than or equal to 0, skipping plan", "currency", v.PriceDetails.Currency)
+				continue
+			}
 
 			brokerLoc, ok := locs[v.Broker]
 			if !ok {

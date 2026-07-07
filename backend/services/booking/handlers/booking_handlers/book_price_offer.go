@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -14,7 +13,6 @@ import (
 	"encore.app/internal/validation"
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
-	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation"
 	"encore.dev/rlog"
 )
@@ -49,22 +47,14 @@ func (s *BookingService) BookPriceOffer(ctx context.Context, p BookPriceOfferPar
 		return nil, err
 	}
 
-	reservation, err := reservation.CreateReservation(ctx, reservationReq)
+	rID, err := s.createReservation(ctx, reservationReq)
 	if err != nil {
-		rlog.Error("failed to create reservation after successful booking",
-			"confirmationNumber", bookingRes.ConfirmationNumber, "error", err)
-		if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
-			Subject: "Reservation creation failed after successful booking",
-			Message: fmt.Sprintf("failed to create reservation after successful booking, confirmationNumber: %s, error: %v", bookingRes.ConfirmationNumber, err),
-		}); publishErr != nil {
-			rlog.Error("failed to publish critical error email event", "confirmationNumber", bookingRes.ConfirmationNumber, "error", publishErr)
-		}
-		return nil, ErrReservationCreationFailed
+		return nil, err
 	}
 
-	s.markPriceOfferBooked(ctx, p.PriceOfferID, reservation.ID, authData.UserID)
+	s.markPriceOfferBooked(ctx, p.PriceOfferID, rID, authData.UserID)
 
-	return &BookResponse{ReservationID: reservation.ID}, nil
+	return &BookResponse{ReservationID: rID}, nil
 }
 
 func (s *BookingService) getBookablePriceOffer(ctx context.Context, priceOfferID int64, agentID int64) (db.GetPriceOfferByIdRow, error) {

@@ -104,9 +104,9 @@ func (s *UserService) createCustomer(ctx context.Context, p GetOrCreateCustomerP
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 			switch pgErr.ConstraintName {
-			case "customers_email_key":
+			case "users_email_key":
 				return 0, ErrEmailAlreadyExists
-			case "customers_phone_number_key":
+			case "users_phone_number_key":
 				return 0, ErrPhoneAlreadyExists
 			default:
 				rlog.Error("failed to create customer due to unique constraint violation", "error", err, "constraint", pgErr.ConstraintName)

@@ -14,6 +14,7 @@ import (
 
 type GetPaymentStatusResponse struct {
 	PaymentStatus string              `json:"paymentStatus"`
+	ReservationID *int64              `json:"reservationId,omitempty" encore:"optional"`
 	Login         *auth.LoginResponse `json:"login,omitempty" encore:"optional"`
 }
 
@@ -28,16 +29,17 @@ func (s *Service) GetPaymentStatus(ctx context.Context, token string) (*GetPayme
 		return nil, api_errors.ErrInternalError
 	}
 
-	if pp.Status == db.PaymentStatusCompleted {
+	if pp.Status == db.PaymentStatusCompleted || pp.Status == db.PaymentStatusFailed {
 		customerLogin, err := accounts.GetCustomerToken(ctx, auth.GetCustomerTokenParams{
 			UserID: pp.UserID,
 		})
 		if err != nil {
-			rlog.Error("failed to get customer token after payment completed", "error", err, "userID", pp.UserID)
+			rlog.Error("failed to get customer token after payment completed or failed", "error", err, "userID", pp.UserID)
 			return nil, api_errors.ErrInternalError
 		}
 		return &GetPaymentStatusResponse{
 			PaymentStatus: string(pp.Status),
+			ReservationID: pp.ReservationID,
 			Login:         customerLogin,
 		}, nil
 	}

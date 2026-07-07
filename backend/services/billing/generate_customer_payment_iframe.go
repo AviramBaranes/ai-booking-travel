@@ -22,8 +22,8 @@ import (
 
 type GenerateCustomerPaymentIframeParams struct {
 	Phone           string               `json:"phone" validate:"required,israeli_phone"`
-	FirstName       string               `json:"firstName" validate:"required,notblank"`
-	LastName        string               `json:"lastName" validate:"required,notblank"`
+	FirstName       string               `json:"firstName" validate:"required,notblank,alphaunicode"`
+	LastName        string               `json:"lastName" validate:"required,notblank,alphaunicode"`
 	Email           string               `json:"email" validate:"required,email"`
 	SnapshotID      int64                `json:"snapshotId" validate:"required"`
 	RateQualifier   string               `json:"rateQualifier" validate:"required"`
@@ -101,6 +101,7 @@ func (s *Service) GenerateCustomerPaymentIframe(ctx context.Context, p GenerateC
 	}
 
 	baseURL := encore.Meta().APIBaseURL.String()
+	baseURL = "https://6f76-46-116-122-75.ngrok-free.app"
 	langCode := lang.FromContext(ctx, "he")
 
 	ic := icount.NewIcount()

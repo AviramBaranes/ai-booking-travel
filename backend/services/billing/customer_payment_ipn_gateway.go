@@ -39,6 +39,7 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 	transaction, err := getTransaction(ic, reqData.confirmationCode)
 	if err != nil {
 		rlog.Error("failed to get transaction from iCount", "error", err, "confirmationCode", reqData.confirmationCode)
+		s.markPaymentFail(ctx, reqData.ID)
 		sendBookingFailureEmail(ctx, &pp, err)
 		http.NotFound(w, r)
 		return
@@ -68,9 +69,7 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		rlog.Error("failed to book car after payment", "error", err, "pendingPaymentID", pp.ID)
 		sendBookingFailureEmail(ctx, &pp, err)
-		if err := s.query.MarkPendingPaymentAsFailed(ctx, reqData.ID); err != nil {
-			rlog.Error("failed to mark pending payment as failed", "error", err, "pendingPaymentID", reqData.ID)
-		}
+		s.markPaymentFail(ctx, reqData.ID)
 		refundPayment(transaction, "failed to book car after payment")
 		return
 	}
@@ -119,5 +118,11 @@ func refundPayment(t *icount.Transaction, reason string) {
 	})
 	if err != nil {
 		rlog.Error("failed to refund payment", "error", err, "docNum", t.DocNumber)
+	}
+}
+
+func (s *Service) markPaymentFail(ctx context.Context, id int64) {
+	if err := s.query.MarkPendingPaymentAsFailed(ctx, id); err != nil {
+		rlog.Error("failed to mark pending payment as failed", "error", err, "pendingPaymentID", id)
 	}
 }
