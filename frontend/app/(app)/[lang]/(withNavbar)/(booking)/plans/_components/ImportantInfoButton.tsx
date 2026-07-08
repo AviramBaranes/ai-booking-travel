@@ -1,11 +1,10 @@
 import { useState, Fragment } from "react";
 import { useTranslations } from "next-intl";
+import DOMPurify from "isomorphic-dompurify";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { availability, broker } from "@/shared/client";
-import { formatPrice } from "@/shared/utils/formatPrice";
 import { X, Info, MapPin, Phone, Clock } from "lucide-react";
-import { RentalPriceForDays } from "@/shared/components/booking/RentalPriceForDays";
 
 interface ImportantInfoButtonProps {
   plans: availability.Plan[];
@@ -104,7 +103,7 @@ export function ImportantInfoButton({
                       <h6 className="type-h6 text-navy">{title}</h6>
                       <div
                         className="type-paragraph text-navy"
-                        dangerouslySetInnerHTML={{ __html: htmlContent }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(htmlContent) }}
                       />
                     </div>
                   ),
@@ -156,7 +155,7 @@ function StationInfoTab({ stationInfo }: { stationInfo: broker.StationInfo }) {
             <span
               dir="ltr"
               className="type-paragraph text-navy text-left"
-              dangerouslySetInnerHTML={{ __html: locationInfo }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(locationInfo) }}
             />
           </div>
         </div>
