@@ -56,7 +56,7 @@ export function ReservationPaymentDialog({
     <>
       {/* <Popover> */}
       {/* <PopoverTrigger asChild> */}
-      {reservation.reservationStatus === "booked" &&
+      {reservation?.reservationStatus === "booked" &&
         reservation.paymentStatus === "unpaid" && (
           <Button
             disabled={isPaymentDisabled}

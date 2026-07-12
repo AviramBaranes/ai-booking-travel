@@ -46,11 +46,11 @@ func (s *AuthService) LoginAsAgent(ctx context.Context, params LoginAsAgentParam
 		FirstName:            agent.FirstName,
 		LastName:             agent.LastName,
 		AccessToken:          tokens.AccessToken,
-		RefreshToken:         tokens.RefreshToken,
 		AccessTokenExpiresAt: tokens.AccessTokenExpiresAt,
 		Email:                agent.Email,
 		PhoneNumber:          ptrToStr(agent.PhoneNumber),
 		OfficeID:             agent.OfficeID,
+		SetCookies:           authCookies(tokens.RefreshToken),
 	}, nil
 }
 

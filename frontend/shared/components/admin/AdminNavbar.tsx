@@ -9,9 +9,9 @@ import clsx from "clsx";
 import { FileText, LayoutDashboard, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
 import Image from "next/image";
-import { RevalidateButton } from "./RevalidateButton";
+import useAuthStore from "@/shared/auth/authStore";
+import { logout } from "@/shared/api/accounts-api";
 
 export default function AdminNavbar({
   hideLinks = false,
@@ -19,9 +19,20 @@ export default function AdminNavbar({
   hideLinks?: boolean;
 }) {
   const pathname = usePathname();
+  const store = useAuthStore();
 
   const isHeaderActive = (href: string) =>
     pathname === href || pathname.startsWith(href);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+    store.logout();
+    window.location.href = "/he/";
+  };
 
   return (
     <header className="h-[56px] shrink-0 bg-white border-b border-gray-200 flex items-center justify-between px-[24px] shadow-sm text-[20px] m-0">
@@ -79,9 +90,8 @@ export default function AdminNavbar({
           })}
       </div>
       <div className="flex items-center gap-[12px]">
-        <RevalidateButton />
         <button
-          onClick={() => signOut({ callbackUrl: "/he/" })}
+          onClick={handleLogout}
           style={{ boxSizing: "border-box" }}
           className="appearance-none bg-transparent border-none p-0 m-0 flex items-center gap-[8px] text-[14px] text-gray-600 hover:text-red-600 transition-colors cursor-pointer"
         >

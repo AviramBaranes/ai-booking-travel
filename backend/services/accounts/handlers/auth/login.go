@@ -61,10 +61,10 @@ func (s *AuthService) Login(ctx context.Context, p LoginParams) (*LoginResponse,
 		FirstName:            user.FirstName,
 		LastName:             user.LastName,
 		AccessToken:          tokens.AccessToken,
-		RefreshToken:         tokens.RefreshToken,
 		AccessTokenExpiresAt: tokens.AccessTokenExpiresAt,
 		Email:                user.Email,
 		PhoneNumber:          ptrToStr(user.PhoneNumber),
 		OfficeID:             user.OfficeID,
+		SetCookies:           authCookies(tokens.RefreshToken),
 	}, nil
 }

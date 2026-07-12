@@ -138,9 +138,11 @@ export namespace accounts {
             this.Login = this.Login.bind(this)
             this.LoginAsAgent = this.LoginAsAgent.bind(this)
             this.LoginBackToAdmin = this.LoginBackToAdmin.bind(this)
+            this.Logout = this.Logout.bind(this)
             this.RefreshTokens = this.RefreshTokens.bind(this)
             this.RequestPasswordReset = this.RequestPasswordReset.bind(this)
             this.ResetPassword = this.ResetPassword.bind(this)
+            this.ResolveSession = this.ResolveSession.bind(this)
             this.SendCustomerLoginOTP = this.SendCustomerLoginOTP.bind(this)
             this.TempCustomerTagUsage = this.TempCustomerTagUsage.bind(this)
             this.UpdateContact = this.UpdateContact.bind(this)
@@ -316,30 +318,66 @@ export namespace accounts {
         public async Login(params: auth.LoginParams): Promise<auth.LoginResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/login`, JSON.stringify(params))
-            return await resp.json() as auth.LoginResponse
+
+            //Populate the return object from the JSON body and received headers
+            const rtn = await resp.json() as auth.LoginResponse
+            if (!BROWSER) {
+                rtn.SetCookies = resp.headers.getSetCookie()
+            }
+            return rtn
         }
 
         public async LoginAsAgent(params: auth.LoginAsAgentParams): Promise<auth.LoginResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/login/as-agent`, JSON.stringify(params))
-            return await resp.json() as auth.LoginResponse
+
+            //Populate the return object from the JSON body and received headers
+            const rtn = await resp.json() as auth.LoginResponse
+            if (!BROWSER) {
+                rtn.SetCookies = resp.headers.getSetCookie()
+            }
+            return rtn
         }
 
         public async LoginBackToAdmin(): Promise<auth.LoginResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/login/back-to-admin`)
-            return await resp.json() as auth.LoginResponse
+
+            //Populate the return object from the JSON body and received headers
+            const rtn = await resp.json() as auth.LoginResponse
+            if (!BROWSER) {
+                rtn.SetCookies = resp.headers.getSetCookie()
+            }
+            return rtn
+        }
+
+        public async Logout(): Promise<auth.LogoutResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/logout`)
+
+            //Populate the return object from the JSON body and received headers
+            const rtn = await resp.json() as auth.LogoutResponse
+            if (!BROWSER) {
+                rtn.SetCookies = resp.headers.getSetCookie()
+            }
+            return rtn
         }
 
         public async RefreshTokens(params: auth.RefreshTokensParams): Promise<auth.LoginResponse> {
             // Convert our params into the objects we need for the request
             const headers = makeRecord<string, string>({
-                authorization: params.RefreshToken,
+                cookie: params.CookieHeader,
             })
 
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/refresh`, undefined, {headers})
-            return await resp.json() as auth.LoginResponse
+
+            //Populate the return object from the JSON body and received headers
+            const rtn = await resp.json() as auth.LoginResponse
+            if (!BROWSER) {
+                rtn.SetCookies = resp.headers.getSetCookie()
+            }
+            return rtn
         }
 
         public async RequestPasswordReset(params: auth.SendPasswordResetTokenParams): Promise<void> {
@@ -348,6 +386,17 @@ export namespace accounts {
 
         public async ResetPassword(params: auth.ResetPasswordParams): Promise<void> {
             await this.baseClient.callTypedAPI("POST", `/reset-password`, JSON.stringify(params))
+        }
+
+        public async ResolveSession(params: auth.ResolveSessionParams): Promise<auth.SessionUser> {
+            // Convert our params into the objects we need for the request
+            const headers = makeRecord<string, string>({
+                cookie: params.CookieHeader,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/auth/session`, undefined, {headers})
+            return await resp.json() as auth.SessionUser
         }
 
         public async SendCustomerLoginOTP(params: auth.SendCustomerLoginOTPParams): Promise<void> {
@@ -399,7 +448,13 @@ export namespace accounts {
         public async ValidateCustomerLoginOTP(params: auth.ValidateCustomerLoginOTPParams): Promise<auth.LoginResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/customer-login/validate-otp`, JSON.stringify(params))
-            return await resp.json() as auth.LoginResponse
+
+            //Populate the return object from the JSON body and received headers
+            const rtn = await resp.json() as auth.LoginResponse
+            if (!BROWSER) {
+                rtn.SetCookies = resp.headers.getSetCookie()
+            }
+            return rtn
         }
     }
 }
@@ -1118,6 +1173,8 @@ export namespace auth {
 
     /**
      * LoginResponse is the shared response type for all login/refresh endpoints.
+     * The refresh token is never serialized in the JSON body; it is delivered as an
+     * httpOnly cookie via the SetCookies field (Set-Cookie header).
      */
     export interface LoginResponse {
         id: number
@@ -1131,16 +1188,28 @@ export namespace auth {
          */
         accessTokenExpiresAt: number
 
-        refreshToken: string
         phoneNumber: string
         officeId: number
+        /**
+         * SetCookies carries the httpOnly refresh token and session hint cookies.
+         */
+        SetCookies: string[]
+
+        isAdminAsAgent?: boolean
+    }
+
+    /**
+     * LogoutResponse clears the auth cookies via the Set-Cookie header.
+     */
+    export interface LogoutResponse {
+        SetCookies: string[]
     }
 
     /**
      * RefreshTokensParams defines the parameters required for refreshing tokens.
      */
     export interface RefreshTokensParams {
-        RefreshToken: string
+        CookieHeader: string
     }
 
     /**
@@ -1152,6 +1221,13 @@ export namespace auth {
     }
 
     /**
+     * ResolveSessionParams carries the raw Cookie header holding the refresh token.
+     */
+    export interface ResolveSessionParams {
+        CookieHeader: string
+    }
+
+    /**
      * SendCustomerLoginOTPParams defines the parameters required to send a login OTP to a customer.
      */
     export interface SendCustomerLoginOTPParams {
@@ -1160,6 +1236,17 @@ export namespace auth {
 
     export interface SendPasswordResetTokenParams {
         email: string
+    }
+
+    /**
+     * SessionUser is the read-only identity resolved from a refresh token.
+     */
+    export interface SessionUser {
+        id: number
+        email: string
+        firstName: string
+        lastName: string
+        role: db.UserRole
     }
 
     /**
@@ -2443,6 +2530,21 @@ function makeRecord<K extends string | number | symbol, V>(record: Record<K, V |
         }
     }
     return record as Record<K, V>
+}
+
+
+// mustBeSet will throw an APIError with the Data Loss code if value is null or undefined
+function mustBeSet<A>(field: string, value: A | null | undefined): A {
+    if (value === null || value === undefined) {
+        throw new APIError(
+            500,
+            {
+                code: ErrCode.DataLoss,
+                message: `${field} was unexpectedly ${value}`, // ${value} will create the string "null" or "undefined"
+            },
+        )
+    }
+    return value
 }
 
 function encodeWebSocketHeaders(headers: Record<string, string>) {

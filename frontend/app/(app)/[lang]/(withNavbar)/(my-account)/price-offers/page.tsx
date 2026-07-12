@@ -1,21 +1,13 @@
 import { getTranslations } from "next-intl/server";
-import { Suspense } from "react";
 import { NewOrderButton } from "../_components/NewOrderButton";
 import { PriceOfferResultsCounter } from "./_components/PriceOfferResultsCounter";
 import { PriceOffersGrid } from "./_components/PriceOffersGrid";
-import { AccountGridSkeleton } from "../_components/AccountGridSkeleton";
 import { ClearFilterRow } from "./_components/filters/ClearFilterRow";
 import { FilterForm } from "./_components/filters/FilterForm";
 import { PriceOfferPaginationButtons } from "./_components/filters/PriceOfferPaginationButtons";
 
-export default async function PriceOffersPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string>>;
-}) {
+export default async function PriceOffersPage() {
   const t = await getTranslations("MyAccount.priceOffers");
-  const resolvedParams = await searchParams;
-  const suspenseKey = new URLSearchParams(resolvedParams).toString();
 
   return (
     <main className="w-2/3 mx-auto pt-15 pb-6">
@@ -24,28 +16,9 @@ export default async function PriceOffersPage({
         <h5 className="type-h5 text-navy">{t("title")}</h5>
         <FilterForm />
         <ClearFilterRow />
-        <Suspense
-          key={`counter-${suspenseKey}`}
-          fallback={
-            <p className="text-xs text-text-secondary">
-              {t("showingXResults", {
-                count: "X",
-                total: "X",
-              })}
-            </p>
-          }
-        >
-          <PriceOfferResultsCounter />
-        </Suspense>
-        <Suspense
-          key={`grid-${suspenseKey}`}
-          fallback={<AccountGridSkeleton />}
-        >
-          <PriceOffersGrid />
-        </Suspense>
-        <Suspense key={`pagination-${suspenseKey}`}>
-          <PriceOfferPaginationButtons />
-        </Suspense>
+        <PriceOfferResultsCounter />
+        <PriceOffersGrid />
+        <PriceOfferPaginationButtons />
       </div>
       <div className="mb-15" />
     </main>

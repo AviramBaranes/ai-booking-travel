@@ -2,6 +2,7 @@ package accounts
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"testing"
 	"time"
@@ -23,7 +24,7 @@ func TestRefreshTokens(t *testing.T) {
 	t.Run("Invalid refresh token", func(t *testing.T) {
 		cases := []string{"", "invalid.token", "invalid"}
 		for _, tok := range cases {
-			_, err := RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: tok})
+			_, err := RefreshTokens(ctx, refreshParams(tok))
 			api_errors.AssertApiError(t, ah.ErrInvalidRefreshToken, err)
 		}
 	})
@@ -34,7 +35,7 @@ func TestRefreshTokens(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to sign refresh token: %v", err)
 		}
-		_, err = RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
+		_, err = RefreshTokens(ctx, refreshParams(token))
 		api_errors.AssertApiError(t, ah.ErrInvalidRefreshToken, err)
 	})
 
@@ -64,7 +65,7 @@ func TestRefreshTokens(t *testing.T) {
 
 		defer query.DeleteRefreshToken(ctx, jti)
 
-		_, err = RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
+		_, err = RefreshTokens(ctx, refreshParams(token))
 		api_errors.AssertApiError(t, ah.ErrExpiredRefreshToken, err)
 	})
 
@@ -104,7 +105,7 @@ func TestRefreshTokens(t *testing.T) {
 			Return(db.GetUserByIdRow{}, db.ErrNoRows)
 
 		s := &Service{query: q}
-		_, err = s.RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: token})
+		_, err = s.RefreshTokens(ctx, refreshParams(token))
 		// The code returns ah.ErrInvalidRefreshToken if user not found (ErrNoRows)
 		api_errors.AssertApiError(t, ah.ErrInvalidRefreshToken, err)
 	})
@@ -121,19 +122,20 @@ func TestRefreshTokens(t *testing.T) {
 			t.Fatalf("failed to login: %v", err)
 		}
 
-		origClaims, err := jwt.ValidateRefreshToken(loginResp.RefreshToken)
+		origClaims, err := jwt.ValidateRefreshToken(refreshCookieToken(t, loginResp))
 		if err != nil {
 			t.Fatalf("failed to validate login refresh token: %v", err)
 		}
 
-		resp, err := RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: loginResp.RefreshToken})
+		resp, err := RefreshTokens(ctx, refreshParams(refreshCookieToken(t, loginResp)))
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 		if resp.AccessToken == "" {
 			t.Fatal("expected access token, got empty string")
 		}
-		if resp.RefreshToken == "" {
+		newRefreshToken := refreshCookieToken(t, resp)
+		if newRefreshToken == "" {
 			t.Fatal("expected refresh token, got empty string")
 		}
 
@@ -156,7 +158,7 @@ func TestRefreshTokens(t *testing.T) {
 			t.Error("access token already expired")
 		}
 
-		refreshClaims, err := jwt.ValidateRefreshToken(resp.RefreshToken)
+		refreshClaims, err := jwt.ValidateRefreshToken(newRefreshToken)
 		if err != nil {
 			t.Fatalf("failed to validate new refresh token: %v", err)
 		}
@@ -165,9 +167,9 @@ func TestRefreshTokens(t *testing.T) {
 			t.Error("refresh token already expired")
 		}
 
-		// Verify old refresh token is NOT deleted
-		if _, err := query.GetRefreshToken(ctx, origClaims.ID); err != nil {
-			t.Error("old refresh token deleted")
+		// Refresh tokens are single-use: the old jti must be consumed (rotated out).
+		if _, err := query.GetRefreshToken(ctx, origClaims.ID); !errors.Is(err, db.ErrNoRows) {
+			t.Errorf("expected old refresh token to be rotated out (deleted), got err=%v", err)
 		}
 
 		// Verify new refresh token is in DB
@@ -215,7 +217,7 @@ func TestRefreshTokens(t *testing.T) {
 		}
 
 		// Refresh the tokens
-		refreshResp, err := RefreshTokens(ctx, ah.RefreshTokensParams{RefreshToken: loginResp.RefreshToken})
+		refreshResp, err := RefreshTokens(ctx, refreshParams(refreshCookieToken(t, loginResp)))
 		if err != nil {
 			t.Fatalf("expected no error on refresh, got %v", err)
 		}
@@ -233,7 +235,7 @@ func TestRefreshTokens(t *testing.T) {
 		}
 
 		// Verify new refresh token row also has admin ref
-		refreshClaims, err := jwt.ValidateRefreshToken(refreshResp.RefreshToken)
+		refreshClaims, err := jwt.ValidateRefreshToken(refreshCookieToken(t, refreshResp))
 		if err != nil {
 			t.Fatalf("failed to validate refreshed refresh token: %v", err)
 		}

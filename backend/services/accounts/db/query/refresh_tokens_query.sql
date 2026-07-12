@@ -8,5 +8,8 @@ VALUES ($1, $2, $3, $4);
 -- name: DeleteRefreshToken :exec
 DELETE FROM refresh_tokens WHERE jti = $1;
 
+-- name: DeleteRefreshTokenChecked :execrows
+DELETE FROM refresh_tokens WHERE jti = $1;
+
 -- name: DeleteRefreshTokensByUserId :exec
 DELETE FROM refresh_tokens WHERE user_id = $1;

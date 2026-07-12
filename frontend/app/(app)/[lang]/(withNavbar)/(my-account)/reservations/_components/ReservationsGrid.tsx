@@ -4,18 +4,26 @@ import { useTranslations } from "next-intl";
 import { useReservationFilters } from "../_hooks/useReservationFilters";
 import { useReservations } from "../_hooks/useReservations";
 import { ReservationCard } from "./ReservationCard";
+import { AccountGridSkeleton } from "../../_components/AccountGridSkeleton";
 
 export function ReservationsGrid() {
   const t = useTranslations("MyAccount.reservations");
   const { sortBy, filters, page } = useReservationFilters();
   const {
-    data: { total, reservations },
+    isLoading,
+    data,
     refetch,
   } = useReservations({
     Page: page,
     SortBy: sortBy,
     ...filters,
   });
+
+  if (isLoading || !data) {
+    return <AccountGridSkeleton />;
+  }
+
+  const { total, reservations } = data;
 
   if (total === 0 || reservations.length === 0) {
     return (

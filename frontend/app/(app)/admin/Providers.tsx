@@ -1,17 +1,16 @@
 "use client";
 
-import { AuthTokenProvider } from "@/shared/components/providers/AuthTokenProvider";
+import { AuthBootstrap } from "@/shared/components/providers/AuthBootstrap";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SessionProvider } from "next-auth/react";
 
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionProvider refetchInterval={300}>
-        <AuthTokenProvider>{children}</AuthTokenProvider>
-      </SessionProvider>
+      <AuthBootstrap>
+        {children}
+      </AuthBootstrap>
     </QueryClientProvider>
   );
 }

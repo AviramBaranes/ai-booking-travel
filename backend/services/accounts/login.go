@@ -49,3 +49,15 @@ func (s *Service) GetCustomerToken(ctx context.Context, p auth.GetCustomerTokenP
 	h := auth.NewAuthService(s.query)
 	return h.GetCustomerToken(ctx, p)
 }
+
+// encore:api public method=POST path=/auth/session
+func (s *Service) ResolveSession(ctx context.Context, p auth.ResolveSessionParams) (*auth.SessionUser, error) {
+	h := auth.NewAuthService(s.query)
+	return h.ResolveSession(ctx, p)
+}
+
+// encore:api public method=POST path=/logout
+func (s *Service) Logout(ctx context.Context) (*auth.LogoutResponse, error) {
+	h := auth.NewAuthService(s.query)
+	return h.Logout(ctx)
+}

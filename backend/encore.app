@@ -9,5 +9,8 @@
         ],
         "allow_headers": ["*"],
         "expose_headers": ["*"]
+    },
+    "auth": {
+        "cookie_name": "gr_session"
     }
 }

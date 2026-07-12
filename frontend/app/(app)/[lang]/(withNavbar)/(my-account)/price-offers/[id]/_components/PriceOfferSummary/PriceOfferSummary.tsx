@@ -10,11 +10,16 @@ import { HeaderSection } from "./HeaderSection";
 import { useTranslations } from "next-intl";
 import { PayAtPickupSection } from "../../../../_components/PayAtPickupSection";
 import { useAddonsGallery } from "@/shared/hooks/useAddonsGallery";
+import { SummarySkeleton } from "@/shared/components/booking/SummarySkeleton";
 
 export function PriceOfferSummary({ priceOfferId }: { priceOfferId: number }) {
   const t = useTranslations("MyAccount.priceOffer.summary.labels");
-  const { data: priceOffer } = usePriceOffer(priceOfferId);
+  const { data: priceOffer, isLoading } = usePriceOffer(priceOfferId);
   const { data: addonsGallery } = useAddonsGallery();
+
+  if (isLoading || !priceOffer) {
+    return <SummarySkeleton />;
+  }
 
   return (
     <div className="flex flex-col gap-2 shadow-card rounded-xl p-6 bg-white border border-cars-border">

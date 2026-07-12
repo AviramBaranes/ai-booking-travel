@@ -1,9 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ArrowRight, ArrowLeft } from "lucide-react";
 import clsx from "clsx";
-import { useParams } from "next/navigation";
 import { useDirection } from "@/shared/hooks/useDirection";
 
 const BOOKING_STEPS = [

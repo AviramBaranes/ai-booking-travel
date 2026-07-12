@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import clsx from "clsx";
 import {
   Home,
@@ -21,6 +21,8 @@ import {
   Landmark,
 } from "lucide-react";
 import AdminNavbar from "@/shared/components/admin/AdminNavbar";
+import useAuthStore from "@/shared/auth/authStore";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { label: "ראשי", href: "/admin", icon: Home },
@@ -46,11 +48,35 @@ export default function AdminShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const status = useAuthStore((state) => state.status);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    if (status === "loading" || status === "idle") {
+      // Still loading auth
+      return;
+    }
+
+    if (!user || user.role !== "admin") {
+      // Not authorized, redirect
+      router.replace("/he/");
+      return;
+    }
+
+    setIsAuthorized(true);
+  }, [user, status, router]);
 
   const isAsideActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
     return pathname.startsWith(href);
   };
+
+  // Don't render content until we verify authorization
+  if (!isAuthorized) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">

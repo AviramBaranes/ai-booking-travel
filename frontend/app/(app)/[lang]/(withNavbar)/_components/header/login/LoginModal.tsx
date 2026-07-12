@@ -1,4 +1,3 @@
-import { getSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { User, X } from "lucide-react";
@@ -18,6 +17,7 @@ import { CustomerOtpForm } from "./CustomerOtpForm";
 import { useDialogOpenFromQuery } from "./useDialogOpenFromQuery";
 import { ForgotPasswordForm } from "./ForgotPasswordForm";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
+import useAuthStore from "@/shared/auth/authStore";
 
 type LoginMode = "agent" | "customer";
 type AgentStep = "credentials" | "success" | "passwordReset";
@@ -56,6 +56,7 @@ export function LoginModal({ trigger }: LoginModalProps = {}) {
   // The query listener is isolated behind Suspense, so closing the modal calls
   // the latest registered cleanup through this ref instead of reading URL state here.
   const clearQueryFlagRef = useRef<() => void>(() => {});
+  const { user } = useAuthStore();
 
   const openDialog = useCallback(() => {
     setOpen(true);
@@ -87,12 +88,9 @@ export function LoginModal({ trigger }: LoginModalProps = {}) {
   };
 
   const handleContinueToSite = async () => {
-    const session = await getSession();
     handleOpenChange(false);
-    if (session?.user?.role === "admin") {
+    if (user?.role === "admin") {
       window.location.href = "/admin";
-    } else {
-      window.location.reload();
     }
   };
 

@@ -3,14 +3,13 @@
 import { useParams } from "next/navigation";
 import { LoginModal } from "../login/LoginModal";
 import { AuthenticatedDropdown } from "./AuthenticatedDropdown";
-import { useSession } from "next-auth/react";
 import { LangSwitcher } from "../login/LangSwitcher";
+import useAuthStore from "@/shared/auth/authStore";
 
 export function NavbarActions() {
   const { lang } = useParams();
-  const session = useSession();
-  const isAuthenticated =
-    !!session.data?.user && session.data.user.role !== "admin";
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = !!user && user.role !== "admin";
 
   return (
     <div className="flex items-center gap-3 lg:gap-4">

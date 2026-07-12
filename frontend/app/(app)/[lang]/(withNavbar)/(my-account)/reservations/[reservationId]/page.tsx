@@ -1,15 +1,12 @@
 import { getLang } from "@/shared/lang/lang";
 import { redirect } from "next/dist/client/components/navigation";
-import { Suspense } from "react";
 import { ReservationCarCard } from "./_components/ReservationCarCard";
-import { SelectedCarCardSkeleton } from "@/shared/components/booking/SelectedCarCard/SelectedCarCardSkeleton";
 import { getQueryClient } from "@/shared/hooks/getQueryClient";
 import { suppliersGalleryKey } from "@/shared/hooks/useSuppliersGallery";
 import { fetchAddonsGallery, fetchSuppliersGallery } from "@/shared/server/cms";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { BackButton } from "@/shared/components/booking/BackButton";
 import { ReservationSummary } from "./_components/ReservationSummary/ReservationSummary";
-import { SummarySkeleton } from "@/shared/components/booking/SummarySkeleton";
 import { addonsGalleryKey } from "@/shared/hooks/useAddonsGallery";
 
 export default async function ReservationDetailsPage({
@@ -47,14 +44,10 @@ export default async function ReservationDetailsPage({
         </div>
         <div className="flex gap-2 mt-6 print:flex-col print:gap-6">
           <div className="w-3/4 print:w-full">
-            <Suspense fallback={<SummarySkeleton />}>
-              <ReservationSummary reservationId={Number(reservationId)} />
-            </Suspense>
+            <ReservationSummary reservationId={Number(reservationId)} />
           </div>
           <div className="w-1/4 print:w-full">
-            <Suspense fallback={<SelectedCarCardSkeleton />}>
-              <ReservationCarCard reservationId={Number(reservationId)} />
-            </Suspense>
+            <ReservationCarCard reservationId={Number(reservationId)} />
           </div>
         </div>
       </HydrationBoundary>

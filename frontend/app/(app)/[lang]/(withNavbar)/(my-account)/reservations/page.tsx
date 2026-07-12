@@ -7,7 +7,6 @@ import { Suspense } from "react";
 import { ReservationResultsCounter } from "./_components/ReservationResultsCounter";
 import { ReservationsGrid } from "./_components/ReservationsGrid";
 import { ReservationPaginationButtons } from "./_components/filters/ReservationPaginationButtons";
-import { AccountGridSkeleton } from "../_components/AccountGridSkeleton";
 
 export default async function ReservationDetailsPage({
   searchParams,
@@ -26,29 +25,10 @@ export default async function ReservationDetailsPage({
         <ClearFilterRow />
         <div className="flex items-center gap-4">
           <SortDropdown />
-          <Suspense
-            key={`counter-${suspenseKey}`}
-            fallback={
-              <p className="text-xs text-text-secondary">
-                {t("showingXResults", {
-                  count: "X",
-                  total: "X",
-                })}
-              </p>
-            }
-          >
-            <ReservationResultsCounter />
-          </Suspense>
+          <ReservationResultsCounter />
         </div>
-        <Suspense
-          key={`grid-${suspenseKey}`}
-          fallback={<AccountGridSkeleton />}
-        >
-          <ReservationsGrid />
-        </Suspense>
-        <Suspense key={`pagination-${suspenseKey}`}>
-          <ReservationPaginationButtons />
-        </Suspense>
+        <ReservationsGrid />
+        <ReservationPaginationButtons />
       </div>
       <div className="mb-15" />
     </main>

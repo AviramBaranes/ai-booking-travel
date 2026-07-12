@@ -7,19 +7,24 @@ import { useTranslations } from "next-intl";
 import { VoucherForm } from "./VoucherForm";
 import { useReservation } from "../_hooks/useReservation";
 import { ReservationPaymentDialog } from "./ReservationPaymentDialog";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { SelectedCarCardSkeleton } from "@/shared/components/booking/SelectedCarCard/SelectedCarCardSkeleton";
 
 export function ReservationCarCard({
   reservationId,
 }: {
   reservationId: number;
 }) {
-  const { data: reservation, refetch } = useReservation(reservationId);
+  const { data: reservation, refetch, isLoading } = useReservation(reservationId);
   const t = useTranslations("MyAccount.reservation");
   const [showPaymentDialog, setShowPaymentDialog] = useState(
-    reservation.reservationStatus === "booked" &&
-      reservation.paymentStatus === "unpaid",
+    reservation?.reservationStatus === "booked" &&
+      reservation?.paymentStatus === "unpaid",
   );
+
+  if (isLoading || !reservation) {
+    return <SelectedCarCardSkeleton />;
+  }
 
   return (
     <div className="sticky top-24">

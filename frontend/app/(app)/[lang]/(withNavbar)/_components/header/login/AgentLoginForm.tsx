@@ -3,7 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { AlertCircle } from "lucide-react";
-import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -11,7 +10,8 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
-import { Loading } from "@/shared/components/Loading";
+import useAuthStore, { UserRole } from "@/shared/auth/authStore";
+import { login } from "@/shared/api/accounts-api";
 
 function schema(t: (key: string) => string) {
   return z.object({
@@ -35,6 +35,7 @@ export function AgentLoginForm({
 }: AgentLoginFormProps) {
   const t = useTranslations("Login");
   const tError = useTranslations("ApiErrors");
+  const store = useAuthStore();
 
   const {
     register,
@@ -44,17 +45,18 @@ export function AgentLoginForm({
   } = useForm<FormData>({ resolver: zodResolver(schema(t)) });
 
   const { mutate, error, isPending } = useMutation({
-    mutationFn: async (data: FormData) => {
-      const result = await signIn("credentials", {
-        redirect: false,
-        email: data.email,
-        password: data.password,
+    mutationFn: async (data: FormData) => login(data.email, data.password),
+    onSuccess: (response) => {
+      store.setSession(response.accessToken, response.accessTokenExpiresAt, {
+        id: response.id,
+        email: response.email,
+        firstName: response.firstName,
+        lastName: response.lastName,
+        role: response.role as UserRole,
+        phoneNumber: response.phoneNumber,
+        officeId: response.officeId,
+        isAdminAsAgent: false,
       });
-      const res = result as { error?: string } | undefined;
-      if (res?.error) throw new Error(res.error ?? "unknown_error");
-      return result;
-    },
-    onSuccess: () => {
       onSuccess();
     },
   });
