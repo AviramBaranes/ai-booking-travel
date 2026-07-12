@@ -24,7 +24,7 @@ func (s *AuthService) GetCustomerToken(ctx context.Context, p GetCustomerTokenPa
 	user, err := s.query.GetCustomerByID(ctx, p.UserID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
-			return nil, ErrInvalidCredentials
+			return nil, api_errors.ErrNotFound
 		}
 		rlog.Error("failed to get user by ID", "user_id", p.UserID, "error", err)
 		return nil, api_errors.ErrInternalError

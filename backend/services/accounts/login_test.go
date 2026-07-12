@@ -554,6 +554,53 @@ func TestValidateCustomerLoginOTP(t *testing.T) {
 	})
 }
 
+func TestGetCustomerToken(t *testing.T) {
+	ctx := context.Background()
+	t.Run("User not found", func(t *testing.T) {
+		agent, delAgent, err := createAgent(ctx, user.CreateAgentParams{
+			FirstName:   "Test",
+			LastName:    "Agent",
+			Email:       randomName() + "@example.com",
+			Password:    testPassword,
+			PhoneNumber: randomIsraeliPhoneNumber(),
+		})
+		if err != nil {
+			t.Fatalf("Failed to create agent: %v", err)
+		}
+		defer delAgent()
+
+		_, err = GetCustomerToken(ctx, ah.GetCustomerTokenParams{UserID: agent.ID})
+		if err == nil {
+			t.Fatalf("Expected error when getting customer token for agent, got nil")
+		}
+
+		api_errors.AssertApiError(t, api_errors.ErrNotFound, err)
+	})
+
+	t.Run("Success: valid response without refresh token", func(t *testing.T) {
+		phoneNumber := randomIsraeliPhoneNumber()
+		otp := "123456"
+		customer, cleanup, err := createCustomer(ctx, phoneNumber, &otp)
+		if err != nil {
+			t.Fatalf("Failed to create customer: %v", err)
+		}
+		defer cleanup()
+
+		resp, err := GetCustomerToken(ctx, ah.GetCustomerTokenParams{UserID: customer.ID})
+		if err != nil {
+			t.Fatalf("Failed to get customer token: %v", err)
+		}
+
+		if resp.ID != customer.ID {
+			t.Fatalf("Expected response ID %d, got %d", customer.ID, resp.ID)
+		}
+
+		if resp.SetCookies != nil {
+			t.Fatal("Expected no SetCookies in response for GetCustomerToken")
+		}
+	})
+}
+
 func createCustomer(ctx context.Context, phoneNumber string, otp *string) (db.User, func(), error) {
 	_, err := query.CreateCustomer(ctx, db.CreateCustomerParams{
 		Email:        generateTestEmail(),
