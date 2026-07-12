@@ -9,49 +9,25 @@ import (
 
 const (
 	refreshCookieName = "refresh_token"
+	sessionCookieName = "gr_session"
 
-	prodSessionCookieName = "gr_session"
-	devSessionCookieName  = "gr_session_dev"
-
-	prodCookieDomain = "aibookingtravel.com"
-	devCookieDomain  = "dev.aibookingtravel.com"
-
+	// refreshCookieMaxAge is the lifetime of the refresh token cookie (30 days).
 	refreshCookieMaxAge = 30 * 24 * time.Hour
 )
 
 // isLocal reports whether the app is running in local development.
+// Cookie security attributes are relaxed only in this case.
 func isLocal() bool {
 	return encore.Meta().Environment.Cloud == encore.CloudLocal
 }
 
-// isProduction reports whether the app is running in production.
-func isProduction() bool {
-	return encore.Meta().Environment.Type == encore.EnvProduction
-}
-
-// sessionCookieName returns a different name for the dev session hint so the
-// production cookie, which is visible to all aibookingtravel.com subdomains,
-// does not conflict with the dev session hint.
-func sessionCookieName() string {
-	if !isLocal() && !isProduction() {
-		return devSessionCookieName
-	}
-
-	return prodSessionCookieName
-}
-
-// sessionCookieDomain allows the frontend to read the non-sensitive session
-// hint cookie.
-func sessionCookieDomain() string {
+// cookieDomain returns the parent domain used to share cookies across the
+// frontend and API subdomains in dev/prod, and an empty domain locally.
+func cookieDomain() string {
 	if isLocal() {
 		return ""
 	}
-
-	if isProduction() {
-		return prodCookieDomain
-	}
-
-	return devCookieDomain
+	return ".aibookingtravel.com"
 }
 
 // authCookies returns the Set-Cookie header values issued on successful auth:
@@ -66,8 +42,8 @@ func authCookies(refreshToken string) []string {
 // clearedCookies returns Set-Cookie header values that expire the auth cookies.
 func clearedCookies() []string {
 	return []string{
-		expiredCookie(refreshCookieName, "", true).String(),
-		expiredCookie(sessionCookieName(), sessionCookieDomain(), false).String(),
+		expiredCookie(refreshCookieName, true).String(),
+		expiredCookie(sessionCookieName, false).String(),
 	}
 }
 
@@ -77,6 +53,7 @@ func newRefreshCookie(token string) *http.Cookie {
 		Name:     refreshCookieName,
 		Value:    token,
 		Path:     "/",
+		Domain:   cookieDomain(),
 		Secure:   !isLocal(),
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
@@ -89,10 +66,10 @@ func newRefreshCookie(token string) *http.Cookie {
 // detect that a session likely exists before attempting a refresh.
 func newSessionHintCookie() *http.Cookie {
 	return &http.Cookie{
-		Name:     sessionCookieName(),
+		Name:     sessionCookieName,
 		Value:    "1",
 		Path:     "/",
-		Domain:   sessionCookieDomain(),
+		Domain:   cookieDomain(),
 		Secure:   !isLocal(),
 		HttpOnly: false,
 		SameSite: http.SameSiteLaxMode,
@@ -102,12 +79,12 @@ func newSessionHintCookie() *http.Cookie {
 }
 
 // expiredCookie builds a cookie that immediately expires the named cookie.
-func expiredCookie(name, domain string, httpOnly bool) *http.Cookie {
+func expiredCookie(name string, httpOnly bool) *http.Cookie {
 	return &http.Cookie{
 		Name:     name,
 		Value:    "",
 		Path:     "/",
-		Domain:   domain,
+		Domain:   cookieDomain(),
 		Secure:   !isLocal(),
 		HttpOnly: httpOnly,
 		SameSite: http.SameSiteLaxMode,
