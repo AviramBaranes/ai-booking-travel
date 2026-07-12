@@ -4,11 +4,11 @@ import { useTranslations } from "next-intl";
 import { useFormContext } from "react-hook-form";
 import { OrderFormInput } from "./OrderFormInput";
 import { useDirection } from "@/shared/hooks/useDirection";
-import { useSession } from "next-auth/react";
+import useAuthStore from "@/shared/auth/authStore";
 
 export function CustomerForm() {
   const t = useTranslations("booking.orderPage");
-  const { status } = useSession();
+  const status = useAuthStore((s) => s.status);
   const readonly = status === "authenticated";
   const dir = useDirection();
   const {

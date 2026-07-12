@@ -27,7 +27,6 @@ import { BookingForm } from "@/shared/components/booking/OrderForm/BookingForm";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
 import { useSearchRequest } from "../../_hooks/useSearchRequest";
-import { signIn, useSession } from "next-auth/react";
 import { CustomerForm } from "@/shared/components/booking/OrderForm/CustomerForm";
 import {
   getCustomerPaymentIframe,
@@ -35,13 +34,15 @@ import {
 } from "@/shared/api/bill-api";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { usePaymentSuccess } from "@/shared/hooks/usePaymentSuccess";
+import useAuthStore, { UserRole } from "@/shared/auth/authStore";
 
 export function OrderPageContent() {
   const t = useTranslations("booking.orderPage");
   const { lang } = useParams();
   const router = useRouter();
-  const { data: session } = useSession();
-  const isAgent = session?.user?.role === "agent";
+  const user = useAuthStore((s) => s.user);
+  const setSession = useAuthStore((s) => s.setSession);
+  const isAgent = user?.role === "agent";
   const { data: bookingSettings } = useBookingSettings();
 
   const { searchRequest } = useSearchRequest();
@@ -68,10 +69,10 @@ export function OrderPageContent() {
       driverTitle: "" as unknown as "Mr",
       driverFirstName: "",
       driverLastName: "",
-      customerFirstName: isAgent ? "" : (session?.user?.firstName ?? ""),
-      customerLastName: isAgent ? "" : (session?.user?.lastName ?? ""),
-      customerPhone: isAgent ? "" : (session?.user?.phoneNumber ?? ""),
-      customerEmail: isAgent ? "" : (session?.user?.email ?? ""),
+      customerFirstName: isAgent ? "" : (user?.firstName ?? ""),
+      customerLastName: isAgent ? "" : (user?.lastName ?? ""),
+      customerPhone: isAgent ? "" : (user?.phoneNumber ?? ""),
+      customerEmail: isAgent ? "" : (user?.email ?? ""),
       termsAccepted: false as unknown as true,
     },
   });
@@ -138,19 +139,51 @@ export function OrderPageContent() {
   });
 
   usePaymentSuccess({
-    onSuccess: async () => {
-      if (!session?.user) {
-        await signIn("customer-login-after-payment", {
-          login: JSON.stringify(paymentStatus?.login),
-        });
+    onSuccess: () => {
+      if (!user) {
+        if (!paymentStatus?.login) {
+          console.warn("No login data found in payment status");
+          return;
+        }
+
+        setSession(
+          paymentStatus.login.accessToken,
+          paymentStatus.login.accessTokenExpiresAt,
+          {
+            id: paymentStatus.login.id,
+            email: paymentStatus.login.email,
+            firstName: paymentStatus.login.firstName,
+            lastName: paymentStatus.login.lastName,
+            role: paymentStatus.login.role as UserRole,
+            phoneNumber: paymentStatus.login.phoneNumber,
+            officeId: paymentStatus.login.officeId,
+            isAdminAsAgent: false,
+          },
+        );
       }
       router.push(`/${lang}/reservations/${paymentStatus?.reservationId}`);
     },
     onFailure: async () => {
-      if (!session?.user) {
-        await signIn("customer-login-after-payment", {
-          login: JSON.stringify(paymentStatus?.login),
-        });
+      if (!user) {
+        if (!paymentStatus?.login) {
+          console.warn("No login data found in payment status");
+          return;
+        }
+
+        setSession(
+          paymentStatus.login.accessToken,
+          paymentStatus.login.accessTokenExpiresAt,
+          {
+            id: paymentStatus.login.id,
+            email: paymentStatus.login.email,
+            firstName: paymentStatus.login.firstName,
+            lastName: paymentStatus.login.lastName,
+            role: paymentStatus.login.role as UserRole,
+            phoneNumber: paymentStatus.login.phoneNumber,
+            officeId: paymentStatus.login.officeId,
+            isAdminAsAgent: false,
+          },
+        );
       }
       setPaymentLoading(false);
       setPaymentError(true);

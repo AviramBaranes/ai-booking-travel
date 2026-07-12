@@ -21,15 +21,15 @@ import { ErpDialog } from "./ErpDialog";
 import { FeesNote } from "./FeesNote";
 import { PriceOfferDialog } from "./PriceOfferDialog";
 import { useSearchRequest } from "../../_hooks/useSearchRequest";
-import { useSession } from "next-auth/react";
+import useAuthStore from "@/shared/auth/authStore";
 
 export function PlansPageContent() {
   const t = useTranslations("booking.plansPage");
   const { lang } = useParams();
   const router = useRouter();
   const currentSearchParams = useSearchParams();
-  const { data: session } = useSession();
-  const isAgent = session?.user?.role === "agent";
+  const user = useAuthStore((s) => s.user);
+  const isAgent = user?.role === "agent";
 
   const selectedPlan = useBookingSessionStore((s) => s.selectedPlanIndex);
   const isErpSelected = useBookingSessionStore((s) => s.isErpSelected);
