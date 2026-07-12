@@ -137,7 +137,8 @@ func TestLogin(t *testing.T) {
 			if resp.AccessToken == "" {
 				t.Fatal("Expected access token, got empty string")
 			}
-			if resp.RefreshToken == "" {
+			refreshToken := refreshCookieToken(t, resp)
+			if refreshToken == "" {
 				t.Fatal("Expected refresh token, got empty string")
 			}
 
@@ -169,7 +170,7 @@ func TestLogin(t *testing.T) {
 				t.Error("Access token already expired")
 			}
 
-			refreshClaims, err := jwt.ValidateRefreshToken(resp.RefreshToken)
+			refreshClaims, err := jwt.ValidateRefreshToken(refreshToken)
 			if err != nil {
 				t.Fatalf("Failed to validate refresh token: %v", err)
 			}
@@ -240,7 +241,8 @@ func TestLoginAsAgent(t *testing.T) {
 		if resp.AccessToken == "" {
 			t.Fatal("Expected access token")
 		}
-		if resp.RefreshToken == "" {
+		refreshToken := refreshCookieToken(t, resp)
+		if refreshToken == "" {
 			t.Fatal("Expected refresh token")
 		}
 		if resp.ID != agent.ID {
@@ -280,7 +282,7 @@ func TestLoginAsAgent(t *testing.T) {
 		})
 
 		// Verify refresh token stored with admin ref
-		refreshClaims, err := jwt.ValidateRefreshToken(resp.RefreshToken)
+		refreshClaims, err := jwt.ValidateRefreshToken(refreshToken)
 		if err != nil {
 			t.Fatalf("Failed to validate refresh token: %v", err)
 		}
@@ -342,7 +344,7 @@ func TestLoginBackToAdmin(t *testing.T) {
 		if resp.AccessToken == "" {
 			t.Fatal("Expected access token")
 		}
-		if resp.RefreshToken == "" {
+		if refreshCookieToken(t, resp) == "" {
 			t.Fatal("Expected refresh token")
 		}
 		if resp.ID != admin.ID {
@@ -538,7 +540,7 @@ func TestValidateCustomerLoginOTP(t *testing.T) {
 		if resp.AccessToken == "" {
 			t.Fatal("Expected access token")
 		}
-		if resp.RefreshToken == "" {
+		if refreshCookieToken(t, resp) == "" {
 			t.Fatal("Expected refresh token")
 		}
 

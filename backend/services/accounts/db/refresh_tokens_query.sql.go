@@ -20,6 +20,18 @@ func (q *Queries) DeleteRefreshToken(ctx context.Context, jti string) error {
 	return err
 }
 
+const deleteRefreshTokenChecked = `-- name: DeleteRefreshTokenChecked :execrows
+DELETE FROM refresh_tokens WHERE jti = $1
+`
+
+func (q *Queries) DeleteRefreshTokenChecked(ctx context.Context, jti string) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteRefreshTokenChecked, jti)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const deleteRefreshTokensByUserId = `-- name: DeleteRefreshTokensByUserId :exec
 DELETE FROM refresh_tokens WHERE user_id = $1
 `

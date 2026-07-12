@@ -42,8 +42,8 @@ func (s *AuthService) LoginBackToAdmin(ctx context.Context, adminRefID *int64) (
 		LastName:             admin.LastName,
 		Role:                 admin.Role,
 		AccessToken:          tokens.AccessToken,
-		RefreshToken:         tokens.RefreshToken,
 		AccessTokenExpiresAt: tokens.AccessTokenExpiresAt,
 		Email:                admin.Email,
+		SetCookies:           authCookies(tokens.RefreshToken),
 	}, nil
 }

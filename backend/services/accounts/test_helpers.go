@@ -3,6 +3,7 @@ package accounts
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 	"sync/atomic"
 	"testing"
@@ -12,6 +13,7 @@ import (
 	"encore.app/internal/jwt"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
+	ah "encore.app/services/accounts/handlers/auth"
 	user "encore.app/services/accounts/handlers/user"
 	"encore.app/services/accounts/mocks"
 	"encore.dev/beta/errs"
@@ -24,6 +26,29 @@ func invalidValueErr(field string) error {
 	return api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
 		Code: api_errors.CodeInvalidValue, Field: field,
 	})
+}
+
+// refreshParams builds RefreshTokensParams carrying the given refresh token in
+// the Cookie header string, mirroring how a browser sends it.
+func refreshParams(token string) ah.RefreshTokensParams {
+	return ah.RefreshTokensParams{CookieHeader: "refresh_token=" + token}
+}
+
+// refreshCookieToken extracts the refresh_token value from a login/refresh
+// response's Set-Cookie headers.
+func refreshCookieToken(t *testing.T, resp *ah.LoginResponse) string {
+	t.Helper()
+	for _, sc := range resp.SetCookies {
+		c, err := http.ParseSetCookie(sc)
+		if err != nil {
+			continue
+		}
+		if c.Name == "refresh_token" {
+			return c.Value
+		}
+	}
+	t.Fatal("refresh_token cookie not found in response Set-Cookie headers")
+	return ""
 }
 
 const (

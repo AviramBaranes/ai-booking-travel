@@ -21,6 +21,8 @@ func NewAuthService(query db.Querier) *AuthService {
 }
 
 // LoginResponse is the shared response type for all login/refresh endpoints.
+// The refresh token is never serialized in the JSON body; it is delivered as an
+// httpOnly cookie via the SetCookies field (Set-Cookie header).
 type LoginResponse struct {
 	ID                   int64       `json:"id"`
 	Email                string      `json:"email,omitempty"`
@@ -29,9 +31,17 @@ type LoginResponse struct {
 	Role                 db.UserRole `json:"role,omitempty"`
 	AccessToken          string      `json:"accessToken"`
 	AccessTokenExpiresAt int64       `json:"accessTokenExpiresAt"` //UNIX timestamp
-	RefreshToken         string      `json:"refreshToken"`
 	PhoneNumber          string      `json:"phoneNumber,omitempty"`
 	OfficeID             *int64      `json:"officeId,omitempty"`
+
+	// SetCookies carries the httpOnly refresh token and session hint cookies.
+	SetCookies     []string `header:"Set-Cookie"`
+	IsAdminAsAgent bool     `json:"isAdminAsAgent,omitempty" encore:"optional"`
+}
+
+// LogoutResponse clears the auth cookies via the Set-Cookie header.
+type LogoutResponse struct {
+	SetCookies []string `header:"Set-Cookie"`
 }
 
 var (

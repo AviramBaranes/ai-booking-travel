@@ -249,6 +249,21 @@ func (mr *MockQuerierMockRecorder) DeleteRefreshToken(ctx, jti any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRefreshToken", reflect.TypeOf((*MockQuerier)(nil).DeleteRefreshToken), ctx, jti)
 }
 
+// DeleteRefreshTokenChecked mocks base method.
+func (m *MockQuerier) DeleteRefreshTokenChecked(ctx context.Context, jti string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRefreshTokenChecked", ctx, jti)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteRefreshTokenChecked indicates an expected call of DeleteRefreshTokenChecked.
+func (mr *MockQuerierMockRecorder) DeleteRefreshTokenChecked(ctx, jti any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRefreshTokenChecked", reflect.TypeOf((*MockQuerier)(nil).DeleteRefreshTokenChecked), ctx, jti)
+}
+
 // DeleteRefreshTokensByUserId mocks base method.
 func (m *MockQuerier) DeleteRefreshTokensByUserId(ctx context.Context, userID int64) error {
 	m.ctrl.T.Helper()

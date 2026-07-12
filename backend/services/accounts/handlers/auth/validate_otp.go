@@ -59,9 +59,9 @@ func (s *AuthService) ValidateCustomerLoginOTP(ctx context.Context, params Valid
 		FirstName:            user.FirstName,
 		LastName:             user.LastName,
 		AccessToken:          tokens.AccessToken,
-		RefreshToken:         tokens.RefreshToken,
 		AccessTokenExpiresAt: tokens.AccessTokenExpiresAt,
 		Email:                user.Email,
 		PhoneNumber:          ptrToStr(user.PhoneNumber),
+		SetCookies:           authCookies(tokens.RefreshToken),
 	}, nil
 }

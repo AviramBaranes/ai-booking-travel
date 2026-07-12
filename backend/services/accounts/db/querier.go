@@ -25,6 +25,7 @@ type Querier interface {
 	DeleteContact(ctx context.Context, id int64) error
 	DeletePasswordResetTokenByID(ctx context.Context, id int64) error
 	DeleteRefreshToken(ctx context.Context, jti string) error
+	DeleteRefreshTokenChecked(ctx context.Context, jti string) (int64, error)
 	DeleteRefreshTokensByUserId(ctx context.Context, userID int64) error
 	DeleteUser(ctx context.Context, id int64) error
 	GetAgentsBillingContacts(ctx context.Context, usersIds []int64) ([]GetAgentsBillingContactsRow, error)
