@@ -8,16 +8,16 @@ import { usePriceOffers } from "../../_hooks/usePriceOffers";
 export function PriceOfferPaginationButtons() {
   const t = useTranslations("MyAccount.priceOffers");
   const { lang, searchParams, filters, page } = usePriceOfferFilters();
-  const {
-    data: { total },
-  } = usePriceOffers({
+  const { data } = usePriceOffers({
     Page: page,
     ...filters,
   });
 
+  if (!data) return null;
+
   return (
     <PaginationButtons
-      total={total}
+      total={data.total}
       page={page}
       searchParams={searchParams}
       basePath={`/${lang}/price-offers`}

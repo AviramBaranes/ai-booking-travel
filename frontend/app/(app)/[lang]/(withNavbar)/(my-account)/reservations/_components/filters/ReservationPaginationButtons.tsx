@@ -9,12 +9,17 @@ export function ReservationPaginationButtons() {
   const t = useTranslations("MyAccount.reservations");
   const { lang, searchParams, sortBy, filters, page } = useReservationFilters();
   const {
-    data: { total },
+    data,
+    isLoading
   } = useReservations({ Page: page, SortBy: sortBy, ...filters });
 
+  if (isLoading || !data) {
+    return null
+  }
+  
   return (
     <PaginationButtons
-      total={total}
+      total={data.total}
       page={page}
       searchParams={searchParams}
       basePath={`/${lang}/reservations`}

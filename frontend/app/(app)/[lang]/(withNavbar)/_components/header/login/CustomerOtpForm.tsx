@@ -2,7 +2,6 @@
 
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { AlertCircle } from "lucide-react";
-import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
@@ -12,9 +11,10 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { Loading } from "@/shared/components/Loading";
 import { useMutation } from "@tanstack/react-query";
-import { sendOTP } from "@/shared/api/accounts-api";
+import { sendOTP, validateOTP } from "@/shared/api/accounts-api";
+import useAuthStore, { UserRole } from "@/shared/auth/authStore";
+import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
 
 const RESEND_COUNTDOWN = 45;
 
@@ -33,10 +33,8 @@ interface Props {
 
 export function CustomerOtpForm({ phone, onSuccess }: Props) {
   const t = useTranslations("Login");
-  const tError = useTranslations("ApiErrors");
+  const store = useAuthStore();
   const [otp, setOtp] = useState("");
-  const [isPending, setIsPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [resendTimer, setResendTimer] = useState(RESEND_COUNTDOWN);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -62,30 +60,30 @@ export function CustomerOtpForm({ phone, onSuccess }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSubmit = async () => {
-    setError(null);
-    setIsPending(true);
-    try {
-      const phoneNumber = phone.replace(/[\s-]/g, "");
-      const result = await signIn("customer-login", {
-        redirect: false,
-        phoneNumber,
-        otp,
-      });
-      const res = result as { error?: string } | undefined;
-      if (res?.error) throw new Error(res.error ?? "unknown_error");
-      onSuccess();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "unknown_error");
-    } finally {
-      setIsPending(false);
-    }
-  };
-
   const {
-    mutate: resendOtp,
-    isPending: resendPending,
+    mutate: login,
+    isPending,
+    error,
   } = useMutation({
+    mutationFn: () => validateOTP(phone, otp),
+    onSuccess: (response) => {
+      store.setSession(response.accessToken, response.accessTokenExpiresAt, {
+        id: response.id,
+        email: response.email,
+        firstName: response.firstName,
+        lastName: response.lastName,
+        role: response.role as UserRole,
+        phoneNumber: response.phoneNumber,
+        officeId: response.officeId,
+        isAdminAsAgent: false,
+      });
+      onSuccess();
+    },
+  });
+
+  const translatedError = useTranslatedError(error)
+
+  const { mutate: resendOtp, isPending: resendPending } = useMutation({
     mutationFn: async () => sendOTP({ phoneNumber: phone }),
     onSuccess: () => {
       startResendTimer();
@@ -131,7 +129,7 @@ export function CustomerOtpForm({ phone, onSuccess }: Props) {
         <div role="alert" className="flex items-center gap-1 w-full">
           <AlertCircle className="size-3.5 text-destructive shrink-0" />
           <span className="type-paragraph text-destructive">
-            {tError(error)}
+            {translatedError}
           </span>
         </div>
       )}
@@ -141,7 +139,7 @@ export function CustomerOtpForm({ phone, onSuccess }: Props) {
         className="w-full py-3.5 h-auto"
         disabled={isPending || otp.length < 6}
         loading={isPending}
-        onClick={handleSubmit}
+        onClick={() => login()}
       >
         {t("customer.confirmCode")}
       </Button>

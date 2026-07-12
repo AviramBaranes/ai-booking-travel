@@ -2,12 +2,65 @@ import { auth, contact, office, organization, user } from "../client";
 import { withErrorHandler } from "./_api";
 
 // Auth
-export function login(data: auth.LoginParams) {
-  return withErrorHandler((client) => client.accounts.Login(data));
+export function login(email: string, password: string) {
+  return withErrorHandler(
+    (client) => client.accounts.Login({ email, password }),
+    { skipAuthRedirect: true },
+  );
+}
+
+export function validateOTP(
+  phoneNumber: string,
+  otp: string,
+) {
+  return withErrorHandler(
+    (client) => client.accounts.ValidateCustomerLoginOTP({ phoneNumber, otp }),
+    { skipAuthRedirect: true },
+  );
+}
+
+export function loginAsAgent(agentId: number) {
+  return withErrorHandler((client) =>
+    client.accounts.LoginAsAgent({ agentId }),
+  );
+}
+
+export function loginBackToAdmin() {
+  return withErrorHandler((client) => client.accounts.LoginBackToAdmin());
+}
+
+export function logout() {
+  return withErrorHandler((client) => client.accounts.Logout(), {
+    skipAuthRedirect: true,
+  });
 }
 
 export function refreshTokens(data: auth.RefreshTokensParams) {
   return withErrorHandler((client) => client.accounts.RefreshTokens(data));
+}
+
+export function sendOTP(data: auth.SendCustomerLoginOTPParams) {
+  // Bypass withErrorHandler to avoid the 401→redirect behaviour on a public endpoint.
+  return withErrorHandler(
+    (client) => client.accounts.SendCustomerLoginOTP(data),
+    { skipAuthRedirect: true },
+  );
+}
+
+export function loginWithOTP(data: auth.ValidateCustomerLoginOTPParams) {
+  return withErrorHandler((client) =>
+    client.accounts.ValidateCustomerLoginOTP(data),
+  );
+}
+
+export function sendPasswordReset(data: auth.SendPasswordResetTokenParams) {
+  return withErrorHandler((client) =>
+    client.accounts.RequestPasswordReset(data),
+  );
+}
+
+export function resetPassword(data: auth.ResetPasswordParams) {
+  return withErrorHandler((client) => client.accounts.ResetPassword(data));
 }
 
 // Admins
@@ -99,28 +152,6 @@ export function listInorganicOffices() {
 
 // Users
 export function updateUser(id: number, data: user.UpdateUserParams) {
-  if(data.officeId === 0) delete data.officeId; // Avoid sending officeId when it's not set, to prevent validation errors.
+  if (data.officeId === 0) delete data.officeId; // Avoid sending officeId when it's not set, to prevent validation errors.
   return withErrorHandler((client) => client.accounts.UpdateUser(id, data));
-}
-
-export function sendOTP(data: auth.SendCustomerLoginOTPParams) {
-  // Bypass withErrorHandler to avoid the 401→redirect behaviour on a public endpoint.
-  return withErrorHandler(
-    (client) => client.accounts.SendCustomerLoginOTP(data),
-    { skipAuthRedirect: true },
-  );
-}
-
-export function loginWithOTP(data: auth.ValidateCustomerLoginOTPParams) {
-  return withErrorHandler((client) =>
-    client.accounts.ValidateCustomerLoginOTP(data),
-  );
-}
-
-export function sendPasswordReset(data: auth.SendPasswordResetTokenParams) {
-  return withErrorHandler((client) => client.accounts.RequestPasswordReset(data));
-}
-
-export function resetPassword(data: auth.ResetPasswordParams) {
-  return withErrorHandler((client) => client.accounts.ResetPassword(data));
 }

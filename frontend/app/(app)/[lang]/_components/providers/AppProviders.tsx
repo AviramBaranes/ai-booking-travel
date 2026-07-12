@@ -1,7 +1,6 @@
 "use client";
 
-import { AuthTokenProvider } from "@/shared/components/providers/AuthTokenProvider";
-import { SessionProvider } from "next-auth/react";
+import { AuthBootstrap } from "@/shared/components/providers/AuthBootstrap";
 import { NextIntlClientProvider } from "next-intl";
 import { QueryProvider } from "./QueryProvider";
 
@@ -19,9 +18,7 @@ export function AppProviders({
   return (
     <QueryProvider showDevtools={showDevtools}>
       <NextIntlClientProvider locale={lang} messages={messages}>
-        <SessionProvider refetchInterval={300}>
-          <AuthTokenProvider>{children}</AuthTokenProvider>
-        </SessionProvider>
+        <AuthBootstrap>{children}</AuthBootstrap>
       </NextIntlClientProvider>
     </QueryProvider>
   );

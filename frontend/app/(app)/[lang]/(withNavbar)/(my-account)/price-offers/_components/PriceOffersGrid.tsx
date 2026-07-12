@@ -4,16 +4,21 @@ import { useTranslations } from "next-intl";
 import { usePriceOfferFilters } from "../_hooks/usePriceOfferFilters";
 import { usePriceOffers } from "../_hooks/usePriceOffers";
 import { PriceOfferCard } from "./PriceOfferCard";
+import { AccountGridSkeleton } from "../../_components/AccountGridSkeleton";
 
 export function PriceOffersGrid() {
   const t = useTranslations("MyAccount.priceOffers");
   const { filters, page } = usePriceOfferFilters();
-  const {
-    data: { total, priceOffers },
-  } = usePriceOffers({
+  const { isLoading, data } = usePriceOffers({
     Page: page,
     ...filters,
   });
+
+  if (isLoading || !data) {
+    return <AccountGridSkeleton />;
+  }
+
+  const { total, priceOffers } = data;
 
   if (total === 0 || priceOffers.length === 0) {
     return (

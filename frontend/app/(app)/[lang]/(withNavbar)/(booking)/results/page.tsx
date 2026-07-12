@@ -1,13 +1,8 @@
-import { SearchDataBanner } from "@/shared/components/booking/SearchDataBanner";
-import { BookingStepper } from "../_components/BookingStepper";
 import { getLang } from "@/shared/lang/lang";
 import { redirect } from "next/navigation";
-import { parseSearchQuery, toSearchRequest } from "./searchQuery";
+import { parseSearchQuery } from "./searchQuery";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/shared/hooks/getQueryClient";
-import { bookingKeys } from "@/shared/hooks/useAvailableCars";
-import { searchAvailableCars } from "@/shared/api/booking-api";
-import { CarResults } from "./CarResults";
 import {
   fetchSuppliersGallery,
   fetchAddonsGallery,
@@ -17,7 +12,7 @@ import { suppliersGalleryKey } from "@/shared/hooks/useSuppliersGallery";
 import { addonsGalleryKey } from "@/shared/hooks/useAddonsGallery";
 import { bookingSettingsKey } from "@/shared/hooks/useBookingSettings";
 import ErrorResultPageContent from "./_components/ErrorPage";
-import { ExpiredSearchGate } from "../_components/ExpiredSearchGate";
+import { ResultsPageContent } from "./_components/ResultsPageContent";
 
 export default async function ResultsPage({
   searchParams,
@@ -31,15 +26,10 @@ export default async function ResultsPage({
   if (!query) {
     redirect(`/${lang}`);
   }
-  const searchRequest = toSearchRequest(query);
   const queryClient = getQueryClient();
 
   try {
-    const [result] = await Promise.all([
-      queryClient.fetchQuery({
-        queryKey: bookingKeys.availability(searchRequest),
-        queryFn: () => searchAvailableCars(searchRequest),
-      }),
+    await Promise.all([
       queryClient.fetchQuery({
         queryKey: suppliersGalleryKey,
         queryFn: fetchSuppliersGallery,
@@ -53,32 +43,14 @@ export default async function ResultsPage({
         queryFn: fetchBookingSettings,
       }),
     ]);
-    if (!result.availableVehicles.length) throw new Error("No results");
   } catch {
     return <ErrorResultPageContent />;
   }
 
   return (
-    <main className="lg:w-2/3 mx-auto lg:pt-15 pb-6">
-      <BookingStepper currentStep="results" />
+    <main>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <div className="lg:my-4">
-          <SearchDataBanner
-            pickUpLocationId={query.pickupLocationId}
-            dropOffLocationId={query.dropoffLocationId}
-            pickUpTime={query.pickupTime}
-            dropOffTime={query.dropoffTime}
-            pickUpDate={query.pickupDate}
-            dropOffDate={query.dropoffDate}
-            driverAge={query.driverAge}
-            couponCode={query.couponCode}
-            searchRequest={searchRequest}
-            showButton
-          />
-        </div>
-        <ExpiredSearchGate>
-          <CarResults searchRequest={searchRequest} />
-        </ExpiredSearchGate>
+        <ResultsPageContent query={query} />
       </HydrationBoundary>
     </main>
   );

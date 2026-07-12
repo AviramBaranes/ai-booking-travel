@@ -8,7 +8,7 @@ import {
 import { BadgePercent, CalendarDays, User } from "lucide-react";
 import { LogoutButton } from "./LogoutButton";
 import { useTranslations } from "next-intl";
-import { useSession } from "next-auth/react";
+import useAuthStore from "@/shared/auth/authStore";
 import { useParams, usePathname } from "next/navigation";
 import { useState } from "react";
 import { useDirection } from "@/shared/hooks/useDirection";
@@ -17,13 +17,13 @@ export function AuthenticatedDropdown() {
   const { lang } = useParams();
   const pathname = usePathname();
   const t = useTranslations("AuthDropdown");
-  const session = useSession();
+  const user = useAuthStore((state) => state.user);
   const [open, setOpen] = useState(false);
   const dir = useDirection();
 
-  if (!session.data?.user || session.data.user.role === "admin") return null;
+  if (!user || user.role === "admin") return null;
 
-  const isAgent = session.data.user.role === "agent";
+  const isAgent = user.role === "agent";
 
   const itemBase =
     "flex w-full items-center gap-2 px-3 py-3 text-[15px] font-medium transition-colors md:min-h-[71px] md:px-4 md:py-0 md:text-[16px]";
@@ -45,7 +45,7 @@ export function AuthenticatedDropdown() {
           className="px-2 py-1 lg:px-7 lg:py-4"
         >
           <User className="size-5 hidden lg:flex" />
-          {t("greeting", { name: session.data.user.firstName })}
+          {t("greeting", { name: user.firstName })}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -54,7 +54,7 @@ export function AuthenticatedDropdown() {
       >
         {/* Greeting header */}
         <div className="flex w-full items-center border-b border-cars-border px-3 py-4 text-[15px] font-bold text-navy md:min-h-18 md:px-4 md:py-0 md:text-[16px]">
-          {t("greeting", { name: session.data.user.firstName })}
+          {t("greeting", { name: user.firstName })}
         </div>
 
         {/* Profile link */}

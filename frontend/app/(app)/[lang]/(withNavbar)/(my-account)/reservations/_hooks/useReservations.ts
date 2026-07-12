@@ -1,6 +1,5 @@
 import { listReservations } from "@/shared/api/reservations-api";
-import { reservation } from "@/shared/client";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ReservationFilters } from "./useReservationFilters";
 
 interface UseReservationsParams extends ReservationFilters {
@@ -10,7 +9,7 @@ interface UseReservationsParams extends ReservationFilters {
 
 export function useReservations(params: UseReservationsParams) {
   const queryKey = ["reservations", params];
-  const suspenseResult = useSuspenseQuery({
+  const suspenseResult = useQuery({
     queryKey,
     queryFn: () =>
       listReservations({

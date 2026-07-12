@@ -1,16 +1,19 @@
 "use client";
 
 import { BackToAdminButton } from "./BackToAdminButton";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import useAuthStore from "@/shared/auth/authStore";
 
 export function BackToAdminBanner() {
   const t = useTranslations("BackToAdmin");
-  const { data: session } = useSession();
+  const user = useAuthStore((state) => state.user);
 
-  const isAdmin = session?.user?.role === "admin";
-  const isAdminAsAgent = session?.user?.isAdminAsAgent;
+  if (!user) return null;
+
+  const isAdmin = user.role === "admin";
+  const isAdminAsAgent = user.isAdminAsAgent
+
   if (!isAdminAsAgent && !isAdmin) return null;
 
   return (
@@ -18,7 +21,6 @@ export function BackToAdminBanner() {
       <span>{isAdminAsAgent ? t("adminAsAgentMsg") : t("adminMsg")}</span>
       {isAdminAsAgent ? (
         <BackToAdminButton
-          accessToken={session.user.accessToken}
           buttonText={t("adminAsAgentBtn")}
         />
       ) : (

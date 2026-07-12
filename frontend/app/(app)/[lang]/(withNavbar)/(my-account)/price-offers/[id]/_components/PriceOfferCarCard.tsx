@@ -26,32 +26,18 @@ import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { useBookingSettings } from "@/shared/hooks/useBookingSettings";
 import { Page } from "@/payload-types";
+import { SelectedCarCardSkeleton } from "@/shared/components/booking/SelectedCarCard/SelectedCarCardSkeleton";
 
 export function PriceOfferCarCard({ priceOfferId }: { priceOfferId: number }) {
   const router = useRouter();
   const { lang } = useParams();
 
-  const { data: priceOffer } = usePriceOffer(priceOfferId);
+  const { data: priceOffer, isLoading } = usePriceOffer(priceOfferId);
   const { data: bookingSettings } = useBookingSettings();
 
   const t = useTranslations("MyAccount.priceOffer");
   const tOrder = useTranslations("booking.orderPage");
   const [showForm, setShowForm] = useState(false);
-
-  function handleOrderClick() {
-    const { renewedAt } = priceOffer;
-    const needRenew =
-      new Date().getTime() - new Date(renewedAt).getTime() > 15 * 60 * 1000;
-
-    if (needRenew) {
-      toast.error("צריך לחדש את הצעת המחיר לפני ביצוע הזמנה", {
-        duration: 3000,
-        position: "top-center",
-      });
-    } else {
-      setShowForm(true);
-    }
-  }
 
   const schema = orderFormSchema(tOrder);
   const formMethods = useForm<OrderFormValues>({
@@ -75,6 +61,26 @@ export function PriceOfferCarCard({ priceOfferId }: { priceOfferId: number }) {
   });
 
   const translatedError = useTranslatedError(error);
+
+
+  function handleOrderClick() {
+    const { renewedAt } = priceOffer!;
+    const needRenew =
+      new Date().getTime() - new Date(renewedAt).getTime() > 15 * 60 * 1000;
+
+    if (needRenew) {
+      toast.error("צריך לחדש את הצעת המחיר לפני ביצוע הזמנה", {
+        duration: 3000,
+        position: "top-center",
+      });
+    } else {
+      setShowForm(true);
+    }
+  }
+
+  if (!priceOffer || isLoading) {
+    return <SelectedCarCardSkeleton />;
+  }
 
   return (
     <div className="sticky top-24">

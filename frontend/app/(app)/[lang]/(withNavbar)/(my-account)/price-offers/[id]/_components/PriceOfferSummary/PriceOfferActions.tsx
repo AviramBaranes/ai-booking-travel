@@ -23,6 +23,7 @@ export function PriceOfferActions({ priceOfferId }: { priceOfferId: number }) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const handleCopy = () => {
+    if (!priceOffer) return;
     navigator.clipboard.writeText(
       `${window.location.origin}/${lang}${CLIENT_PRICE_OFFER_LINK_PREFIX}${priceOffer.token}`,
     );
@@ -62,6 +63,8 @@ export function PriceOfferActions({ priceOfferId }: { priceOfferId: number }) {
       });
     }
   }, [translatedError]);
+
+  if (!priceOffer) return null;
 
   return (
     <>

@@ -1,9 +1,9 @@
 import { getAgentPriceOffer } from "@/shared/api/price-offers-api";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 export function usePriceOffer(priceOfferId: number) {
   const queryKey = ["priceOffer", priceOfferId];
-  const suspenseResult = useSuspenseQuery({
+  const suspenseResult = useQuery({
     queryKey,
     queryFn: () => getAgentPriceOffer(priceOfferId),
   });

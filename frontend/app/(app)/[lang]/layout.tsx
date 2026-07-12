@@ -1,10 +1,6 @@
 import "@/app/globals.css";
 import localFont from "next/font/local";
-import { getServerSession } from "next-auth/next";
-import { redirect } from "next/dist/client/components/navigation";
 import { notFound } from "next/navigation";
-import { cookies } from "next/headers";
-import { authOptions } from "@/shared/auth/authOptions";
 import { Toaster } from "@/components/ui/sonner";
 import { setRequestLocale } from "next-intl/server";
 

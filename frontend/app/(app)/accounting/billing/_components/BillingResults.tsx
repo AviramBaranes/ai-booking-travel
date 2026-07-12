@@ -1,6 +1,6 @@
 "use client";
 
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { listOpenReservations } from "@/shared/api/reservations-api";
 import { CurrencyGroupCard } from "./CurrencyGroupCard";
 import type { BillingEntity } from "./BillingEntityCombobox";
@@ -11,7 +11,7 @@ interface BillingResultsProps {
 }
 
 export function BillingResults({ entity, showActions }: BillingResultsProps) {
-  const { data } = useSuspenseQuery({
+  const { data } = useQuery({
     queryKey: ["open-reservations", entity.kind, entity.id],
     queryFn: () =>
       listOpenReservations({
@@ -20,7 +20,7 @@ export function BillingResults({ entity, showActions }: BillingResultsProps) {
       }),
   });
 
-  const groups = data.currencyGroups ?? [];
+  const groups = data?.currencyGroups ?? [];
 
   if (groups.length === 0) {
     return (

@@ -8,14 +8,19 @@ import { RentalSummary } from "../../../../_components/RentalSummary";
 import { useReservation } from "../../_hooks/useReservation";
 import { PayAtPickupSection } from "../../../../_components/PayAtPickupSection";
 import { useAddonsGallery } from "@/shared/hooks/useAddonsGallery";
+import { SummarySkeleton } from "@/shared/components/booking/SummarySkeleton";
 
 export function ReservationSummary({
   reservationId,
 }: {
   reservationId: number;
 }) {
-  const { data: reservation } = useReservation(reservationId);
+  const { data: reservation, isLoading } = useReservation(reservationId);
   const { data: addonsGallery } = useAddonsGallery();
+
+  if (isLoading || !reservation) {
+    return <SummarySkeleton />;
+  }
 
   return (
     <div className="flex flex-col gap-2 shadow-card rounded-xl p-6 bg-white border border-cars-border">
