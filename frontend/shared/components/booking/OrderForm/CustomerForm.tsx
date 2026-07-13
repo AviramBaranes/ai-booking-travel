@@ -4,12 +4,9 @@ import { useTranslations } from "next-intl";
 import { useFormContext } from "react-hook-form";
 import { OrderFormInput } from "./OrderFormInput";
 import { useDirection } from "@/shared/hooks/useDirection";
-import useAuthStore from "@/shared/auth/authStore";
 
-export function CustomerForm() {
+export function CustomerForm({isReadOnly}: {isReadOnly?: boolean}) {
   const t = useTranslations("booking.orderPage");
-  const status = useAuthStore((s) => s.status);
-  const readonly = status === "authenticated";
   const dir = useDirection();
   const {
     register,
@@ -22,7 +19,7 @@ export function CustomerForm() {
         <OrderFormInput
           placeholder={t("customerFirstName")}
           aria-invalid={!!errors.customerFirstName}
-          readOnly={readonly}
+          readOnly={isReadOnly}
           {...register("customerFirstName")}
         />
         <ErrorDisplay>{errors.customerFirstName?.message}</ErrorDisplay>
@@ -31,7 +28,7 @@ export function CustomerForm() {
         <OrderFormInput
           placeholder={t("customerLastName")}
           aria-invalid={!!errors.customerLastName}
-          readOnly={readonly}
+          readOnly={isReadOnly}
           {...register("customerLastName")}
         />
         <ErrorDisplay>{errors.customerLastName?.message}</ErrorDisplay>
@@ -41,7 +38,7 @@ export function CustomerForm() {
           placeholder={t("customerEmail")}
           type="email"
           aria-invalid={!!errors.customerEmail}
-          readOnly={readonly}
+          readOnly={isReadOnly}
           {...register("customerEmail")}
         />
         <ErrorDisplay>{errors.customerEmail?.message}</ErrorDisplay>
@@ -53,7 +50,7 @@ export function CustomerForm() {
           pattern="^05\d{8}$"
           dir={dir}
           aria-invalid={!!errors.customerPhone}
-          readOnly={readonly}
+          readOnly={isReadOnly}
           {...register("customerPhone")}
         />
         <ErrorDisplay>{errors.customerPhone?.message}</ErrorDisplay>

@@ -41,6 +41,7 @@ export function OrderPageContent() {
   const { lang } = useParams();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const status = useAuthStore((s) => s.status);
   const setSession = useAuthStore((s) => s.setSession);
   const isAgent = user?.role === "agent";
   const { data: bookingSettings } = useBookingSettings();
@@ -213,7 +214,7 @@ export function OrderPageContent() {
                   {t("customerDetails")}
                 </h5>
                 <div className="flex gap-4 my-4">
-                  <CustomerForm />
+                  <CustomerForm isReadOnly={status === "authenticated"} />
                 </div>
               </>
             )}
