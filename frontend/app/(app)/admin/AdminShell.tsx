@@ -12,7 +12,6 @@ import {
   Contact,
   Receipt,
   Ticket,
-  Coins,
   MapPin,
   CalendarCheck,
   TrendingUp,
@@ -22,7 +21,7 @@ import {
 } from "lucide-react";
 import AdminNavbar from "@/shared/components/admin/AdminNavbar";
 import useAuthStore from "@/shared/auth/authStore";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const navItems = [
   { label: "ראשי", href: "/admin", icon: Home },
@@ -32,6 +31,7 @@ const navItems = [
   { label: "משרדים", href: "/admin/offices", icon: Building2 },
   { label: "אנשי קשר", href: "/admin/contacts", icon: Contact },
   { label: "סוכנים", href: "/admin/agents", icon: Users },
+  { label: "לקוחות פרטיים", href: "/admin/customers", icon: Users },
   { label: "מחירונים", href: "/admin/pricing", icon: Receipt },
   { label: "קופונים", href: "/admin/coupons", icon: Ticket },
   // { label: "מטבעות", href: "/admin/currencies", icon: Coins },
@@ -51,29 +51,24 @@ export default function AdminShell({
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const status = useAuthStore((state) => state.status);
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const isAuthorized =
+    status !== "loading" && status !== "idle" && user?.role === "admin";
 
   useEffect(() => {
     if (status === "loading" || status === "idle") {
-      // Still loading auth
       return;
     }
 
-    if (!user || user.role !== "admin") {
-      // Not authorized, redirect
+    if (!isAuthorized) {
       router.replace("/he/");
-      return;
     }
-
-    setIsAuthorized(true);
-  }, [user, status, router]);
+  }, [isAuthorized, router, status]);
 
   const isAsideActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
     return pathname.startsWith(href);
   };
 
-  // Don't render content until we verify authorization
   if (!isAuthorized) {
     return null;
   }

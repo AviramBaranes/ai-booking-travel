@@ -19,7 +19,7 @@ func (s *Service) LoginAsUser(ctx context.Context, params auth.LoginAsUserParams
 	return h.LoginAsUser(ctx, params, authData.UserID)
 }
 
-// encore:api public method=POST path=/login/back-to-admin tag:agent
+// encore:api public method=POST path=/login/back-to-admin tag:agent_customer
 func (s *Service) LoginBackToAdmin(ctx context.Context) (*auth.LoginResponse, error) {
 	authData := GetAuthData()
 	h := auth.NewAuthService(s.query)

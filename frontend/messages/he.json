@@ -112,6 +112,7 @@
   },
   "BackToAdmin": {
     "adminAsAgentMsg": "אתה מחובר כסוכן",
+    "adminAsCustomerMsg": "אתה מחובר כלקוח",
     "adminMsg": "אתה מחובר כמנהל",
     "adminAsAgentBtn": "חזור למנהל",
     "adminBtn": "חזור לפאנל הניהול"

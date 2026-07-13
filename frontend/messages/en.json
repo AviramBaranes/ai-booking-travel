@@ -113,6 +113,7 @@
   },
   "BackToAdmin": {
     "adminAsAgentMsg": "You are logged in as an agent",
+    "adminAsCustomerMsg": "You are logged in as a customer",
     "adminMsg": "You are logged in as an admin",
     "adminAsAgentBtn": "Back to Admin",
     "adminBtn": "Back to Admin Panel"

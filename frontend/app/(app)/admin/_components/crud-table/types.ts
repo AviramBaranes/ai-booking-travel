@@ -54,12 +54,13 @@ export interface CrudTableProps<TRow, TCreate, TUpdate> {
   extractList: (response: unknown) => TRow[];
   extractTotal?: (response: unknown) => number;
   createFn?: (data: TCreate) => Promise<unknown>;
-  updateFn: (id: number, data: TUpdate) => Promise<unknown>;
+  updateFn?: (id: number, data: TUpdate) => Promise<unknown>;
   deleteFn?: (id: number) => Promise<unknown>;
   createSchema?: ZodType<TCreate & FieldValues>;
-  updateSchema: ZodType<TUpdate & FieldValues>;
+  updateSchema?: ZodType<TUpdate & FieldValues>;
   bulkActions?: BulkAction[];
   pageSize?: number;
   filterSlot?: ReactNode;
   hideCreate?: boolean;
+  readOnly?: boolean;
 }

@@ -11,6 +11,8 @@ interface BackToAdminButtonProps {
 
 export function BackToAdminButton({ buttonText }: BackToAdminButtonProps) {
   const store = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const isAgent = user?.role === "agent";
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
@@ -31,7 +33,8 @@ export function BackToAdminButton({ buttonText }: BackToAdminButtonProps) {
         isAdminAsAgent: false,
       });
 
-      window.location.href = "/admin/agents";
+      const path = isAgent ? "/admin/agents" : "/admin/customers";
+      window.location.href = path;
     } catch (error) {
       console.error("Login back to admin failed:", error);
     } finally {
