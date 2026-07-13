@@ -111,7 +111,7 @@ WHERE
     AND ($11::BIGINT IS NULL OR organization_id = $11::BIGINT)
     AND ($12::BIGINT IS NULL OR office_id = $12::BIGINT)
     AND ($13::BIGINT IS NULL OR user_id = $13::BIGINT)
-    AND (NOT $14::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+    AND ($14::BOOLEAN IS NULL OR ($14::BOOLEAN = TRUE AND office_id IS NOT NULL AND organization_id IS NOT NULL) OR ($14::BOOLEAN = FALSE AND office_id IS NULL AND organization_id IS NULL))
     AND (NOT $15::BOOLEAN OR reservation_status != 'canceled')
 `
 
@@ -129,7 +129,7 @@ type CountReservationsReportParams struct {
 	OrganizationID      *int64
 	OfficeID            *int64
 	AgentID             *int64
-	IsBusiness          bool
+	IsBusiness          *bool
 	SkipCanceled        bool
 }
 
@@ -854,7 +854,7 @@ WHERE
     AND ($11::BIGINT IS NULL OR organization_id = $11::BIGINT)
     AND ($12::BIGINT IS NULL OR office_id = $12::BIGINT)
     AND ($13::BIGINT IS NULL OR user_id = $13::BIGINT)
-    AND (NOT $14::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+    AND ($14::BOOLEAN IS NULL OR ($14::BOOLEAN = TRUE AND office_id IS NOT NULL AND organization_id IS NOT NULL) OR ($14::BOOLEAN = FALSE AND office_id IS NULL AND organization_id IS NULL))
     AND (NOT $15::BOOLEAN OR reservation_status != 'canceled')
 ORDER BY created_at DESC
 LIMIT  $17::BIGINT
@@ -875,7 +875,7 @@ type ListReservationsReportParams struct {
 	OrganizationID      *int64
 	OfficeID            *int64
 	AgentID             *int64
-	IsBusiness          bool
+	IsBusiness          *bool
 	SkipCanceled        bool
 	PageOffset          int64
 	PageSize            int64

@@ -28,7 +28,7 @@ type ProfitReportResponse struct {
 
 func (s *ReportsService) GetProfitReport(ctx context.Context, p ReportParams) (*ProfitReportResponse, error) {
 	p.Status = "vouchered" // profit report only includes booked reservations
-	result, err := s.getReports(ctx, p, true)
+	result, err := s.getReports(ctx, p)
 	if err != nil {
 		return nil, err
 	}

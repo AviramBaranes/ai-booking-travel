@@ -60,7 +60,7 @@ type accountsSet struct {
 }
 
 func (s *ReportsService) GetBusinessReport(ctx context.Context, p ReportParams) (*BusinessReportResponse, error) {
-	result, err := s.getReports(ctx, p, true)
+	result, err := s.getReports(ctx, p)
 	if err != nil {
 		return nil, err
 	}

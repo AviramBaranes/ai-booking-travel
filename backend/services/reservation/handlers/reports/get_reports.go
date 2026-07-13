@@ -28,7 +28,7 @@ type ReportParams struct {
 	OrganizationID      int64  `query:"organizationId,omitempty" encore:"optional"`
 	OfficeID            int64  `query:"officeId,omitempty" encore:"optional"`
 	AgentID             int64  `query:"agentId,omitempty" encore:"optional"`
-	IsBusiness          bool   `query:"isBusiness,omitempty" encore:"optional"`
+	UserType            string `query:"userType,required" validate:"required,oneof=agent customer both"`
 	IsExport            bool   `query:"isExport,omitempty" encore:"optional"`
 	SkipCanceled        bool   `query:"skipCanceled,omitempty" encore:"optional"`
 }
@@ -66,11 +66,20 @@ type getReportResult struct {
 	TotalBrokerErpCost float64
 }
 
-func (s *ReportsService) getReports(ctx context.Context, p ReportParams, isBusiness bool) (*getReportResult, error) {
+func (s *ReportsService) getReports(ctx context.Context, p ReportParams) (*getReportResult, error) {
 	offset := int64(p.Page-1) * p.PageSize
 	if p.IsExport {
 		offset = 0
 		p.PageSize = 1000000
+	}
+
+	var isBusiness *bool
+	if p.UserType == "agent" {
+		ib := true
+		isBusiness = &ib
+	} else if p.UserType == "customer" {
+		ib := false
+		isBusiness = &ib
 	}
 
 	queryParams := db.ListReservationsReportParams{
