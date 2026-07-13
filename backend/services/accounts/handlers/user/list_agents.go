@@ -64,22 +64,22 @@ func toAgentResponse(r db.ListAgentsRow) AgentResponse {
 }
 
 // ListAgents lists agents with optional filtering and pagination.
-func (s *UserService) ListAgents(ctx context.Context, params *ListAgentsParams) (*ListAgentsResponse, error) {
-	offset := (params.Page - 1) * agentsPageSize
+func (s *UserService) ListAgents(ctx context.Context, p *ListAgentsParams) (*ListAgentsResponse, error) {
+	offset := (p.Page - 1) * agentsPageSize
 
 	var searchPtr *string
-	if params.Search != "" {
-		searchPtr = &params.Search
+	if p.Search != "" {
+		searchPtr = &p.Search
 	}
 
 	var officeIDPtr *int64
-	if params.OfficeID != 0 {
-		officeIDPtr = &params.OfficeID
+	if p.OfficeID != 0 {
+		officeIDPtr = &p.OfficeID
 	}
 
 	var orgIDPtr *int64
-	if params.OrgID != 0 {
-		orgIDPtr = &params.OrgID
+	if p.OrgID != 0 {
+		orgIDPtr = &p.OrgID
 	}
 
 	rows, err := s.query.ListAgents(ctx, db.ListAgentsParams{

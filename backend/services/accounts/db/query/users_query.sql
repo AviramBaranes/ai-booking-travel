@@ -187,3 +187,27 @@ WHERE role = 'customer'
 SELECT * FROM users
 WHERE role = 'customer'
   AND id = $1;
+
+-- name: ListCustomers :many
+SELECT u.id, u.role, u.first_name, u.last_name, u.email, u.phone_number, u.last_login, u.created_at, u.updated_at
+FROM users u
+WHERE u.role = 'customer'
+  AND (sqlc.narg(search)::text IS NULL 
+    OR u.email ILIKE '%' || sqlc.narg(search)::text || '%' 
+    OR u.phone_number ILIKE '%' || sqlc.narg(search)::text || '%'
+    OR u.first_name ILIKE '%' || sqlc.narg(search)::text || '%'
+    OR u.last_name ILIKE '%' || sqlc.narg(search)::text || '%'
+    )
+ORDER BY u.created_at DESC
+LIMIT sqlc.arg(page_size)
+OFFSET sqlc.arg(page_offset);
+
+-- name: CountCustomers :one
+SELECT COUNT(*)
+FROM users
+WHERE role = 'customer'
+  AND (
+        sqlc.narg(search)::text IS NULL 
+        OR email ILIKE '%' || sqlc.narg(search)::text || '%' 
+        OR phone_number ILIKE '%' || sqlc.narg(search)::text || '%'
+      );

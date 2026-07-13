@@ -47,6 +47,24 @@ func (q *Queries) CountAgents(ctx context.Context, arg CountAgentsParams) (int64
 	return count, err
 }
 
+const countCustomers = `-- name: CountCustomers :one
+SELECT COUNT(*)
+FROM users
+WHERE role = 'customer'
+  AND (
+        $1::text IS NULL 
+        OR email ILIKE '%' || $1::text || '%' 
+        OR phone_number ILIKE '%' || $1::text || '%'
+      )
+`
+
+func (q *Queries) CountCustomers(ctx context.Context, search *string) (int64, error) {
+	row := q.db.QueryRow(ctx, countCustomers, search)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createAgent = `-- name: CreateAgent :one
 INSERT INTO users (role, first_name, last_name, email, phone_number, password_hash, office_id, created_at, updated_at)
 VALUES ('agent', $1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
@@ -670,6 +688,69 @@ func (q *Queries) ListAgents(ctx context.Context, arg ListAgentsParams) ([]ListA
 			&i.UpdatedAt,
 			&i.OfficeName,
 			&i.OrganizationName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCustomers = `-- name: ListCustomers :many
+SELECT u.id, u.role, u.first_name, u.last_name, u.email, u.phone_number, u.last_login, u.created_at, u.updated_at
+FROM users u
+WHERE u.role = 'customer'
+  AND ($1::text IS NULL 
+    OR u.email ILIKE '%' || $1::text || '%' 
+    OR u.phone_number ILIKE '%' || $1::text || '%'
+    OR u.first_name ILIKE '%' || $1::text || '%'
+    OR u.last_name ILIKE '%' || $1::text || '%'
+    )
+ORDER BY u.created_at DESC
+LIMIT $3
+OFFSET $2
+`
+
+type ListCustomersParams struct {
+	Search     *string
+	PageOffset int32
+	PageSize   int32
+}
+
+type ListCustomersRow struct {
+	ID          int64
+	Role        UserRole
+	FirstName   string
+	LastName    string
+	Email       string
+	PhoneNumber *string
+	LastLogin   pgtype.Timestamptz
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
+func (q *Queries) ListCustomers(ctx context.Context, arg ListCustomersParams) ([]ListCustomersRow, error) {
+	rows, err := q.db.Query(ctx, listCustomers, arg.Search, arg.PageOffset, arg.PageSize)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListCustomersRow
+	for rows.Next() {
+		var i ListCustomersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Role,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.PhoneNumber,
+			&i.LastLogin,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

@@ -87,6 +87,21 @@ func (mr *MockQuerierMockRecorder) CountContacts(ctx, arg any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountContacts", reflect.TypeOf((*MockQuerier)(nil).CountContacts), ctx, arg)
 }
 
+// CountCustomers mocks base method.
+func (m *MockQuerier) CountCustomers(ctx context.Context, search *string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountCustomers", ctx, search)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CountCustomers indicates an expected call of CountCustomers.
+func (mr *MockQuerierMockRecorder) CountCustomers(ctx, search any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountCustomers", reflect.TypeOf((*MockQuerier)(nil).CountCustomers), ctx, search)
+}
+
 // CountOffices mocks base method.
 func (m *MockQuerier) CountOffices(ctx context.Context, arg db.CountOfficesParams) (int64, error) {
 	m.ctrl.T.Helper()
@@ -605,6 +620,21 @@ func (m *MockQuerier) ListContacts(ctx context.Context, arg db.ListContactsParam
 func (mr *MockQuerierMockRecorder) ListContacts(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListContacts", reflect.TypeOf((*MockQuerier)(nil).ListContacts), ctx, arg)
+}
+
+// ListCustomers mocks base method.
+func (m *MockQuerier) ListCustomers(ctx context.Context, arg db.ListCustomersParams) ([]db.ListCustomersRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListCustomers", ctx, arg)
+	ret0, _ := ret[0].([]db.ListCustomersRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListCustomers indicates an expected call of ListCustomers.
+func (mr *MockQuerierMockRecorder) ListCustomers(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCustomers", reflect.TypeOf((*MockQuerier)(nil).ListCustomers), ctx, arg)
 }
 
 // ListInorganicOffices mocks base method.
