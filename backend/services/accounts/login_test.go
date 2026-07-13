@@ -197,19 +197,33 @@ func TestLogin(t *testing.T) {
 	})
 }
 
-func TestLoginAsAgent(t *testing.T) {
+func TestLoginAsUser(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("Validation: missing agent ID", func(t *testing.T) {
-		err := (ah.LoginAsAgentParams{}).Validate()
-		expectedErr := invalidValueErr("agentId")
+	t.Run("Validation: missing user ID", func(t *testing.T) {
+		err := (ah.LoginAsUserParams{}).Validate()
+		expectedErr := invalidValueErr("userId")
 		api_errors.AssertApiError(t, expectedErr, err)
 	})
 
-	t.Run("Agent not found", func(t *testing.T) {
+	t.Run("User not found", func(t *testing.T) {
 		adminCtx := adminAuthContext(999)
-		_, err := LoginAsAgent(adminCtx, ah.LoginAsAgentParams{AgentID: 99999})
+		_, err := LoginAsUser(adminCtx, ah.LoginAsUserParams{UserID: 99999})
 		api_errors.AssertApiError(t, ah.ErrInvalidCredentials, err)
+	})
+
+	t.Run("Disallow non-agent/customer role", func(t *testing.T) {
+		adminEmail := generateTestEmail()
+		admin, delAdmin, err := registerAdmin(ctx, adminEmail, testPassword)
+		if err != nil {
+			t.Fatalf("Failed to create admin: %v", err)
+		}
+		defer delAdmin()
+
+		adminCtx := adminAuthContext(admin.ID)
+		// Try to login as the admin themselves (role=admin) — must be rejected
+		_, err = LoginAsUser(adminCtx, ah.LoginAsUserParams{UserID: admin.ID})
+		api_errors.AssertApiError(t, api_errors.ErrUnauthorized, err)
 	})
 
 	t.Run("Successful login as agent", func(t *testing.T) {
@@ -234,7 +248,7 @@ func TestLoginAsAgent(t *testing.T) {
 		defer delAgent()
 
 		adminCtx := adminAuthContext(admin.ID)
-		resp, err := LoginAsAgent(adminCtx, ah.LoginAsAgentParams{AgentID: agent.ID})
+		resp, err := LoginAsUser(adminCtx, ah.LoginAsUserParams{UserID: agent.ID})
 		if err != nil {
 			t.Fatalf("Expected no error, got %v", err)
 		}
@@ -295,6 +309,49 @@ func TestLoginAsAgent(t *testing.T) {
 		}
 		if *rt.AdminRefID != admin.ID {
 			t.Errorf("Expected stored AdminRefID %d, got %d", admin.ID, *rt.AdminRefID)
+		}
+	})
+
+	t.Run("Successful login as customer", func(t *testing.T) {
+		adminEmail := generateTestEmail()
+		admin, delAdmin, err := registerAdmin(ctx, adminEmail, testPassword)
+		if err != nil {
+			t.Fatalf("Failed to create admin: %v", err)
+		}
+		defer delAdmin()
+
+		phone := randomIsraeliPhoneNumber()
+		customer, delCustomer, err := createCustomer(ctx, phone, nil)
+		if err != nil {
+			t.Fatalf("Failed to create customer: %v", err)
+		}
+		defer delCustomer()
+
+		adminCtx := adminAuthContext(admin.ID)
+		resp, err := LoginAsUser(adminCtx, ah.LoginAsUserParams{UserID: customer.ID})
+		if err != nil {
+			t.Fatalf("Expected no error, got %v", err)
+		}
+		if resp.AccessToken == "" {
+			t.Fatal("Expected access token")
+		}
+		if resp.ID != customer.ID {
+			t.Errorf("Expected ID %d, got %d", customer.ID, resp.ID)
+		}
+
+		// Verify OrganizationContext is nil for customers
+		accessClaims, err := jwt.ValidateAccessToken(resp.AccessToken)
+		if err != nil {
+			t.Fatalf("Failed to validate access token: %v", err)
+		}
+		if accessClaims.OrganizationContext != nil {
+			t.Error("Expected OrganizationContext to be nil for customer")
+		}
+		if accessClaims.AdminRefID == nil {
+			t.Fatal("Expected AdminRefID in access token claims")
+		}
+		if *accessClaims.AdminRefID != admin.ID {
+			t.Errorf("Expected AdminRefID %d, got %d", admin.ID, *accessClaims.AdminRefID)
 		}
 	})
 }

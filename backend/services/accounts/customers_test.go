@@ -3,6 +3,7 @@ package accounts
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"encore.app/internal/validation"
 	"encore.app/services/accounts/db"
 	ch "encore.app/services/accounts/handlers/customer"
+	"encore.dev/beta/auth"
 	"encore.dev/beta/errs"
 )
 
@@ -147,5 +149,86 @@ func TestListCustomers(t *testing.T) {
 		if len(page2.Customers) != 3 {
 			t.Fatalf("expected 3 customers on page 2, got %d", len(page2.Customers))
 		}
+	})
+}
+func customerAuthContext(userID int64) context.Context {
+	uid := auth.UID(strconv.FormatInt(userID, 10))
+	return auth.WithContext(context.Background(), uid, &AuthData{
+		UserID: userID,
+		Role:   UserRoleCustomer,
+	})
+}
+
+func TestUpdateCustomer(t *testing.T) {
+	ctx := context.Background()
+
+	// ── Validation ──
+
+	validationCases := []struct {
+		name   string
+		params ch.UpdateCustomerParams
+		field  string
+	}{
+		{"firstName required", ch.UpdateCustomerParams{LastName: "Last", Email: "a@b.com"}, "firstName"},
+		{"lastName required", ch.UpdateCustomerParams{FirstName: "First", Email: "a@b.com"}, "lastName"},
+		{"email required", ch.UpdateCustomerParams{FirstName: "First", LastName: "Last"}, "email"},
+		{"email invalid format", ch.UpdateCustomerParams{FirstName: "First", LastName: "Last", Email: "notanemail"}, "email"},
+	}
+	for _, tc := range validationCases {
+		tc := tc
+		t.Run("validation: "+tc.name, func(t *testing.T) {
+			t.Parallel()
+			wantErr := api_errors.NewErrorWithDetail(errs.InvalidArgument, validation.InvalidValueMsg, api_errors.ErrorDetails{
+				Code: api_errors.CodeInvalidValue, Field: tc.field,
+			})
+			api_errors.AssertApiError(t, wantErr, tc.params.Validate())
+		})
+	}
+
+	// ── Success ──
+
+	t.Run("updates customer fields successfully", func(t *testing.T) {
+		t.Parallel()
+		suffix := fmt.Sprintf("upd_%d", time.Now().UnixNano())
+		c := createTestCustomer(t, ctx, suffix)
+
+		authCtx := customerAuthContext(c.ID)
+		newEmail := fmt.Sprintf("updated_%d@test.com", time.Now().UnixNano())
+		err := UpdateCustomer(authCtx, ch.UpdateCustomerParams{
+			FirstName: "NewFirst",
+			LastName:  "NewLast",
+			Email:     newEmail,
+		})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		// verify the change persisted
+		row, dbErr := query.GetCustomerByID(ctx, c.ID)
+		if dbErr != nil {
+			t.Fatalf("failed to fetch updated customer: %v", dbErr)
+		}
+		if row.FirstName != "NewFirst" {
+			t.Fatalf("expected FirstName 'NewFirst', got %q", row.FirstName)
+		}
+		if row.LastName != "NewLast" {
+			t.Fatalf("expected LastName 'NewLast', got %q", row.LastName)
+		}
+		if row.Email != newEmail {
+			t.Fatalf("expected Email %q, got %q", newEmail, row.Email)
+		}
+	})
+
+	// ── Not found ──
+
+	t.Run("returns internal error when user id does not exist", func(t *testing.T) {
+		t.Parallel()
+		authCtx := customerAuthContext(999999999)
+		err := UpdateCustomer(authCtx, ch.UpdateCustomerParams{
+			FirstName: "Ghost",
+			LastName:  "User",
+			Email:     "ghost@test.com",
+		})
+		api_errors.AssertApiError(t, api_errors.ErrInternalError, err)
 	})
 }

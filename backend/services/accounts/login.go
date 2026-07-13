@@ -12,11 +12,11 @@ func (s *Service) Login(ctx context.Context, p auth.LoginParams) (*auth.LoginRes
 	return h.Login(ctx, p)
 }
 
-// encore:api auth method=POST path=/login/as-agent tag:admin
-func (s *Service) LoginAsAgent(ctx context.Context, params auth.LoginAsAgentParams) (*auth.LoginResponse, error) {
+// encore:api auth method=POST path=/login/as-user tag:admin
+func (s *Service) LoginAsUser(ctx context.Context, params auth.LoginAsUserParams) (*auth.LoginResponse, error) {
 	authData := GetAuthData()
 	h := auth.NewAuthService(s.query)
-	return h.LoginAsAgent(ctx, params, authData.UserID)
+	return h.LoginAsUser(ctx, params, authData.UserID)
 }
 
 // encore:api public method=POST path=/login/back-to-admin tag:agent
