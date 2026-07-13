@@ -101,8 +101,8 @@ func TestGetBusinessReport(t *testing.T) {
 		if row.OfficeName != seed.officeA.Name {
 			t.Fatalf("expected office name %q, got %q", seed.officeA.Name, row.OfficeName)
 		}
-		if row.AgentName != "Report AgentA" {
-			t.Fatalf("expected agent name %q, got %q", "Report AgentA", row.AgentName)
+		if row.UserName != "Report AgentA" {
+			t.Fatalf("expected agent name %q, got %q", "Report AgentA", row.UserName)
 		}
 		if row.AdminName == nil || *row.AdminName != "Report Admin" {
 			t.Fatalf("expected admin name %q, got %v", "Report Admin", row.AdminName)

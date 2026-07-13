@@ -131,12 +131,13 @@ export namespace accounts {
             this.ListAdmins = this.ListAdmins.bind(this)
             this.ListAgents = this.ListAgents.bind(this)
             this.ListContacts = this.ListContacts.bind(this)
+            this.ListCustomers = this.ListCustomers.bind(this)
             this.ListInorganicOffices = this.ListInorganicOffices.bind(this)
             this.ListOffices = this.ListOffices.bind(this)
             this.ListOrganicOrganizations = this.ListOrganicOrganizations.bind(this)
             this.ListOrganizations = this.ListOrganizations.bind(this)
             this.Login = this.Login.bind(this)
-            this.LoginAsAgent = this.LoginAsAgent.bind(this)
+            this.LoginAsUser = this.LoginAsUser.bind(this)
             this.LoginBackToAdmin = this.LoginBackToAdmin.bind(this)
             this.Logout = this.Logout.bind(this)
             this.RefreshTokens = this.RefreshTokens.bind(this)
@@ -146,6 +147,7 @@ export namespace accounts {
             this.SendCustomerLoginOTP = this.SendCustomerLoginOTP.bind(this)
             this.TempCustomerTagUsage = this.TempCustomerTagUsage.bind(this)
             this.UpdateContact = this.UpdateContact.bind(this)
+            this.UpdateCustomer = this.UpdateCustomer.bind(this)
             this.UpdateOffice = this.UpdateOffice.bind(this)
             this.UpdateOrganization = this.UpdateOrganization.bind(this)
             this.UpdateUser = this.UpdateUser.bind(this)
@@ -265,6 +267,18 @@ export namespace accounts {
             return await resp.json() as contact.ListContactsResponse
         }
 
+        public async ListCustomers(params: customer.ListCustomersParams): Promise<customer.ListCustomersResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                page:   String(params.Page),
+                search: params.Search,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/customers`, undefined, {query})
+            return await resp.json() as customer.ListCustomersResponse
+        }
+
         /**
          * ListInorganicOffices lists all inorganic offices for accountant use.
          */
@@ -327,9 +341,9 @@ export namespace accounts {
             return rtn
         }
 
-        public async LoginAsAgent(params: auth.LoginAsAgentParams): Promise<auth.LoginResponse> {
+        public async LoginAsUser(params: auth.LoginAsUserParams): Promise<auth.LoginResponse> {
             // Now make the actual call to the API
-            const resp = await this.baseClient.callTypedAPI("POST", `/login/as-agent`, JSON.stringify(params))
+            const resp = await this.baseClient.callTypedAPI("POST", `/login/as-user`, JSON.stringify(params))
 
             //Populate the return object from the JSON body and received headers
             const rtn = await resp.json() as auth.LoginResponse
@@ -416,6 +430,10 @@ export namespace accounts {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("PUT", `/contacts/${encodeURIComponent(id)}`, JSON.stringify(params))
             return await resp.json() as contact.ContactResponse
+        }
+
+        public async UpdateCustomer(params: customer.UpdateCustomerParams): Promise<void> {
+            await this.baseClient.callTypedAPI("PUT", `/update/me`, JSON.stringify(params))
         }
 
         /**
@@ -1036,7 +1054,6 @@ export namespace reservation {
                 brokerReservationId: params.BrokerReservationID,
                 createdDateFrom:     params.CreatedDateFrom,
                 createdDateTo:       params.CreatedDateTo,
-                isBusiness:          params.IsBusiness === undefined ? undefined : String(params.IsBusiness),
                 isExport:            params.IsExport === undefined ? undefined : String(params.IsExport),
                 officeId:            params.OfficeID === undefined ? undefined : String(params.OfficeID),
                 organizationId:      params.OrganizationID === undefined ? undefined : String(params.OrganizationID),
@@ -1047,6 +1064,7 @@ export namespace reservation {
                 skipCanceled:        params.SkipCanceled === undefined ? undefined : String(params.SkipCanceled),
                 status:              params.Status,
                 supplier:            params.Supplier,
+                userType:            params.UserType,
                 voucheredAtFrom:     params.VoucheredAtFrom,
                 voucheredAtTo:       params.VoucheredAtTo,
             })
@@ -1076,7 +1094,6 @@ export namespace reservation {
                 brokerReservationId: params.BrokerReservationID,
                 createdDateFrom:     params.CreatedDateFrom,
                 createdDateTo:       params.CreatedDateTo,
-                isBusiness:          params.IsBusiness === undefined ? undefined : String(params.IsBusiness),
                 isExport:            params.IsExport === undefined ? undefined : String(params.IsExport),
                 officeId:            params.OfficeID === undefined ? undefined : String(params.OfficeID),
                 organizationId:      params.OrganizationID === undefined ? undefined : String(params.OrganizationID),
@@ -1087,6 +1104,7 @@ export namespace reservation {
                 skipCanceled:        params.SkipCanceled === undefined ? undefined : String(params.SkipCanceled),
                 status:              params.Status,
                 supplier:            params.Supplier,
+                userType:            params.UserType,
                 voucheredAtFrom:     params.VoucheredAtFrom,
                 voucheredAtTo:       params.VoucheredAtTo,
             })
@@ -1157,10 +1175,10 @@ export namespace actions {
 
 export namespace auth {
     /**
-     * LoginAsAgentParams defines the parameters required to login as an agent.
+     * LoginAsUserParams defines the parameters required to login as a user (agent or customer) on behalf of an admin.
      */
-    export interface LoginAsAgentParams {
-        agentId: number
+    export interface LoginAsUserParams {
+        userId: number
     }
 
     /**
@@ -1220,9 +1238,6 @@ export namespace auth {
         newPassword: string
     }
 
-    /**
-     * ResolveSessionParams carries the raw Cookie header holding the refresh token.
-     */
     export interface ResolveSessionParams {
         CookieHeader: string
     }
@@ -1580,6 +1595,36 @@ export namespace currency {
         currencyCode?: string
         currencyISOName?: string
         rate?: number
+    }
+}
+
+export namespace customer {
+    export interface CustomerResponse {
+        id: number
+        firstName: string
+        lastName: string
+        email: string
+        phoneNumber: string
+        lastLogin: string
+        createdAt: string
+        updatedAt: string
+    }
+
+    export interface ListCustomersParams {
+        Search: string
+        Page: number
+    }
+
+    export interface ListCustomersResponse {
+        customers: CustomerResponse[]
+        total: number
+    }
+
+    export interface UpdateCustomerParams {
+        firstName: string
+        lastName: string
+        email: string
+        phoneNumber: string
     }
 }
 
@@ -2218,7 +2263,7 @@ export namespace reports {
         status: string
         organizationName: string
         officeName: string
-        agentName: string
+        userName: string
         adminName: string
         brokerName: string
         supplierName: string
@@ -2286,7 +2331,7 @@ export namespace reports {
         OrganizationID?: number
         OfficeID?: number
         AgentID?: number
-        IsBusiness?: boolean
+        UserType: string
         IsExport?: boolean
         SkipCanceled?: boolean
     }

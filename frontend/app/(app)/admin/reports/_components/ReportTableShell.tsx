@@ -133,13 +133,6 @@ export function ReportTableShell<T extends { reservationId: number }>({
             if (typeof cell === "string" || typeof cell === "number") {
               return String(cell).replace(/\t/g, " ");
             }
-            console.log(
-              "Unsupported cell type for export:",
-              cell,
-              typeof cell,
-              "in column",
-              col.key,
-            );
             return "";
           })
           .join("\t"),

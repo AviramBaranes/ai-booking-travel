@@ -74,10 +74,11 @@ func (s *ReportsService) getReports(ctx context.Context, p ReportParams) (*getRe
 	}
 
 	var isBusiness *bool
-	if p.UserType == "agent" {
+	switch p.UserType {
+	case "agent":
 		ib := true
 		isBusiness = &ib
-	} else if p.UserType == "customer" {
+	case "customer":
 		ib := false
 		isBusiness = &ib
 	}
