@@ -214,7 +214,8 @@ export function ReportTableShell<T extends { reservationId: number }>({
 
           <div className="overflow-x-auto">
             <table className={clsx("w-full table-fixed text-right",{
-              "min-w-900":!showLimitedColumns
+              "min-w-900":!showLimitedColumns,
+              "min-w-350 md:min-w-0":showLimitedColumns
             })}>
               <thead>
                 <tr className="border-b border-gray-200 bg-slate-100 text-xs font-bold text-slate-800">
@@ -286,7 +287,7 @@ export function ReportTableShell<T extends { reservationId: number }>({
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3">
+        <div className="flex flex-col lg:flex-row items-center justify-between border-t border-gray-200 px-4 py-3">
           <div className="flex items-start gap-4">
             <span className="text-sm text-gray-600">
               {count > 0
