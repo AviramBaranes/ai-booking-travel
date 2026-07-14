@@ -46,7 +46,7 @@ export function DeleteReservationDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
-        className="min-w-1/4 max-w-md p-6 flex flex-col gap-4 bg-white border-border-light/50 rounded-2xl shadow-modal"
+        className="min-w-1/4 lg:max-w-md p-6 flex flex-col gap-4 bg-white border-border-light/50 rounded-2xl shadow-modal max-sm:mx-auto max-sm:w-11/12"
         showCloseButton={false}
       >
         <DialogTitle className="type-h5 text-navy flex items-center justify-between p-6 pb-15 border-b border-muted/50">

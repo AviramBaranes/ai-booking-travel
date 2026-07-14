@@ -15,7 +15,7 @@ export function HeaderSection({
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between">
         <h5 className="type-h5 text-navy">{t("title")}</h5>
         {priceOffer.status !== "unavailable" && (
           <PriceOfferActions priceOfferId={priceOffer.id} />

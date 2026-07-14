@@ -100,7 +100,7 @@ export function ReservationPaymentDialog({
           setIframeUrl(null);
         }}
       >
-        <DialogContent className="w-full max-w-3xl!">
+        <DialogContent className="w-full max-w-3xl! max-sm:mx-auto max-sm:w-11/12 max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <DialogTitle>
             <p className="type-paragraph mt-4">
               {t("paymentIframeTitle", { bookingId: reservationId })}

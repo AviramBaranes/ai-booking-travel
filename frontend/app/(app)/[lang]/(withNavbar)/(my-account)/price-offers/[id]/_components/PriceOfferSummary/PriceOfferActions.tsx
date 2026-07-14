@@ -78,7 +78,7 @@ export function PriceOfferActions({ priceOfferId }: { priceOfferId: number }) {
         </Link>
       ) : (
         <>
-          <div className="flex gap-1 items-center w-1/4 justify-end">
+          <div className="flex flex-col lg:flex-row gap-1 items-start lg:items-center lg:w-1/4 justify-end">
             <Button
               variant="ghost"
               className="py-6 text-border-muted font-semibold flex gap-4"

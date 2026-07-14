@@ -29,7 +29,7 @@ export function PriceOffersGrid() {
   }
 
   return (
-    <div className="grid grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       {priceOffers.map((priceOffer) => (
         <PriceOfferCard priceOffer={priceOffer} key={priceOffer.id} />
       ))}

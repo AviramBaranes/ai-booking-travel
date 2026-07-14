@@ -43,17 +43,17 @@ export default async function PriceOfferPage({
   ]);
 
   return (
-    <main className="w-2/3 mx-auto pt-4 pb-6">
+    <main className="lg:w-2/3 mx-5 lg:mx-auto lg:pt-15 pb-6 print:w-full">
       <HydrationBoundary state={dehydrate(queryClient)}>
         <BackButton
           translationKey="backToPriceOffers"
           href={`/${lang}/price-offers`}
         />
-        <div className="flex gap-2 mt-6">
-          <div className="w-3/4">
+        <div className="flex flex-col-reverse lg:flex-row gap-2 mt-6">
+          <div className="lg:w-3/4">
             <PriceOfferSummary priceOfferId={Number(id)} />
           </div>
-          <div className="w-1/4">
+          <div className="lg:w-1/4">
             <PriceOfferCarCard priceOfferId={Number(id)} />
           </div>
         </div>

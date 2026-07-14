@@ -52,7 +52,7 @@ export function EditPriceOfferDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="min-w-1/3 max-w-md py-6 px-10 flex flex-col gap-4 bg-background border-border-light/50 rounded-2xl shadow-modal"
+        className="min-w-1/3 max-w-md py-6 px-10 flex flex-col gap-4 bg-background border-border-light/50 rounded-2xl shadow-modal max-sm:mx-auto max-sm:w-11/12"
         showCloseButton={false}
       >
         <div className="flex items-center justify-between p-3 pb-0">

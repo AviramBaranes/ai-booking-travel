@@ -18,9 +18,9 @@ export function HeaderSection({
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between">
         <h5 className="type-h5 text-navy">{t("title")}</h5>
-        <div className="flex gap-1 items-center w-1/4 justify-end">
+        <div className="flex gap-1 items-center lg:w-1/4 justify-end">
           {res.reservationStatus !== "canceled" && (
             <>
               <DeleteReservationButton reservationId={res.id} />

@@ -52,7 +52,7 @@ function FilterFormFields() {
 
   return (
     <form
-      className="flex gap-4 justify-between items-center"
+      className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center"
       onSubmit={handleSearch}
     >
       <legend className="type-label text-navy w-50">{t("filtersLabel")}</legend>
@@ -69,7 +69,7 @@ function FilterFormFields() {
           placeholder={t("statusPlaceholder")}
         />
       </div>
-      <Button variant="brand" className="py-6 w-40 font-semibold">
+      <Button variant="brand" className="py-6 w-full lg:w-40 font-semibold">
         {t("searchButton")}
       </Button>
     </form>
