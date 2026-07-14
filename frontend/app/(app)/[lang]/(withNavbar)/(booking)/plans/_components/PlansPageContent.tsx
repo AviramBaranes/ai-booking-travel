@@ -14,13 +14,14 @@ import { SelectedCarCard } from "@/shared/components/booking/SelectedCarCard/Sel
 import { useTranslations } from "next-intl";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ErpDialog } from "./ErpDialog";
 import { FeesNote } from "./FeesNote";
 import { PriceOfferDialog } from "./PriceOfferDialog";
 import { useSearchRequest } from "../../_hooks/useSearchRequest";
 import useAuthStore from "@/shared/auth/authStore";
 import { SelectedCarCardChildren } from "./SelectedCarCardChildern";
+import { FixedBottomButtons } from "./FixedBottomButtons";
 
 export function PlansPageContent() {
   const t = useTranslations("booking.plansPage");
@@ -44,6 +45,8 @@ export function PlansPageContent() {
 
   const [isErpDialogOpen, setIsErpDialogOpen] = useState(false);
   const [isPriceOfferDialogOpen, setIsPriceOfferDialogOpen] = useState(false);
+
+  const selectedCarCardRef = useRef<HTMLDivElement>(null);
 
   const { addOns, planInclusions } = useMemo(() => {
     if (!data) {
@@ -137,7 +140,7 @@ export function PlansPageContent() {
           </>
         )}
       </div>
-      <div className="lg:w-1/4">
+      <div id="selected-car-card" className="lg:w-1/4 relative">
         <SelectedCarCard
           isErpSelected={isErpSelected}
           daysCount={data?.daysCount ?? 0}
@@ -151,7 +154,16 @@ export function PlansPageContent() {
             setIsPriceOfferDialogOpen={setIsPriceOfferDialogOpen}
           />
         </SelectedCarCard>
+        <div className="absolute bottom-15" ref={selectedCarCardRef}>
+        </div>
       </div>
+      <FixedBottomButtons
+        isAgent={isAgent}
+        isErpSelected={isErpSelected}
+        setIsErpDialogOpen={setIsErpDialogOpen}
+        setIsPriceOfferDialogOpen={setIsPriceOfferDialogOpen}
+        watchRef={selectedCarCardRef}
+      />
       <ErpDialog
         open={isErpDialogOpen}
         onApprove={() => {
