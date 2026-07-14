@@ -37,9 +37,7 @@ export function FiltersSheet({ cars, hasActiveFilters }: FiltersSheetProps) {
         className="p-0 rounded-none border-0 w-full bottom-0 flex flex-col lg:hidden overflow-y-scroll"
       >
         <div className="flex items-center justify-between mt-12 ">
-          <SheetTitle className="mx-5">
-            <h5 className="type-h5 text-navy">{t("title")}</h5>
-          </SheetTitle>
+          <SheetTitle className="mx-5 type-h5 text-navy">{t("title")}</SheetTitle>
           <div className="flex items-center justify-between px-4 mx-10 shrink-0">
             <SheetClose asChild>
               <button aria-label="Close menu">

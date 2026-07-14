@@ -19,7 +19,7 @@ export function SelectedCarPriceDetails({
 
   const selectedPlan = vehicle.plans[selectedPlanIndex];
   return (
-    <>
+    <div className="flex flex-col gap-2 absolute lg:static left-0 bottom-0 mb-18 mx-5 lg:m-0">
       {selectedPlan.fullPrice !== selectedPlan.price && (
         <>
           <PriceDetailRow
@@ -49,7 +49,7 @@ export function SelectedCarPriceDetails({
         />
       )}
 
-      <hr className="mb-6 mt-3" />
+      <hr className="mb-6 mt-3 hidden lg:block" />
 
       <div className="flex justify-between items-start">
         <div>
@@ -63,6 +63,6 @@ export function SelectedCarPriceDetails({
           )}
         </h5>
       </div>
-    </>
+    </div>
   );
 }

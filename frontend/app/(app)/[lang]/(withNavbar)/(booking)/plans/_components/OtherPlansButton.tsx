@@ -38,7 +38,7 @@ export function OtherPlansButton({
   };
 
   const dialogWidthClass =
-    plans.length >= 3 ? "!max-w-[1260px]" : "!max-w-[970px]";
+    plans.length >= 3 ? "lg:max-w-[1260px]!" : "lg:max-w-[970px]!";
 
   return (
     <>
@@ -52,7 +52,21 @@ export function OtherPlansButton({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className={`${dialogWidthClass} p-0 bg-background border-none rounded-3xl shadow-[0px_4px_24px_0px_rgba(0,0,0,0.25)] overflow-scroll ring-0`}
+          className={`
+                    w-full
+                    ${dialogWidthClass}
+                    max-h-[calc(100dvh-2rem)]
+                    overflow-y-auto
+                    overflow-x-hidden
+                    p-0
+                    bg-background
+                    border-none
+                    rounded-3xl
+                    shadow-[0px_4px_24px_0px_rgba(0,0,0,0.25)]
+                    ring-0
+                    max-sm:mx-auto
+                    max-sm:w-11/12
+                  `}
           showCloseButton={false}
         >
           <div className="flex items-center justify-between px-10 pt-4 pb-0">
@@ -92,23 +106,23 @@ export function OtherPlansButton({
           </div>
 
           {/* Plan Cards */}
-          <div className="flex gap-6 items-stretch justify-center px-12 pb-6">
+          <div className="flex flex-col lg:flex-row gap-6 items-stretch justify-center px-12 pb-6">
             {plans.map((plan, index) => {
               const isSelected = index === selectedPlan;
               const supplier = suppliersInfo.find(
-                (s) => s.name === plan.supplierName
+                (s) => s.name === plan.supplierName,
               );
 
-              const planInclusions = supplier?.inclusions.find(
-                (inc) => inc.productName === plan.planName
-              )?.productInclusions ?? [];
-              const items =
-                activeTab === "terms" ? plan.info : planInclusions;
+              const planInclusions =
+                supplier?.inclusions.find(
+                  (inc) => inc.productName === plan.planName,
+                )?.productInclusions ?? [];
+              const items = activeTab === "terms" ? plan.info : planInclusions;
 
               return (
                 <div
                   key={plan.planName}
-                  className={`flex-1 min-w-0 bg-white rounded-3xl shadow-[0px_4px_12px_0px_rgba(63,63,63,0.1)] overflow-hidden flex flex-col ${
+                  className={`w-full shrink-0 lg:flex-1 min-w-0 bg-white rounded-3xl shadow-[0px_4px_12px_0px_rgba(63,63,63,0.1)] overflow-hidden flex flex-col ${
                     isSelected
                       ? "border-3 border-brand"
                       : "border border-border-light"

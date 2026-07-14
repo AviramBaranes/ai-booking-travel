@@ -12,7 +12,7 @@ import { searchRequestToParams } from "../results/searchQuery";
 import { useSearchRequest } from "../_hooks/useSearchRequest";
 
 const REDIRECT_SECONDS = 5;
-const SEARCH_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const SEARCH_TTL_MS = 150 * 60 * 1000; // 15 minutes
 
 interface ExpiredSearchGateProps {
   children: React.ReactNode;

@@ -12,16 +12,15 @@ import { ErpCheckbox } from "./ErpCheckbox";
 import { AddOnsDisplay } from "./AddOnsDisplay";
 import { SelectedCarCard } from "@/shared/components/booking/SelectedCarCard/SelectedCarCard";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import { useSearchParams, useRouter } from "next/navigation";
-import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellationBadge";
 import { useMemo, useState } from "react";
 import { ErpDialog } from "./ErpDialog";
 import { FeesNote } from "./FeesNote";
 import { PriceOfferDialog } from "./PriceOfferDialog";
 import { useSearchRequest } from "../../_hooks/useSearchRequest";
 import useAuthStore from "@/shared/auth/authStore";
+import { SelectedCarCardChildren } from "./SelectedCarCardChildern";
 
 export function PlansPageContent() {
   const t = useTranslations("booking.plansPage");
@@ -70,28 +69,9 @@ export function PlansPageContent() {
   }
 
   return (
-    <div className="flex gap-4">
-      <div className="w-3/4">
-        <div className="flex gap-4 mb-6">
-          {planInclusions.length > 0 && (
-            <div className="w-1/2">
-              <InclusionsDisplay
-                title={t("inclusionsTitle")}
-                inclusions={planInclusions}
-              />
-            </div>
-          )}
-          {vehicle.plans[selectedPlan].info.length > 0 && (
-            <div className="w-1/2">
-              <InclusionsDisplay
-                title={t("rentalTerms")}
-                inclusions={vehicle.plans[selectedPlan].info}
-              />
-            </div>
-          )}
-        </div>
-        <FeesNote vehicle={vehicle} />
-        <div className="flex justify-between items-center my-6">
+    <div className="flex flex-col-reverse lg:flex-row gap-4 max-sm:mx-5">
+      <div className="lg:w-3/4 w-full">
+        <div className="flex justify-between items-center my-3">
           <div className="flex gap-4">
             {vehicle.plans.length > 1 && (
               <OtherPlansButton
@@ -110,7 +90,7 @@ export function PlansPageContent() {
             />
           </div>
           {vehicle.signals && (
-            <div className="flex items-center gap-2">
+            <div className="items-center gap-2 hidden lg:flex">
               <SignalsDisplay
                 remainingCount={vehicle.signals.remainingCount}
                 liveViewers={vehicle.signals.liveViewers}
@@ -118,6 +98,26 @@ export function PlansPageContent() {
             </div>
           )}
         </div>
+        <div className="flex flex-col lg:flex-row gap-4 mb-6">
+          {planInclusions.length > 0 && (
+            <div className="lg:w-1/2">
+              <InclusionsDisplay
+                title={t("inclusionsTitle")}
+                inclusions={planInclusions}
+              />
+            </div>
+          )}
+          {vehicle.plans[selectedPlan].info.length > 0 && (
+            <div className="lg:w-1/2">
+              <InclusionsDisplay
+                title={t("rentalTerms")}
+                inclusions={vehicle.plans[selectedPlan].info}
+              />
+            </div>
+          )}
+        </div>
+        <FeesNote vehicle={vehicle} />
+
         <hr />
         <ErpCheckbox
           isSelected={isErpSelected}
@@ -137,46 +137,19 @@ export function PlansPageContent() {
           </>
         )}
       </div>
-      <div className="w-1/4">
+      <div className="lg:w-1/4">
         <SelectedCarCard
           isErpSelected={isErpSelected}
           daysCount={data?.daysCount ?? 0}
           vehicle={vehicle}
           selectedPlanIndex={selectedPlan}
         >
-          <>
-            <FreeCancellationBadge
-              pickupDate={searchRequest.PickupDate}
-              pickupTime={searchRequest.PickupTime}
-              text={t("freeCancellation")}
-            />
-            <Button
-              variant="brand"
-              className="mt-4 type-paragraph font-bold py-6 px-8 cursor-pointer"
-              onClick={() => {
-                if (isErpSelected) {
-                  router.push(
-                    `/${lang}/order?${currentSearchParams.toString()}`,
-                  );
-                } else {
-                  setIsErpDialogOpen(true);
-                }
-              }}
-            >
-              {t("continueCta")}
-            </Button>
-            {isAgent && (
-              <Button
-                variant="brand"
-                className="type-paragraph font-bold py-6 px-8 cursor-pointer bg-navy"
-                onClick={() => {
-                  setIsPriceOfferDialogOpen(true);
-                }}
-              >
-                {t("createPriceOffer")}
-              </Button>
-            )}
-          </>
+          <SelectedCarCardChildren
+            isErpSelected={isErpSelected}
+            isPriceOfferDialogOpen={isPriceOfferDialogOpen}
+            setIsErpDialogOpen={setIsErpDialogOpen}
+            setIsPriceOfferDialogOpen={setIsPriceOfferDialogOpen}
+          />
         </SelectedCarCard>
       </div>
       <ErpDialog

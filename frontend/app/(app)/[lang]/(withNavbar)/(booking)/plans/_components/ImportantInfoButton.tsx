@@ -41,7 +41,7 @@ export function ImportantInfoButton({
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="max-w-[970px]! flex max-h-[90vh] flex-col overflow-hidden rounded-3xl border-none bg-background p-0 shadow-[0px_4px_24px_0px_rgba(0,0,0,0.25)] ring-0"
+          className="max-w-[970px]! flex max-h-[90vh] flex-col overflow-hidden rounded-3xl border-none bg-background p-0 shadow-[0px_4px_24px_0px_rgba(0,0,0,0.25)] ring-0 max-sm:mx-auto max-sm:w-11/12"
           showCloseButton={false}
         >
           <div className="flex items-center justify-between px-10 pt-4 pb-0">
