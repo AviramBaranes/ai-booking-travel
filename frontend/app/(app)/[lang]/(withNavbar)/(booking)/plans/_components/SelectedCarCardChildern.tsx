@@ -11,12 +11,10 @@ interface SelectedCarCardChildrenProps {
   isErpSelected: boolean;
   setIsErpDialogOpen: (open: boolean) => void;
   setIsPriceOfferDialogOpen: (open: boolean) => void;
-  isPriceOfferDialogOpen: boolean;
 }
 
 export function SelectedCarCardChildren({
   isErpSelected,
-  isPriceOfferDialogOpen,
   setIsErpDialogOpen,
   setIsPriceOfferDialogOpen,
 }: SelectedCarCardChildrenProps) {
@@ -29,6 +27,18 @@ export function SelectedCarCardChildren({
   const user = useAuthStore((s) => s.user);
   const isAgent = user?.role === "agent";
 
+  function handleContinue() {
+    if (isErpSelected) {
+      router.push(`/${lang}/order?${currentSearchParams.toString()}`);
+    } else {
+      setIsErpDialogOpen(true);
+    }
+  }
+
+  function handleCreatePriceOffer() {
+    setIsPriceOfferDialogOpen(true);
+  }
+  
   return (
     <>
     {/* Desktop */}
@@ -41,13 +51,7 @@ export function SelectedCarCardChildren({
         <Button
           variant="brand"
           className="mt-4 type-paragraph font-bold py-6 px-8 cursor-pointer"
-          onClick={() => {
-            if (isErpSelected) {
-              router.push(`/${lang}/order?${currentSearchParams.toString()}`);
-            } else {
-              setIsErpDialogOpen(true);
-            }
-          }}
+          onClick={handleContinue}
         >
           {t("continueCta")}
         </Button>
@@ -55,9 +59,7 @@ export function SelectedCarCardChildren({
           <Button
             variant="brand"
             className="type-paragraph font-bold py-6 px-8 cursor-pointer bg-navy"
-            onClick={() => {
-              setIsPriceOfferDialogOpen(true);
-            }}
+            onClick={handleCreatePriceOffer}
           >
             {t("createPriceOffer")}
           </Button>
@@ -84,10 +86,7 @@ export function SelectedCarCardChildren({
                   "rounded-bl-md!": dir === "ltr",
                 },
               )}
-              onClick={() => {
-                console.log("isPriceOfferDialogOpen", isPriceOfferDialogOpen);
-                setIsPriceOfferDialogOpen(true);
-              }}
+              onClick={handleCreatePriceOffer}
             >
               {t("createPriceOffer")}
             </Button>
@@ -101,15 +100,7 @@ export function SelectedCarCardChildren({
                   "rounded-br-md!": dir === "ltr",
                 },
               )}
-              onClick={() => {
-                if (isErpSelected) {
-                  router.push(
-                    `/${lang}/order?${currentSearchParams.toString()}`,
-                  );
-                } else {
-                  setIsErpDialogOpen(true);
-                }
-              }}
+              onClick={handleContinue}
             >
               {t("continueCta")}
             </Button>
@@ -118,13 +109,7 @@ export function SelectedCarCardChildren({
           <Button
             variant="brand"
             className="type-paragraph font-bold w-full px-8 cursor-pointer rounded-t-none border border-brand"
-            onClick={() => {
-              if (isErpSelected) {
-                router.push(`/${lang}/order?${currentSearchParams.toString()}`);
-              } else {
-                setIsErpDialogOpen(true);
-              }
-            }}
+            onClick={handleContinue}
           >
             {t("continueCta")}
           </Button>

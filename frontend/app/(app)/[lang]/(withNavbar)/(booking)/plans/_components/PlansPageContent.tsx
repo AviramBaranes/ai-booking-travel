@@ -149,7 +149,6 @@ export function PlansPageContent() {
         >
           <SelectedCarCardChildren
             isErpSelected={isErpSelected}
-            isPriceOfferDialogOpen={isPriceOfferDialogOpen}
             setIsErpDialogOpen={setIsErpDialogOpen}
             setIsPriceOfferDialogOpen={setIsPriceOfferDialogOpen}
           />

@@ -9,12 +9,14 @@ import { Loading } from "../../Loading";
 
 export function SelectedCarHeader({
   carDetails,
+  className,
 }: {
   carDetails: broker.CarDetails;
+  className?: string;
 }) {
   const t = useTranslations("booking.results");
   return (
-    <div className="flex flex-col-reverse lg:flex-col lg:items-center items-start max-sm:mb-10">
+    <div className={`flex flex-col-reverse lg:flex-col lg:items-center items-start max-sm:mb-10 ${className}`}>
       <div className="flex-col flex items-center">
         <div className="lg:mb-12">
           <Suspense fallback={<Loading />}>

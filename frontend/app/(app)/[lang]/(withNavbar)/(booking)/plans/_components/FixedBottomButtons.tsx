@@ -31,7 +31,6 @@ export function FixedBottomButtons({
 
   useEffect(() => {
     const el = watchRef.current;
-    console.log(el)
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => setIsInView(entry.isIntersecting),

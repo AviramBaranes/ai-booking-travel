@@ -10,6 +10,7 @@ interface SelectedCarCardProps {
   vehicle: availability.AvailableVehicle;
   isErpSelected: boolean;
   children?: React.ReactNode;
+  headerClassName?: string;
 }
 
 export function SelectedCarCard({
@@ -18,12 +19,16 @@ export function SelectedCarCard({
   daysCount,
   selectedPlanIndex,
   isErpSelected,
+  headerClassName,
 }: SelectedCarCardProps) {
   const t = useTranslations("booking.results");
 
   return (
     <SelectedCarCardWrapper>
-      <SelectedCarHeader carDetails={vehicle.carDetails} />
+      <SelectedCarHeader
+        className={headerClassName}
+        carDetails={vehicle.carDetails}
+      />
 
       <SelectedCarPriceDetails
         daysCount={daysCount}
