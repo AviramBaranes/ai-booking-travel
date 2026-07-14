@@ -101,7 +101,7 @@ func (s *Service) GenerateCustomerPaymentIframe(ctx context.Context, p GenerateC
 	}
 
 	baseURL := encore.Meta().APIBaseURL.String()
-	baseURL = "https://6f76-46-116-122-75.ngrok-free.app"
+	// baseURL = "https://6f76-46-116-122-75.ngrok-free.app"
 	langCode := lang.FromContext(ctx, "he")
 
 	ic := icount.NewIcount()
