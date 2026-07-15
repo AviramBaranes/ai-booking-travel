@@ -14,6 +14,7 @@ import { CalendarSheet, CalendarInputTrigger } from "./CalendarSheet";
 import { LocationComboboxSheet } from "./LocationComboboxSheet";
 import { AgeCheckbox } from "./AgeCheckbox";
 import { CouponCheckbox } from "./CouponCheckbox";
+import useAuthStore from "@/shared/auth/authStore";
 
 export type SearchFieldHandle = {
   focus: () => void;
@@ -70,6 +71,9 @@ export function SearchFormMobile({
     control,
     name: "dropoffDate",
   });
+
+  const user = useAuthStore((s) => s.user);
+  const isAgent = user?.role === "agent";
 
   return (
     <div className="flex flex-col items-start justify-center gap-2 bg-white w-full rounded-xl p-2">
@@ -226,7 +230,8 @@ export function SearchFormMobile({
           />
         )}
       />
-      <Controller
+      {!isAgent && (
+        <Controller
           name="couponCode"
           control={control}
           render={({ field }) => (
@@ -239,6 +244,8 @@ export function SearchFormMobile({
             />
           )}
         />
+      )}
+
       <div className="w-full lg:w-1/9">
         <Button
           type="submit"

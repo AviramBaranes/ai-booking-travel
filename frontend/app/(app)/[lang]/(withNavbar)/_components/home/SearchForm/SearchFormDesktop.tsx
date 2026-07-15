@@ -12,6 +12,7 @@ import { SearchFormValues } from "./searchFormSchema";
 import { useRef } from "react";
 import clsx from "clsx";
 import { CalendarInputRange } from "./CalendarInputRange";
+import useAuthStore from "@/shared/auth/authStore";
 
 export type SearchFieldHandle = {
   focus: () => void;
@@ -64,6 +65,9 @@ export function SearchFormDesktop({
     name: "pickupDate",
   });
 
+  const user = useAuthStore((s) => s.user);
+  const isAgent = user?.role === "agent";
+
   return (
     <>
       <div className="hidden lg:flex bg-navy w-fit py-2 rounded-t-xl items-center text-white type-h6 px-6 gap-5">
@@ -90,20 +94,24 @@ export function SearchFormDesktop({
             />
           )}
         />
-        <div className="h-4 w-px bg-white/40 shrink-0" />
-        <Controller
-          name="couponCode"
-          control={control}
-          render={({ field }) => (
-            <CouponPopover
-              checkboxLabel={t("hasCoupon")}
-              inputLabel={t("couponPlaceholder")}
-              saveButtonText={t("save")}
-              couponCode={field.value ?? ""}
-              setCouponCode={field.onChange}
+        {!isAgent && (
+          <>
+            <div className="h-4 w-px bg-white/40 shrink-0" />
+            <Controller
+              name="couponCode"
+              control={control}
+              render={({ field }) => (
+                <CouponPopover
+                  checkboxLabel={t("hasCoupon")}
+                  inputLabel={t("couponPlaceholder")}
+                  saveButtonText={t("save")}
+                  couponCode={field.value ?? ""}
+                  setCouponCode={field.onChange}
+                />
+              )}
             />
-          )}
-        />
+          </>
+        )}
       </div>
       <div className="flex flex-col lg:flex-row items-start justify-center gap-2 bg-white/95 w-full py-6 rounded-xl lg:max-h-35 min-h-25 lg:rounded-tr-none px-5">
         <div className="flex flex-col lg:flex-row gap-2 flex-1 *:flex-1 w-full">

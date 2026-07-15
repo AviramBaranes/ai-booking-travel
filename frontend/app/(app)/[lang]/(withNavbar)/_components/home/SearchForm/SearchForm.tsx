@@ -4,12 +4,14 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SearchFormValues, searchSchema } from "./searchFormSchema";
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import clsx from "clsx";
 import { formatDate } from "@/shared/utils/formatDate";
 import { SearchFormDesktop } from "./SearchFormDesktop";
 import { SearchFormMobile } from "./SearchFormMobile";
+import useAuthStore from "@/shared/auth/authStore";
+import { OPEN_DIALOG_QUERY_KEY, OPEN_DIALOG_QUERY_VALUE } from "../../header/login/useDialogOpenFromQuery";
 
 export type SearchFieldHandle = {
   focus: () => void;
@@ -37,6 +39,8 @@ interface SearchFormProps extends Partial<SearchFormFields> {
 
 export function SearchForm({ className, ...fields }: SearchFormProps) {
   const { lang } = useParams();
+  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
   const clearSession = useBookingSessionStore((s) => s.clearSession);
   const clearCarGroupFilters = useBookingSessionStore(
     (s) => s.clearCarGroupFilters,
@@ -96,10 +100,20 @@ export function SearchForm({ className, ...fields }: SearchFormProps) {
     location.href = `/${lang}/results?${urlParams.toString()}`;
   }
 
+  const isAgent = user?.role === "agent";
+
   return (
     <form
       className={clsx("flex flex-col w-10/12 mx-auto mt-4", className)}
       onSubmit={formMethods.handleSubmit(onSubmit)}
+      onClick={(e) => {
+        if (!isAgent) {
+          e.stopPropagation();
+          router.push(
+            `/${lang}?${OPEN_DIALOG_QUERY_KEY}=${OPEN_DIALOG_QUERY_VALUE}`,
+          );
+        }
+      }}
     >
       <FormProvider {...formMethods}>
         <div className="hidden lg:block">
