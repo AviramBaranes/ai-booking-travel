@@ -23,7 +23,9 @@ export const FILTERS_LIST: FilterConfig[] = [
     filterKey: "locationDetails.locationType",
     titleKey: "booking.results.filters.pickupLocation.title",
     getOptionLabel: (value, t) =>
-      t(`booking.results.filters.pickupLocation.${value}`),
+      ["Airport", "Shuttle", "City", "Port"].includes(value)
+        ? t(`booking.results.filters.pickupLocation.${value}`)
+        : value,
   },
   {
     id: "transmissionType",
