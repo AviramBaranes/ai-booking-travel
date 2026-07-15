@@ -12,6 +12,7 @@ import (
 	contact "encore.app/services/accounts/handlers/contact"
 	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation"
+	"encore.app/services/reservation/handlers/actions"
 	"encore.dev/rlog"
 )
 
@@ -39,7 +40,7 @@ func OrderPaymentIPNGateway(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	BillingReservation, err := getBillingReservation(ctx, orderID, reqData, transaction)
+	billingReservation, err := getBillingReservation(ctx, orderID, reqData, transaction)
 	if err != nil {
 		rlog.Error("failed to get billing reservation after payment", "error", err, "orderID", orderID)
 		sendVoucherReservationFailureEmail(ctx, orderID, err)
@@ -53,11 +54,17 @@ func OrderPaymentIPNGateway(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = createInvoice(ic, BillingReservation, clientID, transaction)
+	resp, err := createInvoice(ic, billingReservation, clientID, transaction)
 	if err != nil {
 		rlog.Error("failed to create invoice", "error", err, "orderID", orderID)
 		sendInvoiceCreationFailureEmail(ctx, orderID, err)
-		return
+	} else {
+		if err := reservation.SaveInvoiceDocNum(ctx, actions.SaveInvoiceDocNumParams{
+			ID:     billingReservation.ID,
+			DocNum: resp.DocNum,
+		}); err != nil {
+			rlog.Error("failed to save invoice doc number", "error", err, "orderID", orderID)
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -194,7 +201,7 @@ func getIcountClientID(ctx context.Context, reqData *ipnReqData) (int, error) {
 }
 
 // createInvoice creates an invoice in iCount for the given billing reservation and transaction details.
-func createInvoice(ic *icount.Icount, reservation reservation.BillingReservation, clientID int, transaction *icount.Transaction) error {
+func createInvoice(ic *icount.Icount, reservation reservation.BillingReservation, clientID int, transaction *icount.Transaction) (*BillResponse, error) {
 	currencyID, _ := icount.CurrencyIDsMap[reservation.CurrencyCode]
 	items := buildReservationInvoiceItems(reservation, currencyID)
 	invoiceRes, err := ic.CreateInvoice(icount.CreateInvoiceParams{
@@ -204,12 +211,9 @@ func createInvoice(ic *icount.Icount, reservation reservation.BillingReservation
 		PaymentMethod: transaction.ToCCPayment(true),
 		Items:         items,
 	})
-
-	_, err = parseBillingResponse(invoiceRes)
 	if err != nil {
-		rlog.Error("failed to parse billing response", "error", err, "orderID", reservation.ID)
-		return err
+		return nil, fmt.Errorf("failed to create invoice in iCount: %w", err)
 	}
 
-	return nil
+	return parseBillingResponse(invoiceRes)
 }

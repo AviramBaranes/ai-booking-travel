@@ -983,6 +983,22 @@ func (q *Queries) ResolveReservationsPayment(ctx context.Context, ids []int64) e
 	return err
 }
 
+const saveInvoiceDocNum = `-- name: SaveInvoiceDocNum :exec
+UPDATE reservations
+SET invoice_doc_num = $2
+WHERE id = $1
+`
+
+type SaveInvoiceDocNumParams struct {
+	ID            int64
+	InvoiceDocNum *string
+}
+
+func (q *Queries) SaveInvoiceDocNum(ctx context.Context, arg SaveInvoiceDocNumParams) error {
+	_, err := q.db.Exec(ctx, saveInvoiceDocNum, arg.ID, arg.InvoiceDocNum)
+	return err
+}
+
 const updateReservationCurrencyRate = `-- name: UpdateReservationCurrencyRate :exec
 UPDATE reservations
 SET

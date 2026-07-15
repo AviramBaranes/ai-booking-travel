@@ -355,3 +355,8 @@ SELECT
 FROM reservations
 WHERE
     id = $1;
+
+-- name: SaveInvoiceDocNum :exec
+UPDATE reservations
+SET invoice_doc_num = $2
+WHERE id = $1;

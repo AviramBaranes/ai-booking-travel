@@ -13,6 +13,8 @@ import (
 	"encore.app/services/booking"
 	"encore.app/services/booking/handlers/booking_handlers"
 	emailevents "encore.app/services/notifications/events"
+	"encore.app/services/reservation"
+	"encore.app/services/reservation/handlers/actions"
 	"encore.dev/rlog"
 )
 
@@ -83,7 +85,7 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 		sendBookingFailureEmail(ctx, &pp, err) // continue without resolving pending payment
 	}
 
-	BillingReservation, err := getBillingReservation(ctx, resp.ReservationID, reqData, transaction)
+	billingReservation, err := getBillingReservation(ctx, resp.ReservationID, reqData, transaction)
 	if err != nil {
 		rlog.Error("failed to get billing reservation after payment", "error", err, "reservationID", resp.ReservationID)
 		sendVoucherReservationFailureEmail(ctx, resp.ReservationID, err)
@@ -95,10 +97,18 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 		rlog.Warn("failed to convert iCount client ID to int", "error", err, "clientID", transaction.ClientID)
 	}
 
-	err = createInvoice(ic, BillingReservation, cid, transaction)
+	billResp, err := createInvoice(ic, billingReservation, cid, transaction)
 	if err != nil {
+		rlog.Error("failed to create invoice", "error", err, "reservationID", resp.ReservationID)
 		sendInvoiceCreationFailureEmail(ctx, resp.ReservationID, err)
 		return
+	} else {
+		if err := reservation.SaveInvoiceDocNum(ctx, actions.SaveInvoiceDocNumParams{
+			ID:     billingReservation.ID,
+			DocNum: billResp.DocNum,
+		}); err != nil {
+			rlog.Error("failed to save invoice doc number", "error", err, "reservationID", resp.ReservationID)
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)

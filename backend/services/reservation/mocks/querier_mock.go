@@ -263,6 +263,20 @@ func (mr *MockQuerierMockRecorder) ResolveReservationsPayment(ctx, ids any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveReservationsPayment", reflect.TypeOf((*MockQuerier)(nil).ResolveReservationsPayment), ctx, ids)
 }
 
+// SaveInvoiceDocNum mocks base method.
+func (m *MockQuerier) SaveInvoiceDocNum(ctx context.Context, arg db.SaveInvoiceDocNumParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveInvoiceDocNum", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveInvoiceDocNum indicates an expected call of SaveInvoiceDocNum.
+func (mr *MockQuerierMockRecorder) SaveInvoiceDocNum(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveInvoiceDocNum", reflect.TypeOf((*MockQuerier)(nil).SaveInvoiceDocNum), ctx, arg)
+}
+
 // UpdateReservationCurrencyRate mocks base method.
 func (m *MockQuerier) UpdateReservationCurrencyRate(ctx context.Context, arg db.UpdateReservationCurrencyRateParams) error {
 	m.ctrl.T.Helper()
