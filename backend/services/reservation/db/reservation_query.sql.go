@@ -45,7 +45,10 @@ const cancelReservation = `-- name: CancelReservation :exec
 UPDATE reservations
 SET
     payment_status = CASE
-        WHEN payment_status = 'paid' THEN 'refund_pending'
+        WHEN payment_status = 'paid' THEN 
+            CASE WHEN payment_doc_num IS NOT NULL THEN "refund"
+            ELSE 'refund_pending' 
+            END
         ELSE payment_status
     END,
     reservation_status = 'canceled',

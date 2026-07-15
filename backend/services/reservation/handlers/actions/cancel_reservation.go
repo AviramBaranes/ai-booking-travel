@@ -172,10 +172,9 @@ func updateBalanceDue(ctx context.Context, reservation db.Reservation) error {
 
 func refundReservationPayment(reservation db.Reservation) error {
 	ic := icount.NewIcount()
-
 	if reservation.PaymentDocNum != nil {
 		if _, err := ic.CancelDocument(icount.CancelDocumentParams{
-			DocType:  "",
+			DocType:  "receipt",
 			DocNum:   *reservation.PaymentDocNum,
 			RefundCC: true,
 			Reason:   "Reservation cancellation",
@@ -186,7 +185,7 @@ func refundReservationPayment(reservation db.Reservation) error {
 
 	if reservation.InvoiceDocNum != nil {
 		if _, err := ic.CancelDocument(icount.CancelDocumentParams{
-			DocType:  "",
+			DocType:  "invoice",
 			DocNum:   *reservation.InvoiceDocNum,
 			RefundCC: false,
 			Reason:   "Reservation cancellation",

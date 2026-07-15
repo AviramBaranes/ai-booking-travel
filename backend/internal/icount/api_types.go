@@ -181,8 +181,10 @@ type ICountCancelDocumentRequest struct {
 }
 
 type ICountCancelDocumentResponse struct {
-	Status           bool     `json:"status"`
-	Reason           string   `json:"reason,omitempty"`
-	ErrorDescription string   `json:"error_description,omitempty"`
-	ErrorDetails     []string `json:"error_details,omitempty"`
+	Status              bool     `json:"status"`
+	Reason              string   `json:"reason,omitempty"`
+	ErrorDescription    string   `json:"error_description,omitempty"`
+	ErrorDetails        []string `json:"error_details,omitempty"`
+	CancellationDocType string   `json:"cancellation_doctype,omitempty"`
+	CancellationDocNum  string   `json:"cancellation_docnum,omitempty"`
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"encore.app/internal/broker"
 	"encore.app/internal/icount"
@@ -89,7 +90,12 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = createInvoice(ic, BillingReservation, 0, transaction)
+	cid, err := strconv.Atoi(transaction.ClientID)
+	if err != nil {
+		rlog.Warn("failed to convert iCount client ID to int", "error", err, "clientID", transaction.ClientID)
+	}
+
+	err = createInvoice(ic, BillingReservation, cid, transaction)
 	if err != nil {
 		sendInvoiceCreationFailureEmail(ctx, resp.ReservationID, err)
 		return

@@ -3,6 +3,8 @@ package icount
 import (
 	"encoding/json"
 	"fmt"
+
+	"encore.dev/rlog"
 )
 
 type CancelDocumentParams struct {
@@ -27,6 +29,11 @@ func (i *Icount) CancelDocument(p CancelDocumentParams) (*ICountCancelDocumentRe
 	var result ICountCancelDocumentResponse
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, fmt.Errorf("parsing response: %w", err)
+	}
+
+	if !result.Status {
+		rlog.Error("iCount cancel document failed", "reason", result.Reason, "docType", p.DocType, "docNum", p.DocNum)
+		return nil, fmt.Errorf("iCount cancel document failed: %s", result.Reason)
 	}
 
 	return &result, nil
