@@ -11,7 +11,7 @@ import { SearchQuery, toSearchRequest } from "../searchQuery";
 
 export function ResultsPageContent({ query }: { query: SearchQuery }) {
   const searchRequest = toSearchRequest(query);
-  const { isLoading, error } = useAvailableCars(searchRequest, {
+  const { isLoading, error, data } = useAvailableCars(searchRequest, {
     fromCache: false,
   });
 
@@ -19,7 +19,7 @@ export function ResultsPageContent({ query }: { query: SearchQuery }) {
     return <ResultsLoading />;
   }
 
-  if (error) {
+  if (error || (data && !data.availableVehicles.length)) {
     return <ErrorResultPageContent />;
   }
 
