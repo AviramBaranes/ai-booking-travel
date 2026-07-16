@@ -85,7 +85,7 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 		sendBookingFailureEmail(ctx, &pp, err) // continue without resolving pending payment
 	}
 
-	billingReservation, err := getBillingReservation(ctx, resp.ReservationID, reqData, transaction)
+	billingReservation, err := voucherReservation(ctx, resp.ReservationID, reqData, transaction)
 	if err != nil {
 		rlog.Error("failed to get billing reservation after payment", "error", err, "reservationID", resp.ReservationID)
 		sendVoucherReservationFailureEmail(ctx, resp.ReservationID, err)

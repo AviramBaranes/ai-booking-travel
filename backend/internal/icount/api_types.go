@@ -58,6 +58,7 @@ type ICountInvoiceItem struct {
 	UnitPriceIncvat *float64 `json:"unitprice_incvat,omitempty"`
 	Quantity        int      `json:"quantity"`
 	CurrencyID      int      `json:"currency_id,omitempty"`
+	CurrencyRate    float64  `json:"currency_rate,omitempty"`
 }
 
 type ICountCreateDocResponse struct {

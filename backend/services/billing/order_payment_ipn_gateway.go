@@ -40,7 +40,7 @@ func OrderPaymentIPNGateway(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	billingReservation, err := getBillingReservation(ctx, orderID, reqData, transaction)
+	billingReservation, err := voucherReservation(ctx, orderID, reqData, transaction)
 	if err != nil {
 		rlog.Error("failed to get billing reservation after payment", "error", err, "orderID", orderID)
 		sendVoucherReservationFailureEmail(ctx, orderID, err)
@@ -170,8 +170,8 @@ func getTransaction(ic *icount.Icount, confirmationCode string) (*icount.Transac
 	return &transaction, nil
 }
 
-// getBillingReservation retrieves the billing reservation after payment using the provided request data and transaction details.
-func getBillingReservation(ctx context.Context, id int64, reqData *ipnReqData, transaction *icount.Transaction) (reservation.BillingReservation, error) {
+// voucherReservation voucher the reservation, updates its currency rate and statuses and sends back the billing reservation after payment using the provided request data and transaction details.
+func voucherReservation(ctx context.Context, id int64, reqData *ipnReqData, transaction *icount.Transaction) (reservation.BillingReservation, error) {
 	resp, err := reservation.VoucherReservationAfterPayment(ctx, reservation.VoucherReservationAfterPaymentParams{
 		ReservationID:           id,
 		PaymentConfirmationCode: reqData.confirmationCode,
@@ -203,11 +203,12 @@ func getIcountClientID(ctx context.Context, reqData *ipnReqData) (int, error) {
 // createInvoice creates an invoice in iCount for the given billing reservation and transaction details.
 func createInvoice(ic *icount.Icount, reservation reservation.BillingReservation, clientID int, transaction *icount.Transaction) (*BillResponse, error) {
 	currencyID, _ := icount.CurrencyIDsMap[reservation.CurrencyCode]
-	items := buildReservationInvoiceItems(reservation, currencyID)
+	items := buildReservationInvoiceItems(reservation, currencyID, reservation.CurrencyRate)
 	invoiceRes, err := ic.CreateInvoice(icount.CreateInvoiceParams{
 		DocType:       "invoice",
 		ClientID:      clientID,
-		CurrencyID:    transaction.CurrencyID,
+		CurrencyID:    currencyID,
+		Rate:          reservation.CurrencyRate,
 		PaymentMethod: transaction.ToCCPayment(true),
 		Items:         items,
 	})
