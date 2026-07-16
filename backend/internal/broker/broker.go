@@ -119,14 +119,15 @@ type Location struct {
 
 // SearchAvailabilityParams represents the parameters required to search for available vehicles, such as pickup and return dates, location, and car preferences.
 type SearchAvailabilityParams struct {
-	CountryCode     string
-	PickupLocation  string
-	DropoffLocation string
-	PickupDate      string
-	DropoffDate     string
-	PickupTime      string
-	DropoffTime     string
-	DriverAge       int
+	CountryCode          string
+	PickupLocation       string
+	DropoffLocation      string
+	PickupDate           string
+	DropoffDate          string
+	PickupTime           string
+	DropoffTime          string
+	DriverAge            int
+	IsRestrictionApplied bool
 }
 
 // AvailableVehicle represents a vehicle that is available for rent, including details about the car, the rental plans, add-ons, location details, and price details.

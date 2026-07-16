@@ -209,3 +209,13 @@ var flexSupplierMap = map[string]struct {
 	"WG": {name: "Wheego Premium", code: "WG"},
 	"W5": {name: "Wheego", code: "WG"},
 }
+
+// restrictedSuppliers is a map that defines suppliers that are not allowed to show/book for customers (B2C) in certain countries (by country code).
+// and empty list means that the supplier is not allowed to show/book for customers in any country.
+var restrictedSuppliers = map[string][]string{
+	"SIXT":       []string{},
+	"Alamo":      []string{"US"},
+	"Alamo Max":  []string{"US"},
+	"Enterprise": []string{"US"},
+	"National":   []string{"US"},
+}

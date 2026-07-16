@@ -105,7 +105,7 @@ func (s *AvailabilityService) SearchAvailability(ctx context.Context, p SearchAv
 		}
 	}
 
-	resp, err := searchAvailabilityAcrossBrokers(s.cfg, p, locs)
+	resp, err := searchAvailabilityAcrossBrokers(s.cfg, p, locs, isAgent)
 	if err != nil {
 		return nil, err
 	}
