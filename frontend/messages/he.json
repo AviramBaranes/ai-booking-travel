@@ -26,6 +26,8 @@
     "phone_already_exists": "מספר הטלפון כבר קיים",
     "name_already_exists": "השם כבר קיים",
     "invalid_credentials": "אימייל או סיסמה שגויים",
+    "otp_send_rate_limit": "יותר מדי בקשות לקוד. נא המתן מספר דקות ונסה שוב.",
+    "otp_validate_rate_limit": "יותר מדי ניסיונות שגויים. נא בקש קוד חדש.",
     "invalid_refresh_token": "ההפעלה אינה תקינה, יש להתחבר מחדש",
     "expired_refresh_token": "ההפעלה פגה, יש להתחבר מחדש",
     "cancellation_window_exceeded": "לא ניתן לבטל הזמנה זו, חלון הביטול חרג",

@@ -32,6 +32,9 @@ func (s *AuthService) ValidateCustomerLoginOTP(ctx context.Context, params Valid
 	}
 
 	if user.Otp == nil || *user.Otp != params.OTP {
+		if rateLimitErr := s.checkValidateRateLimit(ctx, params.PhoneNumber, user.ID); rateLimitErr != nil {
+			return nil, rateLimitErr
+		}
 		return nil, ErrInvalidCredentials
 	}
 
@@ -53,6 +56,10 @@ func (s *AuthService) ValidateCustomerLoginOTP(ctx context.Context, params Valid
 		return nil, api_errors.ErrInternalError
 	}
 
+	if s.rateLimiter != nil {
+		s.rateLimiter.ClearAttempts(ctx, params.PhoneNumber)
+	}
+
 	return &LoginResponse{
 		ID:                   user.ID,
 		Role:                 user.Role,
@@ -64,4 +71,23 @@ func (s *AuthService) ValidateCustomerLoginOTP(ctx context.Context, params Valid
 		PhoneNumber:          ptrToStr(user.PhoneNumber),
 		SetCookies:           authCookies(tokens.RefreshToken),
 	}, nil
+}
+
+// checkValidateRateLimit records a failed OTP attempt. If the lockout threshold is reached,
+// it clears the OTP (forcing a new send) and returns the appropriate rate limit error.
+func (s *AuthService) checkValidateRateLimit(ctx context.Context, phone string, userID int64) error {
+	if s.rateLimiter == nil {
+		return nil
+	}
+	limitReached, err := s.rateLimiter.RecordFailedAttempt(ctx, phone)
+	if err != nil {
+		return err
+	}
+	if limitReached {
+		if clearErr := s.query.SaveOTP(ctx, db.SaveOTPParams{ID: userID, Otp: nil}); clearErr != nil {
+			rlog.Error("failed to clear OTP on rate limit lockout", "user_id", userID, "error", clearErr)
+		}
+		return s.rateLimiter.ValidateRateLimitErr()
+	}
+	return nil
 }

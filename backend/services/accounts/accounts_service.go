@@ -12,7 +12,8 @@ import (
 
 // encore:service
 type Service struct {
-	query db.Querier
+	query      db.Querier
+	otpLimiter OTPRateLimiter
 }
 
 // TEMP CHANGE
@@ -26,7 +27,8 @@ func initService() (*Service, error) {
 	query := db.New(pgxdb)
 
 	return &Service{
-		query: query,
+		query:      query,
+		otpLimiter: newOTPRateLimiter(),
 	}, nil
 }
 

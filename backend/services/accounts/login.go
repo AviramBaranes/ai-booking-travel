@@ -28,13 +28,13 @@ func (s *Service) LoginBackToAdmin(ctx context.Context) (*auth.LoginResponse, er
 
 // encore:api public method=POST path=/customer-login/send-otp
 func (s *Service) SendCustomerLoginOTP(ctx context.Context, params auth.SendCustomerLoginOTPParams) error {
-	h := auth.NewAuthService(s.query)
+	h := auth.NewAuthService(s.query).WithOTPRateLimiter(s.otpLimiter)
 	return h.SendCustomerLoginOTP(ctx, params)
 }
 
 // encore:api public method=POST path=/customer-login/validate-otp
 func (s *Service) ValidateCustomerLoginOTP(ctx context.Context, params auth.ValidateCustomerLoginOTPParams) (*auth.LoginResponse, error) {
-	h := auth.NewAuthService(s.query)
+	h := auth.NewAuthService(s.query).WithOTPRateLimiter(s.otpLimiter)
 	return h.ValidateCustomerLoginOTP(ctx, params)
 }
 

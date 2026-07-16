@@ -26,6 +26,8 @@
     "phone_already_exists": "Phone number already exists",
     "name_already_exists": "Name already exists",
     "invalid_credentials": "Invalid email or password",
+    "otp_send_rate_limit": "Too many OTP requests. Please wait a few minutes before trying again.",
+    "otp_validate_rate_limit": "Too many failed attempts. Please request a new code.",
     "invalid_refresh_token": "Session is invalid, please log in again",
     "expired_refresh_token": "Session has expired, please log in again",
     "invalid_reset_token": "Password reset link is invalid or expired",

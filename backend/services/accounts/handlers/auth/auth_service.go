@@ -10,14 +10,29 @@ import (
 	"encore.dev/beta/errs"
 )
 
+// OTPRateLimiter abstracts OTP rate limiting to avoid an import cycle with the accounts package.
+type OTPRateLimiter interface {
+	CheckAndIncrementSend(ctx context.Context, phone string) error
+	RecordFailedAttempt(ctx context.Context, phone string) (limitReached bool, err error)
+	ClearAttempts(ctx context.Context, phone string)
+	ValidateRateLimitErr() error
+}
+
 // AuthService holds the handler logic for all authentication endpoints.
 type AuthService struct {
-	query db.Querier
+	query       db.Querier
+	rateLimiter OTPRateLimiter
 }
 
 // NewAuthService creates a new AuthService.
 func NewAuthService(query db.Querier) *AuthService {
 	return &AuthService{query: query}
+}
+
+// WithOTPRateLimiter attaches a rate limiter for OTP endpoints and returns the same AuthService for chaining.
+func (s *AuthService) WithOTPRateLimiter(rl OTPRateLimiter) *AuthService {
+	s.rateLimiter = rl
+	return s
 }
 
 // LoginResponse is the shared response type for all login/refresh endpoints.

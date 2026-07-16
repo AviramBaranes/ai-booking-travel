@@ -39,6 +39,12 @@ var CustomerLoginOTPRequestedTopic = pubsub.NewTopic[*CustomerLoginOTPRequestedE
 )
 
 func (s *AuthService) SendCustomerLoginOTP(ctx context.Context, params SendCustomerLoginOTPParams) error {
+	if s.rateLimiter != nil {
+		if err := s.rateLimiter.CheckAndIncrementSend(ctx, params.PhoneNumber); err != nil {
+			return err
+		}
+	}
+
 	user, err := s.query.GetUserByPhone(ctx, &params.PhoneNumber)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
