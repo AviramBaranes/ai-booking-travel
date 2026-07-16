@@ -1303,9 +1303,10 @@ export namespace availability {
         planId: number
         planName: string
         fullPrice: number
-        discount: number
+        erpFullPrice: number
         price: number
         erpPrice: number
+        discount: number
         info: string[]
         rateQualifier: string
         supplierName: string

@@ -17,23 +17,29 @@ export function SelectedCarPriceDetails({
 }) {
   const t = useTranslations("booking.results");
 
-  const selectedPlan = vehicle.plans[selectedPlanIndex];
+  const { erpFullPrice, erpPrice, fullPrice, price } =
+    vehicle.plans[selectedPlanIndex];
+
+  const discountAmount = isErpSelected
+    ? fullPrice + erpFullPrice - (price + erpPrice)
+    : fullPrice - price;
+
   return (
     <div className="flex flex-col gap-2 absolute lg:static left-0 bottom-0 mb-18 mx-5 lg:m-0">
-      {selectedPlan.fullPrice !== selectedPlan.price && (
+      {fullPrice !== price && (
         <>
           <PriceDetailRow
             altText="coins icon"
             iconSrc="/assets/icons/coins.svg"
             label={t("carDetails.priceBeforeDiscount")}
-            price={selectedPlan.fullPrice}
+            price={fullPrice}
             currency={vehicle.priceDetails.currency}
           />
           <PriceDetailRow
             altText="discount icon"
             iconSrc="/assets/icons/Discount-Green.svg"
             label={t("carDetails.savings")}
-            price={selectedPlan.fullPrice - selectedPlan.price}
+            price={discountAmount}
             currency={vehicle.priceDetails.currency}
           />
         </>
@@ -44,7 +50,7 @@ export function SelectedCarPriceDetails({
           altText="stamp icon"
           iconSrc="/assets/icons/stamp.gif"
           label={t("carDetails.coveragePackage")}
-          price={selectedPlan.erpPrice}
+          price={erpPrice}
           currency={vehicle.priceDetails.currency}
         />
       )}
@@ -58,7 +64,7 @@ export function SelectedCarPriceDetails({
         </div>
         <h5 className="type-h5 text-navy">
           {formatPrice(
-            selectedPlan.price + (isErpSelected ? selectedPlan.erpPrice : 0),
+            price + (isErpSelected ? erpPrice : 0),
             vehicle.priceDetails.currency,
           )}
         </h5>

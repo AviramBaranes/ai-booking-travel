@@ -34,9 +34,10 @@ type Plan struct {
 	PlanID          int      `json:"planId"`
 	PlanName        string   `json:"planName"`
 	FullPrice       int      `json:"fullPrice"`
-	Discount        int      `json:"discount"`
+	ErpFullPrice    int      `json:"erpFullPrice"`
 	Price           int      `json:"price"`
 	ErpPrice        int      `json:"erpPrice"`
+	Discount        int      `json:"discount"`
 	Info            []string `json:"info"`
 	RateQualifier   string   `json:"rateQualifier"`
 	SupplierName    string   `json:"supplierName"`
@@ -114,7 +115,7 @@ func (s *AvailabilityService) SearchAvailability(ctx context.Context, p SearchAv
 		return emptySearchAvailabilityResponse(), nil
 	}
 
-	artifacts, err := s.buildAvailabilityArtifacts(ctx, p, locs, resp, float64(couponDiscount))
+	artifacts, err := s.buildAvailabilityArtifacts(ctx, locs, resp, float64(couponDiscount))
 	if err != nil {
 		return nil, err
 	}
