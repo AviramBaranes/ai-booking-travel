@@ -80,6 +80,7 @@ export function SearchFormMobile({
           render={({ field, fieldState }) => (
             <LocationComboboxSheet
               placeholder={t("pickupLocationPlaceholder")}
+              emptyMessage={t("noLocationsFound")}
               onSelect={(id) => {
                 field.onChange(id);
                 if (isDropoffDifferentLoc) {
@@ -115,6 +116,7 @@ export function SearchFormMobile({
             render={({ field, fieldState }) => (
               <LocationComboboxSheet
                 placeholder={t("dropoffLocationPlaceholder")}
+                emptyMessage={t("noLocationsFound")}
                 onSelect={(id) => {
                   field.onChange(id);
                   setCalendarOpen(true);

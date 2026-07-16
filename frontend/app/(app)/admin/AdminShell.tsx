@@ -44,8 +44,16 @@ const navItems = [
   // { label: "מטבעות", href: "/admin/currencies", icon: Coins },
   { label: "מיקומים", href: "/admin/locations", icon: MapPin },
   { label: "תרגומים", href: "/admin/translations", icon: Languages },
-  { label: "דוח הזמנות עסקי", href: "/admin/reports/reservations", icon: CalendarCheck },
-  { label: "דוח רווחיות", href: "/admin/reports/profitability", icon: TrendingUp },
+  {
+    label: "דוח הזמנות עסקי",
+    href: "/admin/reports/reservations",
+    icon: CalendarCheck,
+  },
+  {
+    label: "דוח רווחיות",
+    href: "/admin/reports/profitability",
+    icon: TrendingUp,
+  },
   { label: "דוח גבייה", href: "/admin/reports/collections", icon: Banknote },
 ];
 
@@ -59,25 +67,25 @@ export default function AdminShell({
   const user = useAuthStore((state) => state.user);
   const status = useAuthStore((state) => state.status);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const isAuthorized =
-    status !== "loading" && status !== "idle" && user?.role === "admin";
+  const isLoading = status === "loading" || status === "idle";
+  const isAuthorized = !isLoading && user?.role === "admin";
 
   useEffect(() => {
-    if (status === "loading" || status === "idle") {
+    if (isLoading) {
       return;
     }
 
     if (!isAuthorized) {
       router.replace("/he/");
     }
-  }, [isAuthorized, router, status]);
+  }, [isAuthorized, router, isLoading]);
 
   const isAsideActive = (href: string) => {
     if (href === "/admin") return pathname === "/admin";
     return pathname.startsWith(href);
   };
 
-  if (!isAuthorized) {
+  if (isLoading || !isAuthorized) {
     return null;
   }
 

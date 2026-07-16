@@ -18,6 +18,7 @@ import { clsx } from "clsx";
 
 interface LocationComboboxProps {
   placeholder: string;
+  emptyMessage: string;
   error: FieldError | undefined;
   onSelect: (locationId: number, name: string) => void;
   ref?: React.Ref<HTMLInputElement | null>;
@@ -28,6 +29,7 @@ interface LocationComboboxProps {
 }
 export function LocationCombobox({
   placeholder,
+  emptyMessage,
   onSelect,
   error,
   ref,
@@ -88,7 +90,7 @@ export function LocationCombobox({
         align="start"
         className="w-(--anchor-width)! min-w-(--anchor-width)! max-w-(--anchor-width)! rounded-xl p-1"
       >
-        <ComboboxEmpty>לא נמצאו מיקומים</ComboboxEmpty>
+        <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>
         <ComboboxList className="divide-y divide-border" dir="ltr">
           {(loc: location.LocationResult) => (
             <ComboboxItem

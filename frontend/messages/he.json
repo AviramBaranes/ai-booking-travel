@@ -128,6 +128,7 @@
     "save": "שמירה",
     "hasCoupon": "יש לי קוד הנחה",
     "couponPlaceholder": "הזינו קוד הנחה",
+    "noLocationsFound": "לא נמצאו מיקומים",
     "pickupLocationPlaceholder": "מהיכן תאספו את הרכב?",
     "dropoffLocationPlaceholder": "לאן תחזירו את הרכב?",
     "pickupDatePlaceholder": "מתי אוספים?",
@@ -484,6 +485,15 @@
         "saveButton": "עדכון הצעת המחיר",
         "statusLabel": "שנה סטטוס הצעה:",
         "priceOfferUpdatedSuccess": "הצעת המחיר עודכנה בהצלחה"
+      }
+    },
+    "profile": {
+      "title": "הפרטים שלי",
+      "saveButton": "שמירה",
+      "successMessage": "הפרטים נשמרו בהצלחה",
+      "validation": {
+        "required": "שדה חובה",
+        "invalidEmail": "כתובת אימייל לא חוקית"
       }
     },
     "priceOffers": {

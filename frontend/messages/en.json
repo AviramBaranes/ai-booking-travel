@@ -129,6 +129,7 @@
     "save": "Save",
     "hasCoupon": "I have a coupon",
     "couponPlaceholder": "Enter coupon code",
+    "noLocationsFound": "No locations found",
     "pickupLocationPlaceholder": "Pick-up location",
     "dropoffLocationPlaceholder": "Drop-off location",
     "pickupDatePlaceholder": "Pick-up date",
@@ -483,6 +484,15 @@
         "saveButton": "Update Price Offer",
         "statusLabel": "Change offer status:",
         "priceOfferUpdatedSuccess": "The price offer has been successfully updated"
+      }
+    },
+    "profile": {
+      "title": "My Details",
+      "saveButton": "Save",
+      "successMessage": "Details saved successfully",
+      "validation": {
+        "required": "Required field",
+        "invalidEmail": "Invalid email address"
       }
     },
     "priceOffers": {
