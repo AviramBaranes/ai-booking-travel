@@ -173,7 +173,7 @@ func buildReservationInvoiceItems(reservation reservation.BillingReservation, cu
 	}
 	invoiceItems = append(invoiceItems, icount.ICountInvoiceItem{
 		Description:     profitDesc,
-		UnitPriceIncvat: floatPtr((reservation.ProfitOnCar + reservation.ERPSellingPrice) * m),
+		UnitPriceIncvat: floatPtr((reservation.TotalProfit) * m),
 		Quantity:        1,
 		IsTaxExempt:     false,
 		SKU:             fmt.Sprintf("%d", reservation.ID),

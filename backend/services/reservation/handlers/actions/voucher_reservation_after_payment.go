@@ -59,7 +59,7 @@ func (s *ActionService) VoucherReservationAfterPayment(ctx context.Context, p Vo
 			CarPurchasePrice:    pd.CarPurchasePrice,
 			CarSellingPrice:     pd.CarSellingPrice,
 			ERPSellingPrice:     pd.ErpSellingPrice,
-			ProfitOnCar:         pd.CarProfit,
+			TotalProfit:         pd.TotalProfit,
 			TotalPrice:          pd.TotalPrice,
 			CurrencyCode:        reservation.CurrencyCode,
 			CurrencyRate:        dbadapters.NumericToFloat64(reservation.CurrencyRate),

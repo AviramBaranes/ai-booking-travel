@@ -125,8 +125,8 @@ UPDATE reservations
 SET
     payment_status = CASE
         WHEN payment_status = 'paid' THEN 
-            CASE WHEN payment_doc_num IS NOT NULL THEN "refund"
-            ELSE 'refund_pending' 
+            CASE WHEN payment_doc_num IS NOT NULL THEN 'refunded'::payment_status
+            ELSE 'refund_pending'::payment_status
             END
         ELSE payment_status
     END,
@@ -171,6 +171,7 @@ SELECT
     reservation_status,
     purchase_price,
     markup_percentage,
+    discount_percentage,
     bt_erp_price,
     broker_erp_price,
     total_price,

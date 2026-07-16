@@ -209,8 +209,8 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		if r.CarSellingPrice != roundPrice(166.75) { // 115 * 1.45
 			t.Errorf("CarSellingPrice: want 166.75, got %.2f", r.CarSellingPrice)
 		}
-		if r.ProfitOnCar != roundPrice(51.75) { // 166.75 - 115
-			t.Errorf("ProfitOnCar: want 51.75, got %.2f", r.ProfitOnCar)
+		if r.TotalProfit != roundPrice(55.08) { // 170.08 - 100  - 15
+			t.Errorf("TotalProfit: want 51.75, got %.2f", r.TotalProfit)
 		}
 		if r.ERPSellingPrice != 20.0 {
 			t.Errorf("ERPSellingPrice: want 20.00, got %.2f", r.ERPSellingPrice)

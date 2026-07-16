@@ -46,8 +46,8 @@ UPDATE reservations
 SET
     payment_status = CASE
         WHEN payment_status = 'paid' THEN 
-            CASE WHEN payment_doc_num IS NOT NULL THEN "refund"
-            ELSE 'refund_pending' 
+            CASE WHEN payment_doc_num IS NOT NULL THEN 'refunded'::payment_status
+            ELSE 'refund_pending'::payment_status
             END
         ELSE payment_status
     END,
@@ -382,6 +382,7 @@ SELECT
     reservation_status,
     purchase_price,
     markup_percentage,
+    discount_percentage,
     bt_erp_price,
     broker_erp_price,
     total_price,
@@ -424,6 +425,7 @@ type GetPaymentPendingReservationsByBillingEntityRow struct {
 	ReservationStatus   ReservationStatus
 	PurchasePrice       pgtype.Numeric
 	MarkupPercentage    pgtype.Numeric
+	DiscountPercentage  pgtype.Numeric
 	BtErpPrice          pgtype.Numeric
 	BrokerErpPrice      pgtype.Numeric
 	TotalPrice          pgtype.Numeric
@@ -449,6 +451,7 @@ func (q *Queries) GetPaymentPendingReservationsByBillingEntity(ctx context.Conte
 			&i.ReservationStatus,
 			&i.PurchasePrice,
 			&i.MarkupPercentage,
+			&i.DiscountPercentage,
 			&i.BtErpPrice,
 			&i.BrokerErpPrice,
 			&i.TotalPrice,
