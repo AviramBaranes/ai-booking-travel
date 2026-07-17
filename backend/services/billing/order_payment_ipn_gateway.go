@@ -114,6 +114,7 @@ func sendVoucherReservationFailureEmail(ctx context.Context, reservationID int64
 type ipnReqData struct {
 	ID               int64
 	confirmationCode string
+	CustomerEmail    string
 	officeID         *int64
 	organizationID   *int64
 }
@@ -133,6 +134,7 @@ func parseRequest(r *http.Request) (*ipnReqData, error) {
 		return nil, err
 	}
 
+	cEmail := r.Form.Get("customer_email")
 	confCode := r.Form.Get("confirmation_code")
 	if confCode == "" {
 		rlog.Error("missing confirmation code in form parameters")
@@ -147,6 +149,7 @@ func parseRequest(r *http.Request) (*ipnReqData, error) {
 
 	return &ipnReqData{
 		ID:               orderID,
+		CustomerEmail:    cEmail,
 		confirmationCode: confCode,
 		officeID:         offID,
 		organizationID:   orgID,
@@ -172,11 +175,16 @@ func getTransaction(ic *icount.Icount, confirmationCode string) (*icount.Transac
 
 // voucherReservation voucher the reservation, updates its currency rate and statuses and sends back the billing reservation after payment using the provided request data and transaction details.
 func voucherReservation(ctx context.Context, id int64, reqData *ipnReqData, transaction *icount.Transaction) (reservation.BillingReservation, error) {
+	email := reqData.CustomerEmail
+	if email == "" {
+		email = transaction.ClientEmail
+	}
+
 	resp, err := reservation.VoucherReservationAfterPayment(ctx, reservation.VoucherReservationAfterPaymentParams{
 		ReservationID:           id,
 		PaymentConfirmationCode: reqData.confirmationCode,
 		PaymentDocNum:           transaction.DocNumber,
-		UserEmail:               transaction.ClientEmail,
+		UserEmail:               email,
 	})
 	if err != nil {
 		rlog.Error("failed to voucher reservation after payment", "error", err, "orderID", id)
