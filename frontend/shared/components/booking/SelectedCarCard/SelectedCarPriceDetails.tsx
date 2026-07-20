@@ -3,6 +3,8 @@ import { PriceDetailRow } from "../PriceDetailRow";
 import { useTranslations } from "next-intl";
 import { RentalPriceForDays } from "../RentalPriceForDays";
 import { formatPrice } from "@/shared/utils/formatPrice";
+import { useDirection } from "@/shared/hooks/useDirection";
+import clsx from "clsx";
 
 export function SelectedCarPriceDetails({
   vehicle,
@@ -16,6 +18,7 @@ export function SelectedCarPriceDetails({
   daysCount: number;
 }) {
   const t = useTranslations("booking.results");
+  const dir = useDirection();
 
   const { erpFullPrice, erpPrice, fullPrice, price } =
     vehicle.plans[selectedPlanIndex];
@@ -25,7 +28,15 @@ export function SelectedCarPriceDetails({
     : fullPrice - price;
 
   return (
-    <div className="flex flex-col gap-2 absolute lg:static left-0 bottom-0 mb-18 mx-5 lg:m-0">
+    <div
+      className={clsx(
+        "flex flex-col gap-2 absolute lg:static bottom-0 mb-18 mx-5 lg:m-0",
+        {
+          "left-0": dir === "rtl",
+          "right-0": dir === "ltr",
+        },
+      )}
+    >
       {fullPrice !== price && (
         <>
           <PriceDetailRow

@@ -142,7 +142,7 @@ export function OtherPlansButton({
                         {items.map((item) => (
                           <div key={item} className="flex gap-2.5 items-start">
                             <CircleCheckBig className="w-4 h-4 text-success shrink-0 mt-1.5" />
-                            <span className="type-paragraph text-text-secondary flex-1">
+                            <span className="type-paragraph text-text-secondary flex-1 min-w-0 wrap-anywhere">
                               {item}
                             </span>
                           </div>

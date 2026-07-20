@@ -35,13 +35,13 @@ export function ImportantInfoButton({
       <Button
         onClick={() => setOpen(true)}
         variant="outline"
-        className="px-8 py-6 type-paragraph text-navy rounded-lg"
+        className="px-4 lg:px-8 py-6 type-paragraph text-navy rounded-lg"
       >
         {t("importantInfo")}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
-          className="max-w-[970px]! flex max-h-[90vh] flex-col overflow-hidden rounded-3xl border-none bg-background p-0 shadow-[0px_4px_24px_0px_rgba(0,0,0,0.25)] ring-0 max-sm:mx-auto max-sm:w-11/12"
+          className="max-w-242.5! flex max-h-[90vh] flex-col overflow-hidden rounded-3xl border-none bg-background p-0 shadow-[0px_4px_24px_0px_rgba(0,0,0,0.25)] ring-0 max-sm:mx-auto max-sm:w-11/12"
           showCloseButton={false}
         >
           <div className="flex items-center justify-between px-10 pt-4 pb-0">
