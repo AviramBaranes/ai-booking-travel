@@ -126,7 +126,7 @@ export function buildRequest(
     OrganizationID: toNumber(filters.organizationId),
     OfficeID: toNumber(filters.officeId),
     AgentID: toNumber(filters.agentId),
-    IsBusiness: true,
+    UserType: filters.userType || "both",
     IsExport: isExport,
     SkipCanceled: filters.skipCanceled === "true",
   };
@@ -168,10 +168,10 @@ export function makeBaseColumns<
       render: (row) => row.officeName || "-",
     },
     {
-      key: "agentName",
-      label: "סוכן",
+      key: "userName",
+      label: "סוכן/לקוח",
       className: "min-w-44",
-      render: (row) => row.agentName || "-",
+      render: (row) => row.userName || "-",
     },
     {
       key: "adminName",
@@ -313,7 +313,7 @@ export const LIMITED_COLUMNS_KEYS = [
   "brokerReservationId",
   "status",
   "officeName",
-  "agentName",
+  "userName",
   "countryCode",
   "pickupDate",
   "rentalDays",

@@ -35,7 +35,7 @@ func (s *Service) CreateReservation(ctx context.Context, p actions.CreateReserva
 	return s.newActionService().CreateReservation(ctx, p)
 }
 
-// encore:api auth method=POST path=/api/reservation/:id/cancel tag:agent
+// encore:api auth method=POST path=/api/reservation/:id/cancel tag:agent_customer
 func (s *Service) CancelReservation(ctx context.Context, id int64) error {
 	return s.newActionService().CancelReservation(ctx, id)
 }
@@ -91,6 +91,11 @@ func (s *Service) SeedReservations(ctx context.Context) (*actions.SeedReservatio
 }
 
 // encore:api private
-func (s *Service) VoucherReservationAfterPayment(ctx context.Context, p *actions.VoucherReservationAfterPaymentParams) (*actions.VoucherReservationAfterPaymentResponse, error) {
+func (s *Service) VoucherReservationAfterPayment(ctx context.Context, p actions.VoucherReservationAfterPaymentParams) (*actions.VoucherReservationAfterPaymentResponse, error) {
 	return s.newActionService().VoucherReservationAfterPayment(ctx, p)
+}
+
+// encore:api private
+func (s *Service) SaveInvoiceDocNum(ctx context.Context, p actions.SaveInvoiceDocNumParams) error {
+	return s.newActionService().SaveInvoiceDocNum(ctx, p)
 }

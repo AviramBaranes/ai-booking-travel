@@ -26,6 +26,8 @@
     "phone_already_exists": "מספר הטלפון כבר קיים",
     "name_already_exists": "השם כבר קיים",
     "invalid_credentials": "אימייל או סיסמה שגויים",
+    "otp_send_rate_limit": "יותר מדי בקשות לקוד. נא המתן מספר דקות ונסה שוב.",
+    "otp_validate_rate_limit": "יותר מדי ניסיונות שגויים. נא בקש קוד חדש.",
     "invalid_refresh_token": "ההפעלה אינה תקינה, יש להתחבר מחדש",
     "expired_refresh_token": "ההפעלה פגה, יש להתחבר מחדש",
     "cancellation_window_exceeded": "לא ניתן לבטל הזמנה זו, חלון הביטול חרג",
@@ -112,6 +114,7 @@
   },
   "BackToAdmin": {
     "adminAsAgentMsg": "אתה מחובר כסוכן",
+    "adminAsCustomerMsg": "אתה מחובר כלקוח",
     "adminMsg": "אתה מחובר כמנהל",
     "adminAsAgentBtn": "חזור למנהל",
     "adminBtn": "חזור לפאנל הניהול"
@@ -127,6 +130,7 @@
     "save": "שמירה",
     "hasCoupon": "יש לי קוד הנחה",
     "couponPlaceholder": "הזינו קוד הנחה",
+    "noLocationsFound": "לא נמצאו מיקומים",
     "pickupLocationPlaceholder": "מהיכן תאספו את הרכב?",
     "dropoffLocationPlaceholder": "לאן תחזירו את הרכב?",
     "pickupDatePlaceholder": "מתי אוספים?",
@@ -172,8 +176,20 @@
       "feesNoteTitle": "לתשלום בתחנה"
     },
     "orderPage": {
+      "paymentTitle": "השלמת תשלום להזמנת הרכב",
+      "paymentSubtitle": "{carModel} או דומה · איסוף: {pickupLocation} · {pickupDate} בשעה {pickupTime}",
+      "paymentLoading": "התשלום בקליטה, נא להמתין, אל תסגרו את החלון",
+      "paymentFailedTitle": "לא הצלחנו להשלים את ההזמנה",
+      "paymentFailedMessage": "התשלום התקבל במערכת, אבל לא הצלחנו להשלים את ההזמנה מול ספק הרכב. אין צורך לבצע הזמנה נוספת כרגע. אם בוצע חיוב בפועל, המערכת תנסה לבצע זיכוי אוטומטי. בנוסף, הצוות שלנו קיבל התראה ויבדוק את המקרה בהקדם.",
+      "contactSupport": "יצירת קשר עם התמיכה",
+      "backToSearchResults": "חזרה לתוצאות החיפוש",
+      "customerDetails": "פרטי המזמין",
       "driverDetails": "פרטי הנהג",
       "title": "תואר*",
+      "customerFirstName": "שם פרטי *",
+      "customerLastName": "שם משפחה *",
+      "customerEmail": "דוא\"ל *",
+      "customerPhone": "טלפון נייד *",
       "firstName": "שם פרטי (אנגלית)*",
       "lastName": "שם משפחה (אנגלית)*",
       "flightNumber": "מספר טיסה",
@@ -181,6 +197,7 @@
       "confirmCta": "תזמין לי!",
       "submitting": "מאשר...",
       "submitError": "משהו השתבש. אנא נסה שוב.",
+      "loadError": "אירעה שגיאה בטעינה. אנא רענן את הדף.",
       "termsCheckbox": "אני מאשר את",
       "termsLink": "תנאי ההזמנה",
       "freeCancellation": "ביטול בחינם עד 48 שעות לפני האיסוף",
@@ -188,7 +205,9 @@
       "validation": {
         "required": "שדה חובה",
         "englishOnly": "אותיות באנגלית בלבד",
-        "mustAcceptTerms": "יש לאשר את התנאים"
+        "mustAcceptTerms": "יש לאשר את התנאים",
+        "invalidPhone": "יש להזין מספר נייד תקין",
+        "invalidEmail": "יש להזין כתובת אימייל תקינה"
       }
     },
     "plansDialog": {
@@ -468,6 +487,15 @@
         "saveButton": "עדכון הצעת המחיר",
         "statusLabel": "שנה סטטוס הצעה:",
         "priceOfferUpdatedSuccess": "הצעת המחיר עודכנה בהצלחה"
+      }
+    },
+    "profile": {
+      "title": "הפרטים שלי",
+      "saveButton": "שמירה",
+      "successMessage": "הפרטים נשמרו בהצלחה",
+      "validation": {
+        "required": "שדה חובה",
+        "invalidEmail": "כתובת אימייל לא חוקית"
       }
     },
     "priceOffers": {

@@ -42,17 +42,17 @@ export default async function OfferPage({
   ]);
 
   return (
-    <main className="w-2/3 mx-auto pt-4 pb-6">
+    <main className="lg:w-2/3 mx-5 lg:mx-auto lg:pt-15 pb-6">
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <div className="flex gap-2 mt-6">
-          <div className="w-3/4">
+        <div className="flex flex-col-reverse lg:flex-row gap-2 mt-6">
+          <div className="lg:w-3/4">
             <ClientOfferSummary
               offer={offer}
               lang={lang}
               addonsGallery={addonsGallery}
             />
           </div>
-          <div className="w-1/4">
+          <div className="lg:w-1/4">
             <ClientOfferCarCard offer={offer} />
           </div>
         </div>

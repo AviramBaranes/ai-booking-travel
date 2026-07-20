@@ -22,7 +22,7 @@ type VoucherReservationAfterPaymentResponse struct {
 	BillingReservation reservation_pricing.BillingReservation
 }
 
-func (s *ActionService) VoucherReservationAfterPayment(ctx context.Context, p *VoucherReservationAfterPaymentParams) (*VoucherReservationAfterPaymentResponse, error) {
+func (s *ActionService) VoucherReservationAfterPayment(ctx context.Context, p VoucherReservationAfterPaymentParams) (*VoucherReservationAfterPaymentResponse, error) {
 	reservation, err := s.query.VoucherReservationAfterPayment(ctx, db.VoucherReservationAfterPaymentParams{
 		ID:                      p.ReservationID,
 		PaymentConfirmationCode: &p.PaymentConfirmationCode,
@@ -59,7 +59,7 @@ func (s *ActionService) VoucherReservationAfterPayment(ctx context.Context, p *V
 			CarPurchasePrice:    pd.CarPurchasePrice,
 			CarSellingPrice:     pd.CarSellingPrice,
 			ERPSellingPrice:     pd.ErpSellingPrice,
-			ProfitOnCar:         pd.CarProfit,
+			TotalProfit:         pd.TotalProfit,
 			TotalPrice:          pd.TotalPrice,
 			CurrencyCode:        reservation.CurrencyCode,
 			CurrencyRate:        dbadapters.NumericToFloat64(reservation.CurrencyRate),

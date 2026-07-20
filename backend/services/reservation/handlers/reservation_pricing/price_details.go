@@ -12,7 +12,7 @@ import (
 type PriceDetails struct {
 	CarPurchasePrice float64
 	CarSellingPrice  float64
-	CarProfit        float64
+	TotalProfit      float64
 	ErpSellingPrice  float64
 	TotalPrice       float64
 }
@@ -24,16 +24,18 @@ func roundPrice(price float64) float64 {
 
 // GetReservationPriceDetails computes purchase price, selling price, profit, and ERP price from a db row.
 func GetReservationPriceDetails(row db.GetPaymentPendingReservationsByBillingEntityRow) PriceDetails {
-	carPurchasePrice := dbadapters.NumericToFloat64(row.PurchasePrice) + dbadapters.NumericToFloat64(row.BrokerErpPrice)
+	purchasePrice := dbadapters.NumericToFloat64(row.PurchasePrice) + dbadapters.NumericToFloat64(row.BrokerErpPrice)
 	mp := dbadapters.NumericToFloat64(row.MarkupPercentage)
-	carSellingPrice := pricing.ApplyMarkup(carPurchasePrice, mp)
+	carSellingPrice := pricing.ApplyMarkup(purchasePrice, mp)
+	tp := dbadapters.NumericToFloat64(row.TotalPrice)
+	profit := tp - purchasePrice
 
 	return PriceDetails{
-		CarPurchasePrice: roundPrice(carPurchasePrice),
+		CarPurchasePrice: roundPrice(purchasePrice),
 		CarSellingPrice:  roundPrice(carSellingPrice),
-		CarProfit:        roundPrice(carSellingPrice - carPurchasePrice),
+		TotalProfit:      roundPrice(profit),
 		ErpSellingPrice:  dbadapters.NumericToFloat64(row.BtErpPrice),
-		TotalPrice:       dbadapters.NumericToFloat64(row.TotalPrice),
+		TotalPrice:       tp,
 	}
 }
 
@@ -46,7 +48,7 @@ type BillingReservation struct {
 	CarPurchasePrice    float64 `json:"carPurchasePrice"`
 	CarSellingPrice     float64 `json:"carSellingPrice"`
 	ERPSellingPrice     float64 `json:"erpSellingPrice"`
-	ProfitOnCar         float64 `json:"profitOnCar"`
+	TotalProfit         float64 `json:"totalProfit"`
 	TotalPrice          float64 `json:"totalPrice"`
 	CurrencyCode        string  `json:"currencyCode"`
 	CurrencyRate        float64 `json:"currencyRate"`

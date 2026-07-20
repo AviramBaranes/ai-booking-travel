@@ -18,12 +18,12 @@ var (
 		"Plan not found",
 		api_errors.ErrorDetails{Code: api_errors.CodePlanNotFound},
 	)
-	errBookingFailed = api_errors.NewErrorWithDetail(
+	ErrBookingFailed = api_errors.NewErrorWithDetail(
 		errs.Unknown,
 		"Booking failed",
 		api_errors.ErrorDetails{Code: api_errors.CodeBookingFailed},
 	)
-	errReservationCreationFailed = api_errors.NewErrorWithDetail(
+	ErrReservationCreationFailed = api_errors.NewErrorWithDetail(
 		errs.Unknown,
 		"Reservation creation failed",
 		api_errors.ErrorDetails{Code: api_errors.CodeReservationCreationFailed},

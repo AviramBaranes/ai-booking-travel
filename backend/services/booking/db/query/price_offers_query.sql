@@ -98,6 +98,7 @@ UPDATE price_offers SET
     broker_erp_price = sqlc.arg(broker_erp_price),
     bt_erp_price = sqlc.arg(bt_erp_price),
     total_price = sqlc.arg(total_price),
+    pay_at_pickup = sqlc.arg(pay_at_pickup),
     renewed_at = now(),
     updated_at = now()
 WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id) AND status != 'unavailable';

@@ -5,7 +5,7 @@ import "strconv"
 // ------- Create Document -------
 
 type ICountCreateDocRequest struct {
-	ClientID     int                        `json:"client_id"`
+	ClientID     int                        `json:"client_id,omitempty"`
 	DocType      string                     `json:"doctype"`
 	CurrencyID   int                        `json:"currency_id"`
 	Rate         float64                    `json:"rate,omitempty"`
@@ -58,6 +58,7 @@ type ICountInvoiceItem struct {
 	UnitPriceIncvat *float64 `json:"unitprice_incvat,omitempty"`
 	Quantity        int      `json:"quantity"`
 	CurrencyID      int      `json:"currency_id,omitempty"`
+	CurrencyRate    float64  `json:"currency_rate,omitempty"`
 }
 
 type ICountCreateDocResponse struct {
@@ -169,4 +170,22 @@ func (r *Transaction) ToCCPayment(isCharged bool) *ICountCCPayment {
 		ConfirmationCode: r.ConfirmationCode,
 		AlreadyCharged:   isCharged,
 	}
+}
+
+// ------- Cancel Document -------
+
+type ICountCancelDocumentRequest struct {
+	DocType  string `json:"doctype"`
+	DocNum   string `json:"docnum"`
+	RefundCC bool   `json:"refund_cc"`
+	Reason   string `json:"reason,omitempty"`
+}
+
+type ICountCancelDocumentResponse struct {
+	Status              bool     `json:"status"`
+	Reason              string   `json:"reason,omitempty"`
+	ErrorDescription    string   `json:"error_description,omitempty"`
+	ErrorDetails        []string `json:"error_details,omitempty"`
+	CancellationDocType string   `json:"cancellation_doctype,omitempty"`
+	CancellationDocNum  string   `json:"cancellation_docnum,omitempty"`
 }

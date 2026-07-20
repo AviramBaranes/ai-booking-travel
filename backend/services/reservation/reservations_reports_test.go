@@ -57,7 +57,7 @@ func TestGetBusinessReport(t *testing.T) {
 	})
 
 	t.Run("validation accepts valid params", func(t *testing.T) {
-		if err := (reports.ReportParams{Page: 1, PageSize: 25}).Validate(); err != nil {
+		if err := (reports.ReportParams{Page: 1, PageSize: 25, UserType: "both"}).Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 	})
@@ -71,6 +71,7 @@ func TestGetBusinessReport(t *testing.T) {
 		PageSize:       25,
 		PickupDateFrom: "2099-01-01",
 		PickupDateTo:   "2099-12-31",
+		UserType:       "both",
 	}
 
 	t.Run("returns account names and price fields", func(t *testing.T) {
@@ -100,8 +101,8 @@ func TestGetBusinessReport(t *testing.T) {
 		if row.OfficeName != seed.officeA.Name {
 			t.Fatalf("expected office name %q, got %q", seed.officeA.Name, row.OfficeName)
 		}
-		if row.AgentName != "Report AgentA" {
-			t.Fatalf("expected agent name %q, got %q", "Report AgentA", row.AgentName)
+		if row.UserName != "Report AgentA" {
+			t.Fatalf("expected agent name %q, got %q", "Report AgentA", row.UserName)
 		}
 		if row.AdminName == nil || *row.AdminName != "Report Admin" {
 			t.Fatalf("expected admin name %q, got %v", "Report Admin", row.AdminName)
@@ -163,6 +164,7 @@ func TestGetBusinessReport(t *testing.T) {
 			PickupDateTo:   "2099-02-28",
 			Supplier:       seed.supplierB,
 			PageSize:       25,
+			UserType:       "both",
 		}
 		assertBusinessReportBookings(t, ctx, params, seed.bookingB)
 	})
@@ -180,6 +182,27 @@ func TestGetBusinessReport(t *testing.T) {
 		}
 		if len(resp.Reservations) != 0 {
 			t.Fatalf("expected 0 reservations, got %d", len(resp.Reservations))
+		}
+	})
+
+	t.Run("userType=agent shows only business reservations", func(t *testing.T) {
+		params := baseParams
+		params.UserType = "agent"
+		params.Supplier = seed.supplierA
+		assertBusinessReportBookings(t, ctx, params, seed.bookingA)
+	})
+
+	t.Run("userType=customer returns empty for business reservations", func(t *testing.T) {
+		params := baseParams
+		params.UserType = "customer"
+		params.Supplier = seed.supplierA
+
+		resp, err := GetBusinessReport(ctx, params)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if resp.Count != 0 {
+			t.Fatalf("expected 0 for customer filter on business reservation, got %d", resp.Count)
 		}
 	})
 }
@@ -204,6 +227,7 @@ func TestGetProfitReport(t *testing.T) {
 			PickupDateFrom: "2099-01-01",
 			PickupDateTo:   "2099-12-31",
 			Supplier:       seed.supplierA,
+			UserType:       "both",
 		})
 		if err != nil {
 			t.Fatalf("expected no error, got %v", err)

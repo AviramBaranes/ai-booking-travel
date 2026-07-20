@@ -211,7 +211,7 @@ func TestRefreshTokens(t *testing.T) {
 			UserID: admin.ID,
 			Role:   UserRoleAdmin,
 		})
-		loginResp, err := LoginAsAgent(adminCtx, ah.LoginAsAgentParams{AgentID: agent.ID})
+		loginResp, err := LoginAsUser(adminCtx, ah.LoginAsUserParams{UserID: agent.ID})
 		if err != nil {
 			t.Fatalf("failed to login as agent: %v", err)
 		}

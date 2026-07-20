@@ -124,7 +124,10 @@ user_id = $2;
 UPDATE reservations
 SET
     payment_status = CASE
-        WHEN payment_status = 'paid' THEN 'refund_pending'
+        WHEN payment_status = 'paid' THEN 
+            CASE WHEN payment_doc_num IS NOT NULL THEN 'refunded'::payment_status
+            ELSE 'refund_pending'::payment_status
+            END
         ELSE payment_status
     END,
     reservation_status = 'canceled',
@@ -168,6 +171,7 @@ SELECT
     reservation_status,
     purchase_price,
     markup_percentage,
+    discount_percentage,
     bt_erp_price,
     broker_erp_price,
     total_price,
@@ -256,16 +260,16 @@ WHERE
     AND(sqlc.narg(pickup_date_from)::DATE IS NULL OR pickup_date >= sqlc.narg(pickup_date_from)::DATE)
     AND (sqlc.narg(pickup_date_to)::DATE IS NULL OR pickup_date <= sqlc.narg(pickup_date_to)::DATE)
     AND (sqlc.narg(created_date_from)::TIMESTAMPTZ IS NULL OR created_at >= sqlc.narg(created_date_from)::TIMESTAMPTZ)
-    AND (sqlc.narg(created_date_to)::TIMESTAMPTZ IS NULL OR created_at <= sqlc.narg(created_date_to)::TIMESTAMPTZ)
+    AND (sqlc.narg(created_date_to)::TIMESTAMPTZ IS NULL OR created_at < sqlc.narg(created_date_to)::TIMESTAMPTZ)
     AND (sqlc.narg(vouchered_at_from)::TIMESTAMPTZ IS NULL OR vouchered_at >= sqlc.narg(vouchered_at_from)::TIMESTAMPTZ)
-    AND (sqlc.narg(vouchered_at_to)::TIMESTAMPTZ IS NULL OR vouchered_at <= sqlc.narg(vouchered_at_to)::TIMESTAMPTZ)
+    AND (sqlc.narg(vouchered_at_to)::TIMESTAMPTZ IS NULL OR vouchered_at < sqlc.narg(vouchered_at_to)::TIMESTAMPTZ)
     AND (sqlc.narg(status)::reservation_status IS NULL OR reservation_status = sqlc.narg(status)::reservation_status)
     AND (sqlc.narg(broker)::broker IS NULL OR broker = sqlc.narg(broker)::broker)
     AND (COALESCE(cardinality(sqlc.arg(supplier_codes)::TEXT[]), 0) = 0 OR supplier_code = ANY(sqlc.arg(supplier_codes)::TEXT[]))
     AND (sqlc.narg(organization_id)::BIGINT IS NULL OR organization_id = sqlc.narg(organization_id)::BIGINT)
     AND (sqlc.narg(office_id)::BIGINT IS NULL OR office_id = sqlc.narg(office_id)::BIGINT)
     AND (sqlc.narg(agent_id)::BIGINT IS NULL OR user_id = sqlc.narg(agent_id)::BIGINT)
-    AND (NOT sqlc.arg(is_business)::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+    AND (sqlc.narg(is_business)::BOOLEAN IS NULL OR (sqlc.narg(is_business)::BOOLEAN = TRUE AND office_id IS NOT NULL AND organization_id IS NOT NULL) OR (sqlc.narg(is_business)::BOOLEAN = FALSE AND office_id IS NULL AND organization_id IS NULL))
     AND (NOT sqlc.arg(skip_canceled)::BOOLEAN OR reservation_status != 'canceled')
 ORDER BY created_at DESC
 LIMIT  sqlc.arg(page_size)::BIGINT
@@ -283,16 +287,16 @@ WHERE
     AND (sqlc.narg(pickup_date_from)::DATE IS NULL OR pickup_date >= sqlc.narg(pickup_date_from)::DATE)
     AND (sqlc.narg(pickup_date_to)::DATE IS NULL OR pickup_date <= sqlc.narg(pickup_date_to)::DATE)
     AND (sqlc.narg(created_date_from)::TIMESTAMPTZ IS NULL OR created_at >= sqlc.narg(created_date_from)::TIMESTAMPTZ)
-    AND (sqlc.narg(created_date_to)::TIMESTAMPTZ IS NULL OR created_at <= sqlc.narg(created_date_to)::TIMESTAMPTZ)
+    AND (sqlc.narg(created_date_to)::TIMESTAMPTZ IS NULL OR created_at < sqlc.narg(created_date_to)::TIMESTAMPTZ)
     AND (sqlc.narg(vouchered_at_from)::TIMESTAMPTZ IS NULL OR vouchered_at >= sqlc.narg(vouchered_at_from)::TIMESTAMPTZ)
-    AND (sqlc.narg(vouchered_at_to)::TIMESTAMPTZ IS NULL OR vouchered_at <= sqlc.narg(vouchered_at_to)::TIMESTAMPTZ)
+    AND (sqlc.narg(vouchered_at_to)::TIMESTAMPTZ IS NULL OR vouchered_at < sqlc.narg(vouchered_at_to)::TIMESTAMPTZ)
     AND (sqlc.narg(status)::reservation_status IS NULL OR reservation_status = sqlc.narg(status)::reservation_status)
     AND (sqlc.narg(broker)::broker IS NULL OR broker = sqlc.narg(broker)::broker)
     AND (COALESCE(cardinality(sqlc.arg(supplier_codes)::TEXT[]), 0) = 0 OR supplier_code = ANY(sqlc.arg(supplier_codes)::TEXT[]))
     AND (sqlc.narg(organization_id)::BIGINT IS NULL OR organization_id = sqlc.narg(organization_id)::BIGINT)
     AND (sqlc.narg(office_id)::BIGINT IS NULL OR office_id = sqlc.narg(office_id)::BIGINT)
     AND (sqlc.narg(agent_id)::BIGINT IS NULL OR user_id = sqlc.narg(agent_id)::BIGINT)
-    AND (NOT sqlc.arg(is_business)::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+    AND (sqlc.narg(is_business)::BOOLEAN IS NULL OR (sqlc.narg(is_business)::BOOLEAN = TRUE AND office_id IS NOT NULL AND organization_id IS NOT NULL) OR (sqlc.narg(is_business)::BOOLEAN = FALSE AND office_id IS NULL AND organization_id IS NULL))
     AND (NOT sqlc.arg(skip_canceled)::BOOLEAN OR reservation_status != 'canceled');
 
 -- name: GetOpenReservationsPickingUpWithinWeek :many
@@ -352,3 +356,8 @@ SELECT
 FROM reservations
 WHERE
     id = $1;
+
+-- name: SaveInvoiceDocNum :exec
+UPDATE reservations
+SET invoice_doc_num = $2
+WHERE id = $1;

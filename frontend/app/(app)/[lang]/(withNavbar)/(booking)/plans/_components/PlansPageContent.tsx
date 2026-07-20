@@ -12,21 +12,24 @@ import { ErpCheckbox } from "./ErpCheckbox";
 import { AddOnsDisplay } from "./AddOnsDisplay";
 import { SelectedCarCard } from "@/shared/components/booking/SelectedCarCard/SelectedCarCard";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
 import { useSearchParams, useRouter } from "next/navigation";
-import { FreeCancellationBadge } from "@/shared/components/booking/FreeCancellationBadge";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ErpDialog } from "./ErpDialog";
 import { FeesNote } from "./FeesNote";
 import { PriceOfferDialog } from "./PriceOfferDialog";
 import { useSearchRequest } from "../../_hooks/useSearchRequest";
+import useAuthStore from "@/shared/auth/authStore";
+import { SelectedCarCardChildren } from "./SelectedCarCardChildern";
+import { FixedBottomButtons } from "./FixedBottomButtons";
 
 export function PlansPageContent() {
   const t = useTranslations("booking.plansPage");
   const { lang } = useParams();
   const router = useRouter();
   const currentSearchParams = useSearchParams();
+  const user = useAuthStore((s) => s.user);
+  const isAgent = user?.role === "agent";
 
   const selectedPlan = useBookingSessionStore((s) => s.selectedPlanIndex);
   const isErpSelected = useBookingSessionStore((s) => s.isErpSelected);
@@ -43,6 +46,8 @@ export function PlansPageContent() {
   const [isErpDialogOpen, setIsErpDialogOpen] = useState(false);
   const [isPriceOfferDialogOpen, setIsPriceOfferDialogOpen] = useState(false);
 
+  const selectedCarCardRef = useRef<HTMLDivElement>(null);
+
   const { addOns, planInclusions } = useMemo(() => {
     if (!data) {
       return { planInclusions: [], addOns: [] };
@@ -55,7 +60,7 @@ export function PlansPageContent() {
     const selectedPlanInclusions = supplier?.inclusions.find(
       (inc) => inc.productName === selectedPlanName,
     )?.productInclusions;
-    
+
     return {
       planInclusions: selectedPlanInclusions ?? [],
       addOns: supplier?.addOns ?? [],
@@ -67,28 +72,9 @@ export function PlansPageContent() {
   }
 
   return (
-    <div className="flex gap-4">
-      <div className="w-3/4">
-        <div className="flex gap-4 mb-6">
-          {planInclusions.length > 0 && (
-            <div className="w-1/2">
-              <InclusionsDisplay
-                title={t("inclusionsTitle")}
-                inclusions={planInclusions}
-              />
-            </div>
-          )}
-          {vehicle.plans[selectedPlan].info.length > 0 && (
-            <div className="w-1/2">
-              <InclusionsDisplay
-                title={t("rentalTerms")}
-                inclusions={vehicle.plans[selectedPlan].info}
-              />
-            </div>
-          )}
-        </div>
-        <FeesNote vehicle={vehicle} />
-        <div className="flex justify-between items-center my-6">
+    <div className="flex flex-col-reverse lg:flex-row gap-4 max-sm:mx-5">
+      <div className="lg:w-3/4 w-full">
+        <div className="flex justify-between items-center my-3">
           <div className="flex gap-4">
             {vehicle.plans.length > 1 && (
               <OtherPlansButton
@@ -107,7 +93,7 @@ export function PlansPageContent() {
             />
           </div>
           {vehicle.signals && (
-            <div className="flex items-center gap-2">
+            <div className="items-center gap-2 hidden lg:flex">
               <SignalsDisplay
                 remainingCount={vehicle.signals.remainingCount}
                 liveViewers={vehicle.signals.liveViewers}
@@ -115,6 +101,26 @@ export function PlansPageContent() {
             </div>
           )}
         </div>
+        <div className="flex flex-col lg:flex-row gap-4 mb-6">
+          {planInclusions.length > 0 && (
+            <div className="lg:w-1/2">
+              <InclusionsDisplay
+                title={t("inclusionsTitle")}
+                inclusions={planInclusions}
+              />
+            </div>
+          )}
+          {vehicle.plans[selectedPlan].info.length > 0 && (
+            <div className="lg:w-1/2">
+              <InclusionsDisplay
+                title={t("rentalTerms")}
+                inclusions={vehicle.plans[selectedPlan].info}
+              />
+            </div>
+          )}
+        </div>
+        <FeesNote vehicle={vehicle} />
+
         <hr />
         <ErpCheckbox
           isSelected={isErpSelected}
@@ -134,46 +140,29 @@ export function PlansPageContent() {
           </>
         )}
       </div>
-      <div className="w-1/4">
+      <div id="selected-car-card" className="lg:w-1/4 relative">
         <SelectedCarCard
           isErpSelected={isErpSelected}
           daysCount={data?.daysCount ?? 0}
           vehicle={vehicle}
           selectedPlanIndex={selectedPlan}
         >
-          <>
-            <FreeCancellationBadge
-              pickupDate={searchRequest.PickupDate}
-              pickupTime={searchRequest.PickupTime}
-              text={t("freeCancellation")}
-            />
-            <Button
-              variant="brand"
-              className="mt-4 type-paragraph font-bold py-6 px-8 cursor-pointer"
-              onClick={() => {
-                if (isErpSelected) {
-                  router.push(
-                    `/${lang}/order?${currentSearchParams.toString()}`,
-                  );
-                } else {
-                  setIsErpDialogOpen(true);
-                }
-              }}
-            >
-              {t("continueCta")}
-            </Button>
-            <Button
-              variant="brand"
-              className="type-paragraph font-bold py-6 px-8 cursor-pointer bg-navy"
-              onClick={() => {
-                setIsPriceOfferDialogOpen(true);
-              }}
-            >
-              {t("createPriceOffer")}
-            </Button>
-          </>
+          <SelectedCarCardChildren
+            isErpSelected={isErpSelected}
+            setIsErpDialogOpen={setIsErpDialogOpen}
+            setIsPriceOfferDialogOpen={setIsPriceOfferDialogOpen}
+          />
         </SelectedCarCard>
+        <div className="absolute bottom-15" ref={selectedCarCardRef}>
+        </div>
       </div>
+      <FixedBottomButtons
+        isAgent={isAgent}
+        isErpSelected={isErpSelected}
+        setIsErpDialogOpen={setIsErpDialogOpen}
+        setIsPriceOfferDialogOpen={setIsPriceOfferDialogOpen}
+        watchRef={selectedCarCardRef}
+      />
       <ErpDialog
         open={isErpDialogOpen}
         onApprove={() => {
@@ -186,11 +175,13 @@ export function PlansPageContent() {
         erpPrice={vehicle.plans[selectedPlan].erpPrice}
         erpPriceCurrency={vehicle.priceDetails.currency}
       />
-      <PriceOfferDialog
-        open={isPriceOfferDialogOpen}
-        onOpenChange={setIsPriceOfferDialogOpen}
-        searchRequest={searchRequest}
-      />
+      {isAgent && (
+        <PriceOfferDialog
+          open={isPriceOfferDialogOpen}
+          onOpenChange={setIsPriceOfferDialogOpen}
+          searchRequest={searchRequest}
+        />
+      )}
     </div>
   );
 }

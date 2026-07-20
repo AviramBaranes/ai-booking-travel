@@ -8,6 +8,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
+	"encore.app/internal/icount"
 	"encore.app/services/accounts"
 	"encore.app/services/accounts/handlers/office"
 	"encore.app/services/accounts/handlers/organization"
@@ -55,6 +56,11 @@ func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
 	}
 
 	isLateCancellation := !canCancel(reservation)
+	isPaidByCreditCard := reservation.PaymentConfirmationCode != nil
+	if isLateCancellation && isPaidByCreditCard {
+		rlog.Warn("late cancellation attempted for a reservation paid by credit card", "reservationId", id)
+		return ErrCancellationWindowExceeded
+	}
 
 	if err := db.WithTx(ctx, s.pool, func(q db.Querier, tx pgx.Tx) error {
 		if err := q.CancelReservation(ctx, id); err != nil {
@@ -64,6 +70,11 @@ func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
 
 		if err := updateBalanceDue(ctx, reservation); err != nil {
 			rlog.Error("failed to update balance due after cancellation", "error", err, "reservationId", id)
+			return err
+		}
+
+		if err := refundReservationPayment(reservation); err != nil {
+			rlog.Error("failed to refund reservation payment", "error", err, "reservationId", id)
 			return err
 		}
 
@@ -154,6 +165,33 @@ func updateBalanceDue(ctx context.Context, reservation db.Reservation) error {
 	}); err != nil {
 		rlog.Error("failed to update organization balance due after billing", "error", err, "organization_id", *reservation.OrganizationID, "amount", total)
 		return api_errors.ErrInternalError
+	}
+
+	return nil
+}
+
+func refundReservationPayment(reservation db.Reservation) error {
+	ic := icount.NewIcount()
+	if reservation.PaymentDocNum != nil {
+		if _, err := ic.CancelDocument(icount.CancelDocumentParams{
+			DocType:  "receipt",
+			DocNum:   *reservation.PaymentDocNum,
+			RefundCC: true,
+			Reason:   "Reservation cancellation",
+		}); err != nil {
+			return err
+		}
+	}
+
+	if reservation.InvoiceDocNum != nil {
+		if _, err := ic.CancelDocument(icount.CancelDocumentParams{
+			DocType:  "invoice",
+			DocNum:   *reservation.InvoiceDocNum,
+			RefundCC: false,
+			Reason:   "Reservation cancellation",
+		}); err != nil {
+			return err
+		}
 	}
 
 	return nil

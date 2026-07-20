@@ -68,13 +68,13 @@ export function FilterForm() {
 
   return (
     <form
-      className="flex gap-4 justify-between items-center"
+      className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center"
       onSubmit={handleSearch}
     >
       <legend className="type-label text-navy w-40">{t("filtersLabel")}</legend>
-      <div className="flex justify-between gap-4 w-full">
+      <div className="flex flex-col lg:flex-row justify-between gap-4 w-full">
         <Input
-          className="bg-white border w-1/4 border-cars-border h-12 rounded-lg px-4 type-paragraph text-text-secondary"
+          className="bg-white border lg:w-1/4 border-cars-border h-12 rounded-lg px-4 type-paragraph text-text-secondary"
           placeholder={t("bookingIdPlaceholder")}
           value={bookingId}
           onChange={(e) => setBookingId(e.target.value)}
@@ -84,7 +84,7 @@ export function FilterForm() {
           onChange={setStatus}
           placeholder={t("statusPlaceholder")}
         />
-        <div className="w-1/4">
+        <div className="lg:w-1/4">
           <CalendarInput
             placeholder={t("pickupDatePlaceholder")}
             value={pickupDate}
@@ -97,13 +97,13 @@ export function FilterForm() {
           />
         </div>
         <Input
-          className="bg-white border w-1/4 border-cars-border h-12 rounded-lg px-4 type-paragraph text-text-secondary"
+          className="bg-white border lg:w-1/4 border-cars-border h-12 rounded-lg px-4 type-paragraph text-text-secondary"
           placeholder={t("driverNamePlaceholder")}
           value={driverName}
           onChange={(e) => setDriverName(e.target.value)}
         />
       </div>
-      <Button variant="brand" className="py-6 w-40 font-semibold">
+      <Button variant="brand" className="py-6 w-full lg:w-40 font-semibold">
         {t("searchButton")}
       </Button>
     </form>
@@ -128,7 +128,7 @@ function StatusDropdown({
         <button
           type="button"
           className={cn(
-            "w-1/4 flex items-center justify-between bg-white border rounded-lg px-4 h-12 cursor-pointer",
+            "lg:w-1/4 flex items-center justify-between bg-white border rounded-lg px-4 h-12 cursor-pointer",
             "text-sm font-normal font-[inherit]",
           )}
         >

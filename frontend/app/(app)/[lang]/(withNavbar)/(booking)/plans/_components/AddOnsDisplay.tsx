@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Media } from "@/payload-types";
 import { broker } from "@/shared/client";
-import { Populated } from "@/shared/types/payload";
 import { formatPrice } from "@/shared/utils/formatPrice";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -54,7 +53,7 @@ export function AddOnsDisplay({
   return (
     <div className="pb-30">
       <h5 className="type-h5 text-navy">{t("title")}</h5>
-      <div className="grid grid-cols-3 gap-4 mt-6 ">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6 ">
         {addons.map((addOn) => {
           console.log("addOn", addOn);
           const addOnDetails = addOnsGallery.addons?.find(
@@ -74,52 +73,54 @@ export function AddOnsDisplay({
           return (
             <div
               key={addOn.id}
-              className="bg-white border-border-muted rounded-2xl"
+              className="bg-white border-border-muted rounded-2xl flex flex-row lg:flex-col"
             >
-              <div className="bg-white rounded-t-2xl shadow-card">
+              <div className="rounded-t-2xl p-3 lg:p-0 flex items-center justify-center">
                 {media?.url ? (
                   <Image
                     src={media.url}
                     alt={media?.alt ?? name ?? "add-on image"}
                     width={200}
                     height={200}
-                    className="w-50 h-50 mx-auto"
+                    className="w-35 lg:w-50 h-35 lg:h-50 mx-auto"
                   />
                 ) : (
-                  <Box className="w-50 h-50 mx-auto text-muted" />
+                  <Box className="w-35 lg:w-50 h-35 lg:h-50 mx-auto text-muted" />
                 )}
               </div>
-              <div className="m-6 border-b border-border-muted bg-white pb-6">
-                <p className="type-paragraph font-bold text-navy w-2/3">
-                  {name}
-                </p>
-                <p className="type-paragraph font-bold text-navy">
-                  {formatPrice(addOn.price, addOn.currency)} {t(addOn.period)}
-                </p>
-                <p className="type-paragraph text-navy">{t("payAtPickup")}</p>
-              </div>
-              <div className="flex m-6 justify-between">
-                <p className="type-paragraph text-muted">{t("quantity")}</p>
-                <div className="border-cars-border border rounded-md">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="px-2"
-                    onClick={() => subtractQuantity(addOn.id)}
-                    disabled={selectedQuantity === 0}
-                  >
-                    -
-                  </Button>
-                  <span className="px-2"> {selectedQuantity} </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="px-2"
-                    onClick={() => addQuantity(addOn.id)}
-                    disabled={selectedQuantity >= addOn.allowedQuantity}
-                  >
-                    +
-                  </Button>
+              <div className="flex-1 flex flex-col justify-between">
+                <div className="m-6 border-b border-border-muted bg-white pb-6">
+                  <p className="type-paragraph font-bold text-navy w-2/3">
+                    {name}
+                  </p>
+                  <p className="type-paragraph font-bold text-navy">
+                    {formatPrice(addOn.price, addOn.currency)} {t(addOn.period)}
+                  </p>
+                  <p className="type-paragraph text-navy">{t("payAtPickup")}</p>
+                </div>
+                <div className="flex flex-col lg:flex-row m-6 justify-between">
+                  <p className="type-paragraph text-muted">{t("quantity")}</p>
+                  <div className="border-cars-border border rounded-md flex items-center justify-between w-25">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="px-2"
+                      onClick={() => subtractQuantity(addOn.id)}
+                      disabled={selectedQuantity === 0}
+                    >
+                      -
+                    </Button>
+                    <span className="px-2"> {selectedQuantity} </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="px-2"
+                      onClick={() => addQuantity(addOn.id)}
+                      disabled={selectedQuantity >= addOn.allowedQuantity}
+                    >
+                      +
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

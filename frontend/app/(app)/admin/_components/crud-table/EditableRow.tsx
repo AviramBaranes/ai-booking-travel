@@ -12,13 +12,14 @@ interface EditableRowProps<TRow> {
   columns: ColumnDef<TRow>[];
   isEditing: boolean;
   isPending: boolean;
-  onEdit: () => void;
-  onCancel: () => void;
-  onSave: (data: Record<string, unknown>) => void;
+  onEdit?: () => void;
+  onCancel?: () => void;
+  onSave?: (data: Record<string, unknown>) => void;
   onDelete?: () => void;
-  schema: ZodType<FieldValues>;
+  schema?: ZodType<FieldValues>;
   selected?: boolean;
   onToggleSelect?: () => void;
+  readOnly?: boolean;
 }
 
 function formatCellValue<TRow>(row: TRow, column: ColumnDef<TRow>): string {
@@ -41,6 +42,7 @@ export function EditableRow<TRow>({
   schema,
   selected,
   onToggleSelect,
+  readOnly = false,
 }: EditableRowProps<TRow>) {
   const editableColumns = columns.filter((c) => c.editable !== false);
 
@@ -56,22 +58,23 @@ export function EditableRow<TRow>({
     watch,
     formState: { errors },
   } = useForm({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(schema as any),
+    resolver: schema ? zodResolver(schema as never) : undefined,
     defaultValues: defaults as Record<string, string>,
   });
 
-  if (isEditing) {
+  if (isEditing && schema && onSave) {
     return (
       <tr className="bg-blue-50/50">
-        <td className="px-3 py-2 w-10">
-          <input
-            type="checkbox"
-            className="h-4 w-4 accent-blue-600"
-            checked={selected}
-            onChange={onToggleSelect}
-          />
-        </td>
+        {!readOnly && (
+          <td className="px-3 py-2 w-10">
+            <input
+              type="checkbox"
+              className="h-4 w-4 accent-blue-600"
+              checked={selected}
+              onChange={onToggleSelect}
+            />
+          </td>
+        )}
         {columns.map((col) => (
           <td key={col.key} className="px-3 py-2">
             {col.editable === false ? (
@@ -123,7 +126,6 @@ export function EditableRow<TRow>({
               type="button"
               disabled={isPending}
               onClick={handleSubmit((data) => {
-                console.log("Submitting data:", data);
                 onSave(data as Record<string, unknown>);
               })}
               className="p-1 text-green-600 hover:text-green-800 disabled:opacity-50 cursor-pointer"
@@ -146,14 +148,16 @@ export function EditableRow<TRow>({
 
   return (
     <tr className="hover:bg-gray-50 border-b border-gray-100">
-      <td className="px-3 py-2 w-10">
-        <input
-          type="checkbox"
-          className="h-4 w-4 accent-blue-600"
-          checked={selected}
-          onChange={onToggleSelect}
-        />
-      </td>
+      {!readOnly && (
+        <td className="px-3 py-2 w-10">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-blue-600"
+            checked={selected}
+            onChange={onToggleSelect}
+          />
+        </td>
+      )}
       {columns.map((col) => (
         <td key={col.key} className="px-3 py-2 text-sm">
           {col.renderCell ? (
@@ -179,26 +183,30 @@ export function EditableRow<TRow>({
           )}
         </td>
       ))}
-      <td className="px-3 py-2">
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={onEdit}
-            className="p-1 text-gray-400 hover:text-blue-600 cursor-pointer"
-          >
-            <Pencil size={14} />
-          </button>
-          {onDelete && (
-            <button
-              type="button"
-              onClick={onDelete}
-              className="p-1 text-gray-400 hover:text-red-600 cursor-pointer"
-            >
-              <Trash2 size={14} />
-            </button>
-          )}
-        </div>
-      </td>
+      {!readOnly && (
+        <td className="px-3 py-2">
+          <div className="flex items-center gap-1">
+            {onEdit && (
+              <button
+                type="button"
+                onClick={onEdit}
+                className="p-1 text-gray-400 hover:text-blue-600 cursor-pointer"
+              >
+                <Pencil size={14} />
+              </button>
+            )}
+            {onDelete && (
+              <button
+                type="button"
+                onClick={onDelete}
+                className="p-1 text-gray-400 hover:text-red-600 cursor-pointer"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
+        </td>
+      )}
     </tr>
   );
 }

@@ -10,7 +10,7 @@ export default async function PriceOffersPage() {
   const t = await getTranslations("MyAccount.priceOffers");
 
   return (
-    <main className="w-2/3 mx-auto pt-15 pb-6">
+    <main className="lg:w-2/3 mx-5 lg:mx-auto lg:pt-15 pb-6">
       <NewOrderButton btnText={t("newSearch")} />
       <div className="flex flex-col gap-6">
         <h5 className="type-h5 text-navy">{t("title")}</h5>

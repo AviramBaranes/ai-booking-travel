@@ -56,6 +56,7 @@ export function ErpCheckbox({
           <p className="type-paragraph text-text-secondary ">
             {description}
             <button
+              type="button"
               className="text-navy type-label underline mx-2 cursor-pointer"
               onClick={() => setIsReadMore((s) => !s)}
             >

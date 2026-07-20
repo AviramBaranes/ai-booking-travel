@@ -3,6 +3,8 @@ import { PriceDetailRow } from "../PriceDetailRow";
 import { useTranslations } from "next-intl";
 import { RentalPriceForDays } from "../RentalPriceForDays";
 import { formatPrice } from "@/shared/utils/formatPrice";
+import { useDirection } from "@/shared/hooks/useDirection";
+import clsx from "clsx";
 
 export function SelectedCarPriceDetails({
   vehicle,
@@ -16,24 +18,39 @@ export function SelectedCarPriceDetails({
   daysCount: number;
 }) {
   const t = useTranslations("booking.results");
+  const dir = useDirection();
 
-  const selectedPlan = vehicle.plans[selectedPlanIndex];
+  const { erpFullPrice, erpPrice, fullPrice, price } =
+    vehicle.plans[selectedPlanIndex];
+
+  const discountAmount = isErpSelected
+    ? fullPrice + erpFullPrice - (price + erpPrice)
+    : fullPrice - price;
+
   return (
-    <>
-      {selectedPlan.fullPrice !== selectedPlan.price && (
+    <div
+      className={clsx(
+        "flex flex-col gap-2 absolute lg:static bottom-0 mb-18 mx-5 lg:m-0",
+        {
+          "left-0": dir === "rtl",
+          "right-0": dir === "ltr",
+        },
+      )}
+    >
+      {fullPrice !== price && (
         <>
           <PriceDetailRow
             altText="coins icon"
             iconSrc="/assets/icons/coins.svg"
             label={t("carDetails.priceBeforeDiscount")}
-            price={selectedPlan.fullPrice}
+            price={fullPrice}
             currency={vehicle.priceDetails.currency}
           />
           <PriceDetailRow
             altText="discount icon"
             iconSrc="/assets/icons/Discount-Green.svg"
             label={t("carDetails.savings")}
-            price={selectedPlan.fullPrice - selectedPlan.price}
+            price={discountAmount}
             currency={vehicle.priceDetails.currency}
           />
         </>
@@ -44,12 +61,12 @@ export function SelectedCarPriceDetails({
           altText="stamp icon"
           iconSrc="/assets/icons/stamp.gif"
           label={t("carDetails.coveragePackage")}
-          price={selectedPlan.erpPrice}
+          price={erpPrice}
           currency={vehicle.priceDetails.currency}
         />
       )}
 
-      <hr className="mb-6 mt-3" />
+      <hr className="mb-6 mt-3 hidden lg:block" />
 
       <div className="flex justify-between items-start">
         <div>
@@ -58,11 +75,11 @@ export function SelectedCarPriceDetails({
         </div>
         <h5 className="type-h5 text-navy">
           {formatPrice(
-            selectedPlan.price + (isErpSelected ? selectedPlan.erpPrice : 0),
+            price + (isErpSelected ? erpPrice : 0),
             vehicle.priceDetails.currency,
           )}
         </h5>
       </div>
-    </>
+    </div>
   );
 }

@@ -1,16 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { useReservation } from "./useReservation";
 
 export const PAYMENT_SUCCESS_EVENT = "PAYMENT_COMPLETED";
 
 export function usePaymentSuccess({
-  reservationId,
   onSuccess,
+  onLoadingStart,
+  refetch,
+  isSuccess,
+  isFailure,
+  onFailure,
 }: {
-  reservationId: number;
   onSuccess?: () => void;
+  onFailure?: () => void;
+  onLoadingStart?: () => void;
+  refetch: () => void;
+  isSuccess: boolean;
+  isFailure?: boolean;
 }) {
-  const { data: reservation, refetch } = useReservation(reservationId);
   const [shouldPoll, setShouldPoll] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -18,6 +24,7 @@ export function usePaymentSuccess({
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === PAYMENT_SUCCESS_EVENT) {
         setShouldPoll(true);
+        onLoadingStart?.();
         refetch();
       }
     };
@@ -26,14 +33,20 @@ export function usePaymentSuccess({
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  }, [refetch, setShouldPoll]);
+  }, [refetch, setShouldPoll, onLoadingStart]);
 
   useEffect(() => {
     if (!shouldPoll) return;
 
-    if (reservation?.paymentStatus === "paid") {
+    if (isSuccess) {
       setShouldPoll(false);
       onSuccess?.();
+      return;
+    }
+
+    if (isFailure) {
+      setShouldPoll(false);
+      onFailure?.();
       return;
     }
 
@@ -46,5 +59,5 @@ export function usePaymentSuccess({
         clearInterval(intervalRef.current);
       }
     };
-  }, [shouldPoll, reservation?.paymentStatus, refetch]);
+  }, [shouldPoll, isSuccess, isFailure, refetch, onSuccess, onFailure]);
 }

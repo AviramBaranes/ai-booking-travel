@@ -22,4 +22,7 @@ const (
 	CodeOfficeNonOrganicRequiresIcountClientID = "office_non_organic_requires_icount_client_id"
 
 	CodeCustomerPasswordResetNotAllowed = "customer_password_reset_not_allowed"
+
+	CodeOTPSendRateLimit     = "otp_send_rate_limit"
+	CodeOTPValidateRateLimit = "otp_validate_rate_limit"
 )

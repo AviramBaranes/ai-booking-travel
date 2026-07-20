@@ -12,14 +12,14 @@ func (s *Service) Login(ctx context.Context, p auth.LoginParams) (*auth.LoginRes
 	return h.Login(ctx, p)
 }
 
-// encore:api auth method=POST path=/login/as-agent tag:admin
-func (s *Service) LoginAsAgent(ctx context.Context, params auth.LoginAsAgentParams) (*auth.LoginResponse, error) {
+// encore:api auth method=POST path=/login/as-user tag:admin
+func (s *Service) LoginAsUser(ctx context.Context, params auth.LoginAsUserParams) (*auth.LoginResponse, error) {
 	authData := GetAuthData()
 	h := auth.NewAuthService(s.query)
-	return h.LoginAsAgent(ctx, params, authData.UserID)
+	return h.LoginAsUser(ctx, params, authData.UserID)
 }
 
-// encore:api public method=POST path=/login/back-to-admin tag:agent
+// encore:api public method=POST path=/login/back-to-admin tag:agent_customer
 func (s *Service) LoginBackToAdmin(ctx context.Context) (*auth.LoginResponse, error) {
 	authData := GetAuthData()
 	h := auth.NewAuthService(s.query)
@@ -28,13 +28,13 @@ func (s *Service) LoginBackToAdmin(ctx context.Context) (*auth.LoginResponse, er
 
 // encore:api public method=POST path=/customer-login/send-otp
 func (s *Service) SendCustomerLoginOTP(ctx context.Context, params auth.SendCustomerLoginOTPParams) error {
-	h := auth.NewAuthService(s.query)
+	h := auth.NewAuthService(s.query).WithOTPRateLimiter(s.otpLimiter)
 	return h.SendCustomerLoginOTP(ctx, params)
 }
 
 // encore:api public method=POST path=/customer-login/validate-otp
 func (s *Service) ValidateCustomerLoginOTP(ctx context.Context, params auth.ValidateCustomerLoginOTPParams) (*auth.LoginResponse, error) {
-	h := auth.NewAuthService(s.query)
+	h := auth.NewAuthService(s.query).WithOTPRateLimiter(s.otpLimiter)
 	return h.ValidateCustomerLoginOTP(ctx, params)
 }
 
@@ -42,6 +42,12 @@ func (s *Service) ValidateCustomerLoginOTP(ctx context.Context, params auth.Vali
 func (s *Service) RefreshTokens(ctx context.Context, p auth.RefreshTokensParams) (*auth.LoginResponse, error) {
 	h := auth.NewAuthService(s.query)
 	return h.RefreshTokens(ctx, p)
+}
+
+// encore:api private
+func (s *Service) GetCustomerToken(ctx context.Context, p auth.GetCustomerTokenParams) (*auth.LoginResponse, error) {
+	h := auth.NewAuthService(s.query)
+	return h.GetCustomerToken(ctx, p)
 }
 
 // encore:api public method=POST path=/auth/session

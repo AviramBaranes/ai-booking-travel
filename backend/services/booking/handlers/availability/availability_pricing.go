@@ -30,7 +30,7 @@ const (
 )
 
 // buildAvailabilityArtifacts applies markup, coupon discounts, and currency data to produce the final response vehicles and plan snapshots.
-func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p SearchAvailabilityParams, locs availabilityLocations, avResp *broker.AvailabilityResponse, couponDiscount float64) (availabilityArtifacts, error) {
+func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, locs availabilityLocations, avResp *broker.AvailabilityResponse, couponDiscount float64) (availabilityArtifacts, error) {
 	artifacts := availabilityArtifacts{
 		availableCars: make([]AvailableVehicle, 0, len(avResp.AvailableVehicles)),
 		plansDetails:  make([]PlanPriceDetails, 0, len(avResp.AvailableVehicles)*2), //most cars have 1-2 plans
@@ -97,6 +97,10 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				}
 				currenciesMap[v.PriceDetails.Currency] = cr
 			}
+			if cr <= 0 {
+				rlog.Warn("calculated currency rate is less than or equal to 0, skipping plan", "currency", v.PriceDetails.Currency)
+				continue
+			}
 
 			brokerLoc, ok := locs[v.Broker]
 			if !ok {
@@ -162,6 +166,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, p 
 				FullPrice:       pricing.RoundToInt(carPriceWithMarkup),
 				Discount:        pricing.RoundToInt(couponDiscount),
 				Price:           pricing.RoundToInt(discountedCarPrice),
+				ErpFullPrice:    pricing.RoundToInt(erpWithMarkup + chargedErpPriceWithVat),
 				ErpPrice:        pricing.RoundToInt(discountedErp + chargedErpPriceWithVat), // no discount on charged erp
 				Info:            p.Info,
 				RateQualifier:   p.RateQualifier,

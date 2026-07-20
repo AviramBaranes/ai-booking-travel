@@ -7,7 +7,7 @@ import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useTranslations } from "next-intl";
-import { usePaymentSuccess } from "../_hooks/usePaymentSuccess";
+import { usePaymentSuccess } from "../../../../../../../../shared/hooks/usePaymentSuccess";
 import {
   Popover,
   PopoverContent,
@@ -27,7 +27,7 @@ export function ReservationPaymentDialog({
   setShow: (show: boolean) => void;
 }) {
   const t = useTranslations("MyAccount.reservation");
-  const { data: reservation } = useReservation(reservationId);
+  const { data: reservation, refetch } = useReservation(reservationId);
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [run, setRun] = useState(false);
   const [recycle, setRecycle] = useState(true);
@@ -42,13 +42,14 @@ export function ReservationPaymentDialog({
   const isPaymentDisabled = !!iframeUrl || run;
 
   usePaymentSuccess({
-    reservationId,
     onSuccess: () => {
       setIframeUrl(null);
       setRun(true);
       setTimeout(() => setRecycle(false), 3000);
       setTimeout(() => setShow(false), 5000);
     },
+    refetch,
+    isSuccess: reservation?.paymentStatus === "paid",
   });
 
   return (
@@ -99,7 +100,7 @@ export function ReservationPaymentDialog({
           setIframeUrl(null);
         }}
       >
-        <DialogContent className="w-full max-w-3xl!">
+        <DialogContent className="w-full max-w-3xl! max-sm:mx-auto max-sm:w-11/12 max-h-[calc(100dvh-2rem)] overflow-y-auto">
           <DialogTitle>
             <p className="type-paragraph mt-4">
               {t("paymentIframeTitle", { bookingId: reservationId })}

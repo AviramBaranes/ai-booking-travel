@@ -3,6 +3,9 @@ import type { GlobalConfig } from "payload";
 export const AddonImagesGlobal: GlobalConfig = {
   slug: "addonsGallery",
   label: "גלריית תוספים",
+  access: {
+    read: () => true,
+  },
   fields: [
     {
       name: "addons",

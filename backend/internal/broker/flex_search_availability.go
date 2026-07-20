@@ -67,10 +67,15 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResp
 	supplierDetailsMap := createSupplierMap(resp.SupplierDetails)
 
 	carsMap := make(map[string]AvailableVehicle)
+
 	for _, c := range resp.Cars {
 		s, ok := flexSupplierMap[c.SupplierCode]
 		if !ok {
 			rlog.Warn("unknown supplier code in CarAvailability response, skipping vehicle", "supplier_code", c.SupplierCode)
+			continue
+		}
+
+		if checkRestriction(p, s.name) {
 			continue
 		}
 
@@ -387,4 +392,22 @@ func parseOpeningHours(oh flexOpeningHours) []OpeningHoursItem {
 		{Day: "Friday", OpenTime: oh.FriOpen, CloseTime: oh.FriClose},
 		{Day: "Saturday", OpenTime: oh.SatOpen, CloseTime: oh.SatClose},
 	}
+}
+
+// checkRestriction checks wether the supplier is restricted in this request, it returns true if it is restricted, false otherwise.
+func checkRestriction(p SearchAvailabilityParams, supplierName string) bool {
+	if p.IsRestrictionApplied {
+		if countries, ok := restrictedSuppliers[supplierName]; ok {
+			if len(countries) == 0 {
+				return true
+			}
+			for _, country := range countries {
+				if country == p.CountryCode {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
 }

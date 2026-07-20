@@ -13,6 +13,7 @@ import (
 	auth "encore.app/services/accounts"
 	"encore.app/services/booking/db"
 	"encore.app/services/booking/handlers/availability"
+	"encore.app/services/reservation"
 	"encore.dev/rlog"
 )
 
@@ -129,6 +130,11 @@ func (s *PriceOfferService) renewPriceOfferDetails(ctx context.Context, offer db
 		return api_errors.ErrInternalError
 	}
 
+	payAtPickupJSON, err := renewPayAtPickup(offer, plan)
+	if err != nil {
+		return err
+	}
+
 	var brokerErpPrice, btErpPrice float64
 	if isPriceOfferErpIncluded(offer) {
 		btErpPrice = plan.ChargedERPPriceWithVat
@@ -148,6 +154,7 @@ func (s *PriceOfferService) renewPriceOfferDetails(ctx context.Context, offer db
 		BrokerErpPrice:   dbadapters.NumericFromFloat64(brokerErpPrice),
 		BtErpPrice:       dbadapters.NumericFromFloat64(btErpPrice),
 		TotalPrice:       dbadapters.NumericFromFloat64(totalPrice),
+		PayAtPickup:      payAtPickupJSON,
 	})
 	if err != nil {
 		rlog.Error("failed to renew price offer details", "id", offer.ID, "error", err)
@@ -155,6 +162,62 @@ func (s *PriceOfferService) renewPriceOfferDetails(ctx context.Context, offer db
 	}
 
 	return nil
+}
+
+// renewPayAtPickup reconciles the originally requested pay-at-pickup details against the
+// currently available add-ons, deposit and fees from the plan. Add-ons that are no longer
+// available are dropped, and add-ons whose requested quantity exceeds the currently allowed
+// quantity are clamped to the maximum allowed.
+func renewPayAtPickup(offer db.GetPriceOfferByIdRow, plan availability.PlanPriceDetails) ([]byte, error) {
+	var originalPap reservation.PayAtPickup
+	if err := json.Unmarshal(offer.PayAtPickup, &originalPap); err != nil {
+		rlog.Error("failed to unmarshal price offer pay at pickup", "id", offer.ID, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	renewedAddons := make([]reservation.SelectedAddon, 0, len(originalPap.SelectedAddons))
+	for _, requested := range originalPap.SelectedAddons {
+		planAddOn, ok := findAvailableAddOn(plan.AvailableAddOns, requested.ID)
+		if !ok || planAddOn.AllowedQuantity <= 0 {
+			continue
+		}
+
+		quantity := requested.Quantity
+		if quantity > planAddOn.AllowedQuantity {
+			quantity = planAddOn.AllowedQuantity
+		}
+
+		renewedAddons = append(renewedAddons, reservation.SelectedAddon{
+			ID:       requested.ID,
+			Name:     requested.Name,
+			Price:    requested.Price,
+			Quantity: quantity,
+		})
+	}
+
+	renewedPap := reservation.PayAtPickup{
+		Deposit:         plan.Deposit,
+		DepositCurrency: plan.DepositCurrency,
+		Fees:            plan.Fees,
+		SelectedAddons:  renewedAddons,
+	}
+
+	payAtPickupJSON, err := json.Marshal(renewedPap)
+	if err != nil {
+		rlog.Error("failed to marshal renewed price offer pay at pickup", "id", offer.ID, "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	return payAtPickupJSON, nil
+}
+
+func findAvailableAddOn(availableAddOns []broker.AddOn, id int) (broker.AddOn, bool) {
+	for _, addOn := range availableAddOns {
+		if addOn.ID == id {
+			return addOn, true
+		}
+	}
+	return broker.AddOn{}, false
 }
 
 func isPriceOfferErpIncluded(offer db.GetPriceOfferByIdRow) bool {

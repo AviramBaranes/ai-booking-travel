@@ -25,7 +25,7 @@ type BusinessReservationReportRow struct {
 	Status                         string  `json:"status"`
 	OrganizationName               string  `json:"organizationName"`
 	OfficeName                     string  `json:"officeName"`
-	AgentName                      string  `json:"agentName"`
+	UserName                       string  `json:"userName"`
 	AdminName                      *string `json:"adminName,omitempty"`
 	BrokerName                     string  `json:"brokerName"`
 	SupplierName                   string  `json:"supplierName"`
@@ -60,7 +60,7 @@ type accountsSet struct {
 }
 
 func (s *ReportsService) GetBusinessReport(ctx context.Context, p ReportParams) (*BusinessReportResponse, error) {
-	result, err := s.getReports(ctx, p, true)
+	result, err := s.getReports(ctx, p)
 	if err != nil {
 		return nil, err
 	}
@@ -94,8 +94,12 @@ func buildAccountsSet(reservations []db.Reservation) accountsSet {
 	usersIDs := make(map[int64]struct{})
 
 	for _, r := range reservations {
-		orgIDs[*r.OrganizationID] = struct{}{}
-		officeIDs[*r.OfficeID] = struct{}{}
+		if r.OrganizationID != nil {
+			orgIDs[*r.OrganizationID] = struct{}{}
+		}
+		if r.OfficeID != nil {
+			officeIDs[*r.OfficeID] = struct{}{}
+		}
 		usersIDs[r.UserID] = struct{}{}
 		if r.AdminRefID != nil {
 			usersIDs[*r.AdminRefID] = struct{}{}
@@ -135,7 +139,7 @@ func buildBusinessReportRows(reservations []db.Reservation, accountsLookup *acco
 			Status:                         string(r.ReservationStatus),
 			OrganizationName:               nameForID(organizationNames, r.OrganizationID),
 			OfficeName:                     nameForID(officeNames, r.OfficeID),
-			AgentName:                      userNames[r.UserID],
+			UserName:                       userNames[r.UserID],
 			AdminName:                      adminName,
 			BrokerName:                     string(r.Broker),
 			SupplierName:                   carDetails.SupplierName,

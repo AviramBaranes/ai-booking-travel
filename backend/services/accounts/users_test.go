@@ -463,3 +463,67 @@ func TestGetUserMarkupGross(t *testing.T) {
 		}
 	})
 }
+
+func TestGetOrCreateCustomer(t *testing.T) {
+	ctx := context.Background()
+	phoneNumber := randomIsraeliPhoneNumber()
+	otp := "123456"
+	customer, cleanup, err := createCustomer(ctx, phoneNumber, &otp)
+	if err != nil {
+		t.Fatalf("Failed to create customer: %v", err)
+	}
+	defer cleanup()
+	t.Run("returns the customer if found by phone and email", func(t *testing.T) {
+		resp, err := GetOrCreateCustomer(ctx, user.GetOrCreateCustomerParams{
+			Phone: phoneNumber,
+			Email: customer.Email,
+		})
+		if err != nil {
+			t.Fatalf("Failed to get or create customer: %v", err)
+		}
+
+		if resp.UserID != customer.ID {
+			t.Fatalf("Expected customer ID %d, got %d", customer.ID, resp.UserID)
+		}
+	})
+
+	t.Run("fails to create customer on duplicate email", func(t *testing.T) {
+		_, err := GetOrCreateCustomer(ctx, user.GetOrCreateCustomerParams{
+			Phone: randomIsraeliPhoneNumber(),
+			Email: customer.Email,
+		})
+		if err == nil {
+			t.Fatalf("Expected error when creating customer with duplicate email, got nil")
+		}
+
+		api_errors.AssertApiError(t, user.ErrEmailAlreadyExists, err)
+	})
+
+	t.Run("fails to create customer on duplicate phone", func(t *testing.T) {
+		_, err := GetOrCreateCustomer(ctx, user.GetOrCreateCustomerParams{
+			Phone: phoneNumber,
+			Email: randomName() + "@example.com",
+		})
+		if err == nil {
+			t.Fatalf("Expected error when creating customer with duplicate phone, got nil")
+		}
+
+		api_errors.AssertApiError(t, user.ErrPhoneAlreadyExists, err)
+	})
+
+	t.Run("successfully creates new customer", func(t *testing.T) {
+		newPhone := randomIsraeliPhoneNumber()
+		newEmail := randomName() + "@example.com"
+		resp, err := GetOrCreateCustomer(ctx, user.GetOrCreateCustomerParams{
+			Phone: newPhone,
+			Email: newEmail,
+		})
+		if err != nil {
+			t.Fatalf("Failed to get or create customer: %v", err)
+		}
+
+		if resp.UserID == 0 {
+			t.Fatalf("Expected a valid customer ID, got %d", resp.UserID)
+		}
+	})
+}

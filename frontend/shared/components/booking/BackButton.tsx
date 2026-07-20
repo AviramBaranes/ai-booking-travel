@@ -20,9 +20,8 @@ export function BackButton({
 
   return (
       <Button
-        // variant="ghost"
-        variant="outline"
-        className="flex gap-2 cursor-pointer mt-8 font-bold my-4 p-6 border-navy rounded-md"
+        variant="ghost"
+        className="flex gap-2 cursor-pointer font-bold my-2 p-6 text-brand rounded-md"
         onClick={() => {
           if (href) {
             router.push(href);
@@ -31,10 +30,10 @@ export function BackButton({
           }
         }}
       >
-        <span className="text-navy text-sm">
+        <span className="text-brand text-base">
           {dir === "rtl" ? ARROW_RIGHT : ARROW_LEFT}
         </span>
-        <span className="text-navy text-sm">{t(translationKey)}</span>
+        <span className="text-brand text-base">{t(translationKey)}</span>
       </Button>
   );
 }

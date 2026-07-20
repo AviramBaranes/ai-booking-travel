@@ -9,14 +9,16 @@ import { Loading } from "../../Loading";
 
 export function SelectedCarHeader({
   carDetails,
+  className,
 }: {
   carDetails: broker.CarDetails;
+  className?: string;
 }) {
   const t = useTranslations("booking.results");
   return (
-    <>
+    <div className={`flex flex-col-reverse lg:flex-col lg:items-center items-start max-sm:mb-10 ${className}`}>
       <div className="flex-col flex items-center">
-        <div className="mb-12">
+        <div className="lg:mb-12">
           <Suspense fallback={<Loading />}>
             <SupplierLogo supplierName={carDetails.supplierName} />
           </Suspense>
@@ -27,20 +29,22 @@ export function SelectedCarHeader({
           alt={carDetails.model}
           width={176}
           height={100}
-          className="w-44 h-25 object-contain"
+          className="w-30 lg:w-44 h-25 object-contain"
         />
       </div>
-      <div className="flex gap-2 flex-col items-start">
-        <h5 className="type-h5 text-navy">
-          {carDetails.model} ({carDetails.acriss})
-        </h5>
-        <span className="type-paragraph text-navy">
-          {t("carDetails.orSimilar")}
-        </span>
+      <div>
+        <div className="flex gap-2 flex-col items-start">
+          <h5 className="type-h5 text-navy">
+            {carDetails.model} ({carDetails.acriss})
+          </h5>
+          <span className="type-paragraph text-navy">
+            {t("carDetails.orSimilar")}
+          </span>
+        </div>
+        <div className="mb-6">
+          <CarDetailsPills carDetails={carDetails} />
+        </div>
       </div>
-      <div className="mb-6">
-        <CarDetailsPills carDetails={carDetails} />
-      </div>
-    </>
+    </div>
   );
 }

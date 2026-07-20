@@ -11,50 +11,55 @@ import (
 	"encore.dev/rlog"
 )
 
-// LoginAsAgentParams defines the parameters required to login as an agent.
-type LoginAsAgentParams struct {
-	AgentID int64 `json:"agentId" validate:"required"`
+// LoginAsUserParams defines the parameters required to login as a user (agent or customer) on behalf of an admin.
+type LoginAsUserParams struct {
+	UserID int64 `json:"userId" validate:"required"`
 }
 
-func (p LoginAsAgentParams) Validate() error {
+func (p LoginAsUserParams) Validate() error {
 	return validation.ValidateStruct(p)
 }
 
-// LoginAsAgent logs in as an agent on behalf of an admin.
+// LoginAsUser logs in as an agent or customer on behalf of an admin.
 // adminID is extracted from the caller's auth context by the thin wrapper.
-func (s *AuthService) LoginAsAgent(ctx context.Context, params LoginAsAgentParams, adminID int64) (*LoginResponse, error) {
-	agent, err := s.query.GetUserById(ctx, params.AgentID)
+func (s *AuthService) LoginAsUser(ctx context.Context, params LoginAsUserParams, adminID int64) (*LoginResponse, error) {
+	user, err := s.query.GetUserById(ctx, params.UserID)
 	if err != nil {
 		if errors.Is(err, db.ErrNoRows) {
 			return nil, ErrInvalidCredentials
 		}
-		rlog.Error("failed to get agent by ID", "agent_id", params.AgentID, "error", err)
+		rlog.Error("failed to get user by ID", "user_id", params.UserID, "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 
-	data := accessTokenDataFromUser(agent, &adminID)
+	if user.Role != db.UserRoleAgent && user.Role != db.UserRoleCustomer {
+		return nil, api_errors.ErrUnauthorized
+	}
+
+	data := accessTokenDataFromUser(user, &adminID)
 	tokens, err := s.generateTokens(ctx, data)
 
 	if err != nil {
-		rlog.Error("failed to generate tokens in login as agent", "user_id", agent.ID, "error", err)
+		rlog.Error("failed to generate tokens in login as user", "user_id", user.ID, "error", err)
 		return nil, api_errors.ErrInternalError
 	}
 
 	return &LoginResponse{
-		ID:                   agent.ID,
-		Role:                 agent.Role,
-		FirstName:            agent.FirstName,
-		LastName:             agent.LastName,
+		ID:                   user.ID,
+		Role:                 user.Role,
+		FirstName:            user.FirstName,
+		LastName:             user.LastName,
 		AccessToken:          tokens.AccessToken,
 		AccessTokenExpiresAt: tokens.AccessTokenExpiresAt,
-		Email:                agent.Email,
-		PhoneNumber:          ptrToStr(agent.PhoneNumber),
-		OfficeID:             agent.OfficeID,
+		Email:                user.Email,
+		PhoneNumber:          ptrToStr(user.PhoneNumber),
+		OfficeID:             user.OfficeID,
 		SetCookies:           authCookies(tokens.RefreshToken),
 	}, nil
 }
 
-// accessTokenDataFromUser converts a db.GetUserByIdRow to jwt.AccessTokenData, including the admin ref ID for login as agent.
+// accessTokenDataFromUser converts a db.GetUserByIdRow to jwt.AccessTokenData.
+// OrganizationContext is only populated for agents; customers have no office/org.
 func accessTokenDataFromUser(agent db.GetUserByIdRow, adminID *int64) jwt.AccessTokenData {
 	var orgCtx *jwt.OrganizationContext
 	if agent.OfficeID != nil && agent.OrganizationID != nil && agent.IsOrganic != nil {

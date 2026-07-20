@@ -90,3 +90,9 @@ func (s *Service) GetUserMarkupGross(ctx context.Context) (*user.GetUserMarkupGr
 	h := user.NewUserService(s.query)
 	return h.GetUserMarkupGross(ctx, authData.UserID)
 }
+
+// encore:api private
+func (s *Service) GetOrCreateCustomer(ctx context.Context, p user.GetOrCreateCustomerParams) (*user.GetOrCreateCustomerResponse, error) {
+	h := user.NewUserService(s.query)
+	return h.GetOrCreateCustomer(ctx, p)
+}

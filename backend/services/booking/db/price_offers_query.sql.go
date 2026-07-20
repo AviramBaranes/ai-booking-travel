@@ -527,9 +527,10 @@ UPDATE price_offers SET
     broker_erp_price = $6,
     bt_erp_price = $7,
     total_price = $8,
+    pay_at_pickup = $9,
     renewed_at = now(),
     updated_at = now()
-WHERE id = $9 AND agent_id = $10 AND status != 'unavailable'
+WHERE id = $10 AND agent_id = $11 AND status != 'unavailable'
 `
 
 type RenewPriceOfferDetailsParams struct {
@@ -541,6 +542,7 @@ type RenewPriceOfferDetailsParams struct {
 	BrokerErpPrice   pgtype.Numeric
 	BtErpPrice       pgtype.Numeric
 	TotalPrice       pgtype.Numeric
+	PayAtPickup      []byte
 	ID               int64
 	AgentID          int64
 }
@@ -555,6 +557,7 @@ func (q *Queries) RenewPriceOfferDetails(ctx context.Context, arg RenewPriceOffe
 		arg.BrokerErpPrice,
 		arg.BtErpPrice,
 		arg.TotalPrice,
+		arg.PayAtPickup,
 		arg.ID,
 		arg.AgentID,
 	)

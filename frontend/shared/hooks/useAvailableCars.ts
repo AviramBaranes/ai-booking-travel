@@ -18,7 +18,7 @@ export function useAvailableCars(
   return useQuery({
     queryKey: bookingKeys.availability(params),
     queryFn: () => searchAvailableCars(params),
-    staleTime: 15 * 60 * 1000,
+    staleTime: Infinity,
     enabled: opts?.fromCache !== true,
   });
 }

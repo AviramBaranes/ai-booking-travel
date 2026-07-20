@@ -12,6 +12,7 @@ import (
 	contact "encore.app/services/accounts/handlers/contact"
 	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation"
+	"encore.app/services/reservation/handlers/actions"
 	"encore.dev/rlog"
 )
 
@@ -24,34 +25,46 @@ func OrderPaymentIPNGateway(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	reqData, err := parseRequest(r)
 	if err != nil {
+		rlog.Error("failed to parse request", "error", err)
 		http.NotFound(w, r)
 		return
 	}
 
+	orderID := reqData.ID
 	ic := icount.NewIcount()
 	transaction, err := getTransaction(ic, reqData.confirmationCode)
 	if err != nil {
-		sendInvoiceCreationFailureEmail(ctx, reqData.orderID, err)
+		rlog.Error("failed to get transaction", "error", err, "orderID", orderID)
+		sendInvoiceCreationFailureEmail(ctx, orderID, err)
 		http.NotFound(w, r)
 		return
 	}
 
-	BillingReservation, err := getBillingReservation(ctx, reqData, transaction)
+	billingReservation, err := voucherReservation(ctx, orderID, reqData, transaction)
 	if err != nil {
-		sendVoucherReservationFailureEmail(ctx, reqData.orderID, err)
+		rlog.Error("failed to get billing reservation after payment", "error", err, "orderID", orderID)
+		sendVoucherReservationFailureEmail(ctx, orderID, err)
 		return
 	}
 
 	clientID, err := getIcountClientID(ctx, reqData)
 	if err != nil {
-		sendInvoiceCreationFailureEmail(ctx, reqData.orderID, err)
+		rlog.Error("failed to get iCount client ID", "error", err, "orderID", orderID)
+		sendInvoiceCreationFailureEmail(ctx, orderID, err)
 		return
 	}
 
-	err = createInvoice(ic, BillingReservation, clientID, transaction)
+	resp, err := createInvoice(ic, billingReservation, clientID, transaction)
 	if err != nil {
-		sendInvoiceCreationFailureEmail(ctx, reqData.orderID, err)
-		return
+		rlog.Error("failed to create invoice", "error", err, "orderID", orderID)
+		sendInvoiceCreationFailureEmail(ctx, orderID, err)
+	} else {
+		if err := reservation.SaveInvoiceDocNum(ctx, actions.SaveInvoiceDocNumParams{
+			ID:     billingReservation.ID,
+			DocNum: resp.DocNum,
+		}); err != nil {
+			rlog.Error("failed to save invoice doc number", "error", err, "orderID", orderID)
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -99,8 +112,9 @@ func sendVoucherReservationFailureEmail(ctx context.Context, reservationID int64
 }
 
 type ipnReqData struct {
-	orderID          int64
+	ID               int64
 	confirmationCode string
+	CustomerEmail    string
 	officeID         *int64
 	organizationID   *int64
 }
@@ -120,6 +134,7 @@ func parseRequest(r *http.Request) (*ipnReqData, error) {
 		return nil, err
 	}
 
+	cEmail := r.Form.Get("customer_email")
 	confCode := r.Form.Get("confirmation_code")
 	if confCode == "" {
 		rlog.Error("missing confirmation code in form parameters")
@@ -133,7 +148,8 @@ func parseRequest(r *http.Request) (*ipnReqData, error) {
 	}
 
 	return &ipnReqData{
-		orderID:          orderID,
+		ID:               orderID,
+		CustomerEmail:    cEmail,
 		confirmationCode: confCode,
 		officeID:         offID,
 		organizationID:   orgID,
@@ -157,16 +173,21 @@ func getTransaction(ic *icount.Icount, confirmationCode string) (*icount.Transac
 	return &transaction, nil
 }
 
-// getBillingReservation retrieves the billing reservation after payment using the provided request data and transaction details.
-func getBillingReservation(ctx context.Context, reqData *ipnReqData, transaction *icount.Transaction) (reservation.BillingReservation, error) {
-	resp, err := reservation.VoucherReservationAfterPayment(ctx, &reservation.VoucherReservationAfterPaymentParams{
-		ReservationID:           reqData.orderID,
+// voucherReservation voucher the reservation, updates its currency rate and statuses and sends back the billing reservation after payment using the provided request data and transaction details.
+func voucherReservation(ctx context.Context, id int64, reqData *ipnReqData, transaction *icount.Transaction) (reservation.BillingReservation, error) {
+	email := reqData.CustomerEmail
+	if email == "" {
+		email = transaction.ClientEmail
+	}
+
+	resp, err := reservation.VoucherReservationAfterPayment(ctx, reservation.VoucherReservationAfterPaymentParams{
+		ReservationID:           id,
 		PaymentConfirmationCode: reqData.confirmationCode,
 		PaymentDocNum:           transaction.DocNumber,
-		UserEmail:               transaction.ClientEmail,
+		UserEmail:               email,
 	})
 	if err != nil {
-		rlog.Error("failed to voucher reservation after payment", "error", err, "orderID", reqData.orderID)
+		rlog.Error("failed to voucher reservation after payment", "error", err, "orderID", id)
 		return reservation.BillingReservation{}, err
 	}
 
@@ -180,7 +201,7 @@ func getIcountClientID(ctx context.Context, reqData *ipnReqData) (int, error) {
 		OrganizationID: reqData.organizationID,
 	})
 	if err != nil {
-		rlog.Error("failed to get iCount client ID", "error", err, "orderID", reqData.orderID)
+		rlog.Error("failed to get iCount client ID", "error", err, "orderID", reqData.ID)
 		return 0, err
 	}
 
@@ -188,22 +209,20 @@ func getIcountClientID(ctx context.Context, reqData *ipnReqData) (int, error) {
 }
 
 // createInvoice creates an invoice in iCount for the given billing reservation and transaction details.
-func createInvoice(ic *icount.Icount, reservation reservation.BillingReservation, clientID int, transaction *icount.Transaction) error {
+func createInvoice(ic *icount.Icount, reservation reservation.BillingReservation, clientID int, transaction *icount.Transaction) (*BillResponse, error) {
 	currencyID, _ := icount.CurrencyIDsMap[reservation.CurrencyCode]
-	items := buildReservationInvoiceItems(reservation, currencyID)
+	items := buildReservationInvoiceItems(reservation, currencyID, reservation.CurrencyRate)
 	invoiceRes, err := ic.CreateInvoice(icount.CreateInvoiceParams{
 		DocType:       "invoice",
 		ClientID:      clientID,
-		CurrencyID:    transaction.CurrencyID,
+		CurrencyID:    currencyID,
+		Rate:          reservation.CurrencyRate,
 		PaymentMethod: transaction.ToCCPayment(true),
 		Items:         items,
 	})
-
-	_, err = parseBillingResponse(invoiceRes)
 	if err != nil {
-		rlog.Error("failed to parse billing response", "error", err, "orderID", reservation.ID)
-		return err
+		return nil, fmt.Errorf("failed to create invoice in iCount: %w", err)
 	}
 
-	return nil
+	return parseBillingResponse(invoiceRes)
 }

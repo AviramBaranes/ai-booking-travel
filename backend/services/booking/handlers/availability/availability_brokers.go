@@ -8,7 +8,7 @@ import (
 	"encore.dev/rlog"
 )
 
-func searchAvailabilityAcrossBrokers(cfg *AvailableVehiclesConfig, p SearchAvailabilityParams, locs availabilityLocations) (*broker.AvailabilityResponse, error) {
+func searchAvailabilityAcrossBrokers(cfg *AvailableVehiclesConfig, p SearchAvailabilityParams, locs availabilityLocations, isAgent bool) (*broker.AvailabilityResponse, error) {
 	vs := make([]broker.AvailableVehicle, 0)
 	si := make([]broker.SupplierInfo, 0)
 	var (
@@ -31,7 +31,7 @@ func searchAvailabilityAcrossBrokers(cfg *AvailableVehiclesConfig, p SearchAvail
 				return
 			}
 
-			result, err := searchCars(b, p, loc.pickupBrokerLocationID, loc.dropoffBrokerLocationID, loc.pickupCountryCode)
+			result, err := searchCars(b, p, loc.pickupBrokerLocationID, loc.dropoffBrokerLocationID, loc.pickupCountryCode, isAgent)
 			if err != nil {
 				errOnce.Do(func() {
 					firstErr = err
@@ -63,16 +63,17 @@ func searchAvailabilityAcrossBrokers(cfg *AvailableVehiclesConfig, p SearchAvail
 }
 
 // searchCars calls the given broker to search for available vehicles with the supplied location and date parameters.
-func searchCars(b broker.AvailabilitySearcher, params SearchAvailabilityParams, plID, dlID, countryCode string) (*broker.AvailabilityResponse, error) {
+func searchCars(b broker.AvailabilitySearcher, p SearchAvailabilityParams, plID, dlID, countryCode string, isAgent bool) (*broker.AvailabilityResponse, error) {
 	vs, err := b.SearchAvailability(broker.SearchAvailabilityParams{
-		CountryCode:     countryCode,
-		PickupLocation:  plID,
-		DropoffLocation: dlID,
-		PickupTime:      params.PickupTime,
-		DropoffTime:     params.DropoffTime,
-		PickupDate:      params.PickupDate,
-		DropoffDate:     params.DropoffDate,
-		DriverAge:       params.DriverAge,
+		CountryCode:          countryCode,
+		PickupLocation:       plID,
+		DropoffLocation:      dlID,
+		PickupTime:           p.PickupTime,
+		DropoffTime:          p.DropoffTime,
+		PickupDate:           p.PickupDate,
+		DropoffDate:          p.DropoffDate,
+		DriverAge:            p.DriverAge,
+		IsRestrictionApplied: !isAgent,
 	})
 	if err != nil {
 		rlog.Error("failed to search availability", "error", err, "broker", b.Name(), "pickupLocation", plID, "dropoffLocation", dlID)

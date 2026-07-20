@@ -14,6 +14,7 @@ type Querier interface {
 	CheckUserExists(ctx context.Context, email string) (int64, error)
 	CountAgents(ctx context.Context, arg CountAgentsParams) (int64, error)
 	CountContacts(ctx context.Context, arg CountContactsParams) (int64, error)
+	CountCustomers(ctx context.Context, search *string) (int64, error)
 	CountOffices(ctx context.Context, arg CountOfficesParams) (int64, error)
 	CountOrganizations(ctx context.Context, arg CountOrganizationsParams) (int64, error)
 	CreateAgent(ctx context.Context, arg CreateAgentParams) (CreateAgentRow, error)
@@ -29,6 +30,8 @@ type Querier interface {
 	DeleteRefreshTokensByUserId(ctx context.Context, userID int64) error
 	DeleteUser(ctx context.Context, id int64) error
 	GetAgentsBillingContacts(ctx context.Context, usersIds []int64) ([]GetAgentsBillingContactsRow, error)
+	GetCustomerByID(ctx context.Context, id int64) (User, error)
+	GetCustomerByPhoneAndEmail(ctx context.Context, arg GetCustomerByPhoneAndEmailParams) (GetCustomerByPhoneAndEmailRow, error)
 	GetOfficeBillingState(ctx context.Context, id int64) (GetOfficeBillingStateRow, error)
 	GetOfficeIcountClientID(ctx context.Context, id int64) (*int32, error)
 	GetOfficeNamesByIDs(ctx context.Context, ids []int64) ([]GetOfficeNamesByIDsRow, error)
@@ -47,6 +50,7 @@ type Querier interface {
 	ListAdminsEmails(ctx context.Context) ([]string, error)
 	ListAgents(ctx context.Context, arg ListAgentsParams) ([]ListAgentsRow, error)
 	ListContacts(ctx context.Context, arg ListContactsParams) ([]ListContactsRow, error)
+	ListCustomers(ctx context.Context, arg ListCustomersParams) ([]ListCustomersRow, error)
 	ListInorganicOffices(ctx context.Context) ([]ListInorganicOfficesRow, error)
 	ListOffices(ctx context.Context, arg ListOfficesParams) ([]ListOfficesRow, error)
 	ListOrganicOrganizations(ctx context.Context) ([]ListOrganicOrganizationsRow, error)

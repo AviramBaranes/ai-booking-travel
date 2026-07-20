@@ -20,6 +20,12 @@ func (s *Service) BookPriceOffer(ctx context.Context, p booking_handlers.BookPri
 	return bs.BookPriceOffer(ctx, p)
 }
 
+//encore:api private
+func (s *Service) CustomerBook(ctx context.Context, p booking_handlers.CustomerBookParams) (*booking_handlers.BookResponse, error) {
+	bs := booking_handlers.NewBookingService(s.query)
+	return bs.CustomerBook(ctx, p)
+}
+
 var _ = pubsub.NewSubscription(
 	reservation.BookingCancellationEvents,
 	"cancel-booking",

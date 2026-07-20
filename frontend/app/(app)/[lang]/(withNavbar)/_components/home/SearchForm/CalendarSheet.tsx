@@ -73,7 +73,6 @@ interface CalendarSheetProps {
   onConfirm: (range: DateRange | undefined) => void;
 }
 
-
 export function CalendarSheet({
   open,
   onOpenChange,
@@ -117,7 +116,8 @@ export function CalendarSheet({
             mode="range"
             showOutsideDays={false}
             locale={locale}
-            numberOfMonths={2}
+            numberOfMonths={13}
+            hideNavigation
             selected={range}
             onSelect={setRange}
             className="min-h-75 w-full px-8 bg-white"

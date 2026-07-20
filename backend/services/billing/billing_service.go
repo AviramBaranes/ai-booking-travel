@@ -6,12 +6,16 @@ import (
 
 	"encore.app/internal/currency"
 	"encore.app/services/accounts"
+	"encore.app/services/billing/db"
 	"encore.dev/config"
 	"encore.dev/storage/cache"
+	"encore.dev/storage/sqldb"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // encore:service
 type Service struct {
+	query      db.Querier
 	ratesCache *currency.CurrenciesCache
 }
 
@@ -21,12 +25,22 @@ var currenciesRates = cache.NewFloatKeyspace[string](accounts.GlobalCache, cache
 	DefaultExpiry: cache.ExpireIn(12 * time.Hour),
 })
 
+var billingDB = sqldb.NewDatabase("billing", sqldb.DatabaseConfig{
+	Migrations: "./db/migrations/",
+})
+var pgxdb *pgxpool.Pool
+var query *db.Queries
+
 func initService() (*Service, error) {
+	pgxdb = sqldb.Driver[*pgxpool.Pool](billingDB)
+	query = db.New(pgxdb)
+
 	if currenciesRates == nil {
 		return nil, fmt.Errorf("currenciesRates cache is not initialized")
 	}
 	ratesCache := currency.NewCurrenciesCache(currenciesRates)
 	return &Service{
+		query:      query,
 		ratesCache: ratesCache,
 	}, nil
 }
@@ -37,46 +51,10 @@ type billingConfig struct {
 	Invoice       invoiceConfig
 }
 
-type monthlyReportConfig struct {
-	Headers monthlyReportHeadersConfig
-	Styles  monthlyReportStylesConfig
-}
-
-type monthlyReportHeadersConfig struct {
-	OfficeName           config.String
-	AgentName            config.String
-	DriverName           config.String
-	ReservationCreatedAt config.String
-	ReservationID        config.String
-	VoucherDate          config.String
-	VoucherNumber        config.String
-	AgentVoucherNumber   config.String
-	PickupDate           config.String
-	DropoffDate          config.String
-	CountryCode          config.String
-	RentalDays           config.String
-	Currency             config.String
-	NetPrice             config.String
-	FullCoverage         config.String
-	TotalNetPrice        config.String
-}
-
-type monthlyReportStylesConfig struct {
-	HeaderBackgroundColor    config.String
-	RefundRowBackgroundColor config.String
-	TotalRowBackgroundColor  config.String
-	BorderColor              config.String
-}
-
 type icountConfig struct {
-	AccountID config.Int
-	PaypageID config.Int
-}
-
-type invoiceConfig struct {
-	PurchaseItemDescription     config.String
-	ProfitItemDescription       config.String
-	ProfitAndErpItemDescription config.String
+	AccountID          config.Int
+	AgentsPaypageID    config.Int
+	CustomersPaypageID config.Int
 }
 
 var cfg = config.Load[*billingConfig]()

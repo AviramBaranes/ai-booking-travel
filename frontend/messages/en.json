@@ -26,6 +26,8 @@
     "phone_already_exists": "Phone number already exists",
     "name_already_exists": "Name already exists",
     "invalid_credentials": "Invalid email or password",
+    "otp_send_rate_limit": "Too many OTP requests. Please wait a few minutes before trying again.",
+    "otp_validate_rate_limit": "Too many failed attempts. Please request a new code.",
     "invalid_refresh_token": "Session is invalid, please log in again",
     "expired_refresh_token": "Session has expired, please log in again",
     "invalid_reset_token": "Password reset link is invalid or expired",
@@ -113,6 +115,7 @@
   },
   "BackToAdmin": {
     "adminAsAgentMsg": "You are logged in as an agent",
+    "adminAsCustomerMsg": "You are logged in as a customer",
     "adminMsg": "You are logged in as an admin",
     "adminAsAgentBtn": "Back to Admin",
     "adminBtn": "Back to Admin Panel"
@@ -128,6 +131,7 @@
     "save": "Save",
     "hasCoupon": "I have a coupon",
     "couponPlaceholder": "Enter coupon code",
+    "noLocationsFound": "No locations found",
     "pickupLocationPlaceholder": "Pick-up location",
     "dropoffLocationPlaceholder": "Drop-off location",
     "pickupDatePlaceholder": "Pick-up date",
@@ -173,8 +177,20 @@
       "feesNoteTitle": "Fees payable at the station"
     },
     "orderPage": {
+      "paymentTitle": "Complete Payment for Car Booking",
+      "paymentSubtitle": "{carModel} or similar · Pickup: {pickupLocation} · {pickupDate} at {pickupTime}",
+      "paymentLoading": "Processing payment, please wait, do not close the window",
+      "paymentFailedTitle": "We couldn't complete your booking",
+      "paymentFailedMessage": "The payment was received by our system, but we couldn't complete the booking with the car supplier. Please do not place another booking for now. If your card was charged, our system will attempt to issue an automatic refund. Our team has also been notified and will review the case as soon as possible.",
+      "contactSupport": "Contact support",
+      "backToSearchResults": "Back to search results",
+      "customerDetails": "Customer Details",
       "driverDetails": "Driver Details",
       "title": "Title*",
+      "customerFirstName": "First Name *",
+      "customerLastName": "Last Name *",
+      "customerEmail": "Email *",
+      "customerPhone": "Mobile Phone *",
       "firstName": "First Name (English)*",
       "lastName": "Last Name (English)*",
       "flightNumber": "Flight Number",
@@ -182,6 +198,7 @@
       "confirmCta": "Book for me!",
       "submitting": "Confirming...",
       "submitError": "Something went wrong. Please try again.",
+      "loadError": "Something went wrong while loading. Please refresh the page.",
       "termsCheckbox": "I accept the",
       "termsLink": "booking terms",
       "freeCancellation": "Free cancellation up to 48 hours before pickup",
@@ -189,7 +206,9 @@
       "validation": {
         "required": "Required field",
         "englishOnly": "English letters only",
-        "mustAcceptTerms": "You must accept the terms"
+        "mustAcceptTerms": "You must accept the terms",
+        "invalidPhone": "Please enter a valid phone number",
+        "invalidEmail": "Please enter a valid email address"
       }
     },
     "plansDialog": {
@@ -467,6 +486,15 @@
         "saveButton": "Update Price Offer",
         "statusLabel": "Change offer status:",
         "priceOfferUpdatedSuccess": "The price offer has been successfully updated"
+      }
+    },
+    "profile": {
+      "title": "My Details",
+      "saveButton": "Save",
+      "successMessage": "Details saved successfully",
+      "validation": {
+        "required": "Required field",
+        "invalidEmail": "Invalid email address"
       }
     },
     "priceOffers": {

@@ -45,7 +45,10 @@ const cancelReservation = `-- name: CancelReservation :exec
 UPDATE reservations
 SET
     payment_status = CASE
-        WHEN payment_status = 'paid' THEN 'refund_pending'
+        WHEN payment_status = 'paid' THEN 
+            CASE WHEN payment_doc_num IS NOT NULL THEN 'refunded'::payment_status
+            ELSE 'refund_pending'::payment_status
+            END
         ELSE payment_status
     END,
     reservation_status = 'canceled',
@@ -102,16 +105,16 @@ WHERE
     AND ($2::DATE IS NULL OR pickup_date >= $2::DATE)
     AND ($3::DATE IS NULL OR pickup_date <= $3::DATE)
     AND ($4::TIMESTAMPTZ IS NULL OR created_at >= $4::TIMESTAMPTZ)
-    AND ($5::TIMESTAMPTZ IS NULL OR created_at <= $5::TIMESTAMPTZ)
+    AND ($5::TIMESTAMPTZ IS NULL OR created_at < $5::TIMESTAMPTZ)
     AND ($6::TIMESTAMPTZ IS NULL OR vouchered_at >= $6::TIMESTAMPTZ)
-    AND ($7::TIMESTAMPTZ IS NULL OR vouchered_at <= $7::TIMESTAMPTZ)
+    AND ($7::TIMESTAMPTZ IS NULL OR vouchered_at < $7::TIMESTAMPTZ)
     AND ($8::reservation_status IS NULL OR reservation_status = $8::reservation_status)
     AND ($9::broker IS NULL OR broker = $9::broker)
     AND (COALESCE(cardinality($10::TEXT[]), 0) = 0 OR supplier_code = ANY($10::TEXT[]))
     AND ($11::BIGINT IS NULL OR organization_id = $11::BIGINT)
     AND ($12::BIGINT IS NULL OR office_id = $12::BIGINT)
     AND ($13::BIGINT IS NULL OR user_id = $13::BIGINT)
-    AND (NOT $14::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+    AND ($14::BOOLEAN IS NULL OR ($14::BOOLEAN = TRUE AND office_id IS NOT NULL AND organization_id IS NOT NULL) OR ($14::BOOLEAN = FALSE AND office_id IS NULL AND organization_id IS NULL))
     AND (NOT $15::BOOLEAN OR reservation_status != 'canceled')
 `
 
@@ -129,7 +132,7 @@ type CountReservationsReportParams struct {
 	OrganizationID      *int64
 	OfficeID            *int64
 	AgentID             *int64
-	IsBusiness          bool
+	IsBusiness          *bool
 	SkipCanceled        bool
 }
 
@@ -379,6 +382,7 @@ SELECT
     reservation_status,
     purchase_price,
     markup_percentage,
+    discount_percentage,
     bt_erp_price,
     broker_erp_price,
     total_price,
@@ -421,6 +425,7 @@ type GetPaymentPendingReservationsByBillingEntityRow struct {
 	ReservationStatus   ReservationStatus
 	PurchasePrice       pgtype.Numeric
 	MarkupPercentage    pgtype.Numeric
+	DiscountPercentage  pgtype.Numeric
 	BtErpPrice          pgtype.Numeric
 	BrokerErpPrice      pgtype.Numeric
 	TotalPrice          pgtype.Numeric
@@ -446,6 +451,7 @@ func (q *Queries) GetPaymentPendingReservationsByBillingEntity(ctx context.Conte
 			&i.ReservationStatus,
 			&i.PurchasePrice,
 			&i.MarkupPercentage,
+			&i.DiscountPercentage,
 			&i.BtErpPrice,
 			&i.BrokerErpPrice,
 			&i.TotalPrice,
@@ -465,7 +471,7 @@ func (q *Queries) GetPaymentPendingReservationsByBillingEntity(ctx context.Conte
 }
 
 const getReservationByID = `-- name: GetReservationByID :one
-SELECT id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num
+SELECT id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num, invoice_doc_num
 FROM reservations
 WHERE id = $1
 `
@@ -516,6 +522,7 @@ func (q *Queries) GetReservationByID(ctx context.Context, id int64) (Reservation
 		&i.UpdatedAt,
 		&i.PaymentConfirmationCode,
 		&i.PaymentDocNum,
+		&i.InvoiceDocNum,
 	)
 	return i, err
 }
@@ -837,23 +844,23 @@ func (q *Queries) ListReservationsByUser(ctx context.Context, arg ListReservatio
 }
 
 const listReservationsReport = `-- name: ListReservationsReport :many
-SELECT id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num
+SELECT id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num, invoice_doc_num
 FROM reservations
 WHERE
     ($1::TEXT IS NULL OR broker_reservation_id ILIKE '%' || $1::TEXT || '%')
     AND($2::DATE IS NULL OR pickup_date >= $2::DATE)
     AND ($3::DATE IS NULL OR pickup_date <= $3::DATE)
     AND ($4::TIMESTAMPTZ IS NULL OR created_at >= $4::TIMESTAMPTZ)
-    AND ($5::TIMESTAMPTZ IS NULL OR created_at <= $5::TIMESTAMPTZ)
+    AND ($5::TIMESTAMPTZ IS NULL OR created_at < $5::TIMESTAMPTZ)
     AND ($6::TIMESTAMPTZ IS NULL OR vouchered_at >= $6::TIMESTAMPTZ)
-    AND ($7::TIMESTAMPTZ IS NULL OR vouchered_at <= $7::TIMESTAMPTZ)
+    AND ($7::TIMESTAMPTZ IS NULL OR vouchered_at < $7::TIMESTAMPTZ)
     AND ($8::reservation_status IS NULL OR reservation_status = $8::reservation_status)
     AND ($9::broker IS NULL OR broker = $9::broker)
     AND (COALESCE(cardinality($10::TEXT[]), 0) = 0 OR supplier_code = ANY($10::TEXT[]))
     AND ($11::BIGINT IS NULL OR organization_id = $11::BIGINT)
     AND ($12::BIGINT IS NULL OR office_id = $12::BIGINT)
     AND ($13::BIGINT IS NULL OR user_id = $13::BIGINT)
-    AND (NOT $14::BOOLEAN OR (office_id IS NOT NULL AND organization_id IS NOT NULL))
+    AND ($14::BOOLEAN IS NULL OR ($14::BOOLEAN = TRUE AND office_id IS NOT NULL AND organization_id IS NOT NULL) OR ($14::BOOLEAN = FALSE AND office_id IS NULL AND organization_id IS NULL))
     AND (NOT $15::BOOLEAN OR reservation_status != 'canceled')
 ORDER BY created_at DESC
 LIMIT  $17::BIGINT
@@ -874,7 +881,7 @@ type ListReservationsReportParams struct {
 	OrganizationID      *int64
 	OfficeID            *int64
 	AgentID             *int64
-	IsBusiness          bool
+	IsBusiness          *bool
 	SkipCanceled        bool
 	PageOffset          int64
 	PageSize            int64
@@ -950,6 +957,7 @@ func (q *Queries) ListReservationsReport(ctx context.Context, arg ListReservatio
 			&i.UpdatedAt,
 			&i.PaymentConfirmationCode,
 			&i.PaymentDocNum,
+			&i.InvoiceDocNum,
 		); err != nil {
 			return nil, err
 		}
@@ -975,6 +983,22 @@ AND payment_status IN ('unpaid', 'refund_pending')
 
 func (q *Queries) ResolveReservationsPayment(ctx context.Context, ids []int64) error {
 	_, err := q.db.Exec(ctx, resolveReservationsPayment, ids)
+	return err
+}
+
+const saveInvoiceDocNum = `-- name: SaveInvoiceDocNum :exec
+UPDATE reservations
+SET invoice_doc_num = $2
+WHERE id = $1
+`
+
+type SaveInvoiceDocNumParams struct {
+	ID            int64
+	InvoiceDocNum *string
+}
+
+func (q *Queries) SaveInvoiceDocNum(ctx context.Context, arg SaveInvoiceDocNumParams) error {
+	_, err := q.db.Exec(ctx, saveInvoiceDocNum, arg.ID, arg.InvoiceDocNum)
 	return err
 }
 
@@ -1012,7 +1036,7 @@ AND
     reservation_status = 'booked'
 AND
     payment_status = 'unpaid'
-RETURNING id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num
+RETURNING id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num, invoice_doc_num
 `
 
 type VoucherReservationAfterPaymentParams struct {
@@ -1067,6 +1091,7 @@ func (q *Queries) VoucherReservationAfterPayment(ctx context.Context, arg Vouche
 		&i.UpdatedAt,
 		&i.PaymentConfirmationCode,
 		&i.PaymentDocNum,
+		&i.InvoiceDocNum,
 	)
 	return i, err
 }

@@ -34,7 +34,7 @@ export default async function ReservationDetailsPage({
   ]);
 
   return (
-    <main className="w-2/3 mx-auto pt-4 pb-6 print:w-full">
+    <main className="lg:w-2/3 mx-5 lg:mx-auto lg:pt-15 pb-6 print:w-full">
       <HydrationBoundary state={dehydrate(queryClient)}>
         <div className="print:hidden">
           <BackButton
@@ -42,11 +42,11 @@ export default async function ReservationDetailsPage({
             href={`/${lang}/reservations`}
           />
         </div>
-        <div className="flex gap-2 mt-6 print:flex-col print:gap-6">
-          <div className="w-3/4 print:w-full">
+        <div className="flex flex-col-reverse lg:flex-row gap-2 mt-6 print:flex-col print:gap-6">
+          <div className="lg:w-3/4 print:w-full">
             <ReservationSummary reservationId={Number(reservationId)} />
           </div>
-          <div className="w-1/4 print:w-full">
+          <div className="lg:w-1/4 print:w-full">
             <ReservationCarCard reservationId={Number(reservationId)} />
           </div>
         </div>

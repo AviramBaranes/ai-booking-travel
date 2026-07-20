@@ -6,12 +6,14 @@ import { SearchDataBannerWithQuery } from "../_components/SearchDataBannerWithQu
 
 export default function PlansPage() {
   return (
-    <main className="w-2/3 mx-auto pt-15 pb-6">
+    <main className="lg:w-2/3 mx-auto lg:pt-15 pb-6">
       <BookingStepper currentStep="plans" />
       <div className="my-4">
         <SearchDataBannerWithQuery />
       </div>
-      <BackButton translationKey="backToResults" />
+      <div className="max-sm:mx-5">
+        <BackButton translationKey="backToResults" />
+      </div>
       <ExpiredSearchGate>
         <PlansPageContent />
       </ExpiredSearchGate>

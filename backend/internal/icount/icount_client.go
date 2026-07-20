@@ -31,6 +31,7 @@ type icountAPIEndPoint string
 
 const (
 	createDocEndpoint       icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/doc/create"
+	cancelDocEndpoint       icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/doc/cancel"
 	fetchCurrenciesEndpoint icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/currency/get_rates"
 	generatePaypageEndpoint icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/paypage/generate_sale"
 	getTransactionEndpoint  icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/cc/transactions"

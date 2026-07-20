@@ -36,7 +36,7 @@ export function CarCard({ vehicle, daysCount, searchRequest }: CarCardProps) {
           model={vehicle.carDetails.model}
           orSimilarText={t("carDetails.orSimilar")}
         />
-        <div className="lg:max-w-2/3">
+        <div className="lg:w-96">
           <CarDetailsPills carDetails={vehicle.carDetails} />
         </div>
         <CarChecks

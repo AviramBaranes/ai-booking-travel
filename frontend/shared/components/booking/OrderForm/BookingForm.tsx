@@ -1,4 +1,3 @@
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +9,7 @@ import { ChevronDown } from "lucide-react";
 import { OrderFormValues } from "./orderFormSchema";
 import { useTranslations } from "next-intl";
 import { Controller, useFormContext } from "react-hook-form";
+import { OrderFormInput } from "./OrderFormInput";
 
 export function BookingForm() {
   const t = useTranslations("booking.orderPage");
@@ -60,8 +60,7 @@ export function BookingForm() {
         <ErrorDisplay>{errors.driverTitle?.message}</ErrorDisplay>
       </div>
       <div className="flex-1">
-        <Input
-          className="bg-white border border-cars-border h-12 rounded-lg px-4 type-paragraph text-text-secondary w-full"
+        <OrderFormInput
           placeholder={t("firstName")}
           aria-invalid={!!errors.driverFirstName}
           {...register("driverFirstName", {
@@ -71,8 +70,7 @@ export function BookingForm() {
         <ErrorDisplay>{errors.driverFirstName?.message}</ErrorDisplay>
       </div>
       <div className="flex-1">
-        <Input
-          className="bg-white border border-cars-border h-12 rounded-lg px-4 type-paragraph text-text-secondary w-full"
+        <OrderFormInput
           placeholder={t("lastName")}
           aria-invalid={!!errors.driverLastName}
           {...register("driverLastName", {
@@ -82,8 +80,7 @@ export function BookingForm() {
         <ErrorDisplay>{errors.driverLastName?.message}</ErrorDisplay>
       </div>
       <div className="flex-1">
-        <Input
-          className="bg-white border border-cars-border h-12 rounded-lg px-4 type-paragraph text-text-secondary  w-full"
+        <OrderFormInput
           placeholder={t("flightNumber")}
           aria-invalid={!!errors.flightNumber}
           {...register("flightNumber")}

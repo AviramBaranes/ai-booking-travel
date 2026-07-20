@@ -1,4 +1,4 @@
-import { auth, contact, office, organization, user } from "../client";
+import { auth, contact, customer, office, organization, user } from "../client";
 import { withErrorHandler } from "./_api";
 
 // Auth
@@ -9,20 +9,19 @@ export function login(email: string, password: string) {
   );
 }
 
-export function validateOTP(
-  phoneNumber: string,
-  otp: string,
-) {
+export function validateOTP(phoneNumber: string, otp: string) {
   return withErrorHandler(
     (client) => client.accounts.ValidateCustomerLoginOTP({ phoneNumber, otp }),
     { skipAuthRedirect: true },
   );
 }
 
-export function loginAsAgent(agentId: number) {
-  return withErrorHandler((client) =>
-    client.accounts.LoginAsAgent({ agentId }),
-  );
+export function loginAsUser(userId: number) {
+  return withErrorHandler((client) => client.accounts.LoginAsUser({ userId }));
+}
+
+export function loginAsAgent(userId: number) {
+  return loginAsUser(userId);
 }
 
 export function loginBackToAdmin() {
@@ -154,4 +153,13 @@ export function listInorganicOffices() {
 export function updateUser(id: number, data: user.UpdateUserParams) {
   if (data.officeId === 0) delete data.officeId; // Avoid sending officeId when it's not set, to prevent validation errors.
   return withErrorHandler((client) => client.accounts.UpdateUser(id, data));
+}
+
+// customers
+export function listCustomers(data: customer.ListCustomersParams) {
+  return withErrorHandler((client) => client.accounts.ListCustomers(data));
+}
+
+export function updateMe(data: customer.UpdateCustomerParams) {
+  return withErrorHandler((client) => client.accounts.UpdateCustomer(data));
 }

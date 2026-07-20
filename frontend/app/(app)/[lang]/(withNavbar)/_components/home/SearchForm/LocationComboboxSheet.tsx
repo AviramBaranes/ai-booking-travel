@@ -15,6 +15,7 @@ import { X } from "lucide-react";
 
 interface LocationComboboxSheetProps {
   placeholder: string;
+  emptyMessage: string;
   error?: FieldError;
   onSelect: (locationId: number) => void;
   initializedLocations?: { id: number; name: string }[];
@@ -23,6 +24,7 @@ interface LocationComboboxSheetProps {
 
 export function LocationComboboxSheet({
   placeholder,
+  emptyMessage,
   error,
   onSelect,
   initializedLocations,
@@ -51,6 +53,7 @@ export function LocationComboboxSheet({
         >
           <LocationCombobox
             placeholder={placeholder}
+            emptyMessage={emptyMessage}
             error={error}
             onSelect={() => {}}
             value={selectedName}
@@ -78,6 +81,7 @@ export function LocationComboboxSheet({
           <LocationCombobox
             ref={ref}
             placeholder={placeholder}
+            emptyMessage={emptyMessage}
             error={error}
             onSelect={(locationId, name) => {
               onSelect(locationId);

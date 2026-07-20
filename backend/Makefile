@@ -13,4 +13,5 @@ gen:
 	cd services/reservation/db && sqlc generate
 	@echo "Generating mocks for reservation service..."
 	mockgen -source=services/reservation/db/querier.go -destination=services/reservation/mocks/querier_mock.go -package=mocks
+	cd services/billing/db && sqlc generate
 	@echo "Done!"

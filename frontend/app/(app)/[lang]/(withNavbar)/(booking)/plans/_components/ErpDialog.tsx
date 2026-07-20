@@ -26,7 +26,7 @@ export function ErpDialog({
   return (
     <Dialog open={open}>
       <DialogContent
-        className="min-w-1/3 max-w-md py-6 px-10 flex flex-col gap-4 bg-white border-border-light/50 rounded-2xl shadow-modal"
+        className="min-w-1/3 max-w-md py-6 px-10 flex flex-col gap-4 bg-white border-border-light/50 rounded-2xl shadow-modal max-sm:mx-auto max-sm:w-11/12"
         showCloseButton={false}
         onEscapeKeyDown={(e) => e.preventDefault()}
         onPointerDownOutside={(e) => e.preventDefault()}

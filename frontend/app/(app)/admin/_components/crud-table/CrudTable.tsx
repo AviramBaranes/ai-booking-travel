@@ -26,15 +26,15 @@ import { CreateRow } from "./CreateRow";
 import { TableSkeleton } from "./TableSkeleton";
 
 function clearEmptyData<T>(data: T): T {
-  const cleanedData = {} as T;
+  const cleanedData: Record<string, unknown> = {};
   for (const key in data) {
     const value = data[key];
     if (value !== "" && value !== 0) {
-      (cleanedData as any)[key] = value;
+      cleanedData[key] = value;
     }
   }
 
-  return cleanedData;
+  return cleanedData as T;
 }
 
 export function CrudTable<
@@ -58,6 +58,7 @@ export function CrudTable<
   pageSize = 20,
   filterSlot,
   hideCreate,
+  readOnly = false,
 }: CrudTableProps<TRow, TCreate, TUpdate>) {
   const tErrors = useTranslations("ApiErrors");
   const queryClient = useQueryClient();
@@ -127,7 +128,7 @@ export function CrudTable<
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: TUpdate }) =>
-      updateFn(id, clearEmptyData(data)),
+      updateFn?.(id, clearEmptyData(data)) ?? Promise.resolve(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [queryKey] });
       setEditingId(null);
@@ -194,7 +195,7 @@ export function CrudTable<
               : "transition-opacity duration-200"
           }
         >
-          {selectedIds.size > 0 && bulkActions && (
+          {!readOnly && selectedIds.size > 0 && bulkActions && (
             <div className="px-4 py-2 bg-blue-50 border-b border-blue-200 flex items-center gap-3">
               <span className="text-sm text-gray-600">
                 {selectedIds.size} נבחרו
@@ -221,16 +222,18 @@ export function CrudTable<
             <table className="w-full text-right">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="px-3 py-2 w-10">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 accent-blue-600"
-                      checked={
-                        rows.length > 0 && selectedIds.size === rows.length
-                      }
-                      onChange={toggleSelectAll}
-                    />
-                  </th>
+                  {!readOnly && (
+                    <th className="px-3 py-2 w-10">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 accent-blue-600"
+                        checked={
+                          rows.length > 0 && selectedIds.size === rows.length
+                        }
+                        onChange={toggleSelectAll}
+                      />
+                    </th>
+                  )}
                   {columns.map((col) => (
                     <th
                       key={col.key}
@@ -259,22 +262,24 @@ export function CrudTable<
                       </div>
                     </th>
                   ))}
-                  <th className="px-3 py-2 w-20">
-                    {deleteFn && (
-                      <button
-                        type="button"
-                        disabled={
-                          selectedIds.size === 0 ||
-                          deleteSelectedMutation.isPending
-                        }
-                        onClick={handleDeleteSelected}
-                        className="p-1 text-gray-400 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                        title={`מחק נבחרים (${selectedIds.size})`}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                  </th>
+                  {!readOnly && (
+                    <th className="px-3 py-2 w-20">
+                      {deleteFn && (
+                        <button
+                          type="button"
+                          disabled={
+                            selectedIds.size === 0 ||
+                            deleteSelectedMutation.isPending
+                          }
+                          onClick={handleDeleteSelected}
+                          className="p-1 text-gray-400 hover:text-red-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                          title={`מחק נבחרים (${selectedIds.size})`}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -290,22 +295,33 @@ export function CrudTable<
                       schema={updateSchema}
                       selected={selectedIds.has(id)}
                       onToggleSelect={() => toggleSelect(id)}
-                      onEdit={() => {
-                        setEditingId(id);
-                        clearError();
-                      }}
-                      onCancel={() => {
-                        setEditingId(null);
-                        clearError();
-                      }}
-                      onSave={(data) =>
-                        updateMutation.mutate({
-                          id,
-                          data: data as TUpdate,
-                        })
+                      onEdit={
+                        readOnly || !updateFn || !updateSchema
+                          ? undefined
+                          : () => {
+                              setEditingId(id);
+                              clearError();
+                            }
+                      }
+                      onCancel={
+                        readOnly || !updateFn || !updateSchema
+                          ? undefined
+                          : () => {
+                              setEditingId(null);
+                              clearError();
+                            }
+                      }
+                      onSave={
+                        readOnly || !updateFn || !updateSchema
+                          ? undefined
+                          : (data) =>
+                              updateMutation.mutate({
+                                id,
+                                data: data as TUpdate,
+                              })
                       }
                       onDelete={
-                        deleteFn
+                        !readOnly && deleteFn
                           ? () => {
                               if (confirm("האם למחוק?")) {
                                 deleteMutation.mutate(id);
@@ -313,10 +329,11 @@ export function CrudTable<
                             }
                           : undefined
                       }
+                      readOnly={readOnly}
                     />
                   );
                 })}
-                {!hideCreate && createSchema && (
+                {!readOnly && !hideCreate && createSchema && (
                   <CreateRow
                     columns={columns}
                     schema={createSchema}
