@@ -39,7 +39,7 @@ if #Meta.Environment.Type == "production" || #Meta.Environment.Name == "staging"
 	Icount: {
 		AccountID: 4,
 		AgentsPaypageID: 14,
-		CustomersPaypageID: 14,
+		CustomersPaypageID: 18,
 	}
 }
 
