@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { VoucherForm } from "./VoucherForm";
 import { useReservation } from "../_hooks/useReservation";
 import { ReservationPaymentDialog } from "./ReservationPaymentDialog";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { SelectedCarCardSkeleton } from "@/shared/components/booking/SelectedCarCard/SelectedCarCardSkeleton";
 
 export function ReservationCarCard({
@@ -15,12 +15,26 @@ export function ReservationCarCard({
 }: {
   reservationId: number;
 }) {
-  const { data: reservation, refetch, isLoading } = useReservation(reservationId);
+  const {
+    data: reservation,
+    refetch,
+    isLoading,
+  } = useReservation(reservationId);
   const t = useTranslations("MyAccount.reservation");
-  const [showPaymentDialog, setShowPaymentDialog] = useState(
-    reservation?.reservationStatus === "booked" &&
-      reservation?.paymentStatus === "unpaid",
-  );
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+
+  useEffect(() => {
+    if (isInitialized) return;
+
+    if (!isLoading && reservation) {
+      setIsInitialized(true);
+      setShowPaymentDialog(
+        reservation.reservationStatus === "booked" &&
+          reservation.paymentStatus === "unpaid",
+      );
+    }
+  }, [isLoading, reservation, isInitialized, setIsInitialized]);
 
   if (isLoading || !reservation) {
     return <SelectedCarCardSkeleton />;

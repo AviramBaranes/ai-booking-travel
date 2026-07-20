@@ -27,6 +27,8 @@ export function SelectedCarPriceDetails({
     ? fullPrice + erpFullPrice - (price + erpPrice)
     : fullPrice - price;
 
+  const hasDiscount = fullPrice !== price;
+
   return (
     <div
       className={clsx(
@@ -37,23 +39,14 @@ export function SelectedCarPriceDetails({
         },
       )}
     >
-      {fullPrice !== price && (
-        <>
-          <PriceDetailRow
-            altText="coins icon"
-            iconSrc="/assets/icons/coins.svg"
-            label={t("carDetails.priceBeforeDiscount")}
-            price={fullPrice}
-            currency={vehicle.priceDetails.currency}
-          />
-          <PriceDetailRow
-            altText="discount icon"
-            iconSrc="/assets/icons/Discount-Green.svg"
-            label={t("carDetails.savings")}
-            price={discountAmount}
-            currency={vehicle.priceDetails.currency}
-          />
-        </>
+      {hasDiscount && (
+        <PriceDetailRow
+          altText="coins icon"
+          iconSrc="/assets/icons/coins.svg"
+          label={t("carDetails.priceBeforeDiscount")}
+          price={fullPrice}
+          currency={vehicle.priceDetails.currency}
+        />
       )}
 
       {isErpSelected && (
@@ -61,13 +54,22 @@ export function SelectedCarPriceDetails({
           altText="stamp icon"
           iconSrc="/assets/icons/stamp.gif"
           label={t("carDetails.coveragePackage")}
-          price={erpPrice}
+          price={erpFullPrice}
+          currency={vehicle.priceDetails.currency}
+        />
+      )}
+
+      {hasDiscount && (
+        <PriceDetailRow
+          altText="discount icon"
+          iconSrc="/assets/icons/Discount-Green.svg"
+          label={t("carDetails.savings")}
+          price={discountAmount}
           currency={vehicle.priceDetails.currency}
         />
       )}
 
       <hr className="mb-6 mt-3 hidden lg:block" />
-
       <div className="flex justify-between items-start">
         <div>
           <p className="type-label text-brand">{t("carDetails.totalToPay")}</p>
