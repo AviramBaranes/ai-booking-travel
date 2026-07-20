@@ -1,5 +1,11 @@
 import z from "zod";
 
+function getEarliestTimezoneNow() {
+  return new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Etc/GMT+12" }),
+  );
+}
+
 export function searchSchema(t: (key: string) => string) {
   const baseSchema = z.object({
     isDropoffDifferentLoc: z.boolean().optional(),
@@ -35,10 +41,11 @@ export function searchSchema(t: (key: string) => string) {
         });
       }
 
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
+      const now = getEarliestTimezoneNow();
+      const startOfToday = new Date(now);
+      startOfToday.setHours(0, 0, 0, 0);
 
-      if (data.pickupDate instanceof Date && data.pickupDate < now) {
+      if (data.pickupDate instanceof Date && data.pickupDate < startOfToday) {
         ctx.addIssue({
           code: "custom",
           path: ["pickupDate"],
@@ -46,7 +53,7 @@ export function searchSchema(t: (key: string) => string) {
         });
       }
 
-      if (data.dropoffDate instanceof Date && data.dropoffDate < now) {
+      if (data.dropoffDate instanceof Date && data.dropoffDate < startOfToday) {
         ctx.addIssue({
           code: "custom",
           path: ["dropoffDate"],
@@ -82,7 +89,7 @@ export function searchSchema(t: (key: string) => string) {
       const pickupDateTime = new Date(data.pickupDate);
       pickupDateTime.setHours(hours, minutes, 0, 0);
 
-      if (pickupDateTime < new Date()) {
+      if (pickupDateTime < now) {
         ctx.addIssue({
           code: "custom",
           path: ["pickupTime"],
