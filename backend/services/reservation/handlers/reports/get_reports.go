@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"time"
+	_ "time/tzdata" // embed the timezone database so LoadLocation works in any deployment environment
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
@@ -11,6 +12,16 @@ import (
 	"encore.dev/rlog"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+// reportLocation is the business timezone used to interpret date-only report filters.
+// Calendar dates entered by users (e.g. "2026-07-20") represent Israel-local days.
+var reportLocation = func() *time.Location {
+	loc, err := time.LoadLocation("Asia/Jerusalem")
+	if err != nil {
+		panic(err)
+	}
+	return loc
+}()
 
 type ReportParams struct {
 	Page                int32  `query:"page" validate:"required,gte=1"`
@@ -40,20 +51,28 @@ func nilIfZero(v int64) *int64 {
 	return &v
 }
 
-func timestamptzFromString(s string, endOfDay bool) pgtype.Timestamptz {
+// timestamptzFromString converts a report filter string into a pgtype.Timestamptz.
+//
+// RFC3339 values are used as-is (they already carry timezone information).
+// Date-only values ("2006-01-02") are interpreted as calendar days in the business
+// timezone (Asia/Jerusalem). When exclusiveEnd is true the value is advanced to the
+// start of the following day, so range filters can use a half-open interval
+// [from 00:00, to+1 00:00) instead of an inclusive end-of-day boundary.
+func timestamptzFromString(s string, exclusiveEnd bool) pgtype.Timestamptz {
 	if s == "" {
 		return pgtype.Timestamptz{}
 	}
-	t, err := time.Parse(time.RFC3339, s)
+	// RFC3339 values already contain timezone information.
+	if t, err := time.Parse(time.RFC3339, s); err == nil {
+		return dbadapters.DBTime(t)
+	}
+	// Date-only values represent calendar dates in the business timezone.
+	t, err := time.ParseInLocation("2006-01-02", s, reportLocation)
 	if err != nil {
-		// try date-only
-		t, err = time.Parse("2006-01-02", s)
-		if err != nil {
-			return pgtype.Timestamptz{}
-		}
-		if endOfDay {
-			t = t.Add(24*time.Hour - time.Nanosecond)
-		}
+		return pgtype.Timestamptz{}
+	}
+	if exclusiveEnd {
+		t = t.AddDate(0, 0, 1)
 	}
 	return dbadapters.DBTime(t)
 }
