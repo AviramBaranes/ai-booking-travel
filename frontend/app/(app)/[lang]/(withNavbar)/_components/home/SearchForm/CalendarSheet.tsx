@@ -120,7 +120,7 @@ export function CalendarSheet({
             hideNavigation
             selected={range}
             onSelect={setRange}
-            className="min-h-75 w-full px-8 bg-white"
+            className="min-h-75 w-full px-8 bg-white [&_.rdp-day]:aspect-auto [&_.rdp-day]:h-11 [&_.rdp-day_button]:aspect-auto [&_.rdp-day_button]:h-11"
             classNames={{
               months: "relative flex flex-col gap-4 items-center",
               today: "bg-brand/35",
