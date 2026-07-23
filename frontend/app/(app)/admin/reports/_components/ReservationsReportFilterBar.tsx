@@ -67,6 +67,12 @@ export const emptyReservationReportFilters: ReservationReportFilters = {
   skipCanceled: "true",
 };
 
+export const initialReservationReportFilters: ReservationReportFilters = {
+  ...emptyReservationReportFilters,
+  createdFrom: new Date().toISOString().split("T")[0],
+  createdTo: new Date().toISOString().split("T")[0],
+};
+
 const inputClass =
   "h-9 border border-gray-300 rounded px-2 py-1.5 text-sm w-full bg-white";
 

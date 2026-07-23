@@ -2,7 +2,7 @@
 
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useUrlFilters } from "@/app/(app)/admin/_hooks/useUrlFilters";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
   ReservationReportFilters,
   ReservationsReportFilterBar,
   emptyReservationReportFilters,
+  initialReservationReportFilters,
   ReportPageSize,
 } from "./ReservationsReportFilterBar";
 import {
@@ -66,6 +67,21 @@ export function ReportTableShell<T extends { reservationId: number }>({
   const [urlFilters, setUrlFilters] = useUrlFilters<ReservationReportFilterKey>(
     [...RESERVATION_REPORT_FILTER_KEYS],
   );
+
+  const didInitDates = useRef(false);
+  useEffect(() => {
+    if (didInitDates.current) return;
+    didInitDates.current = true;
+    if (!showFilters) return;
+    if (!urlFilters.createdFrom && !urlFilters.createdTo) {
+      setUrlFilters({
+        createdFrom: initialReservationReportFilters.createdFrom,
+        createdTo: initialReservationReportFilters.createdTo,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const urlFiltersWithDefaults: ReservationReportFilters = {
     ...urlFilters,
     skipCanceled: urlFilters.skipCanceled || emptyReservationReportFilters.skipCanceled,
