@@ -178,6 +178,7 @@ SELECT
     currency_code,
     currency_rate,
     created_at,
+    vouchered_at,
     pickup_date
 FROM reservations
 WHERE
@@ -199,7 +200,8 @@ WHERE
 AND(
     (reservation_status = 'vouchered' AND payment_status = 'unpaid')
 OR
-    (reservation_status = 'canceled' AND payment_status = 'refund_pending'));
+    (reservation_status = 'canceled' AND payment_status = 'refund_pending'))
+ORDER BY vouchered_at;
 
 -- name: ListBusinessesBalancesReport :many
 WITH billing_reservations AS (

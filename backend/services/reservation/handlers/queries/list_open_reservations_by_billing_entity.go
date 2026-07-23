@@ -112,6 +112,7 @@ func toCurrencyGroups(rows []db.GetPaymentPendingReservationsByBillingEntityRow)
 			CurrencyRate:        dbadapters.NumericToFloat64(r.CurrencyRate),
 			CreatedAt:           dbadapters.TimestamptzToString(r.CreatedAt),
 			PickupDate:          dbadapters.DateToString(r.PickupDate),
+			VoucheredAt:         dbadapters.TimestamptzToString(r.VoucheredAt),
 		})
 	}
 	return groups

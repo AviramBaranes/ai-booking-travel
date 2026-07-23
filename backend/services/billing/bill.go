@@ -103,9 +103,8 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 		}, nil
 	}
 
-	invoiceItems := buildInvoiceItems(p.IDs, reservationSet)
-	rlog.Info("build items", "items", invoiceItems)
 	ic := icount.NewIcount()
+	invoiceItems := buildInvoiceItems(p.IDs, reservationSet)
 	res, err := ic.CreateInvoice(icount.CreateInvoiceParams{
 		ClientID:      int(icountClientRes.ClientID),
 		CurrencyID:    icount.CurrencyIDsMap[currency],

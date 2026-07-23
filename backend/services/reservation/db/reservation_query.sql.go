@@ -389,6 +389,7 @@ SELECT
     currency_code,
     currency_rate,
     created_at,
+    vouchered_at,
     pickup_date
 FROM reservations
 WHERE
@@ -411,6 +412,7 @@ AND(
     (reservation_status = 'vouchered' AND payment_status = 'unpaid')
 OR
     (reservation_status = 'canceled' AND payment_status = 'refund_pending'))
+ORDER BY vouchered_at
 `
 
 type GetPaymentPendingReservationsByBillingEntityParams struct {
@@ -432,6 +434,7 @@ type GetPaymentPendingReservationsByBillingEntityRow struct {
 	CurrencyCode        string
 	CurrencyRate        pgtype.Numeric
 	CreatedAt           pgtype.Timestamptz
+	VoucheredAt         pgtype.Timestamptz
 	PickupDate          pgtype.Date
 }
 
@@ -458,6 +461,7 @@ func (q *Queries) GetPaymentPendingReservationsByBillingEntity(ctx context.Conte
 			&i.CurrencyCode,
 			&i.CurrencyRate,
 			&i.CreatedAt,
+			&i.VoucheredAt,
 			&i.PickupDate,
 		); err != nil {
 			return nil, err

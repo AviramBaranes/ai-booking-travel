@@ -156,6 +156,9 @@ export function CurrencyGroupCard({
                 סה״כ לתשלום
               </th>
               <th className="px-4 py-3 text-start whitespace-nowrap">
+                תאריך כרטוס
+              </th>
+              <th className="px-4 py-3 text-start whitespace-nowrap">
                 תאריך יצירה
               </th>
               <th className="px-4 py-3 text-start whitespace-nowrap">
@@ -211,13 +214,16 @@ export function CurrencyGroupCard({
                   <td
                     className={
                       "px-4 py-3 text-start whitespace-nowrap font-medium " +
-                      (r.profitOnCar >= 0 ? "text-success" : "text-destructive")
+                      (r.totalProfit >= 0 ? "text-success" : "text-destructive")
                     }
                   >
-                    {currencyFormatter.format(r.profitOnCar)}
+                    {currencyFormatter.format(r.totalProfit)}
                   </td>
                   <td className="px-4 py-3 text-start whitespace-nowrap font-medium">
                     {currencyFormatter.format(r.totalPrice)}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-text-secondary">
+                    {formatDate(r.voucheredAt)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-text-secondary">
                     {formatDate(r.createdAt)}

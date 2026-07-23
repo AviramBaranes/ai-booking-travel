@@ -54,4 +54,5 @@ type BillingReservation struct {
 	CurrencyRate        float64 `json:"currencyRate"`
 	CreatedAt           string  `json:"createdAt"`
 	PickupDate          string  `json:"pickupDate"`
+	VoucheredAt         string  `json:"voucheredAt"`
 }

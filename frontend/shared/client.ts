@@ -2350,12 +2350,13 @@ export namespace reservation_pricing {
         carPurchasePrice: number
         carSellingPrice: number
         erpSellingPrice: number
-        profitOnCar: number
+        totalProfit: number
         totalPrice: number
         currencyCode: string
         currencyRate: number
         createdAt: string
         pickupDate: string
+        voucheredAt: string
     }
 }
 
