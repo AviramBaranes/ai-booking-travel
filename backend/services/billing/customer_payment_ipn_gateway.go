@@ -97,7 +97,7 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 		rlog.Warn("failed to convert iCount client ID to int", "error", err, "clientID", transaction.ClientID)
 	}
 
-	billResp, err := createInvoice(ic, billingReservation, cid, transaction)
+	docNum, err := createInvoice(ic, billingReservation, cid, transaction)
 	if err != nil {
 		rlog.Error("failed to create invoice", "error", err, "reservationID", resp.ReservationID)
 		sendInvoiceCreationFailureEmail(ctx, resp.ReservationID, err)
@@ -105,7 +105,7 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 	} else {
 		if err := reservation.SaveInvoiceDocNum(ctx, actions.SaveInvoiceDocNumParams{
 			ID:     billingReservation.ID,
-			DocNum: billResp.DocNum,
+			DocNum: docNum,
 		}); err != nil {
 			rlog.Error("failed to save invoice doc number", "error", err, "reservationID", resp.ReservationID)
 		}

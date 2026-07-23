@@ -54,14 +54,14 @@ func OrderPaymentIPNGateway(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := createInvoice(ic, billingReservation, clientID, transaction)
+	docNum, err := createInvoice(ic, billingReservation, clientID, transaction)
 	if err != nil {
 		rlog.Error("failed to create invoice", "error", err, "orderID", orderID)
 		sendInvoiceCreationFailureEmail(ctx, orderID, err)
 	} else {
 		if err := reservation.SaveInvoiceDocNum(ctx, actions.SaveInvoiceDocNumParams{
 			ID:     billingReservation.ID,
-			DocNum: resp.DocNum,
+			DocNum: docNum,
 		}); err != nil {
 			rlog.Error("failed to save invoice doc number", "error", err, "orderID", orderID)
 		}
@@ -209,11 +209,10 @@ func getIcountClientID(ctx context.Context, reqData *ipnReqData) (int, error) {
 }
 
 // createInvoice creates an invoice in iCount for the given billing reservation and transaction details.
-func createInvoice(ic *icount.Icount, reservation reservation.BillingReservation, clientID int, transaction *icount.Transaction) (*BillResponse, error) {
+func createInvoice(ic *icount.Icount, reservation reservation.BillingReservation, clientID int, transaction *icount.Transaction) (string, error) {
 	currencyID, _ := icount.CurrencyIDsMap[reservation.CurrencyCode]
 	items := buildReservationInvoiceItems(reservation, currencyID, reservation.CurrencyRate)
-	invoiceRes, err := ic.CreateInvoice(icount.CreateInvoiceParams{
-		DocType:       "invoice",
+	invoiceRes, err := ic.CreateInvoice(icount.CreateDocParams{
 		ClientID:      clientID,
 		CurrencyID:    currencyID,
 		Rate:          reservation.CurrencyRate,
@@ -221,7 +220,7 @@ func createInvoice(ic *icount.Icount, reservation reservation.BillingReservation
 		Items:         items,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to create invoice in iCount: %w", err)
+		return "", fmt.Errorf("failed to create invoice in iCount: %w", err)
 	}
 
 	return parseBillingResponse(invoiceRes)

@@ -55,7 +55,8 @@ func (r BillParams) Validate() error {
 }
 
 type BillResponse struct {
-	DocNum string `json:"docNum"`
+	InvoiceDocNum string `json:"invoiceDocNum"`
+	ReceiptDocNum string `json:"receiptDocNum"`
 }
 
 // encore:api auth method=POST path=/bill tag:accountant
@@ -99,22 +100,27 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 		}
 
 		return &BillResponse{
-			DocNum: "N/A",
+			InvoiceDocNum: "N/A",
+			ReceiptDocNum: "N/A",
 		}, nil
 	}
 
-	ic := icount.NewIcount()
-	invoiceItems := buildInvoiceItems(p.IDs, reservationSet)
-	res, err := ic.CreateInvoice(icount.CreateInvoiceParams{
-		ClientID:      int(icountClientRes.ClientID),
-		CurrencyID:    icount.CurrencyIDsMap[currency],
-		PaymentMethod: icount.NewBankTransferPayment(p.TotalPaid, p.TransferDate, cfg.Icount.AccountID()),
-		Items:         invoiceItems,
-	})
-
-	resp, err := parseBillingResponse(res)
+	invcDocNum, err := createInvoiceDoc(p, reservationSet, icountClientRes.ClientID, currency, cfg.Icount.AccountID())
 	if err != nil {
 		rlog.Error("failed to create invoice in iCount", "error", err, "client_id", icountClientRes.ClientID, "currency", currency, "total_paid", p.TotalPaid)
+		return nil, err
+	}
+
+	recptDocNum, err := createReceiptDoc(p, reservationSet, icountClientRes.ClientID, currency, cfg.Icount.AccountID())
+	if err != nil {
+		rlog.Error("failed to create receipt in iCount", "error", err, "client_id", icountClientRes.ClientID, "currency", currency, "total_paid", p.TotalPaid)
+		rlog.Error("validation failed for billing request", "error", err, "invalid_ids", p.IDs)
+		if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
+			Subject: "Failed to resolve reservations after invoice creation",
+			Message: fmt.Sprintf("failed to create receipt and resolve reservations after successful invoice creation, reservation_ids: %v, invoiceDocNum: %v, error: %v", p.IDs, invcDocNum, err),
+		}); publishErr != nil {
+			rlog.Error("failed to publish critical error email event", "reservation_ids", p.IDs, "invoice doc num", invcDocNum, "error", publishErr)
+		}
 		return nil, err
 	}
 
@@ -122,7 +128,10 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 		return nil, err
 	}
 
-	return resp, nil
+	return &BillResponse{
+		InvoiceDocNum: invcDocNum,
+		ReceiptDocNum: recptDocNum,
+	}, nil
 }
 
 // validateIDsBelongToBillingEntity checks if all provided reservation IDs belong to the specified billing entity (office or organization) by verifying their presence in the reservationSet. If any ID does not belong to the billing entity, it returns a validation error.
@@ -144,6 +153,31 @@ func buildInvoiceItems(ids []int64, reservationsSet reservationSet) []icount.ICo
 		reservation := reservationsSet[id]
 		rItems := buildReservationInvoiceItems(reservation, 0, 0) //currencyID and currencyRate omitted
 		invoiceItems = append(invoiceItems, rItems...)
+	}
+
+	return invoiceItems
+}
+
+// buildReceiptItems constructs a list of ICountInvoiceItem based on the provided reservation IDs and their corresponding reservations in the reservationSet.
+func buildReceiptItems(ids []int64, reservationsSet reservationSet) []icount.ICountInvoiceItem {
+	invoiceItems := make([]icount.ICountInvoiceItem, 0, len(ids))
+	for _, id := range ids {
+		reservation := reservationsSet[id]
+		m := 1.0
+		if reservation.PaymentStatus == "refund_pending" {
+			m = -1.0
+		}
+		currencyID, _ := icount.CurrencyIDsMap[reservation.CurrencyCode]
+		item := icount.ICountInvoiceItem{
+			Description:  reservation.BrokerReservationID,
+			Quantity:     1,
+			IsTaxExempt:  true,
+			SKU:          fmt.Sprintf("%d", reservation.ID),
+			UnitPrice:    floatPtr(reservation.TotalPrice * m),
+			CurrencyID:   currencyID,
+			CurrencyRate: reservation.CurrencyRate,
+		}
+		invoiceItems = append(invoiceItems, item)
 	}
 
 	return invoiceItems
@@ -213,11 +247,9 @@ func validateSelectedIDsShareCurrency(currency string, ids []int64, reservationS
 }
 
 // parseBillingResponse converts the response from the iCount service into a BillResponse. If the iCount response indicates failure, it logs the error details and returns a generic error with the combined error messages from iCount.
-func parseBillingResponse(result *icount.ICountCreateDocResponse) (*BillResponse, error) {
+func parseBillingResponse(result *icount.ICountCreateDocResponse) (string, error) {
 	if result.Status {
-		return &BillResponse{
-			DocNum: result.DocNum,
-		}, nil
+		return result.DocNum, nil
 	} else {
 		rlog.Error("icount respond with an error", "reason", result.Reason, "error_description", result.ErrorDescription)
 		var errMsg string
@@ -225,7 +257,7 @@ func parseBillingResponse(result *icount.ICountCreateDocResponse) (*BillResponse
 			errMsg += detail
 		}
 
-		return nil, api_errors.NewErrorWithDetail(errs.Unknown, errMsg, api_errors.EmptyDetails)
+		return "", api_errors.NewErrorWithDetail(errs.Unknown, errMsg, api_errors.EmptyDetails)
 	}
 }
 
@@ -289,4 +321,47 @@ func calculateTotalAmount(reservationSet reservationSet, ids []int64) float64 {
 	}
 
 	return total
+}
+
+func createInvoiceDoc(p BillParams, reservationSet reservationSet, clientID int32, currency string, accountID int) (string, error) {
+	ic := icount.NewIcount()
+	invoiceItems := buildInvoiceItems(p.IDs, reservationSet)
+	res, err := ic.CreateInvoice(icount.CreateDocParams{
+		ClientID:      int(clientID),
+		CurrencyID:    icount.CurrencyIDsMap[currency],
+		PaymentMethod: icount.NewBankTransferPayment(p.TotalPaid, p.TransferDate, accountID),
+		Items:         invoiceItems,
+	})
+
+	if err != nil {
+		rlog.Error("failed to create invoice in iCount", "error", err, "client_id", clientID, "currency", currency, "total_paid", p.TotalPaid)
+		return "", api_errors.ErrInternalError
+	}
+
+	docNum, err := parseBillingResponse(res)
+	if err != nil {
+		rlog.Error("failed to create invoice in iCount", "error", err, "client_id", clientID, "currency", currency, "total_paid", p.TotalPaid)
+		return "", err
+	}
+
+	return docNum, nil
+}
+
+func createReceiptDoc(p BillParams, reservationSet reservationSet, clientID int32, currency string, accountID int) (string, error) {
+	ic := icount.NewIcount()
+	receiptItems := buildReceiptItems(p.IDs, reservationSet)
+	res, err := ic.CreateReceipt(icount.CreateDocParams{
+		ClientID:      int(clientID),
+		CurrencyID:    icount.CurrencyIDsMap[currency],
+		PaymentMethod: icount.NewBankTransferPayment(p.TotalPaid, p.TransferDate, cfg.Icount.AccountID()),
+		Items:         receiptItems,
+	})
+	if err != nil {
+		rlog.Error("failed to create receipt in iCount", "error", err, "client_id", clientID, "currency", currency, "total_paid", p.TotalPaid)
+		return "", api_errors.ErrInternalError
+	}
+
+	docNum, err := parseBillingResponse(res)
+
+	return docNum, nil
 }
