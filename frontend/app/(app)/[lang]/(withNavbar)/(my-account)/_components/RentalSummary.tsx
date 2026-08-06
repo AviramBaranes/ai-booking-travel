@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { SummarySubTitle } from "./SummarySubTitle";
 import { LocationDateTimeSummary } from "./LocationSummary";
 import { SummaryRow } from "./SummaryRow";
+import { SupplierInfoData } from "@/shared/components/booking/SupplierInfoDialog";
 
 interface RentalSummaryProps {
   pickupDate: string;
@@ -13,6 +14,7 @@ interface RentalSummaryProps {
   dropoffTime: string;
   dropoffLocationName: string;
   flightNumber?: string;
+  supplierInfo?: SupplierInfoData;
 }
 
 export function RentalSummary({
@@ -23,6 +25,7 @@ export function RentalSummary({
   dropoffTime,
   dropoffLocationName,
   flightNumber,
+  supplierInfo,
 }: RentalSummaryProps) {
   const t = useTranslations("MyAccount.summary");
 
@@ -42,6 +45,8 @@ export function RentalSummary({
             time={pickupTime}
             locationName={pickupLocationName}
             linkText={t("rentalSummary.stationDetails")}
+            supplierInfo={supplierInfo}
+            stationTab="pickupDetails"
           />
         </div>
         <div className="w-1/2">
@@ -51,6 +56,8 @@ export function RentalSummary({
             time={dropoffTime}
             locationName={dropoffLocationName}
             linkText={t("rentalSummary.stationDetails")}
+            supplierInfo={supplierInfo}
+            stationTab="dropoffDetails"
           />
         </div>
       </div>

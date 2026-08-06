@@ -57,7 +57,11 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 		translatedSuppliers[sp.Name] = false
 	}
 
-	currenciesMap := make(map[string]float64)
+	currenciesMap, err := s.c.GetCurrencyRates(ctx, extractCurrencies(avResp.AvailableVehicles))
+	if err != nil {
+		rlog.Error("failed to get currency rates, cannot price availability", "error", err)
+		return artifacts, errCurrencyRatesUnavailable
+	}
 
 	for i, v := range avResp.AvailableVehicles {
 		mp, ok := markupProviders[v.Broker]
@@ -88,15 +92,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 				continue
 			}
 
-			var cr float64
-			if cr, ok = currenciesMap[v.PriceDetails.Currency]; !ok {
-				cr, err := s.c.GetCurrencyRate(ctx, v.PriceDetails.Currency)
-				if err != nil {
-					rlog.Error("no currency rate found for currency, skipping plan", "currency", v.PriceDetails.Currency, "error", err)
-					continue
-				}
-				currenciesMap[v.PriceDetails.Currency] = cr
-			}
+			cr := currenciesMap[v.PriceDetails.Currency]
 			if cr <= 0 {
 				rlog.Warn("calculated currency rate is less than or equal to 0, skipping plan", "currency", v.PriceDetails.Currency)
 				continue
@@ -129,6 +125,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 				PlanID:                 p.PlanID,
 				RateQualifier:          p.RateQualifier,
 				SupplierCode:           p.SupplierCode,
+				SupplierName:           p.SupplierName,
 				Broker:                 v.Broker,
 				PickupLocationCode:     brokerLoc.pickupBrokerLocationID,
 				DropoffLocationCode:    brokerLoc.dropoffBrokerLocationID,
@@ -145,6 +142,8 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 				Fees:                   v.PriceDetails.Fees,
 				Deposit:                p.Deposit,
 				DepositCurrency:        p.DepositCurrency,
+				Excess:                 p.Excess,
+				ExcessCurrency:         p.ExcessCurrency,
 			}
 
 			artifacts.plansDetails = append(artifacts.plansDetails, pd)
@@ -255,6 +254,21 @@ func (s *AvailabilityService) getMarkupProviderMap(ctx context.Context, locs ava
 	}
 
 	return markupProviderMap
+}
+
+// extractCurrencies returns a deduplicated slice of currency codes from the given vehicles.
+func extractCurrencies(vs []broker.AvailableVehicle) []string {
+	currencySet := make(map[string]struct{})
+	for _, v := range vs {
+		currencySet[v.PriceDetails.Currency] = struct{}{}
+	}
+
+	currencies := make([]string, 0, len(currencySet))
+	for c := range currencySet {
+		currencies = append(currencies, c)
+	}
+
+	return currencies
 }
 
 // extractCarGroups returns a deduplicated slice of car group codes from the given vehicles.

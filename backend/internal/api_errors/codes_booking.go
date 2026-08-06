@@ -11,4 +11,6 @@ const (
 	CodeFlightNumberRequired           = "flight_number_required"
 	CodeOfferRenewalTooSoon            = "offer_renewal_too_soon"
 	CodeOldOffer                       = "old_offer"
+	CodeCurrencyRatesUnavailable       = "currency_rates_unavailable"
+	CodeAvailabilityPricingFailed      = "availability_pricing_failed"
 )

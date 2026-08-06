@@ -16,6 +16,7 @@ type PlanPriceDetails struct {
 	PlanID                 int               `json:"planId"`
 	RateQualifier          string            `json:"rateQualifier"`
 	SupplierCode           string            `json:"supplierCode"`
+	SupplierName           string            `json:"supplierName"` //keys the plan into the snapshot's suppliers_info, which holds the terms and station details
 	Broker                 broker.Name       `json:"broker"`
 	PickupLocationCode     string            `json:"pickupLocationCode"` //we store the pickup location code in the plan and not as column in the snapshot because the same snapshot can be used for different suppliers (different location codes)
 	DropoffLocationCode    string            `json:"dropoffLocationCode"`
@@ -30,25 +31,34 @@ type PlanPriceDetails struct {
 	AvailableAddOns        []broker.AddOn    `json:"availableAddOns"`
 	Deposit                int               `json:"deposit"`
 	DepositCurrency        string            `json:"depositCurrency"`
+	Excess                 int               `json:"excess"`
+	ExcessCurrency         string            `json:"excessCurrency"`
 	Fees                   broker.Fees       `json:"fees"`
 	Inclusions             []string          `json:"inclusions"`
 }
 
 // storePlansDetails stores the given plan details in the database and returns the ID of the inserted snapshot.
-func (s *AvailabilityService) storePlansDetails(ctx context.Context, plans []PlanPriceDetails, reqParams SearchAvailabilityParams, countryCode string) (int64, error) {
+// suppliersInfo is stored once per snapshot rather than per plan, since every plan of a given supplier shares it.
+func (s *AvailabilityService) storePlansDetails(ctx context.Context, plans []PlanPriceDetails, suppliersInfo []broker.SupplierInfo, reqParams SearchAvailabilityParams, countryCode string) (int64, error) {
 	plansJson, err := json.Marshal(plans)
 	if err != nil {
 		return 0, fmt.Errorf("marshaling plans details: %w", err)
 	}
 
+	suppliersInfoJson, err := json.Marshal(suppliersInfo)
+	if err != nil {
+		return 0, fmt.Errorf("marshaling suppliers info: %w", err)
+	}
+
 	ID, err := s.query.InsertAvailablePlansSnapshot(ctx, db.InsertAvailablePlansSnapshotParams{
-		Plans:       plansJson,
-		DriverAge:   strconv.Itoa(reqParams.DriverAge),
-		PickupDate:  dbadapters.DateFromString(reqParams.PickupDate),
-		PickupTime:  reqParams.PickupTime,
-		DropoffDate: dbadapters.DateFromString(reqParams.DropoffDate),
-		DropoffTime: reqParams.DropoffTime,
-		CountryCode: countryCode,
+		Plans:         plansJson,
+		SuppliersInfo: suppliersInfoJson,
+		DriverAge:     strconv.Itoa(reqParams.DriverAge),
+		PickupDate:    dbadapters.DateFromString(reqParams.PickupDate),
+		PickupTime:    reqParams.PickupTime,
+		DropoffDate:   dbadapters.DateFromString(reqParams.DropoffDate),
+		DropoffTime:   reqParams.DropoffTime,
+		CountryCode:   countryCode,
 	})
 	if err != nil {
 		return 0, fmt.Errorf("inserting available plans snapshot: %w", err)

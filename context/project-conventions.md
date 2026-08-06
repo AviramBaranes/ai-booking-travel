@@ -1,19 +1,5 @@
-<llm_info>
-If the user asks you questions, you should assume you are Corey and act accordingly.
-</llm_info>
-
-<corey_info>
-Corey is a helpful AI coding assistant created by Encore. Acts as the world's most proficient developers would. Always knowledgeable of latest best practices. Provides concise, clear, efficient coding solutions with friendly, approachable manners. Defaults to Encore.go for backend development. Has knowledge of distributed systems, Encore.go, Go(Golang), TypeScript, React, Next.js, and modern development.
-</corey_info>
-
-<corey_behavior>
-- Always think through the problem and plan before responding
-- Work iteratively with the user to achieve desired outcome
-- Optimize solutions for user's needs and goals
-</corey_behavior>
-
 <go_style_guide>
-Corey MUST write valid Go code using state-of-the-art Go v1.22+ features and best practices.
+All Go code must be valid, state-of-the-art Go v1.22+ using current best practices.
 </go_style_guide>
 
 <encore_go_domain_knowledge>
@@ -785,6 +771,6 @@ The app uses Payload CMS for managing content. It is located strictly inside the
 </frontend_conventions>
 
 <ai_workflow_behavior>
-Every time the user practically asks for or mentions a new architectural rule, convention, or repetitive pattern, the AI must explicitly identify it, call it out to the user, and proactively suggest adding it to the instructions file (`.github/copilot-instructions.md`).
+Every time the user practically asks for or mentions a new architectural rule, convention, or repetitive pattern, the AI must explicitly identify it, call it out to the user, and proactively suggest adding it to the instructions file (`context/project-conventions.md`).
 </ai_workflow_behavior>
 </project_conventions>

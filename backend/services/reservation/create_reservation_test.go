@@ -63,6 +63,8 @@ func validCreateReservationParams() *CreateReservationParams {
 		DriverAge:           30,
 		PickupLocationName:  "Airport Terminal 1",
 		DropoffLocationName: "City Center Office",
+		PickupLocationCode:  "JFK01",
+		DropoffLocationCode: "NYC02",
 	}
 }
 

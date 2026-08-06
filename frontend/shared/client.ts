@@ -488,7 +488,8 @@ export namespace billing {
     }
 
     export interface BillResponse {
-        docNum: string
+        invoiceDocNum: string
+        receiptDocNum: string
     }
 
     export interface GenerateCustomerPaymentIframeParams {
@@ -2193,6 +2194,11 @@ export namespace queries {
         voucher?: string
         voucheredAt?: string
         createdAt: string
+        excess: number
+        excessCurrency: string
+        supplierTerms?: broker.TermsAndConditionsItem[]
+        pickupDetails?: broker.StationInfo
+        dropoffDetails?: broker.StationInfo
         TotalPriceFloat: number
     }
 

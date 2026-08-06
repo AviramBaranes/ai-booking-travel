@@ -1,8 +1,24 @@
 package availability
 
 import (
+	"encore.app/internal/api_errors"
 	"encore.app/internal/currency"
 	"encore.app/services/booking/db"
+	"encore.dev/beta/errs"
+)
+
+var (
+	errCurrencyRatesUnavailable = api_errors.NewErrorWithDetail(
+		errs.Unavailable,
+		"Currency rates are unavailable",
+		api_errors.ErrorDetails{Code: api_errors.CodeCurrencyRatesUnavailable},
+	)
+
+	errAvailabilityPricingFailed = api_errors.NewErrorWithDetail(
+		errs.Internal,
+		"Failed to price available vehicles",
+		api_errors.ErrorDetails{Code: api_errors.CodeAvailabilityPricingFailed},
+	)
 )
 
 type AvailabilityService struct {

@@ -72,6 +72,8 @@ func (s *BookingService) buildCreateCustomerReservationParams(
 		rlog.Error("failed to get location names for reservation request", "error", err)
 	}
 
+	supplierInfo := FindSupplierInfo(snapshot, plan)
+
 	return reservation.CreateReservationParams{
 		UserID:              p.UserID,
 		BrokerReservationID: confirmationNumber,
@@ -100,5 +102,12 @@ func (s *BookingService) buildCreateCustomerReservationParams(
 		DropoffLocationName: dropoffLocName,
 		FlightNumber:        p.FlightNumber,
 		PayAtPickup:         GetPayAtPickup(p.SelectedAddOns, plan),
+		Excess:              plan.Excess,
+		ExcessCurrency:      plan.ExcessCurrency,
+		PickupLocationCode:  plan.PickupLocationCode,
+		DropoffLocationCode: plan.DropoffLocationCode,
+		SupplierTerms:       supplierInfo.TermsAndConditions,
+		PickupDetails:       supplierInfo.PickupDetails,
+		DropoffDetails:      supplierInfo.DropoffDetails,
 	}
 }

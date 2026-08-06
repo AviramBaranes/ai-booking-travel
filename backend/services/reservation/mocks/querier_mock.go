@@ -189,6 +189,21 @@ func (mr *MockQuerierMockRecorder) GetReservationByID(ctx, id any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReservationByID", reflect.TypeOf((*MockQuerier)(nil).GetReservationByID), ctx, id)
 }
 
+// GetSupplierTermsByID mocks base method.
+func (m *MockQuerier) GetSupplierTermsByID(ctx context.Context, id int64) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSupplierTermsByID", ctx, id)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSupplierTermsByID indicates an expected call of GetSupplierTermsByID.
+func (mr *MockQuerierMockRecorder) GetSupplierTermsByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSupplierTermsByID", reflect.TypeOf((*MockQuerier)(nil).GetSupplierTermsByID), ctx, id)
+}
+
 // InsertReservation mocks base method.
 func (m *MockQuerier) InsertReservation(ctx context.Context, arg db.InsertReservationParams) (int64, error) {
 	m.ctrl.T.Helper()
@@ -289,6 +304,21 @@ func (m *MockQuerier) UpdateReservationCurrencyRate(ctx context.Context, arg db.
 func (mr *MockQuerierMockRecorder) UpdateReservationCurrencyRate(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateReservationCurrencyRate", reflect.TypeOf((*MockQuerier)(nil).UpdateReservationCurrencyRate), ctx, arg)
+}
+
+// UpsertSupplierTerms mocks base method.
+func (m *MockQuerier) UpsertSupplierTerms(ctx context.Context, arg db.UpsertSupplierTermsParams) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpsertSupplierTerms", ctx, arg)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpsertSupplierTerms indicates an expected call of UpsertSupplierTerms.
+func (mr *MockQuerierMockRecorder) UpsertSupplierTerms(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertSupplierTerms", reflect.TypeOf((*MockQuerier)(nil).UpsertSupplierTerms), ctx, arg)
 }
 
 // VoucherReservationAfterPayment mocks base method.

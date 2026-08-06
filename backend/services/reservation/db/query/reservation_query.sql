@@ -32,7 +32,14 @@ INSERT INTO reservations (
     pickup_location_name,
     dropoff_location_name,
     flight_number,
-    pay_at_pickup
+    pay_at_pickup,
+    excess,
+    excess_currency,
+    pickup_location_code,
+    dropoff_location_code,
+    supplier_terms_id,
+    pickup_details,
+    dropoff_details
 ) VALUES (
     @user_id,
     @office_id,
@@ -66,7 +73,14 @@ INSERT INTO reservations (
     @pickup_location_name,
     @dropoff_location_name,
     @flight_number,
-    @pay_at_pickup
+    @pay_at_pickup,
+    @excess,
+    @excess_currency,
+    @pickup_location_code,
+    @dropoff_location_code,
+    @supplier_terms_id,
+    @pickup_details,
+    @dropoff_details
 ) RETURNING id;
 
 -- name: GetReservationByID :one

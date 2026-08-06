@@ -33,6 +33,11 @@ export function ReservationSummary({
         pickupTime={reservation.pickupTime}
         pickupLocationName={reservation.pickupLocationName}
         flightNumber={reservation.flightNumber}
+        supplierInfo={{
+          termsAndConditions: reservation.supplierTerms,
+          pickupDetails: reservation.pickupDetails,
+          dropoffDetails: reservation.dropoffDetails,
+        }}
       />
       <CarDetailsSection
         brand={reservation.carDetails.supplierName}
@@ -40,6 +45,8 @@ export function ReservationSummary({
         carType={reservation.carDetails.carType}
         rentalDays={reservation.rentalDays}
         isAutomatic={reservation.carDetails.isAutoGear}
+        excess={reservation.excess}
+        excessCurrency={reservation.excessCurrency}
       />
       <IncludedSection planInclusions={reservation.planInclusions} />
       <PayAtPickupSection

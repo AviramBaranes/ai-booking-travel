@@ -191,4 +191,22 @@ type Reservation struct {
 	PaymentConfirmationCode *string
 	PaymentDocNum           *string
 	InvoiceDocNum           *string
+	Excess                  int32
+	ExcessCurrency          string
+	SupplierTermsID         *int64
+	PickupDetails           []byte
+	DropoffDetails          []byte
+	PickupLocationCode      string
+	DropoffLocationCode     string
+	SupplierPaidAt          pgtype.Timestamptz
+	SupplierExpenseID       *string
+	PaymentReceivedAt       pgtype.Timestamptz
+}
+
+type SupplierTerm struct {
+	ID               int64
+	Broker           Broker
+	SupplierCode     string
+	PickupLocationID string
+	Terms            []byte
 }

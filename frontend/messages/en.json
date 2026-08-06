@@ -4,6 +4,8 @@
     "unknown": "An unknown error occurred",
     "unknown_error": "An unknown error occurred",
     "internal_error": "An unexpected error occurred",
+    "currency_rates_unavailable": "Prices are temporarily unavailable. Please try again in a moment.",
+    "availability_pricing_failed": "We could not price the available vehicles. Please try again.",
     "invalid_value": "Invalid value",
     "unauthorized": "You are not authorized to perform this action",
     "unauthenticated": "Please log in to continue",
@@ -367,6 +369,7 @@
         "couponDiscount": "Coupon discount:",
         "fullCoverage": "Full coverage:",
         "flightNumber": "Flight number:",
+        "excess": "Maximum excess in case of damage or theft:",
         "totalToPay": "Total to pay:"
       },
       "sections": {

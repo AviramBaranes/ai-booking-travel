@@ -1,0 +1,3 @@
+ALTER TABLE price_offers
+    ADD COLUMN excess INT NOT NULL DEFAULT 0,
+    ADD COLUMN excess_currency TEXT NOT NULL DEFAULT '';

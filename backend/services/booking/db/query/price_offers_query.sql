@@ -25,7 +25,12 @@ INSERT INTO price_offers (
     total_price,
     offered_currency_code,
     offered_price,
-    pay_at_pickup
+    pay_at_pickup,
+    excess,
+    excess_currency,
+    supplier_terms,
+    pickup_details,
+    dropoff_details
 ) VALUES (
     sqlc.arg(agent_id),
     sqlc.arg(name),
@@ -52,9 +57,14 @@ INSERT INTO price_offers (
     sqlc.arg(total_price),
     sqlc.arg(offered_currency_code),    
     sqlc.arg(offered_price),
-    sqlc.arg(pay_at_pickup)
+    sqlc.arg(pay_at_pickup),
+    sqlc.arg(excess),
+    sqlc.arg(excess_currency),
+    sqlc.arg(supplier_terms),
+    sqlc.arg(pickup_details),
+    sqlc.arg(dropoff_details)
 )
-RETURNING *;   
+RETURNING *;
 
 -- name: GetPriceOfferByToken :one
 SELECT price_offers.* , pl.name AS pickup_location, dl.name AS dropoff_location

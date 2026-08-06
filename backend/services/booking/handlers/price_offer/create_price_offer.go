@@ -85,6 +85,27 @@ func (s *PriceOfferService) CreatePriceOffer(ctx context.Context, p CreatePriceO
 		return nil, api_errors.ErrInternalError
 	}
 
+	// The snapshot is gone by the time the offer is booked, so the supplier terms and station details
+	// of the chosen plan are copied onto the offer itself.
+	supplierInfo := booking_handlers.FindSupplierInfo(snapshot, plan)
+	supplierTerms, err := json.Marshal(supplierInfo.TermsAndConditions)
+	if err != nil {
+		rlog.Error("failed to marshal supplier terms", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	pickupDetails, err := json.Marshal(supplierInfo.PickupDetails)
+	if err != nil {
+		rlog.Error("failed to marshal pickup details", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
+	dropoffDetails, err := json.Marshal(supplierInfo.DropoffDetails)
+	if err != nil {
+		rlog.Error("failed to marshal dropoff details", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
 	priceOffer, err := s.query.CreatePriceOffer(ctx, db.CreatePriceOfferParams{
 		AgentID:             authData.UserID,
 		Name:                p.Name,
@@ -112,6 +133,11 @@ func (s *PriceOfferService) CreatePriceOffer(ctx context.Context, p CreatePriceO
 		OfferedCurrencyCode: p.OfferedCurrencyCode,
 		OfferedPrice:        p.OfferedPrice,
 		PayAtPickup:         payAtPickup,
+		Excess:              int32(plan.Excess),
+		ExcessCurrency:      plan.ExcessCurrency,
+		SupplierTerms:       supplierTerms,
+		PickupDetails:       pickupDetails,
+		DropoffDetails:      dropoffDetails,
 	})
 	if err != nil {
 		return nil, err

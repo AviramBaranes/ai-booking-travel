@@ -142,15 +142,16 @@ func (ns NullOfferStatus) Value() (driver.Value, error) {
 }
 
 type AvailablePlansSnapshot struct {
-	ID          int64
-	CreatedAt   pgtype.Timestamptz
-	DriverAge   string
-	PickupDate  pgtype.Date
-	PickupTime  string
-	DropoffDate pgtype.Date
-	DropoffTime string
-	CountryCode string
-	Plans       []byte
+	ID            int64
+	CreatedAt     pgtype.Timestamptz
+	DriverAge     string
+	PickupDate    pgtype.Date
+	PickupTime    string
+	DropoffDate   pgtype.Date
+	DropoffTime   string
+	CountryCode   string
+	Plans         []byte
+	SuppliersInfo []byte
 }
 
 type BrokerTranslation struct {
@@ -256,4 +257,9 @@ type PriceOffer struct {
 	RenewedAt           pgtype.Timestamptz
 	CreatedAt           pgtype.Timestamptz
 	UpdatedAt           pgtype.Timestamptz
+	Excess              int32
+	ExcessCurrency      string
+	SupplierTerms       []byte
+	PickupDetails       []byte
+	DropoffDetails      []byte
 }

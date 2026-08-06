@@ -15,11 +15,13 @@ type cache interface {
 
 type CurrenciesCache struct {
 	cache
+	ic *icount.Icount
 }
 
 func NewCurrenciesCache(cache cache) *CurrenciesCache {
 	return &CurrenciesCache{
 		cache: cache,
+		ic:    icount.NewIcount(),
 	}
 }
 
@@ -30,7 +32,11 @@ func (c *CurrenciesCache) GetCurrencyRate(ctx context.Context, currencyCode stri
 	rate, err := c.Get(ctx, currencyCode)
 	if err != nil {
 		if errors.Is(err, ec.Miss) {
-			return c.setCurrenciesRates(ctx, currencyCode)
+			rates, err := c.refreshRates(ctx)
+			if err != nil {
+				return 0, err
+			}
+			return rates[currencyCode], nil
 		}
 		return 0, err
 	}
@@ -38,23 +44,59 @@ func (c *CurrenciesCache) GetCurrencyRate(ctx context.Context, currencyCode stri
 	return rate, nil
 }
 
-func (c *CurrenciesCache) setCurrenciesRates(ctx context.Context, currencyCode string) (float64, error) {
-	ic := icount.NewIcount()
-	resp, err := ic.FetchCurrencies()
-	if err != nil {
-		return 0, err
+// GetCurrencyRates retrieves the exchange rates for all the given currency codes.
+// Any code missing from the cache triggers a single refresh of the whole rates table,
+// so a batch of currencies costs at most one call to the rates provider.
+func (c *CurrenciesCache) GetCurrencyRates(ctx context.Context, currencyCodes []string) (map[string]float64, error) {
+	rates := make(map[string]float64, len(currencyCodes))
+
+	var missing bool
+	for _, code := range currencyCodes {
+		if _, ok := rates[code]; ok {
+			continue
+		}
+
+		rate, err := c.Get(ctx, code)
+		if err != nil {
+			if errors.Is(err, ec.Miss) {
+				missing = true
+				continue
+			}
+			return nil, err
+		}
+		rates[code] = rate
 	}
 
-	var cr float64
+	if !missing {
+		return rates, nil
+	}
+
+	refreshed, err := c.refreshRates(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, code := range currencyCodes {
+		if _, ok := rates[code]; !ok {
+			rates[code] = refreshed[code]
+		}
+	}
+
+	return rates, nil
+}
+
+// refreshRates fetches the full rates table from the provider and writes every rate to the cache.
+func (c *CurrenciesCache) refreshRates(ctx context.Context) (map[string]float64, error) {
+	resp, err := c.ic.FetchCurrencies()
+	if err != nil {
+		return nil, err
+	}
+
 	for currency, rate := range resp.Rates {
 		if err := c.Set(ctx, currency, rate); err != nil {
-			return 0, err
-		}
-
-		if currency == currencyCode {
-			cr = rate
+			return nil, err
 		}
 	}
 
-	return cr, nil
+	return resp.Rates, nil
 }

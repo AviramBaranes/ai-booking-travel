@@ -19,6 +19,7 @@ type Querier interface {
 	GetPaymentPendingReservations(ctx context.Context) ([]GetPaymentPendingReservationsRow, error)
 	GetPaymentPendingReservationsByBillingEntity(ctx context.Context, arg GetPaymentPendingReservationsByBillingEntityParams) ([]GetPaymentPendingReservationsByBillingEntityRow, error)
 	GetReservationByID(ctx context.Context, id int64) (Reservation, error)
+	GetSupplierTermsByID(ctx context.Context, id int64) ([]byte, error)
 	InsertReservation(ctx context.Context, arg InsertReservationParams) (int64, error)
 	ListBusinessesBalancesReport(ctx context.Context) ([]ListBusinessesBalancesReportRow, error)
 	ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error)
@@ -26,6 +27,7 @@ type Querier interface {
 	ResolveReservationsPayment(ctx context.Context, ids []int64) error
 	SaveInvoiceDocNum(ctx context.Context, arg SaveInvoiceDocNumParams) error
 	UpdateReservationCurrencyRate(ctx context.Context, arg UpdateReservationCurrencyRateParams) error
+	UpsertSupplierTerms(ctx context.Context, arg UpsertSupplierTermsParams) (int64, error)
 	VoucherReservationAfterPayment(ctx context.Context, arg VoucherReservationAfterPaymentParams) (Reservation, error)
 }
 

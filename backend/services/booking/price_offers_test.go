@@ -83,13 +83,14 @@ func seedSnapshot(t *testing.T, q *db.Queries, plans []availability.PlanPriceDet
 	}
 
 	id, err := q.InsertAvailablePlansSnapshot(ctx, db.InsertAvailablePlansSnapshotParams{
-		Plans:       plansJSON,
-		DriverAge:   "30",
-		PickupDate:  dbadapters.DateFromString("2026-08-01"),
-		PickupTime:  "08:00",
-		DropoffDate: dbadapters.DateFromString("2026-08-05"),
-		DropoffTime: "10:00",
-		CountryCode: "US",
+		Plans:         plansJSON,
+		SuppliersInfo: []byte("[]"),
+		DriverAge:     "30",
+		PickupDate:    dbadapters.DateFromString("2026-08-01"),
+		PickupTime:    "08:00",
+		DropoffDate:   dbadapters.DateFromString("2026-08-05"),
+		DropoffTime:   "10:00",
+		CountryCode:   "US",
 	})
 	if err != nil {
 		t.Fatalf("failed to seed snapshot: %v", err)

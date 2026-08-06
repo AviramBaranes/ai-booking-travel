@@ -119,14 +119,16 @@ func (s *AvailabilityService) SearchAvailability(ctx context.Context, p SearchAv
 	if err != nil {
 		return nil, err
 	}
+	// The brokers returned vehicles, so an empty result here means every plan was dropped
+	// while being priced — a failure on our side, not a genuine lack of availability.
 	if len(artifacts.plansDetails) == 0 {
-		rlog.Info("no available vehicles found after processing artifacts")
-		return emptySearchAvailabilityResponse(), nil
+		rlog.Error("all plans were dropped while building artifacts", "brokerVehicles", len(resp.AvailableVehicles))
+		return nil, errAvailabilityPricingFailed
 	}
 
 	sortAvailableVehiclesByCheapestPlan(artifacts.availableCars)
 
-	snapshotID, err := s.storePlansDetails(ctx, artifacts.plansDetails, p, extractCountryCode(locs))
+	snapshotID, err := s.storePlansDetails(ctx, artifacts.plansDetails, resp.SuppliersInfo, p, extractCountryCode(locs))
 	if err != nil {
 		rlog.Error("failed to store plans details", "error", err)
 		return nil, api_errors.ErrInternalError

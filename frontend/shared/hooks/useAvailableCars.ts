@@ -20,5 +20,7 @@ export function useAvailableCars(
     queryFn: () => searchAvailableCars(params),
     staleTime: Infinity,
     enabled: opts?.fromCache !== true,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 }

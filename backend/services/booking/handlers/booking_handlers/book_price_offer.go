@@ -207,7 +207,45 @@ func buildPriceOfferReservationRequest(
 		DropoffLocationName:   offer.DropoffLocation,
 		FlightNumber:          p.FlightNumber,
 		PayAtPickup:           unmarshalPayAtPickup(offer.PayAtPickup),
+		Excess:                int(offer.Excess),
+		ExcessCurrency:        offer.ExcessCurrency,
+		PickupLocationCode:    offer.PickupBrokerLocationID,
+		DropoffLocationCode:   offer.DropoffBrokerLocationID,
+		SupplierTerms:         unmarshalSupplierTerms(offer),
+		PickupDetails:         unmarshalStationInfo(offer.PickupDetails),
+		DropoffDetails:        unmarshalStationInfo(offer.DropoffDetails),
 	}, nil
+}
+
+// unmarshalSupplierTerms reads the supplier terms copied onto the offer when it was created.
+// The terms are informational, so a malformed value is logged and dropped rather than failing the booking.
+func unmarshalSupplierTerms(offer db.GetPriceOfferByIdRow) []broker.TermsAndConditionsItem {
+	if len(offer.SupplierTerms) == 0 {
+		return nil
+	}
+
+	var terms []broker.TermsAndConditionsItem
+	if err := json.Unmarshal(offer.SupplierTerms, &terms); err != nil {
+		rlog.Error("failed to unmarshal price offer supplier terms", "id", offer.ID, "error", err)
+		return nil
+	}
+
+	return terms
+}
+
+// unmarshalStationInfo reads a pickup or dropoff station detail blob copied onto the offer when it was created.
+func unmarshalStationInfo(detailsJSON []byte) broker.StationInfo {
+	if len(detailsJSON) == 0 {
+		return broker.StationInfo{}
+	}
+
+	var details broker.StationInfo
+	if err := json.Unmarshal(detailsJSON, &details); err != nil {
+		rlog.Error("failed to unmarshal price offer station details", "error", err)
+		return broker.StationInfo{}
+	}
+
+	return details
 }
 
 func (s *BookingService) markPriceOfferBooked(ctx context.Context, priceOfferID int64, reservationID int64, agentID int64) {

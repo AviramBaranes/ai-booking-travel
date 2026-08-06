@@ -149,6 +149,10 @@ func (f *Flex) getDeposit(info []string) (int, string) {
 	return f.getAmountAndCurrency(info, "Deposit:")
 }
 
+func (f *Flex) getExcess(info []string) (int, string) {
+	return f.getAmountAndCurrency(info, "Excess:")
+}
+
 // getAmountAndCurrency extracts an amount and currency from comma-separated key:amount:currency segments.
 func (f *Flex) getAmountAndCurrency(info []string, prefix string) (int, string) {
 	for _, item := range info {
@@ -234,11 +238,13 @@ func (f *Flex) getInsuranceExtraCost(days int) float64 {
 func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDetails, cc string) []Plan {
 	plans := make([]Plan, 0, len(c.Costs))
 	deposit, depositCurrency := f.getDeposit(c.Information)
+	excess, excessCurrency := f.getExcess(c.Information)
 	for _, p := range c.Costs {
 		planID := 1
 		if cc == "US" || cc == "CA" {
 			id, ok := flexProductMap[p.Product]
 			if !ok {
+				rlog.Warn("unknown product in CarAvailability response, skipping plan", "car_name", c.Name, "product", p.Product)
 				continue
 			}
 			planID = id
@@ -262,6 +268,8 @@ func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDet
 			SupplierCode:           c.SupplierCode,
 			Deposit:                deposit,
 			DepositCurrency:        depositCurrency,
+			Excess:                 excess,
+			ExcessCurrency:         excessCurrency,
 		})
 	}
 

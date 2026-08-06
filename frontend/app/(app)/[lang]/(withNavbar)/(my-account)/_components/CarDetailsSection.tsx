@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { SummarySubTitle } from "./SummarySubTitle";
 import { SummaryRow } from "./SummaryRow";
+import { formatPrice } from "@/shared/utils/formatPrice";
 
 interface CarDetailsSectionProps {
   rentalDays: number;
@@ -10,6 +11,8 @@ interface CarDetailsSectionProps {
   model: string;
   brand: string;
   isAutomatic: boolean;
+  excess?: number;
+  excessCurrency?: string;
 }
 
 export function CarDetailsSection({
@@ -18,6 +21,8 @@ export function CarDetailsSection({
   model,
   brand,
   isAutomatic,
+  excess,
+  excessCurrency,
 }: CarDetailsSectionProps) {
   const t = useTranslations("MyAccount.summary");
 
@@ -38,6 +43,12 @@ export function CarDetailsSection({
         label={t("labels.brand")}
         value={brand}
       />
+      {!!excess && excessCurrency && (
+        <SummaryRow
+          label={t("labels.excess")}
+          value={formatPrice(excess, excessCurrency)}
+        />
+      )}
     </>
   );
 }

@@ -31,7 +31,7 @@ func (q *Queries) DeleteSnapshotByID(ctx context.Context, id int64) error {
 }
 
 const getSnapshotByID = `-- name: GetSnapshotByID :one
-SELECT id, created_at, driver_age, pickup_date, pickup_time, dropoff_date, dropoff_time, country_code, plans
+SELECT id, created_at, driver_age, pickup_date, pickup_time, dropoff_date, dropoff_time, country_code, plans, suppliers_info
 FROM available_plans_snapshots
 WHERE id = $1
 `
@@ -49,24 +49,26 @@ func (q *Queries) GetSnapshotByID(ctx context.Context, id int64) (AvailablePlans
 		&i.DropoffTime,
 		&i.CountryCode,
 		&i.Plans,
+		&i.SuppliersInfo,
 	)
 	return i, err
 }
 
 const insertAvailablePlansSnapshot = `-- name: InsertAvailablePlansSnapshot :one
-INSERT INTO available_plans_snapshots (driver_age, pickup_date, pickup_time, dropoff_date, dropoff_time, country_code, plans)
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO available_plans_snapshots (driver_age, pickup_date, pickup_time, dropoff_date, dropoff_time, country_code, plans, suppliers_info)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING id
 `
 
 type InsertAvailablePlansSnapshotParams struct {
-	DriverAge   string
-	PickupDate  pgtype.Date
-	PickupTime  string
-	DropoffDate pgtype.Date
-	DropoffTime string
-	CountryCode string
-	Plans       []byte
+	DriverAge     string
+	PickupDate    pgtype.Date
+	PickupTime    string
+	DropoffDate   pgtype.Date
+	DropoffTime   string
+	CountryCode   string
+	Plans         []byte
+	SuppliersInfo []byte
 }
 
 func (q *Queries) InsertAvailablePlansSnapshot(ctx context.Context, arg InsertAvailablePlansSnapshotParams) (int64, error) {
@@ -78,6 +80,7 @@ func (q *Queries) InsertAvailablePlansSnapshot(ctx context.Context, arg InsertAv
 		arg.DropoffTime,
 		arg.CountryCode,
 		arg.Plans,
+		arg.SuppliersInfo,
 	)
 	var id int64
 	err := row.Scan(&id)
