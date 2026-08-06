@@ -1021,6 +1021,96 @@ func (q *Queries) ListReservationsReport(ctx context.Context, arg ListReservatio
 	return items, nil
 }
 
+const listUnpaidSupplierReservations = `-- name: ListUnpaidSupplierReservations :many
+SELECT
+    id,
+    broker_reservation_id,
+    driver_title,
+    driver_first_name,
+    driver_last_name,
+    pickup_date,
+    pickup_location_name,
+    rental_days,
+    total_price,
+    currency_code,
+    reservation_status,
+    payment_status
+FROM reservations
+WHERE
+    broker = $1::broker
+    AND reservation_status != 'canceled'
+    AND supplier_paid_at IS NULL
+ORDER BY currency_code, pickup_date, id
+`
+
+type ListUnpaidSupplierReservationsRow struct {
+	ID                  int64
+	BrokerReservationID string
+	DriverTitle         string
+	DriverFirstName     string
+	DriverLastName      string
+	PickupDate          pgtype.Date
+	PickupLocationName  string
+	RentalDays          int32
+	TotalPrice          pgtype.Numeric
+	CurrencyCode        string
+	ReservationStatus   ReservationStatus
+	PaymentStatus       PaymentStatus
+}
+
+func (q *Queries) ListUnpaidSupplierReservations(ctx context.Context, broker Broker) ([]ListUnpaidSupplierReservationsRow, error) {
+	rows, err := q.db.Query(ctx, listUnpaidSupplierReservations, broker)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUnpaidSupplierReservationsRow
+	for rows.Next() {
+		var i ListUnpaidSupplierReservationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.BrokerReservationID,
+			&i.DriverTitle,
+			&i.DriverFirstName,
+			&i.DriverLastName,
+			&i.PickupDate,
+			&i.PickupLocationName,
+			&i.RentalDays,
+			&i.TotalPrice,
+			&i.CurrencyCode,
+			&i.ReservationStatus,
+			&i.PaymentStatus,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const markReservationsPaidToSupplier = `-- name: MarkReservationsPaidToSupplier :exec
+UPDATE reservations
+SET
+    supplier_paid_at = CURRENT_TIMESTAMP,
+    supplier_expense_id = $1,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = ANY($2::BIGINT[])
+AND supplier_paid_at IS NULL
+`
+
+type MarkReservationsPaidToSupplierParams struct {
+	SupplierExpenseID *string
+	Ids               []int64
+}
+
+func (q *Queries) MarkReservationsPaidToSupplier(ctx context.Context, arg MarkReservationsPaidToSupplierParams) error {
+	_, err := q.db.Exec(ctx, markReservationsPaidToSupplier, arg.SupplierExpenseID, arg.Ids)
+	return err
+}
+
 const resolveReservationsPayment = `-- name: ResolveReservationsPayment :exec
 UPDATE reservations
 SET payment_status = CASE payment_status

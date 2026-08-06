@@ -377,3 +377,33 @@ WHERE
 UPDATE reservations
 SET invoice_doc_num = $2
 WHERE id = $1;
+
+-- name: ListUnpaidSupplierReservations :many
+SELECT
+    id,
+    broker_reservation_id,
+    driver_title,
+    driver_first_name,
+    driver_last_name,
+    pickup_date,
+    pickup_location_name,
+    rental_days,
+    total_price,
+    currency_code,
+    reservation_status,
+    payment_status
+FROM reservations
+WHERE
+    broker = sqlc.arg(broker)::broker
+    AND reservation_status != 'canceled'
+    AND supplier_paid_at IS NULL
+ORDER BY currency_code, pickup_date, id;
+
+-- name: MarkReservationsPaidToSupplier :exec
+UPDATE reservations
+SET
+    supplier_paid_at = CURRENT_TIMESTAMP,
+    supplier_expense_id = sqlc.narg(supplier_expense_id),
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = ANY(sqlc.arg(ids)::BIGINT[])
+AND supplier_paid_at IS NULL;

@@ -10,6 +10,7 @@ import (
 	actions "encore.app/services/reservation/handlers/actions"
 	queries "encore.app/services/reservation/handlers/queries"
 	"encore.app/services/reservation/handlers/reservation_pricing"
+	"encore.app/services/reservation/handlers/supplier_payments"
 	"encore.dev/config"
 	"encore.dev/pubsub"
 	"encore.dev/storage/cache"
@@ -39,6 +40,13 @@ type ListOpenReservationsByBillingEntityParams = queries.ListOpenReservationsByB
 type BillingReservation = reservation_pricing.BillingReservation
 type ListOpenReservationsByBillingEntityResponse = queries.ListOpenReservationsByBillingEntityResponse
 type CurrencyGroup = queries.CurrencyGroup
+
+// --- Supplier payments type aliases ---
+
+type ListUnpaidSupplierReservationsParams = supplier_payments.ListUnpaidSupplierReservationsParams
+type ListUnpaidSupplierReservationsResponse = supplier_payments.ListUnpaidSupplierReservationsResponse
+type UnpaidSupplierReservation = supplier_payments.UnpaidSupplierReservation
+type UnpaidSupplierCurrencyGroup = supplier_payments.UnpaidSupplierCurrencyGroup
 
 // --- Actions type aliases ---
 
