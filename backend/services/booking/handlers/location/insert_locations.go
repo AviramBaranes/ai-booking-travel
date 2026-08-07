@@ -4,21 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"mime/multipart"
 	"net/http"
 	"strings"
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
+	fileupload "encore.app/internal/file_upload"
 	"encore.app/services/booking/db"
 	"encore.dev/beta/errs"
 	"encore.dev/rlog"
-)
-
-var (
-	ErrInvalidContentType = api_errors.NewValidationError("invalid content type: expected multipart/form-data")
-	ErrParseMultipartForm = api_errors.NewValidationError("failed to parse multipart form")
-	ErrGetFileFromForm    = api_errors.NewValidationError("failed to get file from form data")
 )
 
 // InsertFlexLocationsByCountryCode fetches all Flex locations in a specific country and upserts them into the database.
@@ -57,7 +51,7 @@ func (s *LocationService) InsertFlexLocations(ctx context.Context, p InsertFlexL
 
 // InsertHertzLocations reads a CSV file from the multipart request and upserts Hertz locations.
 func (s *LocationService) InsertHertzLocations(w http.ResponseWriter, req *http.Request) {
-	file, err := ExtractFile(req)
+	file, err := fileupload.ExtractFile(req)
 	if err != nil {
 		errs.HTTPError(w, err)
 		return
@@ -124,26 +118,6 @@ func (s *LocationService) InsertLocations(ctx context.Context, b broker.Location
 	}
 
 	return nil
-}
-
-// ExtractFile parses a multipart/form-data request and returns the uploaded file.
-func ExtractFile(req *http.Request) (multipart.File, error) {
-	ct := req.Header.Get("Content-Type")
-	if !strings.HasPrefix(ct, "multipart/form-data") {
-		return nil, ErrInvalidContentType
-	}
-
-	err := req.ParseMultipartForm(2 << 20) // 2 MB max memory
-	if err != nil {
-		return nil, ErrParseMultipartForm
-	}
-
-	file, _, err := req.FormFile("file")
-	if err != nil {
-		return nil, ErrGetFileFromForm
-	}
-
-	return file, nil
 }
 
 func normalizeIata(iata string) string {

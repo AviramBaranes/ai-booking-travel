@@ -6,4 +6,6 @@ const (
 	CodeOrgIsInorganic         = "org_is_inorganic"
 	CodeNotEnoughCredits       = "not_enough_credits"
 	CodeNoObligo               = "no_obligo"
+
+	CodeInvalidPaymentSummaryFile = "invalid_payment_summary_file"
 )

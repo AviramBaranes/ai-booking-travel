@@ -1032,6 +1032,8 @@ SELECT
     pickup_location_name,
     rental_days,
     total_price,
+    purchase_price,
+    broker_erp_price,
     currency_code,
     reservation_status,
     payment_status
@@ -1053,6 +1055,8 @@ type ListUnpaidSupplierReservationsRow struct {
 	PickupLocationName  string
 	RentalDays          int32
 	TotalPrice          pgtype.Numeric
+	PurchasePrice       pgtype.Numeric
+	BrokerErpPrice      pgtype.Numeric
 	CurrencyCode        string
 	ReservationStatus   ReservationStatus
 	PaymentStatus       PaymentStatus
@@ -1077,6 +1081,8 @@ func (q *Queries) ListUnpaidSupplierReservations(ctx context.Context, broker Bro
 			&i.PickupLocationName,
 			&i.RentalDays,
 			&i.TotalPrice,
+			&i.PurchasePrice,
+			&i.BrokerErpPrice,
 			&i.CurrencyCode,
 			&i.ReservationStatus,
 			&i.PaymentStatus,

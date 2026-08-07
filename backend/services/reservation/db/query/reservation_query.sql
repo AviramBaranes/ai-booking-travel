@@ -389,6 +389,8 @@ SELECT
     pickup_location_name,
     rental_days,
     total_price,
+    purchase_price,
+    broker_erp_price,
     currency_code,
     reservation_status,
     payment_status

@@ -47,6 +47,11 @@ type ListUnpaidSupplierReservationsParams = supplier_payments.ListUnpaidSupplier
 type ListUnpaidSupplierReservationsResponse = supplier_payments.ListUnpaidSupplierReservationsResponse
 type UnpaidSupplierReservation = supplier_payments.UnpaidSupplierReservation
 type UnpaidSupplierCurrencyGroup = supplier_payments.UnpaidSupplierCurrencyGroup
+type ValidateFlexPaymentSummaryResponse = supplier_payments.ValidateFlexPaymentSummaryResponse
+type ApprovedReservation = supplier_payments.ApprovedReservation
+type RejectedReservation = supplier_payments.RejectedReservation
+
+var ErrInvalidPaymentSummaryFile = supplier_payments.ErrInvalidPaymentSummaryFile
 
 // --- Actions type aliases ---
 

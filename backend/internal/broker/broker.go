@@ -1,5 +1,7 @@
 package broker
 
+import "io"
+
 // Name represents the name of a broker, such as "flex" or "hertz".
 type Name string
 
@@ -53,6 +55,27 @@ type Booker interface {
 type Canceler interface {
 	Name() Name
 	Cancel(bookingID, lastName, supplierCode string) error
+}
+
+// PaymentSummaryReader parses the payment-required summary a broker sends us before we settle
+// what we owe it. Each broker ships its own file format, so the parsing lives with the broker.
+type PaymentSummaryReader interface {
+	Name() Name
+	ReadPaymentSummary(r io.Reader) ([]PaymentSummaryGroup, error)
+}
+
+// PaymentSummaryGroup holds the summary lines billed in a single currency.
+type PaymentSummaryGroup struct {
+	CurrencyCode string
+	Lines        []PaymentSummaryLine
+}
+
+// PaymentSummaryLine is one reservation the broker expects to be paid for.
+type PaymentSummaryLine struct {
+	// BookingID is the broker's own reservation id.
+	BookingID string
+	// Balance is the amount still owed for that reservation, in the group's currency.
+	Balance float64
 }
 
 // VoucherProvider provides voucher generation capabilities for a broker.
