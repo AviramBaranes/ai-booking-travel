@@ -16,6 +16,7 @@ import {
   CalendarCheck,
   TrendingUp,
   Banknote,
+  Wallet,
   Languages,
   Landmark,
   Menu,
@@ -43,6 +44,7 @@ const navItems = [
   { label: "קופונים", href: "/admin/coupons", icon: Ticket },
   // { label: "מטבעות", href: "/admin/currencies", icon: Coins },
   { label: "מיקומים", href: "/admin/locations", icon: MapPin },
+  { label: "תשלומים לספקים", href: "/admin/payments", icon: Wallet },
   { label: "תרגומים", href: "/admin/translations", icon: Languages },
   {
     label: "דוח הזמנות עסקי",

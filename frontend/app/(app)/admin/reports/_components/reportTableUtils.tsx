@@ -16,15 +16,25 @@ export type ReportColumn<T> = {
 };
 
 const statusLabels: Record<string, string> = {
+  // Reservation statuses
   booked: "הוזמן",
   vouchered: "הופק שובר",
   canceled: "בוטל",
+  // Payment statuses
+  paid: "שולם",
+  unpaid: "לא שולם",
+  refund_pending: "זיכוי ממתין",
+  refunded: "זוכה",
 };
 
 const statusClasses: Record<string, string> = {
   booked: "bg-navy/5 text-navy ring-navy/15",
   vouchered: "bg-emerald-50 text-emerald-700 ring-emerald-200",
   canceled: "bg-rose-50 text-rose-700 ring-rose-200",
+  paid: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  unpaid: "bg-amber-50 text-amber-700 ring-amber-200",
+  refund_pending: "bg-orange-50 text-orange-700 ring-orange-200",
+  refunded: "bg-rose-50 text-rose-700 ring-rose-200",
 };
 
 export function StatusBadge({ status }: { status: string }) {

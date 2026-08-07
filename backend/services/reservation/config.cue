@@ -9,6 +9,6 @@ Icount:{
 	SupplierIDs: {
 		Flex: 5,
 	}
-	// The iCount expense type supplier payments are recorded under.
-	ExpenseTypeID: 1,
+	// The iCount expense type supplier payments are recorded under ("תשלום רכבים").
+	ExpenseTypeID: 5,
 }

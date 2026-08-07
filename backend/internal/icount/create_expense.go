@@ -16,7 +16,6 @@ type CreateExpenseParams struct {
 	// CurrencyCode is an ISO-4217 code; iCount defaults to ILS when empty. Rate is optional —
 	// iCount resolves it by date when omitted.
 	CurrencyCode string
-	Rate         float64
 	Paid         bool
 	// PaidDate is formatted as iCount expects (YYYY-MM-DD); it defaults to the invoice date.
 	PaidDate string
@@ -46,7 +45,6 @@ func (i *Icount) createExpenseRequest(p CreateExpenseParams) ICountCreateExpense
 		DocNum:        p.DocNum,
 		Sum:           p.Sum,
 		CurrencyCode:  p.CurrencyCode,
-		Rate:          p.Rate,
 		Paid:          p.Paid,
 		PaidDate:      p.PaidDate,
 	}

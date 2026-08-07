@@ -201,10 +201,9 @@ func TestListUnpaidSupplierReservations(t *testing.T) {
 	t.Run("maps the reservation fields", func(t *testing.T) {
 		got := indexed.assertInCurrency(t, usdEarlyID, "USD")
 
-		// Derived from validCreateReservationParams: (100 purchase + 15 broker ERP) at 45% markup
-		// = 166.75, less a 10% discount = 150.075, plus the 20 BT ERP price = 170.075,
-		// stored as NUMERIC(12, 2).
-		const wantTotalPrice = 170.08
+		// What we owe the supplier, from validCreateReservationParams: 100 purchase price plus
+		// the 15 broker ERP day charge, before our markup and discount.
+		const wantAmountOwed = 115.0
 
 		want := UnpaidSupplierReservation{
 			ID:                  usdEarlyID,
@@ -213,7 +212,7 @@ func TestListUnpaidSupplierReservations(t *testing.T) {
 			PickupDate:          "2026-09-01",
 			PickupLocationName:  "Airport Terminal 1",
 			RentalDays:          4,
-			TotalPrice:          wantTotalPrice,
+			AmountOwed:          wantAmountOwed,
 			ReservationStatus:   ReservationStatusBooked,
 			PaymentStatus:       PaymentStatusUnpaid,
 		}

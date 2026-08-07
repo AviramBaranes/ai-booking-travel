@@ -29,8 +29,10 @@ type UnpaidSupplierReservation struct {
 	PickupDate          string  `json:"pickupDate"`
 	PickupLocationName  string  `json:"pickupLocationName"`
 	RentalDays          int32   `json:"rentalDays"`
-	TotalPrice          float64 `json:"totalPrice"`
-	ReservationStatus   string  `json:"reservationStatus"`
+	// AmountOwed is what we owe the supplier for this reservation: the car price plus the
+	// broker's ERP day charge. It is the figure reconciled against the supplier's statement.
+	AmountOwed        float64 `json:"amountOwed"`
+	ReservationStatus string  `json:"reservationStatus"`
 	PaymentStatus       string  `json:"paymentStatus"`
 }
 
@@ -79,7 +81,7 @@ func toCurrencyGroups(rows []db.ListUnpaidSupplierReservationsRow) []UnpaidSuppl
 			PickupDate:          dbadapters.DateToString(r.PickupDate),
 			PickupLocationName:  r.PickupLocationName,
 			RentalDays:          r.RentalDays,
-			TotalPrice:          dbadapters.NumericToFloat64(r.TotalPrice),
+			AmountOwed:          amountOwed(r.PurchasePrice, r.BrokerErpPrice),
 			ReservationStatus:   string(r.ReservationStatus),
 			PaymentStatus:       string(r.PaymentStatus),
 		})

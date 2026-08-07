@@ -144,7 +144,6 @@ func (s *SupplierPaymentsService) createExpense(r db.ListUnpaidSupplierReservati
 		DocNum:        r.BrokerReservationID,
 		Sum:           amount,
 		CurrencyCode:  r.CurrencyCode,
-		Rate:          dbadapters.NumericToFloat64(r.CurrencyRate),
 		Paid:          true,
 		PaidDate:      paymentDate,
 	})

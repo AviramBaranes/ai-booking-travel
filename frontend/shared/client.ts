@@ -1037,6 +1037,9 @@ export namespace reservation {
             this.GetReservation = this.GetReservation.bind(this)
             this.ListOpenReservationsByBillingEntity = this.ListOpenReservationsByBillingEntity.bind(this)
             this.ListReservations = this.ListReservations.bind(this)
+            this.ListUnpaidSupplierReservations = this.ListUnpaidSupplierReservations.bind(this)
+            this.PaySupplierReservations = this.PaySupplierReservations.bind(this)
+            this.ValidateFlexPaymentSummary = this.ValidateFlexPaymentSummary.bind(this)
         }
 
         public async ApplyVoucher(id: number, params: actions.ApplyVoucherParams): Promise<void> {
@@ -1147,6 +1150,35 @@ export namespace reservation {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/reservations`, undefined, {query})
             return await resp.json() as queries.ListReservationsResponse
+        }
+
+        public async ListUnpaidSupplierReservations(params: supplier_payments.ListUnpaidSupplierReservationsParams): Promise<supplier_payments.ListUnpaidSupplierReservationsResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                broker: params.Broker,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/supplier-payments/unpaid-reservations`, undefined, {query})
+            return await resp.json() as supplier_payments.ListUnpaidSupplierReservationsResponse
+        }
+
+        /**
+         * PaySupplierReservations records an iCount expense for each of the given reservations that is
+         * still outstanding, and marks it as paid to the supplier.
+         */
+        public async PaySupplierReservations(params: supplier_payments.PaySupplierReservationsParams): Promise<supplier_payments.PaySupplierReservationsResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/supplier-payments`, JSON.stringify(params))
+            return await resp.json() as supplier_payments.PaySupplierReservationsResponse
+        }
+
+        /**
+         * ValidateFlexPaymentSummary reconciles an uploaded Flex payment-required summary (xlsx, sent as
+         * multipart/form-data under the "file" field) against the reservations we still owe Flex for.
+         */
+        public async ValidateFlexPaymentSummary(method: "POST", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
+            return this.baseClient.callAPI(method, `/supplier-payments/flex/validate`, body, options)
         }
     }
 }
@@ -2363,6 +2395,91 @@ export namespace reservation_pricing {
         createdAt: string
         pickupDate: string
         voucheredAt: string
+    }
+}
+
+export namespace supplier_payments {
+    /**
+     * FailedSupplierPayment is a reservation that could not be settled.
+     */
+    export interface FailedSupplierPayment {
+        reservationId: number
+        reason: string
+        /**
+         * ExpenseID is set when the expense was created but could not be linked to the reservation.
+         */
+        expenseId: string
+    }
+
+    /**
+     * ListUnpaidSupplierReservationsParams selects the broker (supplier) whose outstanding
+     * reservations should be listed.
+     */
+    export interface ListUnpaidSupplierReservationsParams {
+        Broker: string
+    }
+
+    export interface ListUnpaidSupplierReservationsResponse {
+        currencyGroups: UnpaidSupplierCurrencyGroup[]
+    }
+
+    /**
+     * PaidSupplierReservation is a reservation now settled and linked to its iCount expense.
+     */
+    export interface PaidSupplierReservation {
+        reservationId: number
+        expenseId: string
+        amount: number
+        currencyCode: string
+    }
+
+    export interface PaySupplierReservationsParams {
+        reservationIds: number[]
+        /**
+         * PaymentDate is the day the supplier was actually paid. It is recorded both on the iCount
+         * expense and as the reservation's supplier_paid_at.
+         */
+        paymentDate: string
+    }
+
+    export interface PaySupplierReservationsResponse {
+        paid: PaidSupplierReservation[]
+        /**
+         * Skipped holds the requested ids that are no longer outstanding — unknown, canceled, or
+         * already paid to the supplier.
+         */
+        skipped: number[]
+
+        failed: FailedSupplierPayment[]
+    }
+
+    /**
+     * UnpaidSupplierCurrencyGroup is a set of unpaid reservations sharing the same currency.
+     * Suppliers are settled per currency, so the payment summary is reconciled group by group.
+     */
+    export interface UnpaidSupplierCurrencyGroup {
+        currencyCode: string
+        reservations: UnpaidSupplierReservation[]
+    }
+
+    /**
+     * UnpaidSupplierReservation is a reservation we still owe the supplier for.
+     */
+    export interface UnpaidSupplierReservation {
+        id: number
+        brokerReservationId: string
+        driverName: string
+        pickupDate: string
+        pickupLocationName: string
+        rentalDays: number
+        /**
+         * AmountOwed is what we owe the supplier for this reservation: the car price plus the
+         * broker's ERP day charge. It is the figure reconciled against the supplier's statement.
+         */
+        amountOwed: number
+
+        reservationStatus: string
+        paymentStatus: string
     }
 }
 
