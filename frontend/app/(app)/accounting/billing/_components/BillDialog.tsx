@@ -93,7 +93,7 @@ export function BillDialog({
       queryClient.invalidateQueries({
         queryKey: ["open-reservations", entity.kind, entity.id],
       });
-      setDocNumber(res.docNum);
+      setDocNumber(res.invoiceDocNum);
       setTimeout(() => {
         onSuccess();
         onOpenChange(false);
