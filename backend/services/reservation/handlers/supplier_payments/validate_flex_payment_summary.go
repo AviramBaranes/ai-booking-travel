@@ -116,7 +116,7 @@ func (s *SupplierPaymentsService) ValidateFlexPaymentSummary(ctx context.Context
 				continue
 			}
 
-			expected := amountOwedToSupplier(reservation)
+			expected := amountOwed(reservation.PurchasePrice, reservation.BrokerErpPrice)
 			if reservation.CurrencyCode != group.CurrencyCode || math.Abs(expected-line.Balance) > priceTolerance {
 				resp.Rejected = append(resp.Rejected, RejectedReservation{
 					ReservationID:        &reservation.ID,
@@ -142,8 +142,8 @@ func (s *SupplierPaymentsService) ValidateFlexPaymentSummary(ctx context.Context
 	return resp, nil
 }
 
-// amountOwedToSupplier is the supplier's own cost for a reservation: the car price plus the
-// broker's ERP day charge, both before our markup and discount.
-func amountOwedToSupplier(r db.ListUnpaidSupplierReservationsRow) float64 {
-	return dbadapters.NumericToFloat64(r.PurchasePrice) + dbadapters.NumericToFloat64(r.BrokerErpPrice)
+// amountOwed is the supplier's own cost for a reservation: the car price plus the broker's ERP
+// day charge, both before our markup and discount.
+func amountOwed(purchasePrice, brokerErpPrice dbadapters.Numeric) float64 {
+	return dbadapters.NumericToFloat64(purchasePrice) + dbadapters.NumericToFloat64(brokerErpPrice)
 }

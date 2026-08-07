@@ -50,6 +50,10 @@ type UnpaidSupplierCurrencyGroup = supplier_payments.UnpaidSupplierCurrencyGroup
 type ValidateFlexPaymentSummaryResponse = supplier_payments.ValidateFlexPaymentSummaryResponse
 type ApprovedReservation = supplier_payments.ApprovedReservation
 type RejectedReservation = supplier_payments.RejectedReservation
+type PaySupplierReservationsParams = supplier_payments.PaySupplierReservationsParams
+type PaySupplierReservationsResponse = supplier_payments.PaySupplierReservationsResponse
+type PaidSupplierReservation = supplier_payments.PaidSupplierReservation
+type FailedSupplierPayment = supplier_payments.FailedSupplierPayment
 
 var ErrInvalidPaymentSummaryFile = supplier_payments.ErrInvalidPaymentSummaryFile
 
@@ -104,8 +108,15 @@ type ReservationCfg struct {
 }
 
 type icountConfig struct {
-	CID  config.String
-	User config.String
+	CID         config.String
+	User        config.String
+	SupplierIDs supplierIDsConfig
+	// ExpenseTypeID is the iCount expense type supplier payments are recorded under.
+	ExpenseTypeID config.Int
+}
+
+type supplierIDsConfig struct {
+	Flex config.Int
 }
 
 var cfg = config.Load[*ReservationCfg]()

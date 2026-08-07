@@ -25,6 +25,7 @@ type Querier interface {
 	ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error)
 	ListReservationsReport(ctx context.Context, arg ListReservationsReportParams) ([]Reservation, error)
 	ListUnpaidSupplierReservations(ctx context.Context, broker Broker) ([]ListUnpaidSupplierReservationsRow, error)
+	ListUnpaidSupplierReservationsByIDs(ctx context.Context, ids []int64) ([]ListUnpaidSupplierReservationsByIDsRow, error)
 	MarkReservationsPaidToSupplier(ctx context.Context, arg MarkReservationsPaidToSupplierParams) error
 	ResolveReservationsPayment(ctx context.Context, ids []int64) error
 	SaveInvoiceDocNum(ctx context.Context, arg SaveInvoiceDocNumParams) error

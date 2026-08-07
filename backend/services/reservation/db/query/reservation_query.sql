@@ -401,10 +401,25 @@ WHERE
     AND supplier_paid_at IS NULL
 ORDER BY currency_code, pickup_date, id;
 
+-- name: ListUnpaidSupplierReservationsByIDs :many
+SELECT
+    id,
+    broker_reservation_id,
+    broker,
+    purchase_price,
+    broker_erp_price,
+    currency_code,
+    currency_rate
+FROM reservations
+WHERE
+    id = ANY(sqlc.arg(ids)::BIGINT[])
+    AND reservation_status != 'canceled'
+    AND supplier_paid_at IS NULL;
+
 -- name: MarkReservationsPaidToSupplier :exec
 UPDATE reservations
 SET
-    supplier_paid_at = CURRENT_TIMESTAMP,
+    supplier_paid_at = sqlc.arg(supplier_paid_at)::TIMESTAMPTZ,
     supplier_expense_id = sqlc.narg(supplier_expense_id),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = ANY(sqlc.arg(ids)::BIGINT[])

@@ -5,13 +5,21 @@ import (
 	"net/http"
 
 	fileupload "encore.app/internal/file_upload"
+	"encore.app/internal/icount"
 	"encore.app/services/reservation/handlers/supplier_payments"
 	"encore.dev/beta/errs"
 )
 
+func (s *Service) newSupplierPaymentsService() *supplier_payments.SupplierPaymentsService {
+	return supplier_payments.NewSupplierPaymentsService(s.query, icount.NewIcount(), supplier_payments.Config{
+		FlexSupplierID: cfg.Icount.SupplierIDs.Flex(),
+		ExpenseTypeID:  cfg.Icount.ExpenseTypeID(),
+	})
+}
+
 // encore:api auth method=GET path=/supplier-payments/unpaid-reservations tag:accountant
 func (s *Service) ListUnpaidSupplierReservations(ctx context.Context, p *supplier_payments.ListUnpaidSupplierReservationsParams) (*supplier_payments.ListUnpaidSupplierReservationsResponse, error) {
-	sps := supplier_payments.NewSupplierPaymentsService(s.query)
+	sps := s.newSupplierPaymentsService()
 	return sps.ListUnpaidSupplierReservations(ctx, p)
 }
 
@@ -27,6 +35,15 @@ func (s *Service) ValidateFlexPaymentSummary(w http.ResponseWriter, req *http.Re
 	}
 	defer file.Close()
 
-	sps := supplier_payments.NewSupplierPaymentsService(s.query)
+	sps := s.newSupplierPaymentsService()
 	sps.ValidateFlexPaymentSummaryRaw(w, req, file)
+}
+
+// PaySupplierReservations records an iCount expense for each of the given reservations that is
+// still outstanding, and marks it as paid to the supplier.
+//
+// encore:api auth method=POST path=/supplier-payments tag:accountant
+func (s *Service) PaySupplierReservations(ctx context.Context, p supplier_payments.PaySupplierReservationsParams) (*supplier_payments.PaySupplierReservationsResponse, error) {
+	sps := s.newSupplierPaymentsService()
+	return sps.PaySupplierReservations(ctx, p)
 }

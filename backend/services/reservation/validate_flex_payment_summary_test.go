@@ -9,8 +9,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/reservation/db"
 	"encore.app/services/reservation/handlers/supplier_payments"
 	"github.com/xuri/excelize/v2"
@@ -187,6 +189,7 @@ func TestValidateFlexPaymentSummary(t *testing.T) {
 	if err := s.query.MarkReservationsPaidToSupplier(ctx, db.MarkReservationsPaidToSupplierParams{
 		Ids:               []int64{alreadyPaidID},
 		SupplierExpenseID: &expenseID,
+		SupplierPaidAt:    dbadapters.DBTime(time.Now()),
 	}); err != nil {
 		t.Fatalf("failed to mark reservation as paid to supplier: %v", err)
 	}

@@ -35,6 +35,7 @@ const (
 	fetchCurrenciesEndpoint icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/currency/get_rates"
 	generatePaypageEndpoint icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/paypage/generate_sale"
 	getTransactionEndpoint  icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/cc/transactions"
+	createExpenseEndpoint   icountAPIEndPoint = "https://api.icount.co.il/api/v3.php/expense/create"
 )
 
 func (i *Icount) DoRequest(endpoint icountAPIEndPoint, requestBody any) ([]byte, error) {

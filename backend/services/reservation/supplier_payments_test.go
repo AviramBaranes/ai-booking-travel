@@ -3,8 +3,10 @@ package reservation
 import (
 	"context"
 	"testing"
+	"time"
 
 	"encore.app/internal/api_errors"
+	dbadapters "encore.app/internal/db_adapters"
 	"encore.app/services/reservation/db"
 )
 
@@ -144,6 +146,7 @@ func TestListUnpaidSupplierReservations(t *testing.T) {
 	if err := s.query.MarkReservationsPaidToSupplier(ctx, db.MarkReservationsPaidToSupplierParams{
 		Ids:               []int64{paidID},
 		SupplierExpenseID: &expenseID,
+		SupplierPaidAt:    dbadapters.DBTime(time.Now()),
 	}); err != nil {
 		t.Fatalf("failed to mark reservation as paid to supplier: %v", err)
 	}

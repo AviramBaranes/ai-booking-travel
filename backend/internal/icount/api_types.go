@@ -70,6 +70,28 @@ type ICountCreateDocResponse struct {
 	DocURL           string   `json:"doc_url"`
 }
 
+// ------- Create Expense -------
+
+type ICountCreateExpenseRequest struct {
+	SupplierID    int     `json:"supplier_id"`
+	ExpenseTypeID int     `json:"expense_type_id"`
+	DocType       string  `json:"expense_doctype"`
+	DocNum        string  `json:"expense_docnum"`
+	Sum           float64 `json:"expense_sum"`
+	CurrencyCode  string  `json:"currency_code,omitempty"`
+	Rate          float64 `json:"rate,omitempty"`
+	Paid          bool    `json:"expense_paid,omitempty"`
+	PaidDate      string  `json:"expense_paid_date,omitempty"`
+}
+
+type ICountCreateExpenseResponse struct {
+	Status           bool     `json:"status"`
+	Reason           string   `json:"reason,omitempty"`
+	ErrorDescription string   `json:"error_description,omitempty"`
+	ErrorDetails     []string `json:"error_details,omitempty"`
+	ExpenseID        int      `json:"expense_id"`
+}
+
 // ------- Fetch Currencies -------
 
 type GetCurrenciesRatesResponse struct {

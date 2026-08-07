@@ -761,6 +761,7 @@ The app uses Payload CMS for managing content. It is located strictly inside the
 3. **Database & SQLC**: DB interactions use `sqlc` in the `db` subpackage per service. Use ONE query file per entity. Run `make gen` from `/backend` to generate SQLC bindings.
 4. **Handlers separation**: For services spanning multiple entities (e.g., booking, accounts), utilize a `handlers/` folder with per-entity subpackages separating business logic from EP declarations.
 5. **API Errors**: Return custom errors leveraging the `internal/api_errors` package. Errors should pass a `Details` struct containing a unique `Code`. This payload is extracted by the frontend wrapper to output localized messages.
+6. **pgx types stay in `db_adapters`**: Only `internal/db_adapters` imports `github.com/jackc/pgx/v5/pgtype`. Handlers convert at the boundary using its helpers (`NumericToFloat64`, `DBTime`, `DateToString`, …); when a signature must name a pgx type, use the aliases the package re-exports (e.g. `dbadapters.Numeric`) rather than importing `pgtype`.
 </backend_conventions>
 
 <frontend_conventions>

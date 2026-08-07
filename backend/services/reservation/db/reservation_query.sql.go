@@ -1097,23 +1097,78 @@ func (q *Queries) ListUnpaidSupplierReservations(ctx context.Context, broker Bro
 	return items, nil
 }
 
+const listUnpaidSupplierReservationsByIDs = `-- name: ListUnpaidSupplierReservationsByIDs :many
+SELECT
+    id,
+    broker_reservation_id,
+    broker,
+    purchase_price,
+    broker_erp_price,
+    currency_code,
+    currency_rate
+FROM reservations
+WHERE
+    id = ANY($1::BIGINT[])
+    AND reservation_status != 'canceled'
+    AND supplier_paid_at IS NULL
+`
+
+type ListUnpaidSupplierReservationsByIDsRow struct {
+	ID                  int64
+	BrokerReservationID string
+	Broker              Broker
+	PurchasePrice       pgtype.Numeric
+	BrokerErpPrice      pgtype.Numeric
+	CurrencyCode        string
+	CurrencyRate        pgtype.Numeric
+}
+
+func (q *Queries) ListUnpaidSupplierReservationsByIDs(ctx context.Context, ids []int64) ([]ListUnpaidSupplierReservationsByIDsRow, error) {
+	rows, err := q.db.Query(ctx, listUnpaidSupplierReservationsByIDs, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUnpaidSupplierReservationsByIDsRow
+	for rows.Next() {
+		var i ListUnpaidSupplierReservationsByIDsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.BrokerReservationID,
+			&i.Broker,
+			&i.PurchasePrice,
+			&i.BrokerErpPrice,
+			&i.CurrencyCode,
+			&i.CurrencyRate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const markReservationsPaidToSupplier = `-- name: MarkReservationsPaidToSupplier :exec
 UPDATE reservations
 SET
-    supplier_paid_at = CURRENT_TIMESTAMP,
-    supplier_expense_id = $1,
+    supplier_paid_at = $1::TIMESTAMPTZ,
+    supplier_expense_id = $2,
     updated_at = CURRENT_TIMESTAMP
-WHERE id = ANY($2::BIGINT[])
+WHERE id = ANY($3::BIGINT[])
 AND supplier_paid_at IS NULL
 `
 
 type MarkReservationsPaidToSupplierParams struct {
+	SupplierPaidAt    pgtype.Timestamptz
 	SupplierExpenseID *string
 	Ids               []int64
 }
 
 func (q *Queries) MarkReservationsPaidToSupplier(ctx context.Context, arg MarkReservationsPaidToSupplierParams) error {
-	_, err := q.db.Exec(ctx, markReservationsPaidToSupplier, arg.SupplierExpenseID, arg.Ids)
+	_, err := q.db.Exec(ctx, markReservationsPaidToSupplier, arg.SupplierPaidAt, arg.SupplierExpenseID, arg.Ids)
 	return err
 }
 
