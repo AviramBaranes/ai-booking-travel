@@ -3,6 +3,7 @@ sql:
   - engine: "postgresql"
     queries:
       - "query/reservation_query.sql"
+      - "query/reservation_penalty_query.sql"
       - "query/supplier_terms_query.sql"
       - "query/outbox_query.sql"
     schema: "./migrations"

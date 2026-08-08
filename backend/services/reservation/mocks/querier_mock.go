@@ -189,6 +189,21 @@ func (mr *MockQuerierMockRecorder) GetReservationByID(ctx, id any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReservationByID", reflect.TypeOf((*MockQuerier)(nil).GetReservationByID), ctx, id)
 }
 
+// GetReservationPenaltyByReservationID mocks base method.
+func (m *MockQuerier) GetReservationPenaltyByReservationID(ctx context.Context, reservationID int64) (db.ReservationPenalty, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetReservationPenaltyByReservationID", ctx, reservationID)
+	ret0, _ := ret[0].(db.ReservationPenalty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetReservationPenaltyByReservationID indicates an expected call of GetReservationPenaltyByReservationID.
+func (mr *MockQuerierMockRecorder) GetReservationPenaltyByReservationID(ctx, reservationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReservationPenaltyByReservationID", reflect.TypeOf((*MockQuerier)(nil).GetReservationPenaltyByReservationID), ctx, reservationID)
+}
+
 // GetSupplierTermsByID mocks base method.
 func (m *MockQuerier) GetSupplierTermsByID(ctx context.Context, id int64) ([]byte, error) {
 	m.ctrl.T.Helper()
@@ -217,6 +232,21 @@ func (m *MockQuerier) InsertReservation(ctx context.Context, arg db.InsertReserv
 func (mr *MockQuerierMockRecorder) InsertReservation(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertReservation", reflect.TypeOf((*MockQuerier)(nil).InsertReservation), ctx, arg)
+}
+
+// InsertReservationPenalty mocks base method.
+func (m *MockQuerier) InsertReservationPenalty(ctx context.Context, arg db.InsertReservationPenaltyParams) (db.ReservationPenalty, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertReservationPenalty", ctx, arg)
+	ret0, _ := ret[0].(db.ReservationPenalty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InsertReservationPenalty indicates an expected call of InsertReservationPenalty.
+func (mr *MockQuerierMockRecorder) InsertReservationPenalty(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertReservationPenalty", reflect.TypeOf((*MockQuerier)(nil).InsertReservationPenalty), ctx, arg)
 }
 
 // ListBusinessesBalancesReport mocks base method.

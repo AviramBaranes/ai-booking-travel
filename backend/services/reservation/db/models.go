@@ -97,6 +97,48 @@ func (ns NullPaymentStatus) Value() (driver.Value, error) {
 	return string(ns.PaymentStatus), nil
 }
 
+type PenaltyType string
+
+const (
+	PenaltyTypeCancellation PenaltyType = "cancellation"
+	PenaltyTypeNoShow       PenaltyType = "no_show"
+)
+
+func (e *PenaltyType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PenaltyType(s)
+	case string:
+		*e = PenaltyType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PenaltyType: %T", src)
+	}
+	return nil
+}
+
+type NullPenaltyType struct {
+	PenaltyType PenaltyType
+	Valid       bool // Valid is true if PenaltyType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPenaltyType) Scan(value interface{}) error {
+	if value == nil {
+		ns.PenaltyType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PenaltyType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPenaltyType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PenaltyType), nil
+}
+
 type ReservationStatus string
 
 const (
@@ -201,6 +243,23 @@ type Reservation struct {
 	SupplierPaidAt          pgtype.Timestamptz
 	SupplierExpenseID       *string
 	PaymentReceivedAt       pgtype.Timestamptz
+}
+
+type ReservationPenalty struct {
+	ID                int64
+	ReservationID     int64
+	PenaltyType       PenaltyType
+	CreatedByUserID   *int64
+	CurrencyCode      string
+	CurrencyRate      pgtype.Numeric
+	Amount            pgtype.Numeric
+	PaidAt            pgtype.Timestamptz
+	InvoiceDocNum     *string
+	PaymentDocNum     *string
+	SupplierPaidAt    pgtype.Timestamptz
+	SupplierExpenseID *string
+	CreatedAt         pgtype.Timestamptz
+	UpdatedAt         pgtype.Timestamptz
 }
 
 type SupplierTerm struct {

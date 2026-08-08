@@ -39,7 +39,9 @@
     "office_organic_forbids_icount_client_id": "תחנה אורגנית אינה יכולה להכיל מזהה לקוח iCount",
     "office_non_organic_requires_icount_client_id": "תחנה לא-אורגנית חייבת להכיל מזהה לקוח iCount",
     "not_enough_credits": "לרשת או למשרד אין מספיק קרדיט לביצוע ההזמנה. כדי לכרטס את ההזמנה יש להסדיר תשלום או לשלם באשראי.",
-    "no_obligo": "לא מוגדרת לך מסגרת אשראי במערכת, ולכן יש לשלם על ההזמנה באשראי."
+    "no_obligo": "לא מוגדרת לך מסגרת אשראי במערכת, ולכן יש לשלם על ההזמנה באשראי.",
+    "reservation_not_canceled": "ניתן לחייב בדמי ביטול או אי-הגעה רק הזמנה שבוטלה",
+    "penalty_already_exists": "להזמנה זו כבר קיימים דמי ביטול או אי-הגעה"
   },
   "TranslationStatus": {
     "pending": "ממתין",

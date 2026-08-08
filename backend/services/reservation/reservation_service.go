@@ -8,6 +8,7 @@ import (
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
 	actions "encore.app/services/reservation/handlers/actions"
+	"encore.app/services/reservation/handlers/penalties"
 	queries "encore.app/services/reservation/handlers/queries"
 	"encore.app/services/reservation/handlers/reservation_pricing"
 	"encore.app/services/reservation/handlers/supplier_payments"
@@ -69,12 +70,19 @@ type PayAtPickup = actions.PayAtPickup
 type SelectedAddon = actions.SelectedAddon
 type VoucherReservationAfterPaymentParams = actions.VoucherReservationAfterPaymentParams
 
+// --- Penalties type aliases ---
+
+type CreatePenaltyParams = penalties.CreatePenaltyParams
+type CreatePenaltyResponse = penalties.CreatePenaltyResponse
+
 // --- Error re-exports ---
 
 var ErrInvalidBillingEntity = queries.ErrInvalidBillingEntity
 var ErrOfficeInOrganicOrg = queries.ErrOfficeInOrganicOrg
 var ErrOrgIsInorganic = queries.ErrOrgIsInorganic
 var ErrCancellationWindowExceeded = actions.ErrCancellationWindowExceeded
+var ErrReservationNotCanceled = penalties.ErrReservationNotCanceled
+var ErrPenaltyAlreadyExists = penalties.ErrPenaltyAlreadyExists
 
 // BookingCancellationEvents is a pub/sub topic that publishes events whenever a reservation is canceled.
 var BookingCancellationEvents = pubsub.NewTopic[*actions.BookingCancellationEvent]("booking-cancellation-events", pubsub.TopicConfig{
