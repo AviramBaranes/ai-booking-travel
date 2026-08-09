@@ -51,6 +51,11 @@ func (s *Service) ResolveReservations(ctx context.Context, p actions.ResolveRese
 }
 
 // encore:api private
+func (s *Service) ResolvePenalties(ctx context.Context, p actions.ResolvePenaltiesParams) error {
+	return s.newActionService().ResolvePenalties(ctx, p)
+}
+
+// encore:api private
 func (s *Service) AlertOpenReservations(ctx context.Context) error {
 	reservations, err := s.query.GetOpenReservationsPickingUpWithinWeek(ctx)
 	if err != nil {

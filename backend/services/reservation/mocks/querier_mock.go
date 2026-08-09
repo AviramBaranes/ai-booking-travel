@@ -144,6 +144,36 @@ func (mr *MockQuerierMockRecorder) GetOutboxByTopic(ctx, topic any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOutboxByTopic", reflect.TypeOf((*MockQuerier)(nil).GetOutboxByTopic), ctx, topic)
 }
 
+// GetPaymentPendingPenalties mocks base method.
+func (m *MockQuerier) GetPaymentPendingPenalties(ctx context.Context) ([]db.GetPaymentPendingPenaltiesRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPaymentPendingPenalties", ctx)
+	ret0, _ := ret[0].([]db.GetPaymentPendingPenaltiesRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPaymentPendingPenalties indicates an expected call of GetPaymentPendingPenalties.
+func (mr *MockQuerierMockRecorder) GetPaymentPendingPenalties(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaymentPendingPenalties", reflect.TypeOf((*MockQuerier)(nil).GetPaymentPendingPenalties), ctx)
+}
+
+// GetPaymentPendingPenaltiesByBillingEntity mocks base method.
+func (m *MockQuerier) GetPaymentPendingPenaltiesByBillingEntity(ctx context.Context, arg db.GetPaymentPendingPenaltiesByBillingEntityParams) ([]db.GetPaymentPendingPenaltiesByBillingEntityRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPaymentPendingPenaltiesByBillingEntity", ctx, arg)
+	ret0, _ := ret[0].([]db.GetPaymentPendingPenaltiesByBillingEntityRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPaymentPendingPenaltiesByBillingEntity indicates an expected call of GetPaymentPendingPenaltiesByBillingEntity.
+func (mr *MockQuerierMockRecorder) GetPaymentPendingPenaltiesByBillingEntity(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPaymentPendingPenaltiesByBillingEntity", reflect.TypeOf((*MockQuerier)(nil).GetPaymentPendingPenaltiesByBillingEntity), ctx, arg)
+}
+
 // GetPaymentPendingReservations mocks base method.
 func (m *MockQuerier) GetPaymentPendingReservations(ctx context.Context) ([]db.GetPaymentPendingReservationsRow, error) {
 	m.ctrl.T.Helper()
@@ -336,6 +366,20 @@ func (m *MockQuerier) MarkReservationsPaidToSupplier(ctx context.Context, arg db
 func (mr *MockQuerierMockRecorder) MarkReservationsPaidToSupplier(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkReservationsPaidToSupplier", reflect.TypeOf((*MockQuerier)(nil).MarkReservationsPaidToSupplier), ctx, arg)
+}
+
+// ResolvePenaltiesPayment mocks base method.
+func (m *MockQuerier) ResolvePenaltiesPayment(ctx context.Context, ids []int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolvePenaltiesPayment", ctx, ids)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResolvePenaltiesPayment indicates an expected call of ResolvePenaltiesPayment.
+func (mr *MockQuerierMockRecorder) ResolvePenaltiesPayment(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolvePenaltiesPayment", reflect.TypeOf((*MockQuerier)(nil).ResolvePenaltiesPayment), ctx, ids)
 }
 
 // ResolveReservationsPayment mocks base method.

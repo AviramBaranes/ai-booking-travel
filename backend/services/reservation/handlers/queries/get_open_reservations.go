@@ -30,8 +30,29 @@ type OpenReservation struct {
 	TotalPrice          float64
 }
 
+// OpenPenalty is an uncollected cancellation or no-show fee, carrying the details of the
+// reservation it was charged on so it can be reported next to the reservations themselves.
+type OpenPenalty struct {
+	ID                  int64
+	ReservationID       int64
+	Type                string
+	BrokerReservationID string
+	AgentID             int64
+	CreatedAt           string
+	VoucheredAt         string
+	VoucherNumber       string
+	DriverName          string
+	PickupDate          string
+	DropoffDate         string
+	RentalDays          int
+	CountryCode         string
+	CurrencyCode        string
+	Amount              float64
+}
+
 type GetOpenReservationsResponse struct {
 	Reservations []OpenReservation
+	Penalties    []OpenPenalty
 }
 
 func (s *QueryService) GetOpenReservations(ctx context.Context) (*GetOpenReservationsResponse, error) {
@@ -41,9 +62,43 @@ func (s *QueryService) GetOpenReservations(ctx context.Context) (*GetOpenReserva
 		return nil, api_errors.ErrInternalError
 	}
 
+	penaltyRows, err := s.query.GetPaymentPendingPenalties(ctx)
+	if err != nil {
+		rlog.Error("failed to get open penalties", "error", err)
+		return nil, api_errors.ErrInternalError
+	}
+
 	return &GetOpenReservationsResponse{
 		Reservations: mapRowsToOpenReservations(rows),
+		Penalties:    mapRowsToOpenPenalties(penaltyRows),
 	}, nil
+}
+
+// mapRowsToOpenPenalties maps penalty rows to the response type. Every field other than the fee
+// itself comes from the reservation the fee was charged on.
+func mapRowsToOpenPenalties(rows []db.GetPaymentPendingPenaltiesRow) []OpenPenalty {
+	penalties := make([]OpenPenalty, len(rows))
+	for i, row := range rows {
+		penalties[i] = OpenPenalty{
+			ID:                  row.ID,
+			ReservationID:       row.ReservationID,
+			Type:                string(row.PenaltyType),
+			BrokerReservationID: row.BrokerReservationID,
+			AgentID:             row.UserID,
+			CreatedAt:           dbadapters.TimestamptzToString(row.CreatedAt),
+			VoucheredAt:         dbadapters.TimestamptzToString(row.VoucheredAt),
+			VoucherNumber:       ptrToString(row.VoucherNumber),
+			DriverName:          fmt.Sprintf("%s %s %s", row.DriverTitle, row.DriverFirstName, row.DriverLastName),
+			PickupDate:          dbadapters.DateToString(row.PickupDate),
+			DropoffDate:         dbadapters.DateToString(row.DropoffDate),
+			RentalDays:          int(row.RentalDays),
+			CountryCode:         row.CountryCode,
+			CurrencyCode:        row.CurrencyCode,
+			Amount:              dbadapters.NumericToFloat64(row.Amount),
+		}
+	}
+
+	return penalties
 }
 
 func mapRowsToOpenReservations(rows []db.GetPaymentPendingReservationsRow) []OpenReservation {

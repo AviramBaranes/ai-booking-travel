@@ -245,3 +245,126 @@ func TestGenerateMonthlyReport(t *testing.T) {
 		}
 	})
 }
+
+func TestGenerateMonthlyReportPenalties(t *testing.T) {
+	ctx := context.Background()
+
+	et.MockEndpoint(reservation.GetOpenReservations, func(_ context.Context) (*reservation.GetOpenReservationsResponse, error) {
+		return &reservation.GetOpenReservationsResponse{
+			Reservations: []reservation.OpenReservation{
+				{ID: 1, AgentID: 1, CurrencyCode: "USD", CarPrice: 80, ERPPrice: 20, TotalPrice: 100, DriverName: "Driver1", BrokerReservationID: "BRK-1"},
+			},
+			Penalties: []reservation.OpenPenalty{
+				{
+					ID:                  10,
+					ReservationID:       7,
+					Type:                reservation.PenaltyTypeNoShow,
+					BrokerReservationID: "BRK-9",
+					AgentID:             1,
+					CurrencyCode:        "USD",
+					Amount:              150,
+					RentalDays:          4,
+					DriverName:          "Driver9",
+				},
+				// A fee of an agent no contact covers must be skipped, like reservations are.
+				{ID: 11, ReservationID: 8, Type: reservation.PenaltyTypeCancellation, AgentID: 99, CurrencyCode: "USD", Amount: 999},
+			},
+		}, nil
+	})
+
+	et.MockEndpoint(accounts.GetBillingContacts, func(_ context.Context, _ contact.GetBillingContactsParams) (*contact.GetBillingContactsResponse, error) {
+		return &contact.GetBillingContactsResponse{Contacts: []contact.BillingContact{{
+			ContactName: "Alice", ContactEmail: "alice@example.com",
+			OrganizationID: 1, OrganizationName: "OrgX", IsOrganic: true,
+			Offices: []contact.Office{
+				{ID: 1, Name: "Office A", Agents: []contact.Agent{{ID: 1, Name: "Agent1"}}},
+			},
+		}}}, nil
+	})
+
+	var sent notifications.SendMonthlyReportParams
+	et.MockEndpoint(notifications.SendMonthlyReport, func(_ context.Context, p notifications.SendMonthlyReportParams) error {
+		sent = p
+		return nil
+	})
+
+	if err := GenerateMonthlyReport(ctx); err != nil {
+		t.Fatalf("GenerateMonthlyReport: %v", err)
+	}
+
+	raw, err := base64.StdEncoding.DecodeString(sent.ExcelBase64)
+	if err != nil {
+		t.Fatalf("base64 decode: %v", err)
+	}
+	f, err := excelize.OpenReader(bytes.NewReader(raw))
+	if err != nil {
+		t.Fatalf("open xlsx: %v", err)
+	}
+	defer f.Close()
+
+	rows, err := f.GetRows("OrgX")
+	if err != nil {
+		t.Fatalf("GetRows: %v", err)
+	}
+
+	// The fee row is the one labelled with the fee type; the rental row keeps a bare booking id.
+	wantLabel := "BRK-9 - " + cfg.Invoice.NoShowPenaltyItemDescription()
+	var feeRow []string
+	var dataRows int
+	for _, row := range rows[1:] {
+		if len(row) < monthlyReportColCount || row[colOfficeName] == "" {
+			continue
+		}
+		dataRows++
+		if row[colReservationID] == wantLabel {
+			feeRow = row
+		}
+	}
+
+	if dataRows != 2 {
+		t.Fatalf("expected 2 data rows (one rental, one fee), got %d", dataRows)
+	}
+	if feeRow == nil {
+		t.Fatalf("no row labelled %q found in %v", wantLabel, rows)
+	}
+
+	// Only the total carries the amount: a fee is not a priced rental.
+	if feeRow[colNetPrice] != "" {
+		t.Errorf("net price = %q, want empty", feeRow[colNetPrice])
+	}
+	if feeRow[colFullCoverage] != "" {
+		t.Errorf("full coverage = %q, want empty", feeRow[colFullCoverage])
+	}
+	if feeRow[colTotalNetPrice] != "150" {
+		t.Errorf("total = %q, want 150", feeRow[colTotalNetPrice])
+	}
+	// The remaining columns repeat the reservation the fee was charged on.
+	if feeRow[colVoucherNumber] != "7" {
+		t.Errorf("reservation id column = %q, want 7", feeRow[colVoucherNumber])
+	}
+	if feeRow[colRentalDays] != "4" {
+		t.Errorf("rental days = %q, want 4", feeRow[colRentalDays])
+	}
+	if feeRow[colDriverName] != "Driver9" {
+		t.Errorf("driver name = %q, want Driver9", feeRow[colDriverName])
+	}
+
+	// The group total covers the rental and the fee together.
+	var total float64
+	for _, row := range rows[1:] {
+		if len(row) < monthlyReportColCount || row[colOfficeName] != "" {
+			continue
+		}
+		if row[monthlyReportColCount-1] == "" {
+			continue
+		}
+		amount, parseErr := strconv.ParseFloat(row[monthlyReportColCount-1], 64)
+		if parseErr != nil {
+			t.Fatalf("parse total %q: %v", row[monthlyReportColCount-1], parseErr)
+		}
+		total += amount
+	}
+	if total != 250 {
+		t.Errorf("USD total = %v, want 250", total)
+	}
+}

@@ -16,6 +16,8 @@ type Querier interface {
 	GetBillingReservation(ctx context.Context, id int64) (GetBillingReservationRow, error)
 	GetOpenReservationsPickingUpWithinWeek(ctx context.Context) ([]GetOpenReservationsPickingUpWithinWeekRow, error)
 	GetOutboxByTopic(ctx context.Context, topic string) ([]Outbox, error)
+	GetPaymentPendingPenalties(ctx context.Context) ([]GetPaymentPendingPenaltiesRow, error)
+	GetPaymentPendingPenaltiesByBillingEntity(ctx context.Context, arg GetPaymentPendingPenaltiesByBillingEntityParams) ([]GetPaymentPendingPenaltiesByBillingEntityRow, error)
 	GetPaymentPendingReservations(ctx context.Context) ([]GetPaymentPendingReservationsRow, error)
 	GetPaymentPendingReservationsByBillingEntity(ctx context.Context, arg GetPaymentPendingReservationsByBillingEntityParams) ([]GetPaymentPendingReservationsByBillingEntityRow, error)
 	GetReservationByID(ctx context.Context, id int64) (Reservation, error)
@@ -29,6 +31,7 @@ type Querier interface {
 	ListUnpaidSupplierReservations(ctx context.Context, broker Broker) ([]ListUnpaidSupplierReservationsRow, error)
 	ListUnpaidSupplierReservationsByIDs(ctx context.Context, ids []int64) ([]ListUnpaidSupplierReservationsByIDsRow, error)
 	MarkReservationsPaidToSupplier(ctx context.Context, arg MarkReservationsPaidToSupplierParams) error
+	ResolvePenaltiesPayment(ctx context.Context, ids []int64) error
 	ResolveReservationsPayment(ctx context.Context, ids []int64) error
 	SaveInvoiceDocNum(ctx context.Context, arg SaveInvoiceDocNumParams) error
 	UpdateReservationCurrencyRate(ctx context.Context, arg UpdateReservationCurrencyRateParams) error

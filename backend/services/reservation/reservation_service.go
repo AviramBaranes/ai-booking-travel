@@ -29,6 +29,9 @@ const (
 	ReservationStatusBooked    = "booked"
 	ReservationStatusCanceled  = "canceled"
 	ReservationStatusVouchered = "vouchered"
+
+	PenaltyTypeCancellation = "cancellation"
+	PenaltyTypeNoShow       = "no_show"
 )
 
 type GetReservationResponse = queries.GetReservationResponse
@@ -36,6 +39,7 @@ type ListReservationsParams = queries.ListReservationsParams
 type ReservationSummary = queries.ReservationSummary
 type ListReservationsResponse = queries.ListReservationsResponse
 type OpenReservation = queries.OpenReservation
+type OpenPenalty = queries.OpenPenalty
 type GetOpenReservationsResponse = queries.GetOpenReservationsResponse
 type ListOpenReservationsByBillingEntityParams = queries.ListOpenReservationsByBillingEntityParams
 type BillingReservation = reservation_pricing.BillingReservation
@@ -65,6 +69,7 @@ type CreateReservationParams = actions.CreateReservationParams
 type CreateReservationResponse = actions.CreateReservationResponse
 type ApplyVoucherParams = actions.ApplyVoucherParams
 type ResolveReservationsParams = actions.ResolveReservationsParams
+type ResolvePenaltiesParams = actions.ResolvePenaltiesParams
 type SeedReservationsResponse = actions.SeedReservationsResponse
 type PayAtPickup = actions.PayAtPickup
 type SelectedAddon = actions.SelectedAddon
@@ -74,6 +79,7 @@ type VoucherReservationAfterPaymentParams = actions.VoucherReservationAfterPayme
 
 type CreatePenaltyParams = penalties.CreatePenaltyParams
 type CreatePenaltyResponse = penalties.CreatePenaltyResponse
+type BillingPenalty = reservation_pricing.BillingPenalty
 
 // --- Error re-exports ---
 

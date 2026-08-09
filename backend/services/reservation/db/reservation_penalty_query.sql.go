@@ -11,6 +11,165 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const getPaymentPendingPenalties = `-- name: GetPaymentPendingPenalties :many
+SELECT
+    p.id,
+    p.reservation_id,
+    p.penalty_type,
+    p.amount,
+    p.currency_code,
+    r.broker_reservation_id,
+    r.user_id,
+    r.created_at,
+    r.vouchered_at,
+    r.voucher_number,
+    r.driver_title,
+    r.driver_first_name,
+    r.driver_last_name,
+    r.pickup_date,
+    r.dropoff_date,
+    r.rental_days,
+    r.country_code
+FROM reservation_penalties p
+JOIN reservations r ON r.id = p.reservation_id
+WHERE p.paid_at IS NULL
+`
+
+type GetPaymentPendingPenaltiesRow struct {
+	ID                  int64
+	ReservationID       int64
+	PenaltyType         PenaltyType
+	Amount              pgtype.Numeric
+	CurrencyCode        string
+	BrokerReservationID string
+	UserID              int64
+	CreatedAt           pgtype.Timestamptz
+	VoucheredAt         pgtype.Timestamptz
+	VoucherNumber       *string
+	DriverTitle         string
+	DriverFirstName     string
+	DriverLastName      string
+	PickupDate          pgtype.Date
+	DropoffDate         pgtype.Date
+	RentalDays          int32
+	CountryCode         string
+}
+
+func (q *Queries) GetPaymentPendingPenalties(ctx context.Context) ([]GetPaymentPendingPenaltiesRow, error) {
+	rows, err := q.db.Query(ctx, getPaymentPendingPenalties)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPaymentPendingPenaltiesRow
+	for rows.Next() {
+		var i GetPaymentPendingPenaltiesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ReservationID,
+			&i.PenaltyType,
+			&i.Amount,
+			&i.CurrencyCode,
+			&i.BrokerReservationID,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.VoucheredAt,
+			&i.VoucherNumber,
+			&i.DriverTitle,
+			&i.DriverFirstName,
+			&i.DriverLastName,
+			&i.PickupDate,
+			&i.DropoffDate,
+			&i.RentalDays,
+			&i.CountryCode,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPaymentPendingPenaltiesByBillingEntity = `-- name: GetPaymentPendingPenaltiesByBillingEntity :many
+SELECT
+    p.id,
+    p.reservation_id,
+    r.broker_reservation_id,
+    p.penalty_type,
+    p.amount,
+    p.currency_code,
+    p.currency_rate,
+    p.created_at
+FROM reservation_penalties p
+JOIN reservations r ON r.id = p.reservation_id
+WHERE
+    (
+        (
+            $1::BIGINT IS NULL
+            AND ($2::BIGINT) IS NOT NULL
+            AND r.organization_id = $2::BIGINT
+            AND r.is_organization_organic = TRUE
+        )
+    OR
+        (
+            $2::BIGINT IS NULL
+            AND ($1::BIGINT) IS NOT NULL
+            AND r.office_id = $1::BIGINT
+            AND r.is_organization_organic = FALSE
+        )
+    )
+    AND p.paid_at IS NULL
+ORDER BY p.created_at
+`
+
+type GetPaymentPendingPenaltiesByBillingEntityParams struct {
+	OfficeID       *int64
+	OrganizationID *int64
+}
+
+type GetPaymentPendingPenaltiesByBillingEntityRow struct {
+	ID                  int64
+	ReservationID       int64
+	BrokerReservationID string
+	PenaltyType         PenaltyType
+	Amount              pgtype.Numeric
+	CurrencyCode        string
+	CurrencyRate        pgtype.Numeric
+	CreatedAt           pgtype.Timestamptz
+}
+
+func (q *Queries) GetPaymentPendingPenaltiesByBillingEntity(ctx context.Context, arg GetPaymentPendingPenaltiesByBillingEntityParams) ([]GetPaymentPendingPenaltiesByBillingEntityRow, error) {
+	rows, err := q.db.Query(ctx, getPaymentPendingPenaltiesByBillingEntity, arg.OfficeID, arg.OrganizationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPaymentPendingPenaltiesByBillingEntityRow
+	for rows.Next() {
+		var i GetPaymentPendingPenaltiesByBillingEntityRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ReservationID,
+			&i.BrokerReservationID,
+			&i.PenaltyType,
+			&i.Amount,
+			&i.CurrencyCode,
+			&i.CurrencyRate,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getReservationPenaltyByReservationID = `-- name: GetReservationPenaltyByReservationID :one
 SELECT id, reservation_id, penalty_type, created_by_user_id, currency_code, currency_rate, amount, paid_at, invoice_doc_num, payment_doc_num, supplier_paid_at, supplier_expense_id, created_at, updated_at
 FROM reservation_penalties
@@ -93,4 +252,18 @@ func (q *Queries) InsertReservationPenalty(ctx context.Context, arg InsertReserv
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const resolvePenaltiesPayment = `-- name: ResolvePenaltiesPayment :exec
+UPDATE reservation_penalties
+SET
+    paid_at = CURRENT_TIMESTAMP,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = ANY($1::BIGINT[])
+AND paid_at IS NULL
+`
+
+func (q *Queries) ResolvePenaltiesPayment(ctx context.Context, ids []int64) error {
+	_, err := q.db.Exec(ctx, resolvePenaltiesPayment, ids)
+	return err
 }

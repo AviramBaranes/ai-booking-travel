@@ -47,10 +47,13 @@ type ListOpenReservationsByBillingEntityResponse struct {
 	CurrencyGroups []CurrencyGroup `json:"currencyGroups"`
 }
 
-// CurrencyGroup is a set of billing reservations sharing the same currency.
+// CurrencyGroup is a set of billing reservations and penalties sharing the same currency.
+// They are grouped together because an invoice covers a single currency, so the accountant
+// settles reservations and fees of one currency in the same document.
 type CurrencyGroup struct {
 	CurrencyCode string                                   `json:"currencyCode"`
 	Reservations []reservation_pricing.BillingReservation `json:"reservations"`
+	Penalties    []reservation_pricing.BillingPenalty     `json:"penalties"`
 }
 
 // ListOpenReservationsByBillingEntity returns all unpaid/refund-pending reservations
@@ -71,31 +74,46 @@ func (s *QueryService) ListOpenReservationsByBillingEntity(ctx context.Context, 
 		return nil, err
 	}
 
+	penaltyRows, err := s.query.GetPaymentPendingPenaltiesByBillingEntity(ctx, db.GetPaymentPendingPenaltiesByBillingEntityParams{
+		OfficeID:       officeID,
+		OrganizationID: orgID,
+	})
+	if err != nil {
+		rlog.Error("failed to fetch penalties by billing entity", "error", err, "officeID", p.OfficeID, "orgID", p.OrgID)
+		return nil, err
+	}
+
 	return &ListOpenReservationsByBillingEntityResponse{
-		CurrencyGroups: toCurrencyGroups(rows),
+		CurrencyGroups: toCurrencyGroups(rows, penaltyRows),
 	}, nil
 }
 
-// toCurrencyGroups maps db rows to CurrencyGroup response objects, grouping reservations
-// by their currency code while preserving the order of first appearance.
-func toCurrencyGroups(rows []db.GetPaymentPendingReservationsByBillingEntityRow) []CurrencyGroup {
+// toCurrencyGroups maps db rows to CurrencyGroup response objects, grouping reservations and
+// penalties by their currency code while preserving the order of first appearance.
+func toCurrencyGroups(
+	rows []db.GetPaymentPendingReservationsByBillingEntityRow,
+	penaltyRows []db.GetPaymentPendingPenaltiesByBillingEntityRow,
+) []CurrencyGroup {
 	var groups []CurrencyGroup
-	for _, r := range rows {
-		groupIndex := -1
-		for j, group := range groups {
-			if group.CurrencyCode == r.CurrencyCode {
-				groupIndex = j
-				break
+
+	// groupIndexFor returns the index of the group for a currency, creating it if needed.
+	groupIndexFor := func(currencyCode string) int {
+		for i, group := range groups {
+			if group.CurrencyCode == currencyCode {
+				return i
 			}
 		}
 
-		if groupIndex == -1 {
-			groups = append(groups, CurrencyGroup{
-				CurrencyCode: r.CurrencyCode,
-				Reservations: []reservation_pricing.BillingReservation{},
-			})
-			groupIndex = len(groups) - 1
-		}
+		groups = append(groups, CurrencyGroup{
+			CurrencyCode: currencyCode,
+			Reservations: []reservation_pricing.BillingReservation{},
+			Penalties:    []reservation_pricing.BillingPenalty{},
+		})
+		return len(groups) - 1
+	}
+
+	for _, r := range rows {
+		groupIndex := groupIndexFor(r.CurrencyCode)
 
 		pd := reservation_pricing.GetReservationPriceDetails(r)
 		groups[groupIndex].Reservations = append(groups[groupIndex].Reservations, reservation_pricing.BillingReservation{
@@ -115,5 +133,21 @@ func toCurrencyGroups(rows []db.GetPaymentPendingReservationsByBillingEntityRow)
 			VoucheredAt:         dbadapters.TimestamptzToString(r.VoucheredAt),
 		})
 	}
+
+	for _, p := range penaltyRows {
+		groupIndex := groupIndexFor(p.CurrencyCode)
+
+		groups[groupIndex].Penalties = append(groups[groupIndex].Penalties, reservation_pricing.BillingPenalty{
+			ID:                  p.ID,
+			ReservationID:       p.ReservationID,
+			BrokerReservationID: p.BrokerReservationID,
+			Type:                string(p.PenaltyType),
+			Amount:              dbadapters.NumericToFloat64(p.Amount),
+			CurrencyCode:        p.CurrencyCode,
+			CurrencyRate:        dbadapters.NumericToFloat64(p.CurrencyRate),
+			CreatedAt:           dbadapters.TimestamptzToString(p.CreatedAt),
+		})
+	}
+
 	return groups
 }
