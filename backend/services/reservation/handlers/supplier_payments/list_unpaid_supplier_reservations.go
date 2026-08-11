@@ -32,19 +32,31 @@ type UnpaidSupplierReservation struct {
 	// AmountOwed is what we owe the supplier for this reservation: the car price plus the
 	// broker's ERP day charge. It is the figure reconciled against the supplier's statement.
 	AmountOwed        float64 `json:"amountOwed"`
+	CurrencyCode      string  `json:"currencyCode"`
 	ReservationStatus string  `json:"reservationStatus"`
-	PaymentStatus       string  `json:"paymentStatus"`
+	PaymentStatus     string  `json:"paymentStatus"`
 }
 
-// UnpaidSupplierCurrencyGroup is a set of unpaid reservations sharing the same currency.
-// Suppliers are settled per currency, so the payment summary is reconciled group by group.
-type UnpaidSupplierCurrencyGroup struct {
-	CurrencyCode string                      `json:"currencyCode"`
-	Reservations []UnpaidSupplierReservation `json:"reservations"`
+// UnpaidSupplierPenalty is a cancellation or no-show fee we still owe the supplier. The supplier
+// charges the fee and we charge the customer the same amount, so a single amount covers both sides.
+type UnpaidSupplierPenalty struct {
+	ID                  int64   `json:"id"`
+	ReservationID       int64   `json:"reservationId"`
+	BrokerReservationID string  `json:"brokerReservationId"`
+	Type                string  `json:"type"`
+	DriverName          string  `json:"driverName"`
+	PickupDate          string  `json:"pickupDate"`
+	PickupLocationName  string  `json:"pickupLocationName"`
+	AmountOwed          float64 `json:"amountOwed"`
+	CurrencyCode        string  `json:"currencyCode"`
 }
 
+// ListUnpaidSupplierReservationsResponse lists what is still owed to the supplier, both lists
+// ordered by pickup date. Each row carries its own currency code, since a supplier is settled per
+// currency but the screen lists them together.
 type ListUnpaidSupplierReservationsResponse struct {
-	CurrencyGroups []UnpaidSupplierCurrencyGroup `json:"currencyGroups"`
+	Reservations []UnpaidSupplierReservation `json:"reservations"`
+	Penalties    []UnpaidSupplierPenalty     `json:"penalties"`
 }
 
 // ListUnpaidSupplierReservations returns every non-canceled reservation of the given broker
@@ -56,25 +68,22 @@ func (s *SupplierPaymentsService) ListUnpaidSupplierReservations(ctx context.Con
 		return nil, api_errors.ErrInternalError
 	}
 
+	penaltyRows, err := s.query.ListUnpaidSupplierPenalties(ctx, db.Broker(p.Broker))
+	if err != nil {
+		rlog.Error("failed to list unpaid supplier penalties", "error", err, "broker", p.Broker)
+		return nil, api_errors.ErrInternalError
+	}
+
 	return &ListUnpaidSupplierReservationsResponse{
-		CurrencyGroups: toCurrencyGroups(rows),
+		Reservations: toUnpaidSupplierReservations(rows),
+		Penalties:    toUnpaidSupplierPenalties(penaltyRows),
 	}, nil
 }
 
-// toCurrencyGroups splits the rows into per-currency groups. The query orders by currency_code,
-// so rows of the same currency are contiguous and a new group starts on every change.
-func toCurrencyGroups(rows []db.ListUnpaidSupplierReservationsRow) []UnpaidSupplierCurrencyGroup {
-	groups := []UnpaidSupplierCurrencyGroup{}
-	for _, r := range rows {
-		if len(groups) == 0 || groups[len(groups)-1].CurrencyCode != r.CurrencyCode {
-			groups = append(groups, UnpaidSupplierCurrencyGroup{
-				CurrencyCode: r.CurrencyCode,
-				Reservations: []UnpaidSupplierReservation{},
-			})
-		}
-
-		group := &groups[len(groups)-1]
-		group.Reservations = append(group.Reservations, UnpaidSupplierReservation{
+func toUnpaidSupplierReservations(rows []db.ListUnpaidSupplierReservationsRow) []UnpaidSupplierReservation {
+	reservations := make([]UnpaidSupplierReservation, len(rows))
+	for i, r := range rows {
+		reservations[i] = UnpaidSupplierReservation{
 			ID:                  r.ID,
 			BrokerReservationID: r.BrokerReservationID,
 			DriverName:          fmt.Sprintf("%s %s %s", r.DriverTitle, r.DriverFirstName, r.DriverLastName),
@@ -82,9 +91,32 @@ func toCurrencyGroups(rows []db.ListUnpaidSupplierReservationsRow) []UnpaidSuppl
 			PickupLocationName:  r.PickupLocationName,
 			RentalDays:          r.RentalDays,
 			AmountOwed:          amountOwed(r.PurchasePrice, r.BrokerErpPrice),
+			CurrencyCode:        r.CurrencyCode,
 			ReservationStatus:   string(r.ReservationStatus),
 			PaymentStatus:       string(r.PaymentStatus),
-		})
+		}
 	}
-	return groups
+
+	return reservations
+}
+
+// toUnpaidSupplierPenalties maps fee rows to the response type. Every field other than the fee
+// itself comes from the reservation the fee was charged on.
+func toUnpaidSupplierPenalties(rows []db.ListUnpaidSupplierPenaltiesRow) []UnpaidSupplierPenalty {
+	penalties := make([]UnpaidSupplierPenalty, len(rows))
+	for i, p := range rows {
+		penalties[i] = UnpaidSupplierPenalty{
+			ID:                  p.ID,
+			ReservationID:       p.ReservationID,
+			BrokerReservationID: p.BrokerReservationID,
+			Type:                string(p.PenaltyType),
+			DriverName:          fmt.Sprintf("%s %s %s", p.DriverTitle, p.DriverFirstName, p.DriverLastName),
+			PickupDate:          dbadapters.DateToString(p.PickupDate),
+			PickupLocationName:  p.PickupLocationName,
+			AmountOwed:          dbadapters.NumericToFloat64(p.Amount),
+			CurrencyCode:        p.CurrencyCode,
+		}
+	}
+
+	return penalties
 }

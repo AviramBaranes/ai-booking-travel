@@ -1,11 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { listUnpaidSupplierReservations } from "@/shared/api/reservations-api";
 import type { Broker } from "./BrokerCombobox";
-import { flattenCurrencyGroups } from "./unpaid-reservations";
 import { UnpaidReservationsCard } from "./UnpaidReservationsCard";
 
 interface SupplierPaymentsResultsProps {
@@ -20,10 +18,7 @@ export function SupplierPaymentsResults({
     queryFn: () => listUnpaidSupplierReservations({ Broker: broker.code }),
   });
 
-  const reservations = useMemo(
-    () => flattenCurrencyGroups(data?.currencyGroups ?? []),
-    [data],
-  );
+  const reservations = data?.reservations ?? [];
 
   if (reservations.length === 0) {
     return (

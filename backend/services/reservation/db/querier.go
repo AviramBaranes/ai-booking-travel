@@ -26,10 +26,13 @@ type Querier interface {
 	InsertReservation(ctx context.Context, arg InsertReservationParams) (int64, error)
 	InsertReservationPenalty(ctx context.Context, arg InsertReservationPenaltyParams) (ReservationPenalty, error)
 	ListBusinessesBalancesReport(ctx context.Context) ([]ListBusinessesBalancesReportRow, error)
+	ListReservationsByBrokerReservationIDs(ctx context.Context, arg ListReservationsByBrokerReservationIDsParams) ([]ListReservationsByBrokerReservationIDsRow, error)
 	ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error)
 	ListReservationsReport(ctx context.Context, arg ListReservationsReportParams) ([]Reservation, error)
+	ListUnpaidSupplierPenalties(ctx context.Context, broker Broker) ([]ListUnpaidSupplierPenaltiesRow, error)
 	ListUnpaidSupplierReservations(ctx context.Context, broker Broker) ([]ListUnpaidSupplierReservationsRow, error)
 	ListUnpaidSupplierReservationsByIDs(ctx context.Context, ids []int64) ([]ListUnpaidSupplierReservationsByIDsRow, error)
+	MarkPenaltiesPaidToSupplier(ctx context.Context, arg MarkPenaltiesPaidToSupplierParams) error
 	MarkReservationsPaidToSupplier(ctx context.Context, arg MarkReservationsPaidToSupplierParams) error
 	ResolvePenaltiesPayment(ctx context.Context, ids []int64) error
 	ResolveReservationsPayment(ctx context.Context, ids []int64) error

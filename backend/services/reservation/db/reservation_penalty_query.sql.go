@@ -254,6 +254,94 @@ func (q *Queries) InsertReservationPenalty(ctx context.Context, arg InsertReserv
 	return i, err
 }
 
+const listUnpaidSupplierPenalties = `-- name: ListUnpaidSupplierPenalties :many
+SELECT
+    p.id,
+    p.reservation_id,
+    p.penalty_type,
+    p.amount,
+    p.currency_code,
+    r.broker_reservation_id,
+    r.driver_title,
+    r.driver_first_name,
+    r.driver_last_name,
+    r.pickup_date,
+    r.pickup_location_name
+FROM reservation_penalties p
+JOIN reservations r ON r.id = p.reservation_id
+WHERE
+    r.broker = $1::broker
+    AND p.supplier_paid_at IS NULL
+ORDER BY r.pickup_date, p.id
+`
+
+type ListUnpaidSupplierPenaltiesRow struct {
+	ID                  int64
+	ReservationID       int64
+	PenaltyType         PenaltyType
+	Amount              pgtype.Numeric
+	CurrencyCode        string
+	BrokerReservationID string
+	DriverTitle         string
+	DriverFirstName     string
+	DriverLastName      string
+	PickupDate          pgtype.Date
+	PickupLocationName  string
+}
+
+func (q *Queries) ListUnpaidSupplierPenalties(ctx context.Context, broker Broker) ([]ListUnpaidSupplierPenaltiesRow, error) {
+	rows, err := q.db.Query(ctx, listUnpaidSupplierPenalties, broker)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUnpaidSupplierPenaltiesRow
+	for rows.Next() {
+		var i ListUnpaidSupplierPenaltiesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ReservationID,
+			&i.PenaltyType,
+			&i.Amount,
+			&i.CurrencyCode,
+			&i.BrokerReservationID,
+			&i.DriverTitle,
+			&i.DriverFirstName,
+			&i.DriverLastName,
+			&i.PickupDate,
+			&i.PickupLocationName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const markPenaltiesPaidToSupplier = `-- name: MarkPenaltiesPaidToSupplier :exec
+UPDATE reservation_penalties
+SET
+    supplier_paid_at = $1::TIMESTAMPTZ,
+    supplier_expense_id = $2,
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = ANY($3::BIGINT[])
+AND supplier_paid_at IS NULL
+`
+
+type MarkPenaltiesPaidToSupplierParams struct {
+	SupplierPaidAt    pgtype.Timestamptz
+	SupplierExpenseID *string
+	Ids               []int64
+}
+
+func (q *Queries) MarkPenaltiesPaidToSupplier(ctx context.Context, arg MarkPenaltiesPaidToSupplierParams) error {
+	_, err := q.db.Exec(ctx, markPenaltiesPaidToSupplier, arg.SupplierPaidAt, arg.SupplierExpenseID, arg.Ids)
+	return err
+}
+
 const resolvePenaltiesPayment = `-- name: ResolvePenaltiesPayment :exec
 UPDATE reservation_penalties
 SET

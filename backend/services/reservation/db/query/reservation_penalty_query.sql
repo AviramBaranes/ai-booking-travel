@@ -43,6 +43,35 @@ FROM reservation_penalties p
 JOIN reservations r ON r.id = p.reservation_id
 WHERE p.paid_at IS NULL;
 
+-- name: ListUnpaidSupplierPenalties :many
+SELECT
+    p.id,
+    p.reservation_id,
+    p.penalty_type,
+    p.amount,
+    p.currency_code,
+    r.broker_reservation_id,
+    r.driver_title,
+    r.driver_first_name,
+    r.driver_last_name,
+    r.pickup_date,
+    r.pickup_location_name
+FROM reservation_penalties p
+JOIN reservations r ON r.id = p.reservation_id
+WHERE
+    r.broker = sqlc.arg(broker)::broker
+    AND p.supplier_paid_at IS NULL
+ORDER BY r.pickup_date, p.id;
+
+-- name: MarkPenaltiesPaidToSupplier :exec
+UPDATE reservation_penalties
+SET
+    supplier_paid_at = sqlc.arg(supplier_paid_at)::TIMESTAMPTZ,
+    supplier_expense_id = sqlc.narg(supplier_expense_id),
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = ANY(sqlc.arg(ids)::BIGINT[])
+AND supplier_paid_at IS NULL;
+
 -- name: ResolvePenaltiesPayment :exec
 UPDATE reservation_penalties
 SET

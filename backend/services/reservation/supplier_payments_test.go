@@ -12,45 +12,48 @@ import (
 
 // --- Helpers ---
 
-// seededReservations indexes the reservations of a currency-grouped response by reservation ID,
-// recording which currency group each one landed in. The endpoint is not user-scoped and the test
-// database is shared with parallel tests, so assertions are made per seeded ID rather than on
-// the whole response.
-type seededReservations map[int64]struct {
-	currencyCode string
-	reservation  UnpaidSupplierReservation
-}
+// seededReservations indexes the reservations of a response by reservation ID. The endpoint is not
+// user-scoped and the test database is shared with parallel tests, so assertions are made per
+// seeded ID rather than on the whole response.
+type seededReservations map[int64]UnpaidSupplierReservation
 
 func indexByID(t *testing.T, resp *ListUnpaidSupplierReservationsResponse) seededReservations {
 	t.Helper()
 	indexed := make(seededReservations)
-	for _, group := range resp.CurrencyGroups {
-		if len(group.Reservations) == 0 {
-			t.Errorf("currency group %q is empty; groups must never be emitted without reservations", group.CurrencyCode)
+	for _, r := range resp.Reservations {
+		if _, exists := indexed[r.ID]; exists {
+			t.Errorf("reservation %d appears more than once in the response", r.ID)
 		}
-		for _, r := range group.Reservations {
-			if _, exists := indexed[r.ID]; exists {
-				t.Errorf("reservation %d appears more than once in the response", r.ID)
-			}
-			indexed[r.ID] = struct {
-				currencyCode string
-				reservation  UnpaidSupplierReservation
-			}{currencyCode: group.CurrencyCode, reservation: r}
+		indexed[r.ID] = r
+	}
+	return indexed
+}
+
+// seededPenalties indexes the penalties of a response by penalty ID, for the same reason.
+type seededPenalties map[int64]UnpaidSupplierPenalty
+
+func indexPenaltiesByID(t *testing.T, resp *ListUnpaidSupplierReservationsResponse) seededPenalties {
+	t.Helper()
+	indexed := make(seededPenalties)
+	for _, p := range resp.Penalties {
+		if _, exists := indexed[p.ID]; exists {
+			t.Errorf("penalty %d appears more than once in the response", p.ID)
 		}
+		indexed[p.ID] = p
 	}
 	return indexed
 }
 
 func (s seededReservations) assertInCurrency(t *testing.T, id int64, currencyCode string) UnpaidSupplierReservation {
 	t.Helper()
-	entry, ok := s[id]
+	r, ok := s[id]
 	if !ok {
 		t.Fatalf("expected reservation %d in the response, but it was missing", id)
 	}
-	if entry.currencyCode != currencyCode {
-		t.Errorf("reservation %d grouped under currency %q, want %q", id, entry.currencyCode, currencyCode)
+	if r.CurrencyCode != currencyCode {
+		t.Errorf("reservation %d has currency %q, want %q", id, r.CurrencyCode, currencyCode)
 	}
-	return entry.reservation
+	return r
 }
 
 func (s seededReservations) assertAbsent(t *testing.T, id int64, reason string) {
@@ -175,26 +178,21 @@ func TestListUnpaidSupplierReservations(t *testing.T) {
 		indexed.assertAbsent(t, flexID, "reservation belongs to another broker")
 	})
 
-	t.Run("orders reservations within a currency group by pickup date", func(t *testing.T) {
-		for _, group := range resp.CurrencyGroups {
-			if group.CurrencyCode != "USD" {
-				continue
+	t.Run("orders reservations of the same currency by pickup date", func(t *testing.T) {
+		var earlyIdx, lateIdx = -1, -1
+		for i, r := range resp.Reservations {
+			switch r.ID {
+			case usdEarlyID:
+				earlyIdx = i
+			case usdLateID:
+				lateIdx = i
 			}
-			var earlyIdx, lateIdx = -1, -1
-			for i, r := range group.Reservations {
-				switch r.ID {
-				case usdEarlyID:
-					earlyIdx = i
-				case usdLateID:
-					lateIdx = i
-				}
-			}
-			if earlyIdx == -1 || lateIdx == -1 {
-				t.Fatalf("expected both USD reservations in the USD group, got indexes %d and %d", earlyIdx, lateIdx)
-			}
-			if earlyIdx > lateIdx {
-				t.Errorf("reservation picked up on 2026-09-01 is listed after the one picked up on 2026-09-20")
-			}
+		}
+		if earlyIdx == -1 || lateIdx == -1 {
+			t.Fatalf("expected both USD reservations in the response, got indexes %d and %d", earlyIdx, lateIdx)
+		}
+		if earlyIdx > lateIdx {
+			t.Errorf("reservation picked up on 2026-09-01 is listed after the one picked up on 2026-09-20")
 		}
 	})
 
@@ -213,11 +211,60 @@ func TestListUnpaidSupplierReservations(t *testing.T) {
 			PickupLocationName:  "Airport Terminal 1",
 			RentalDays:          4,
 			AmountOwed:          wantAmountOwed,
+			CurrencyCode:        "USD",
 			ReservationStatus:   ReservationStatusBooked,
 			PaymentStatus:       PaymentStatusUnpaid,
 		}
 		if got != want {
 			t.Errorf("unexpected reservation:\ngot  %+v\nwant %+v", got, want)
+		}
+	})
+
+	t.Run("lists unpaid penalties of the broker", func(t *testing.T) {
+		penalty := seedPenalty(t, ctx, s, canceledID, db.PenaltyTypeNoShow, 90.00, "USD")
+
+		// A fee already settled with the supplier, and one on a reservation of another broker.
+		paidPenalty := seedPenalty(t, ctx, s, usdLateID, db.PenaltyTypeCancellation, 60.00, "USD")
+		if err := s.query.MarkPenaltiesPaidToSupplier(ctx, db.MarkPenaltiesPaidToSupplierParams{
+			Ids:               []int64{paidPenalty.ID},
+			SupplierExpenseID: &expenseID,
+			SupplierPaidAt:    dbadapters.DBTime(time.Now()),
+		}); err != nil {
+			t.Fatalf("failed to mark penalty as paid to supplier: %v", err)
+		}
+		flexPenalty := seedPenalty(t, ctx, s, flexID, db.PenaltyTypeCancellation, 45.00, "USD")
+
+		resp, err := ListUnpaidSupplierReservations(ctx, &ListUnpaidSupplierReservationsParams{Broker: "hertz"})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		indexedPenalties := indexPenaltiesByID(t, resp)
+
+		got, ok := indexedPenalties[penalty.ID]
+		if !ok {
+			t.Fatalf("expected penalty %d in the response, but it was missing", penalty.ID)
+		}
+
+		want := UnpaidSupplierPenalty{
+			ID:                  penalty.ID,
+			ReservationID:       canceledID,
+			BrokerReservationID: "SUPPAY-CANCELED",
+			Type:                string(db.PenaltyTypeNoShow),
+			DriverName:          "Mr John Doe",
+			PickupDate:          "2026-04-01",
+			PickupLocationName:  "Airport Terminal 1",
+			AmountOwed:          90.00,
+			CurrencyCode:        "USD",
+		}
+		if got != want {
+			t.Errorf("unexpected penalty:\ngot  %+v\nwant %+v", got, want)
+		}
+
+		if _, ok := indexedPenalties[paidPenalty.ID]; ok {
+			t.Errorf("penalty %d should have been excluded (supplier was already paid), but it was returned", paidPenalty.ID)
+		}
+		if _, ok := indexedPenalties[flexPenalty.ID]; ok {
+			t.Errorf("penalty %d should have been excluded (belongs to another broker), but it was returned", flexPenalty.ID)
 		}
 	})
 }
