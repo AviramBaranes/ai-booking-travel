@@ -76,8 +76,10 @@ export function CurrencyGroupCard({
 
   const selectedTotal = useMemo(
     () =>
-      selectedReservations.reduce((sum, r) => sum + r.totalPrice, 0) +
-      selectedPenalties.reduce((sum, p) => sum + p.amount, 0),
+      selectedReservations.reduce((sum, r) => {
+        const m = r.reservationStatus === "refund_pending" ? -1 : 1;
+        return sum + r.totalPrice * m;
+      }, 0) + selectedPenalties.reduce((sum, p) => sum + p.amount, 0),
     [selectedReservations, selectedPenalties],
   );
 
@@ -294,7 +296,10 @@ export function CurrencyGroupCard({
               >
                 {showActions && (
                   /* Stops the checkbox from also opening the reservation behind it. */
-                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                  <td
+                    className="px-4 py-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <Checkbox
                       checked={selectedPenaltyIds.has(p.id)}
                       onCheckedChange={() => togglePenalty(p.id)}
