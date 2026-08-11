@@ -2,9 +2,11 @@ package billing
 
 import (
 	"context"
+	"math"
 	"testing"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/currency"
 	"encore.app/services/accounts"
 	contact "encore.app/services/accounts/handlers/contact"
 	"encore.app/services/accounts/handlers/office"
@@ -13,6 +15,10 @@ import (
 )
 
 // --- Helpers ---
+
+func newTestService() *Service {
+	return &Service{ratesCache: currency.NewCurrenciesCache(currenciesRates)}
+}
 
 func billingPenalty(id int64, amount float64, currencyCode string, penaltyType string) reservation.BillingPenalty {
 	return reservation.BillingPenalty{
@@ -161,13 +167,82 @@ func TestBuildInvoiceItems(t *testing.T) {
 	penalties := penaltySet{10: billingPenalty(10, 150, "USD", reservation.PenaltyTypeNoShow)}
 
 	// A reservation contributes two lines (purchase + profit), a penalty exactly one.
-	items := buildInvoiceItems([]int64{1}, []int64{10}, reservations, penalties)
+	items := buildInvoiceItems([]int64{1}, []int64{10}, reservations, penalties, 0)
 	if len(items) != 3 {
 		t.Fatalf("expected 3 invoice items, got %d", len(items))
 	}
 
 	if items[2].SKU != penaltySKU(10) {
 		t.Errorf("expected the penalty to be the last item, got SKU %s", items[2].SKU)
+	}
+}
+
+// The discount comes out of our profit, so it has to be priced like the profit line — VAT-inclusive
+// and taxable. iCount's document-level discount field apportions across the exempt lines instead,
+// which both under-reduces the VAT and leaves the invoice above what the receipt collects.
+func TestDiscountInvoiceItemIsTaxableAndNegative(t *testing.T) {
+	reservations := reservationSet{1: billingReservation(1, 500, "USD")}
+
+	items := buildInvoiceItems([]int64{1}, nil, reservations, penaltySet{}, 20.92)
+	if len(items) != 3 {
+		t.Fatalf("expected the discount to add a third line, got %d", len(items))
+	}
+
+	discount := items[2]
+	if discount.IsTaxExempt {
+		t.Error("expected the discount line to carry VAT, so the whole of it comes off the profit")
+	}
+	if discount.UnitPriceIncvat == nil || *discount.UnitPriceIncvat != -20.92 {
+		t.Errorf("expected a VAT-inclusive line of -20.92, got %v", discount.UnitPriceIncvat)
+	}
+	// A net unit price alongside it would double-count the discount.
+	if discount.UnitPrice != nil {
+		t.Errorf("expected no net unit price, got %v", *discount.UnitPrice)
+	}
+}
+
+// The invoice states what is owed and the receipt states how it was settled, so the two have to
+// land on the same number: total price less the discount equals what was paid plus what was
+// withheld. Figures are those of invoice 2051.
+func TestInvoiceAndReceiptAgreeOnWhatIsOwed(t *testing.T) {
+	const (
+		vat       = 0.18
+		discount  = 26.17
+		deduction = 26.62
+		totalPaid = 480.0
+	)
+	reservations := reservationSet{
+		27: {ID: 27, CarPurchasePrice: 172.98, TotalProfit: 63.89, TotalPrice: 236.87, ERPSellingPrice: 12, CurrencyCode: "GBP"},
+		29: {ID: 29, CarPurchasePrice: 218.40, TotalProfit: 77.52, TotalPrice: 295.92, ERPSellingPrice: 12, CurrencyCode: "GBP"},
+	}
+	ids := []int64{27, 29}
+
+	// The invoice prices exempt lines net and taxable lines VAT-inclusive, so the amount owed is
+	// the exempt lines plus the taxable lines grossed back up.
+	var exempt, taxableIncVat float64
+	for _, item := range buildInvoiceItems(ids, nil, reservations, penaltySet{}, discount) {
+		if item.IsTaxExempt {
+			exempt += *item.UnitPrice
+			continue
+		}
+		taxableIncVat += *item.UnitPriceIncvat
+	}
+	owed := exempt + taxableIncVat
+
+	settled := totalPaid + deduction
+	if math.Abs(owed-settled) > 0.001 {
+		t.Errorf("expected the invoice to state %v owed, got %v", settled, owed)
+	}
+	if math.Abs(owed-506.62) > 0.001 {
+		t.Errorf("expected 506.62 owed, got %v", owed)
+	}
+
+	// And the whole discount lands on the taxable side rather than being spread over the exempt
+	// purchase price: VAT falls by exactly the discount's own VAT.
+	vatCharged := taxableIncVat / (1 + vat) * vat
+	vatWithoutDiscount := (taxableIncVat + discount) / (1 + vat) * vat
+	if math.Abs((vatWithoutDiscount-vatCharged)-(discount/(1+vat)*vat)) > 0.001 {
+		t.Errorf("expected the discount to reduce VAT by its own VAT, got %v", vatWithoutDiscount-vatCharged)
 	}
 }
 
@@ -183,6 +258,34 @@ func TestBuildReceiptItems(t *testing.T) {
 
 	if items[1].UnitPrice == nil || *items[1].UnitPrice != 150 {
 		t.Errorf("expected penalty receipt line of 150, got %v", items[1].UnitPrice)
+	}
+}
+
+// iCount rejects a receipt whose payments do not cover its items, so what was collected plus what
+// was withheld has to come back to the discounted total of the lines.
+func TestDiscountReceiptItemBalancesTheReceipt(t *testing.T) {
+	reservations := reservationSet{1: billingReservation(1, 500, "USD")}
+	penalties := penaltySet{10: billingPenalty(10, 150, "USD", reservation.PenaltyTypeNoShow)}
+
+	const (
+		discount  = 20.92
+		deduction = 27.44
+		totalPaid = 650 - discount - deduction
+	)
+
+	items := buildReceiptItems([]int64{1}, []int64{10}, reservations, penalties)
+	items = append(items, discountReceiptItem(discount, 2))
+
+	var total float64
+	for _, item := range items {
+		if item.UnitPrice == nil {
+			t.Fatalf("expected every receipt line to carry a unit price, got %+v", item)
+		}
+		total += *item.UnitPrice
+	}
+
+	if math.Abs(total-(totalPaid+deduction)) > 0.001 {
+		t.Errorf("expected the lines to total %v, got %v", totalPaid+deduction, total)
 	}
 }
 
@@ -228,7 +331,7 @@ func TestBillPenalties(t *testing.T) {
 		}}
 		gotReservations, gotPenalties, gotBalanceChange := mockBillingEntity(t, groups)
 
-		if _, err := Bill(ctx, BillParams{
+		if _, err := newTestService().Bill(ctx, BillParams{
 			IDs:                 []int64{1},
 			PenaltyIDs:          []int64{10},
 			SkipInvoiceCreation: true,
@@ -259,7 +362,7 @@ func TestBillPenalties(t *testing.T) {
 		}}
 		gotReservations, gotPenalties, gotBalanceChange := mockBillingEntity(t, groups)
 
-		if _, err := Bill(ctx, BillParams{
+		if _, err := newTestService().Bill(ctx, BillParams{
 			IDs:                 []int64{},
 			PenaltyIDs:          []int64{20},
 			SkipInvoiceCreation: true,
@@ -291,7 +394,7 @@ func TestBillPenalties(t *testing.T) {
 		}}
 		mockBillingEntity(t, groups)
 
-		_, err := Bill(ctx, BillParams{
+		_, err := newTestService().Bill(ctx, BillParams{
 			IDs:                 []int64{},
 			PenaltyIDs:          []int64{999},
 			SkipInvoiceCreation: true,

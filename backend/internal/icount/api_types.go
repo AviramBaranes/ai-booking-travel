@@ -12,6 +12,23 @@ type ICountCreateDocRequest struct {
 	Items        []ICountInvoiceItem        `json:"items"`
 	BankTransfer *ICountBankTransferPayment `json:"banktransfer,omitempty"`
 	CC           []ICountCCPayment          `json:"cc,omitempty"`
+	// Deductions maps a deduction type id to the amount withheld, in the document's currency.
+	// iCount only honours it on documents that record a payment — a receipt or an invrec — and
+	// silently ignores it on an invoice.
+	Deductions map[int]float64 `json:"deductions,omitempty"`
+}
+
+// WithholdingTaxDeductionType is iCount's deduction type id for withholding tax ("ניכוי מס במקור").
+const WithholdingTaxDeductionType = 0
+
+// NewWithholdingTaxDeduction builds the deductions map for a withholding tax amount, or nil when
+// nothing is withheld so the field is omitted from the request entirely.
+func NewWithholdingTaxDeduction(amount float64) map[int]float64 {
+	if amount <= 0 {
+		return nil
+	}
+
+	return map[int]float64{WithholdingTaxDeductionType: amount}
 }
 
 type PaymentMethod interface {

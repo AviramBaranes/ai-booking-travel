@@ -344,6 +344,7 @@ export function CurrencyGroupCard({
         currencyCode={group.currencyCode}
         selectedIds={selectedIds}
         selectedPenaltyIds={selectedPenaltyIdList}
+        totalDue={selectedTotal}
         onSuccess={clearSelection}
       />
       <PromptBillDialog

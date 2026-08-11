@@ -350,7 +350,7 @@
       "rentalSummary": {
         "pickupDetails": "Pickup details:",
         "dropoffDetails": "Return details:",
-        "stationDetails": "Station details"
+        "stationDetails": "Station details and info"
       },
       "payAtPickup": {
         "title": "Fees payable at the station",

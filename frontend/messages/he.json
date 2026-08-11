@@ -349,7 +349,7 @@
       "rentalSummary": {
         "pickupDetails": "פרטי איסוף:",
         "dropoffDetails": "פרטי החזרה:",
-        "stationDetails": "פרטי תחנה"
+        "stationDetails": "פרטי תחנה ומידע נוסף"
       },
       "payAtPickup": {
         "title": "לתשלום בתחנה",

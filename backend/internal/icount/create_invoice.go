@@ -13,6 +13,10 @@ type CreateDocParams struct {
 	PaymentMethod PaymentMethod
 	Rate          float64
 	DocType       string
+	// Deductions maps a deduction type id to the amount withheld at source, in document currency.
+	// Read by createReceiptDocRequest only — iCount ignores deductions on an invoice, which states
+	// a debt rather than the payment the tax was withheld from.
+	Deductions map[int]float64
 }
 
 // CreateInvoice creates an invoice in iCount using the provided parameters and returns the response from iCount, the response might contain error details if the creation was not successful.

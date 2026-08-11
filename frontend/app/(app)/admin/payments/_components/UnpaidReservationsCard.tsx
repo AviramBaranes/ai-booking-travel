@@ -26,11 +26,6 @@ const CHECKBOX_CLASSES =
 // Fees are tinted so they read as an exception among the rental charges.
 const PENALTY_ROW_CLASSES = "bg-destructive/10 hover:bg-destructive/20";
 
-const displayDate = (value: string) => {
-  if (!value) return "—";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : formatDate(date);
-};
 
 interface UnpaidReservationsCardProps {
   broker: Broker;
@@ -269,7 +264,7 @@ export function UnpaidReservationsCard({
                     {row.driverName || "—"}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-text-secondary">
-                    {displayDate(row.pickupDate)}
+                    {new Date(row.pickupDate).toLocaleDateString('he')}
                   </td>
                   <td className="px-4 py-3">{row.pickupLocationName || "—"}</td>
                   {/* A fee has no rental days and no status of its own. */}

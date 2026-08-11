@@ -486,6 +486,13 @@ export namespace billing {
         "transfer_date": string
         "office_id"?: number
         "organization_id"?: number
+        /**
+         * Deduction (tax withheld at source) and Discount (stated VAT-inclusive) are given in the
+         * billed currency and appear on the invoice only — TotalPaid is already net of both.
+         */
+        deduction?: number
+
+        discount?: number
     }
 
     export interface BillResponse {

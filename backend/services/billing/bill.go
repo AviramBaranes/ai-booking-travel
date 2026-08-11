@@ -25,6 +25,7 @@ type invoiceConfig struct {
 	ProfitAndErpItemDescription        config.String
 	CancellationPenaltyItemDescription config.String
 	NoShowPenaltyItemDescription       config.String
+	DiscountItemDescription            config.String
 }
 
 var (
@@ -44,6 +45,10 @@ type BillParams struct {
 	TransferDate        string  `json:"transfer_date" validate:"required,datetime=2006-01-02"`
 	OfficeID            *int64  `json:"office_id" encore:"optional"`
 	OrganizationID      *int64  `json:"organization_id" encore:"optional"`
+	// Deduction (tax withheld at source) and Discount (stated VAT-inclusive) are given in the
+	// billed currency and appear on the invoice only — TotalPaid is already net of both.
+	Deduction float64 `json:"deduction" encore:"optional" validate:"omitempty,gte=0"`
+	Discount  float64 `json:"discount" encore:"optional" validate:"omitempty,gte=0"`
 }
 
 func (r BillParams) Validate() error {
@@ -69,7 +74,7 @@ type BillResponse struct {
 }
 
 // encore:api auth method=POST path=/bill tag:accountant
-func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
+func (s *Service) Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 	icountClientRes, err := accounts.GetIcountClientID(ctx, contact.GetIcountClientIDParams{
 		OfficeID:       p.OfficeID,
 		OrganizationID: p.OrganizationID,
@@ -129,7 +134,6 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 	recptDocNum, err := createReceiptDoc(p, reservationSet, penaltySet, icountClientRes.ClientID, currency, cfg.Icount.AccountID())
 	if err != nil {
 		rlog.Error("failed to create receipt in iCount", "error", err, "client_id", icountClientRes.ClientID, "currency", currency, "total_paid", p.TotalPaid)
-		rlog.Error("validation failed for billing request", "error", err, "invalid_ids", p.IDs)
 		if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
 			Subject: "Failed to resolve reservations after invoice creation",
 			Message: fmt.Sprintf("failed to create receipt and resolve reservations after successful invoice creation, reservation_ids: %v, invoiceDocNum: %v, error: %v", p.IDs, invcDocNum, err),
@@ -163,8 +167,8 @@ func validateIDsBelongToBillingEntity[T any](ids []int64, set map[int64]T) error
 // buildInvoiceItems constructs a list of ICountInvoiceItem based on the provided reservation and penalty IDs and their corresponding entries in the sets.
 // For each reservation ID, it creates two invoice items: one for the car purchase price (free of tax) and another for the profit + optionally ERP selling price (both requires tax).
 // Each penalty ID adds a single tax-exempt item, as the supplier's fee is passed on to the customer with no profit.
-func buildInvoiceItems(ids, penaltyIDs []int64, reservationsSet reservationSet, penaltiesSet penaltySet) []icount.ICountInvoiceItem {
-	invoiceItems := make([]icount.ICountInvoiceItem, 0, len(ids)*2+len(penaltyIDs))
+func buildInvoiceItems(ids, penaltyIDs []int64, reservationsSet reservationSet, penaltiesSet penaltySet, discount float64) []icount.ICountInvoiceItem {
+	invoiceItems := make([]icount.ICountInvoiceItem, 0, len(ids)*2+len(penaltyIDs)+1)
 	for _, id := range ids {
 		reservation := reservationsSet[id]
 		rItems := buildReservationInvoiceItems(reservation, 0, 0) //currencyID and currencyRate omitted
@@ -175,7 +179,24 @@ func buildInvoiceItems(ids, penaltyIDs []int64, reservationsSet reservationSet, 
 		invoiceItems = append(invoiceItems, buildPenaltyInvoiceItem(penaltiesSet[id], 0, 0)) //currencyID and currencyRate omitted
 	}
 
+	if discount > 0 {
+		invoiceItems = append(invoiceItems, discountInvoiceItem(discount))
+	}
+
 	return invoiceItems
+}
+
+// discountInvoiceItem states the discount as a negative line priced the way the profit it comes out
+// of is priced — VAT-inclusive and taxable. iCount's document-level discount field cannot be used:
+// it spreads the discount pro-rata across the exempt and taxable lines, so most of it lands on the
+// tax-free purchase price and the invoice ends up above what the receipt collects.
+func discountInvoiceItem(discount float64) icount.ICountInvoiceItem {
+	return icount.ICountInvoiceItem{
+		Description:     cfg.Invoice.DiscountItemDescription(),
+		Quantity:        1,
+		IsTaxExempt:     false,
+		UnitPriceIncvat: floatPtr(-discount),
+	}
 }
 
 // buildReceiptItems constructs a list of ICountInvoiceItem based on the provided reservation and penalty IDs and their corresponding entries in the sets.
@@ -451,7 +472,7 @@ func calculateTotalAmount(reservationSet reservationSet, penaltySet penaltySet, 
 
 func createInvoiceDoc(p BillParams, reservationSet reservationSet, penaltySet penaltySet, clientID int32, currency string, accountID int) (string, error) {
 	ic := icount.NewIcount()
-	invoiceItems := buildInvoiceItems(p.IDs, p.PenaltyIDs, reservationSet, penaltySet)
+	invoiceItems := buildInvoiceItems(p.IDs, p.PenaltyIDs, reservationSet, penaltySet, p.Discount)
 	res, err := ic.CreateInvoice(icount.CreateDocParams{
 		ClientID:      int(clientID),
 		CurrencyID:    icount.CurrencyIDsMap[currency],
@@ -473,21 +494,43 @@ func createInvoiceDoc(p BillParams, reservationSet reservationSet, penaltySet pe
 	return docNum, nil
 }
 
+// createReceiptDoc issues the receipt for what the billing entity actually settled. iCount requires
+// a receipt's payments to cover its items, so the discount is deducted from the items and the
+// withholding tax is declared as a deduction — leaving exactly TotalPaid to be covered by the
+// transfer.
 func createReceiptDoc(p BillParams, reservationSet reservationSet, penaltySet penaltySet, clientID int32, currency string, accountID int) (string, error) {
 	ic := icount.NewIcount()
+	currencyID := icount.CurrencyIDsMap[currency]
 	receiptItems := buildReceiptItems(p.IDs, p.PenaltyIDs, reservationSet, penaltySet)
+	if p.Discount > 0 {
+		receiptItems = append(receiptItems, discountReceiptItem(p.Discount, currencyID))
+	}
+
 	res, err := ic.CreateReceipt(icount.CreateDocParams{
 		ClientID:      int(clientID),
-		CurrencyID:    icount.CurrencyIDsMap[currency],
-		PaymentMethod: icount.NewBankTransferPayment(p.TotalPaid, p.TransferDate, cfg.Icount.AccountID()),
+		CurrencyID:    currencyID,
+		PaymentMethod: icount.NewBankTransferPayment(p.TotalPaid, p.TransferDate, accountID),
 		Items:         receiptItems,
+		Deductions:    icount.NewWithholdingTaxDeduction(p.Deduction),
 	})
 	if err != nil {
 		rlog.Error("failed to create receipt in iCount", "error", err, "client_id", clientID, "currency", currency, "total_paid", p.TotalPaid)
 		return "", api_errors.ErrInternalError
 	}
 
-	docNum, err := parseBillingResponse(res)
+	return parseBillingResponse(res)
+}
 
-	return docNum, nil
+// discountReceiptItem states the discount as a negative line rather than iCount's document-level
+// discount field, which is read in ILS: an item carries the document's own currency, so the
+// receipt's items stay in the billed currency and need no conversion to balance against the
+// transfer. Like every other receipt line it is tax exempt — a receipt records money, not VAT.
+func discountReceiptItem(discount float64, currencyID int) icount.ICountInvoiceItem {
+	return icount.ICountInvoiceItem{
+		Description: cfg.Invoice.DiscountItemDescription(),
+		Quantity:    1,
+		IsTaxExempt: true,
+		UnitPrice:   floatPtr(-discount),
+		CurrencyID:  currencyID,
+	}
 }

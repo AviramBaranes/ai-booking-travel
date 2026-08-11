@@ -36,5 +36,6 @@ func (i *Icount) createReceiptDocRequest(p CreateDocParams) ICountCreateDocReque
 		BankTransfer: bankTransfer,
 		CC:           payments,
 		Items:        p.Items,
+		Deductions:   p.Deductions,
 	}
 }

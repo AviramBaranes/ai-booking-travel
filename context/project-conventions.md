@@ -745,6 +745,23 @@ This is a Car Rental Brokerage Aggregation Application serving B2B (Agents) and 
 - **Order Flow**: Locations search -> Car Search (locations & dates) -> Choose Car -> Book -> Create Reservation. (For agents, vouchering and invoice billing happen later).
 </app_context>
 
+<invoicing>
+Billing an office/organization (`services/billing/bill.go`) issues two iCount documents: an **invoice** stating what is owed, and a **receipt** recording what was actually collected.
+
+**A reservation contributes two invoice rows, never one**, because our cost and our profit are taxed differently:
+1. The car purchase price — passed as `unitprice`, `tax_exempt: true`. It is a pass-through of the supplier's charge and carries no VAT.
+2. The profit (plus ERP selling price, when present) — passed as `unitprice_incvat`, `tax_exempt: false`. This is the only VAT-bearing part of the document.
+
+A penalty (no-show / cancellation) is a pass-through of the supplier's fee with no profit, so it contributes a **single** tax-exempt row, treated like the purchase price. The receipt collapses each reservation to one tax-exempt row for its total price.
+
+Consequences for anything touching the invoice:
+- **Discounts come out of the profit, so they go on as a negative item, never as iCount's document-level `discount`/`discount_incvat`.** That field is apportioned pro-rata across exempt and taxable lines, so most of a discount lands on the tax-free purchase price, VAT barely moves, and the invoice ends up above what the receipt collects (invoice 2051: of a £90.86 discount only £21.30 reached the profit). A line priced `unitprice_incvat: -discount`, `tax_exempt: false` puts all of it on the profit and makes the invoice total equal `total_paid + deduction` exactly.
+- **The receipt must balance, or iCount rejects it** with a bare `create_doc_failed` and no details. Its payments have to cover its items, so a receipt for a bill that was partly withheld or discounted cannot simply list the reservations at full price: the discount goes on as a negative item and the withholding as a `deductions` entry, leaving exactly `total_paid` for the transfer to cover.
+- Withholding tax is sent through iCount's `deductions` map under type id `0` (`icount.WithholdingTaxDeductionType`), not the legacy `totalwht` field. **It goes on the receipt only.** Per iCount support, a tax invoice has no way to record withholding tax — the field exists solely on documents carrying a payment (receipt, invrec), and is silently dropped on an invoice. This matches the accounting: withholding is a property of how a debt was settled, not of the debt.
+- **Amounts are never converted to ILS.** The API docs mark every document total as ILS "regardless of document currency"; that is wrong, and following it produced two bad invoices (2050, 2051) where the discount came out inflated by the exchange rate. iCount reads amounts in the document's own currency. Items carry currency explicitly, which is a further reason to express money as items rather than as document-level totals.
+- **Never drop an iCount error.** A failed document that returns a doc number of `""` up the stack settles the reservations and moves the balance against an invoice that has no receipt behind it.
+</invoicing>
+
 <localization>
 The application supports Hebrew and English, implemented via the Next.js App Router `[lang]` segment using the `next-intl` library.
 </localization>

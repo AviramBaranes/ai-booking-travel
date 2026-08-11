@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,17 +23,53 @@ import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
 import { bill, isBillingFailedError } from "@/shared/api/bill-api";
+import { formatPriceFloat } from "@/shared/utils/formatPrice";
 import { cn } from "@/lib/utils";
 import type { BillingEntity } from "./BillingEntityCombobox";
 
-const schema = z.object({
-  total_paid: z
-    .number({ message: "שדה חובה" })
-    .positive("הסכום חייב להיות גדול מאפס"),
-  transfer_date: z.date({ message: "יש לבחור תאריך" }),
-});
+// What was collected, what the authorities withheld and what we gave up must account for the whole
+// bill, so the schema rejects a split that leaves part of the total unexplained.
+const buildSchema = (totalDue: number) =>
+  z
+    .object({
+      total_paid: z
+        .number({ message: "שדה חובה" })
+        .positive("הסכום חייב להיות גדול מאפס"),
+      deduction: z
+        .number({ message: "שדה חובה" })
+        .min(0, "הסכום לא יכול להיות שלילי"),
+      discount: z
+        .number({ message: "שדה חובה" })
+        .min(0, "הסכום לא יכול להיות שלילי"),
+      transfer_date: z.date({ message: "יש לבחור תאריך" }),
+    })
+    .refine(
+      (v) =>
+        totalDue <= 0 ||
+        Math.abs(v.total_paid + v.deduction + v.discount - totalDue) < 0.01,
+      {
+        message: "סכום ששולם, ניכוי מס במקור והנחה חייבים להסתכם בסה״כ לחיוב",
+        path: ["total_paid"],
+      },
+    );
 
-type FormValues = z.infer<typeof schema>;
+type FormValues = {
+  total_paid: number;
+  deduction: number;
+  discount: number;
+  transfer_date: Date;
+};
+
+// Editing one amount refills its counterpart so the three keep adding up to the total due: a
+// shortfall is withholding tax by default, and lowering the withholding turns the rest into a
+// discount rather than silently leaving the bill short.
+const REBALANCE = {
+  total_paid: { absorber: "deduction", kept: "discount" },
+  deduction: { absorber: "discount", kept: "total_paid" },
+  discount: { absorber: "deduction", kept: "total_paid" },
+} as const;
+
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 interface BillDialogProps {
   open: boolean;
@@ -42,6 +78,7 @@ interface BillDialogProps {
   currencyCode: string;
   selectedIds: number[];
   selectedPenaltyIds: number[];
+  totalDue: number;
   onSuccess: () => void;
 }
 
@@ -55,6 +92,7 @@ export function BillDialog({
   currencyCode,
   selectedIds,
   selectedPenaltyIds,
+  totalDue,
   onSuccess,
 }: BillDialogProps) {
   const queryClient = useQueryClient();
@@ -69,18 +107,67 @@ export function BillDialog({
       ? submitError.message
       : translatedError;
 
+  const percentFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat("he-IL", {
+        style: "percent",
+        maximumFractionDigits: 2,
+      }),
+    [],
+  );
+  const percentOfTotal = (amount: number) =>
+    totalDue > 0 ? percentFormatter.format((amount || 0) / totalDue) : "—";
+
   const {
     control,
     register,
     handleSubmit,
+    setValue,
+    getValues,
+    watch,
     formState: { errors },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(useMemo(() => buildSchema(totalDue), [totalDue])),
     defaultValues: {
       total_paid: undefined as unknown as number,
+      deduction: 0,
+      discount: 0,
       transfer_date: undefined as unknown as Date,
     },
   });
+
+  const deduction = watch("deduction");
+  const discount = watch("discount");
+
+  // Only the counterpart is written back — never the field being typed in, whose DOM value would
+  // otherwise be rewritten mid-keystroke and swallow a trailing "0.50".
+  const rebalance = (edited: keyof typeof REBALANCE, raw: number) => {
+    if (totalDue <= 0) return;
+    const { absorber, kept } = REBALANCE[edited];
+    const amount = Number.isFinite(raw) ? raw : 0;
+    const keptAmount = getValues(kept) || 0;
+    setValue(absorber, round2(Math.max(0, totalDue - amount - keptAmount)), {
+      shouldValidate: true,
+    });
+  };
+
+  const amountField = (name: keyof typeof REBALANCE) => {
+    // An emptied total_paid must read as missing, while an emptied deduction/discount is simply 0.
+    const field = register(
+      name,
+      name === "total_paid"
+        ? { valueAsNumber: true }
+        : { setValueAs: (v) => (v === "" || v === null ? 0 : Number(v)) },
+    );
+
+    return {
+      ...field,
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+        field.onChange(e);
+        rebalance(name, Number(e.target.value));
+      },
+    };
+  };
 
   const mutation = useMutation({
     mutationFn: (values: FormValues) =>
@@ -88,6 +175,8 @@ export function BillDialog({
         ids: selectedIds,
         penalty_ids: selectedPenaltyIds,
         total_paid: values.total_paid,
+        deduction: values.deduction,
+        discount: values.discount,
         transfer_date: format(values.transfer_date, "yyyy-MM-dd"),
         organization_id: entity.kind === "org" ? entity.id : undefined,
         office_id: entity.kind === "office" ? entity.id : undefined,
@@ -118,6 +207,9 @@ export function BillDialog({
           <p className="type-paragraph text-text-secondary">
             {`${entity.name} • ${currencyCode} • ${selectedIds.length + selectedPenaltyIds.length} שורות`}
           </p>
+          <p className="type-paragraph text-navy font-medium">
+            סה״כ לחיוב: {formatPriceFloat(totalDue, currencyCode)}
+          </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -147,10 +239,58 @@ export function BillDialog({
                   dir="ltr"
                   className="text-base"
                   placeholder="0.00"
-                  {...register("total_paid", { valueAsNumber: true })}
+                  {...amountField("total_paid")}
                 />
                 {errors.total_paid && (
                   <ErrorDisplay>{errors.total_paid.message}</ErrorDisplay>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-baseline justify-between gap-2">
+                  <Label htmlFor="deduction" className="type-label text-navy">
+                    ניכוי מס במקור ({currencyCode})
+                  </Label>
+                  <span className="type-label text-text-secondary tabular-nums">
+                    {percentOfTotal(deduction)}
+                  </span>
+                </div>
+                <Input
+                  id="deduction"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  dir="ltr"
+                  className="text-base"
+                  placeholder="0.00"
+                  {...amountField("deduction")}
+                />
+                {errors.deduction && (
+                  <ErrorDisplay>{errors.deduction.message}</ErrorDisplay>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-baseline justify-between gap-2">
+                  <Label htmlFor="discount" className="type-label text-navy">
+                    הנחה ({currencyCode})
+                  </Label>
+                  <span className="type-label text-text-secondary tabular-nums">
+                    {percentOfTotal(discount)}
+                  </span>
+                </div>
+                <Input
+                  id="discount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  dir="ltr"
+                  className="text-base"
+                  placeholder="0.00"
+                  {...amountField("discount")}
+                />
+                {errors.discount && (
+                  <ErrorDisplay>{errors.discount.message}</ErrorDisplay>
                 )}
               </div>
 
