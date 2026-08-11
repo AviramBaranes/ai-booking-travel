@@ -45,6 +45,9 @@ type Reservations struct {
 	CarPrice                float64
 	ERPPrice                float64
 	TotalPrice              float64
+	// PenaltyType is empty for a rental row, and holds the fee type for a cancellation or
+	// no-show row. It drives both the label on the reservation id and the blank price columns.
+	PenaltyType string
 }
 
 type AgentInfo struct {
@@ -64,6 +67,9 @@ func GenerateMonthlyReport(ctx context.Context) error {
 	agentsSet := make(map[int64]struct{})
 	for _, r := range openReservations.Reservations {
 		agentsSet[r.AgentID] = struct{}{}
+	}
+	for _, p := range openReservations.Penalties {
+		agentsSet[p.AgentID] = struct{}{}
 	}
 
 	agentsIDs := make([]int64, 0, len(agentsSet))
@@ -122,27 +128,42 @@ func generateTransactionGroups(openReservations *reservation.GetOpenReservations
 			continue
 		}
 
-		reservation := toReportReservation(r, agentInfo)
+		tgs = addToTransactionGroups(tgs, r.CurrencyCode, toReportReservation(r, agentInfo))
+	}
 
-		tgIndex := -1
-		for i, tg := range tgs {
-			if tg.Currency == r.CurrencyCode {
-				tgIndex = i
-				break
-			}
+	for _, p := range openReservations.Penalties {
+		agentInfo, isAgentRelevant := relevantAgents[p.AgentID]
+		if !isAgentRelevant {
+			continue
 		}
 
-		if tgIndex == -1 {
-			tgs = append(tgs, TransactionGroup{
-				Currency:     r.CurrencyCode,
-				Reservations: []Reservations{reservation},
-				TotalAmount:  reservation.TotalPrice,
-			})
-		} else {
-			tgs[tgIndex].Reservations = append(tgs[tgIndex].Reservations, reservation)
-			tgs[tgIndex].TotalAmount += reservation.TotalPrice
+		tgs = addToTransactionGroups(tgs, p.CurrencyCode, toReportPenalty(p, agentInfo))
+	}
+
+	return tgs
+}
+
+// addToTransactionGroups files a report row under its currency group, creating the group on first
+// use, and adds its price to the group total.
+func addToTransactionGroups(tgs []TransactionGroup, currencyCode string, row Reservations) []TransactionGroup {
+	tgIndex := -1
+	for i, tg := range tgs {
+		if tg.Currency == currencyCode {
+			tgIndex = i
+			break
 		}
 	}
+
+	if tgIndex == -1 {
+		return append(tgs, TransactionGroup{
+			Currency:     currencyCode,
+			Reservations: []Reservations{row},
+			TotalAmount:  row.TotalPrice,
+		})
+	}
+
+	tgs[tgIndex].Reservations = append(tgs[tgIndex].Reservations, row)
+	tgs[tgIndex].TotalAmount += row.TotalPrice
 
 	return tgs
 }
@@ -170,6 +191,29 @@ func toReportReservation(r reservation.OpenReservation, agentInfo AgentInfo) Res
 		CarPrice:                roundPrice(r.CarPrice * m),
 		ERPPrice:                roundPrice(r.ERPPrice * m),
 		TotalPrice:              roundPrice(r.TotalPrice * m),
+	}
+}
+
+// toReportPenalty maps a fee to a report row. Every column other than the amount and the fee label
+// repeats the reservation the fee was charged on, so the row reads like the booking it belongs to.
+// The car and coverage prices are left unset: a fee is a single amount, not a priced rental.
+func toReportPenalty(p reservation.OpenPenalty, agentInfo AgentInfo) Reservations {
+	return Reservations{
+		ReservationID:           p.ReservationID,
+		OfficeName:              agentInfo.OfficeName,
+		AgentName:               agentInfo.AgentName,
+		DriverName:              p.DriverName,
+		ReservationCreationDate: formatDate(p.CreatedAt),
+		ReservationBrokerID:     p.BrokerReservationID,
+		VoucherDate:             formatDate(p.VoucheredAt),
+		VoucherNumber:           p.VoucherNumber,
+		PickupDate:              formatDate(p.PickupDate),
+		DropoffDate:             formatDate(p.DropoffDate),
+		RentalDays:              p.RentalDays,
+		CountryCode:             p.CountryCode,
+		Currency:                p.CurrencyCode,
+		TotalPrice:              roundPrice(p.Amount),
+		PenaltyType:             p.Type,
 	}
 }
 

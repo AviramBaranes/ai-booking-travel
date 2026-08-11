@@ -40,7 +40,9 @@
     "office_organic_forbids_icount_client_id": "An organic office cannot have an iCount client ID",
     "office_non_organic_requires_icount_client_id": "A non-organic office must have an iCount client ID",
     "not_enough_credits": "The organization or office does not have enough credit to complete this booking. To issue the voucher, please settle the payment or pay for the booking by credit card.",
-    "no_obligo": "You do not have a credit limit configured in the system, so this booking must be paid by credit card."
+    "no_obligo": "You do not have a credit limit configured in the system, so this booking must be paid by credit card.",
+    "reservation_not_canceled": "A fee can only be charged on a canceled reservation",
+    "penalty_already_exists": "This reservation already has a cancellation or no-show fee"
   },
   "TranslationStatus": {
     "pending": "Pending",

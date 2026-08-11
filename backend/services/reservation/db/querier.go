@@ -16,17 +16,26 @@ type Querier interface {
 	GetBillingReservation(ctx context.Context, id int64) (GetBillingReservationRow, error)
 	GetOpenReservationsPickingUpWithinWeek(ctx context.Context) ([]GetOpenReservationsPickingUpWithinWeekRow, error)
 	GetOutboxByTopic(ctx context.Context, topic string) ([]Outbox, error)
+	GetPaymentPendingPenalties(ctx context.Context) ([]GetPaymentPendingPenaltiesRow, error)
+	GetPaymentPendingPenaltiesByBillingEntity(ctx context.Context, arg GetPaymentPendingPenaltiesByBillingEntityParams) ([]GetPaymentPendingPenaltiesByBillingEntityRow, error)
 	GetPaymentPendingReservations(ctx context.Context) ([]GetPaymentPendingReservationsRow, error)
 	GetPaymentPendingReservationsByBillingEntity(ctx context.Context, arg GetPaymentPendingReservationsByBillingEntityParams) ([]GetPaymentPendingReservationsByBillingEntityRow, error)
 	GetReservationByID(ctx context.Context, id int64) (Reservation, error)
+	GetReservationPenaltyByReservationID(ctx context.Context, reservationID int64) (ReservationPenalty, error)
 	GetSupplierTermsByID(ctx context.Context, id int64) ([]byte, error)
 	InsertReservation(ctx context.Context, arg InsertReservationParams) (int64, error)
+	InsertReservationPenalty(ctx context.Context, arg InsertReservationPenaltyParams) (ReservationPenalty, error)
 	ListBusinessesBalancesReport(ctx context.Context) ([]ListBusinessesBalancesReportRow, error)
+	ListReservationsByBrokerReservationIDs(ctx context.Context, arg ListReservationsByBrokerReservationIDsParams) ([]ListReservationsByBrokerReservationIDsRow, error)
 	ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error)
 	ListReservationsReport(ctx context.Context, arg ListReservationsReportParams) ([]Reservation, error)
+	ListUnpaidSupplierPenalties(ctx context.Context, broker Broker) ([]ListUnpaidSupplierPenaltiesRow, error)
+	ListUnpaidSupplierPenaltiesByIDs(ctx context.Context, ids []int64) ([]ListUnpaidSupplierPenaltiesByIDsRow, error)
 	ListUnpaidSupplierReservations(ctx context.Context, broker Broker) ([]ListUnpaidSupplierReservationsRow, error)
 	ListUnpaidSupplierReservationsByIDs(ctx context.Context, ids []int64) ([]ListUnpaidSupplierReservationsByIDsRow, error)
+	MarkPenaltiesPaidToSupplier(ctx context.Context, arg MarkPenaltiesPaidToSupplierParams) error
 	MarkReservationsPaidToSupplier(ctx context.Context, arg MarkReservationsPaidToSupplierParams) error
+	ResolvePenaltiesPayment(ctx context.Context, ids []int64) error
 	ResolveReservationsPayment(ctx context.Context, ids []int64) error
 	SaveInvoiceDocNum(ctx context.Context, arg SaveInvoiceDocNumParams) error
 	UpdateReservationCurrencyRate(ctx context.Context, arg UpdateReservationCurrencyRateParams) error

@@ -7,6 +7,11 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ReservationDetailDialog } from "@/app/(app)/admin/_components/ReservationDetailDialog";
+import {
+  PAYMENT_FOR_RESERVATION,
+  penaltyTypeLabel,
+} from "@/app/(app)/admin/payments/_components/unpaid-reservations";
 import { queries } from "@/shared/client";
 import { BillDialog } from "./BillDialog";
 import type { BillingEntity } from "./BillingEntityCombobox";
@@ -14,6 +19,9 @@ import { PromptBillDialog } from "./PromptBillDialog";
 
 const CHECKBOX_CLASSES =
   "border-[#a9a8b3] data-checked:border-brand data-checked:bg-brand";
+
+// Fees are tinted so they read as an exception among the rental charges.
+const PENALTY_ROW_CLASSES = "bg-destructive/10 hover:bg-destructive/20";
 
 interface CurrencyGroupCardProps {
   entity: BillingEntity;
@@ -29,6 +37,13 @@ export function CurrencyGroupCard({
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [promptBillDialogOpen, setPromptBillDialogOpen] = useState(false);
   const [billDialogOpen, setBillDialogOpen] = useState(false);
+  // Reservations and fees are numbered independently, so each keeps its own selection.
+  const [selectedPenaltyIds, setSelectedPenaltyIds] = useState<Set<number>>(
+    new Set(),
+  );
+  const [detailReservationId, setDetailReservationId] = useState<number | null>(
+    null,
+  );
   const tStatus = useTranslations("MyAccount.reservation.summary.status");
 
   const currencyFormatter = useMemo(
@@ -49,31 +64,54 @@ export function CurrencyGroupCard({
     () => selectedReservations.map((r) => r.id),
     [selectedReservations],
   );
-  const selectedTotal = useMemo(
-    () => selectedReservations.reduce((sum, r) => sum + r.totalPrice, 0),
-    [selectedReservations],
+
+  const selectedPenalties = useMemo(
+    () => group.penalties.filter((p) => selectedPenaltyIds.has(p.id)),
+    [selectedPenaltyIds, group.penalties],
+  );
+  const selectedPenaltyIdList = useMemo(
+    () => selectedPenalties.map((p) => p.id),
+    [selectedPenalties],
   );
 
-  const allChecked =
-    group.reservations.length > 0 &&
-    selectedIds.length === group.reservations.length;
-  const someChecked = selectedIds.length > 0 && !allChecked;
+  const selectedTotal = useMemo(
+    () =>
+      selectedReservations.reduce((sum, r) => sum + r.totalPrice, 0) +
+      selectedPenalties.reduce((sum, p) => sum + p.amount, 0),
+    [selectedReservations, selectedPenalties],
+  );
+
+  const rowCount = group.reservations.length + group.penalties.length;
+  const selectedCount = selectedIds.length + selectedPenaltyIdList.length;
+
+  const allChecked = rowCount > 0 && selectedCount === rowCount;
+  const someChecked = selectedCount > 0 && !allChecked;
 
   const toggleAll = () => {
     if (allChecked) {
       setSelected(new Set());
+      setSelectedPenaltyIds(new Set());
     } else {
       setSelected(new Set(group.reservations.map((r) => r.id)));
+      setSelectedPenaltyIds(new Set(group.penalties.map((p) => p.id)));
     }
   };
 
-  const toggleOne = (id: number) => {
-    setSelected((prev) => {
+  const toggle = (setIds: typeof setSelected, id: number) => {
+    setIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
+  };
+
+  const toggleOne = (id: number) => toggle(setSelected, id);
+  const togglePenalty = (id: number) => toggle(setSelectedPenaltyIds, id);
+
+  const clearSelection = () => {
+    setSelected(new Set());
+    setSelectedPenaltyIds(new Set());
   };
 
   const formatDate = (s: string) => {
@@ -89,11 +127,11 @@ export function CurrencyGroupCard({
         <div className="flex flex-col gap-0.5">
           <h2 className="type-h6 text-navy">מטבע {group.currencyCode}</h2>
           <p className="type-paragraph text-text-secondary">
-            {group.reservations.length} הזמנות פתוחות
-            {selectedIds.length > 0 && (
+            {rowCount} שורות פתוחות
+            {selectedCount > 0 && (
               <span className="text-navy font-medium">
                 {" "}
-                • {selectedIds.length} נבחרו
+                • {selectedCount} נבחרו
                 {selectedTotal > 0 && (
                   <> (סה"כ לתשלום: {currencyFormatter.format(selectedTotal)})</>
                 )}
@@ -106,7 +144,7 @@ export function CurrencyGroupCard({
             type="button"
             variant="brand"
             className="h-10 px-6"
-            disabled={selectedIds.length === 0}
+            disabled={selectedCount === 0}
             onClick={() => setPromptBillDialogOpen(true)}
           >
             חייב נבחרים
@@ -135,6 +173,9 @@ export function CurrencyGroupCard({
               </th>
               <th className="px-4 py-3 text-start whitespace-nowrap">
                 מס׳ ספק
+              </th>
+              <th className="px-4 py-3 text-start whitespace-nowrap">
+                תשלום עבור
               </th>
               <th className="px-4 py-3 text-start whitespace-nowrap">
                 סטטוס תשלום
@@ -174,14 +215,19 @@ export function CurrencyGroupCard({
                 <tr
                   key={r.id}
                   className={
-                    "border-t border-border-light/40 transition-colors " +
+                    "border-t border-border-light/40 transition-colors cursor-pointer " +
                     (isRefundPending
                       ? "bg-brand/10 hover:bg-brand/15"
                       : "hover:bg-background/60")
                   }
+                  onClick={() => setDetailReservationId(r.id)}
                 >
                   {showActions && (
-                    <td className="px-4 py-3">
+                    /* Stops the checkbox from also opening the reservation behind it. */
+                    <td
+                      className="px-4 py-3"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Checkbox
                         checked={checked}
                         onCheckedChange={() => toggleOne(r.id)}
@@ -195,6 +241,9 @@ export function CurrencyGroupCard({
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {r.brokerReservationId || "—"}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    {PAYMENT_FOR_RESERVATION}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {tStatus(r.paymentStatus)}
@@ -234,6 +283,56 @@ export function CurrencyGroupCard({
                 </tr>
               );
             })}
+
+            {/* Fees close the table: the rows above are ordered by voucher date, which a fee has
+                no equivalent of. */}
+            {group.penalties.map((p) => (
+              <tr
+                key={`penalty-${p.id}`}
+                className={`border-t border-border-light/40 transition-colors cursor-pointer ${PENALTY_ROW_CLASSES}`}
+                onClick={() => setDetailReservationId(p.reservationId)}
+              >
+                {showActions && (
+                  /* Stops the checkbox from also opening the reservation behind it. */
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedPenaltyIds.has(p.id)}
+                      onCheckedChange={() => togglePenalty(p.id)}
+                      className={CHECKBOX_CLASSES}
+                      aria-label={`בחר חיוב ${p.id}`}
+                    />
+                  </td>
+                )}
+                <td className="px-4 py-3 whitespace-nowrap text-navy font-medium">
+                  {p.id}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {p.brokerReservationId || "—"}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {penaltyTypeLabel(p.type)}
+                </td>
+                {/* A fee carries no status, and no price breakdown: it is passed on as charged. */}
+                <td className="px-4 py-3 whitespace-nowrap">—</td>
+                <td className="px-4 py-3 whitespace-nowrap">—</td>
+                <td className="px-4 py-3 text-start whitespace-nowrap">—</td>
+                <td className="px-4 py-3 text-start whitespace-nowrap">—</td>
+                <td className="px-4 py-3 text-start whitespace-nowrap">—</td>
+                <td className="px-4 py-3 text-start whitespace-nowrap">—</td>
+                <td className="px-4 py-3 text-start whitespace-nowrap font-medium">
+                  {currencyFormatter.format(p.amount)}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-text-secondary">
+                  —
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-text-secondary">
+                  {formatDate(p.createdAt)}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-text-secondary">
+                  —
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -244,15 +343,21 @@ export function CurrencyGroupCard({
         entity={entity}
         currencyCode={group.currencyCode}
         selectedIds={selectedIds}
-        onSuccess={() => setSelected(new Set())}
+        selectedPenaltyIds={selectedPenaltyIdList}
+        onSuccess={clearSelection}
       />
       <PromptBillDialog
         open={promptBillDialogOpen}
         onOpenChange={setPromptBillDialogOpen}
         entity={entity}
         selectedIds={selectedIds}
-        onSuccess={() => setSelected(new Set())}
+        selectedPenaltyIds={selectedPenaltyIdList}
+        onSuccess={clearSelection}
         onContinueToInvoiceCreation={() => setBillDialogOpen(true)}
+      />
+      <ReservationDetailDialog
+        reservationId={detailReservationId}
+        onClose={() => setDetailReservationId(null)}
       />
     </section>
   );

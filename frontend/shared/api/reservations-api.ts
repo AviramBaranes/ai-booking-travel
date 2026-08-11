@@ -1,4 +1,4 @@
-import { queries, reports, supplier_payments } from "../client";
+import { penalties, queries, reports, supplier_payments } from "../client";
 import { withErrorHandler } from "./_api";
 
 export function listReservations(params: queries.ListReservationsParams) {
@@ -84,9 +84,32 @@ export interface RejectedSupplierPayment {
   expectedCurrencyCode?: string;
 }
 
+export interface ApprovedSupplierPenalty {
+  penaltyId: number;
+  reservationId: number;
+  brokerReservationId: string;
+  type: string;
+  currencyCode: string;
+  amount: number;
+}
+
+export interface RejectedSupplierPenalty {
+  penaltyId: number;
+  reservationId: number;
+  brokerReservationId: string;
+  type: string;
+  reason: string;
+  currencyCode: string;
+  balance: number;
+  expectedAmount: number;
+  expectedCurrencyCode: string;
+}
+
 export interface ValidateFlexPaymentSummaryResponse {
   approved: ApprovedSupplierPayment[];
   rejected: RejectedSupplierPayment[];
+  approvedPenalties: ApprovedSupplierPenalty[];
+  rejectedPenalties: RejectedSupplierPenalty[];
 }
 
 export function validateFlexPaymentSummary(file: File) {
@@ -102,12 +125,12 @@ export function validateFlexPaymentSummary(file: File) {
   });
 }
 
-export function paySupplierReservations(
-  params: supplier_payments.PaySupplierReservationsParams,
-) {
-  return withErrorHandler((client) =>
-    client.reservation.PaySupplierReservations(params),
-  );
+export function paySupplier(params: supplier_payments.PaySupplierParams) {
+  return withErrorHandler((client) => client.reservation.PaySupplier(params));
+}
+
+export function createPenalty(params: penalties.CreatePenaltyParams) {
+  return withErrorHandler((client) => client.reservation.CreatePenalty(params));
 }
 
 export function getFullReservation(reservationId: number) {

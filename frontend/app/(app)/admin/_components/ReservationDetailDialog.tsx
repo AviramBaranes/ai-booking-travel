@@ -12,6 +12,9 @@ import {
 import { getFullReservation } from "@/shared/api/reservations-api";
 import { queries } from "@/shared/client";
 import { formatPrice, formatPriceFloat } from "@/shared/utils/formatPrice";
+import { CreatePenaltyForm } from "./CreatePenaltyForm";
+
+const RESERVATION_STATUS_CANCELED = "canceled";
 
 // ---------------------------------------------------------------------------
 // Primitive display helpers
@@ -126,7 +129,8 @@ export function ReservationDetailDialog({
     <Dialog open={reservationId != null} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[90vh] w-[90vw] max-w-4xl! overflow-y-auto" dir="rtl">
         <DialogHeader>
-          <DialogTitle>
+          {/* ps-8 keeps the heading clear of the close button in the top start corner. */}
+          <DialogTitle className="ps-8">
             {r ? `הזמנה #${r.id} — ${r.brokerReservationId}` : "פרטי הזמנה"}
           </DialogTitle>
         </DialogHeader>
@@ -247,6 +251,16 @@ export function ReservationDetailDialog({
               <Row label="נוצר ב" value={formatIsraeliDateTime(r.createdAt)} />
               <Row label="עודכן ב" value={formatIsraeliDateTime(r.updatedAt)} />
             </Section>
+
+            {/* A fee is only ever charged on a reservation that was canceled. */}
+            {r.reservationStatus === RESERVATION_STATUS_CANCELED && (
+              <Section title="דמי ביטול / אי הגעה">
+                <CreatePenaltyForm
+                  reservationId={r.id}
+                  currencyCode={r.currencyCode}
+                />
+              </Section>
+            )}
           </div>
         )}
       </DialogContent>

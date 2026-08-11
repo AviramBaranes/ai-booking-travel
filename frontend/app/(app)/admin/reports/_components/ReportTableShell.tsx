@@ -24,7 +24,7 @@ import {
   buildRequest,
 } from "./reportTableUtils";
 import { formatPriceFloat } from "@/shared/utils/formatPrice";
-import { ReservationDetailDialog } from "./ReservationDetailDialog";
+import { ReservationDetailDialog } from "@/app/(app)/admin/_components/ReservationDetailDialog";
 import { Input } from "@/components/ui/input";
 import clsx from "clsx";
 

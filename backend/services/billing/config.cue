@@ -47,4 +47,6 @@ Invoice:{
 	PurchaseItemDescription: "עלות השכרה",
 	ProfitItemDescription: "רווח השכרה",
 	ProfitAndErpItemDescription: "רווח השכרה כולל כיסוי",
+	CancellationPenaltyItemDescription: "דמי ביטול",
+	NoShowPenaltyItemDescription: "דמי אי-הגעה",
 }

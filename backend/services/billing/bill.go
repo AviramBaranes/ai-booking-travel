@@ -20,21 +20,25 @@ import (
 )
 
 type invoiceConfig struct {
-	PurchaseItemDescription     config.String
-	ProfitItemDescription       config.String
-	ProfitAndErpItemDescription config.String
+	PurchaseItemDescription            config.String
+	ProfitItemDescription              config.String
+	ProfitAndErpItemDescription        config.String
+	CancellationPenaltyItemDescription config.String
+	NoShowPenaltyItemDescription       config.String
 }
 
 var (
 	ErrExactlyOneOfOfficeIDOrOrgIDRequired = api_errors.NewValidationError("exactly one of office_id or organization_id must be provided")
 	ErrInvalidReservationID                = api_errors.NewValidationError("one or more provided IDs do not belong to the specified billing entity")
 	ErrMismatchedCurrencies                = api_errors.NewValidationError("all selected reservations must have the same currency")
+	ErrNothingToBill                       = api_errors.NewValidationError("at least one reservation or penalty must be provided")
 	emailRequestedTopic                    = pubsub.TopicRef[pubsub.Publisher[*emailevents.EmailEvent]](emailevents.EmailRequestedTopic)
 	emailPublisher                         = emailevents.NewPublisher(emailRequestedTopic)
 )
 
 type BillParams struct {
-	IDs                 []int64 `json:"ids" validate:"required,min=1"`
+	IDs                 []int64 `json:"ids"`
+	PenaltyIDs          []int64 `json:"penalty_ids"`
 	SkipInvoiceCreation bool    `json:"skip_invoice_creation" encore:"optional"`
 	TotalPaid           float64 `json:"total_paid" validate:"required,gt=0"`
 	TransferDate        string  `json:"transfer_date" validate:"required,datetime=2006-01-02"`
@@ -49,6 +53,11 @@ func (r BillParams) Validate() error {
 
 	if r.OfficeID == nil && r.OrganizationID == nil || r.OfficeID != nil && r.OrganizationID != nil {
 		return ErrExactlyOneOfOfficeIDOrOrgIDRequired
+	}
+
+	// A bill may cover reservations, penalties, or both — but not nothing.
+	if len(r.IDs) == 0 && len(r.PenaltyIDs) == 0 {
+		return ErrNothingToBill
 	}
 
 	return nil
@@ -81,21 +90,27 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 	}
 
 	reservationSet := createReservationSet(openReservations.CurrencyGroups)
+	penaltySet := createPenaltySet(openReservations.CurrencyGroups)
 
 	if err := validateIDsBelongToBillingEntity(p.IDs, reservationSet); err != nil {
 		rlog.Error("validation failed for billing request", "error", err, "invalid_ids", p.IDs)
 		return nil, err
 	}
 
-	currency := reservationSet[p.IDs[0]].CurrencyCode
-	if err := validateSelectedIDsShareCurrency(currency, p.IDs, reservationSet); err != nil {
-		rlog.Error("validation failed for billing request", "error", err, "invalid_ids", p.IDs)
+	if err := validateIDsBelongToBillingEntity(p.PenaltyIDs, penaltySet); err != nil {
+		rlog.Error("validation failed for billing request", "error", err, "invalid_penalty_ids", p.PenaltyIDs)
 		return nil, err
 	}
 
-	total := calculateTotalAmount(reservationSet, p.IDs)
+	currency, err := resolveBillCurrency(p, reservationSet, penaltySet)
+	if err != nil {
+		rlog.Error("validation failed for billing request", "error", err, "invalid_ids", p.IDs, "invalid_penalty_ids", p.PenaltyIDs)
+		return nil, err
+	}
+
+	total := calculateTotalAmount(reservationSet, penaltySet, p.IDs, p.PenaltyIDs)
 	if p.SkipInvoiceCreation {
-		if err := resolveReservations(ctx, p, total); err != nil {
+		if err := resolveBilledItems(ctx, p, total); err != nil {
 			return nil, err
 		}
 
@@ -105,13 +120,13 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 		}, nil
 	}
 
-	invcDocNum, err := createInvoiceDoc(p, reservationSet, icountClientRes.ClientID, currency, cfg.Icount.AccountID())
+	invcDocNum, err := createInvoiceDoc(p, reservationSet, penaltySet, icountClientRes.ClientID, currency, cfg.Icount.AccountID())
 	if err != nil {
 		rlog.Error("failed to create invoice in iCount", "error", err, "client_id", icountClientRes.ClientID, "currency", currency, "total_paid", p.TotalPaid)
 		return nil, err
 	}
 
-	recptDocNum, err := createReceiptDoc(p, reservationSet, icountClientRes.ClientID, currency, cfg.Icount.AccountID())
+	recptDocNum, err := createReceiptDoc(p, reservationSet, penaltySet, icountClientRes.ClientID, currency, cfg.Icount.AccountID())
 	if err != nil {
 		rlog.Error("failed to create receipt in iCount", "error", err, "client_id", icountClientRes.ClientID, "currency", currency, "total_paid", p.TotalPaid)
 		rlog.Error("validation failed for billing request", "error", err, "invalid_ids", p.IDs)
@@ -124,7 +139,7 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 		return nil, err
 	}
 
-	if err := resolveReservations(ctx, p, total); err != nil {
+	if err := resolveBilledItems(ctx, p, total); err != nil {
 		return nil, err
 	}
 
@@ -134,10 +149,10 @@ func Bill(ctx context.Context, p BillParams) (*BillResponse, error) {
 	}, nil
 }
 
-// validateIDsBelongToBillingEntity checks if all provided reservation IDs belong to the specified billing entity (office or organization) by verifying their presence in the reservationSet. If any ID does not belong to the billing entity, it returns a validation error.
-func validateIDsBelongToBillingEntity(ids []int64, reservationsSet reservationSet) error {
+// validateIDsBelongToBillingEntity checks if all provided IDs belong to the specified billing entity (office or organization) by verifying their presence in the set of items open for that entity. If any ID does not belong to the billing entity, it returns a validation error.
+func validateIDsBelongToBillingEntity[T any](ids []int64, set map[int64]T) error {
 	for _, id := range ids {
-		if _, exists := reservationsSet[id]; !exists {
+		if _, exists := set[id]; !exists {
 			return ErrInvalidReservationID
 		}
 	}
@@ -145,22 +160,27 @@ func validateIDsBelongToBillingEntity(ids []int64, reservationsSet reservationSe
 	return nil
 }
 
-// buildInvoiceItems constructs a list of ICountInvoiceItem based on the provided reservation IDs and their corresponding reservations in the reservationSet.
+// buildInvoiceItems constructs a list of ICountInvoiceItem based on the provided reservation and penalty IDs and their corresponding entries in the sets.
 // For each reservation ID, it creates two invoice items: one for the car purchase price (free of tax) and another for the profit + optionally ERP selling price (both requires tax).
-func buildInvoiceItems(ids []int64, reservationsSet reservationSet) []icount.ICountInvoiceItem {
-	invoiceItems := make([]icount.ICountInvoiceItem, 0, len(ids)*2)
+// Each penalty ID adds a single tax-exempt item, as the supplier's fee is passed on to the customer with no profit.
+func buildInvoiceItems(ids, penaltyIDs []int64, reservationsSet reservationSet, penaltiesSet penaltySet) []icount.ICountInvoiceItem {
+	invoiceItems := make([]icount.ICountInvoiceItem, 0, len(ids)*2+len(penaltyIDs))
 	for _, id := range ids {
 		reservation := reservationsSet[id]
 		rItems := buildReservationInvoiceItems(reservation, 0, 0) //currencyID and currencyRate omitted
 		invoiceItems = append(invoiceItems, rItems...)
 	}
 
+	for _, id := range penaltyIDs {
+		invoiceItems = append(invoiceItems, buildPenaltyInvoiceItem(penaltiesSet[id], 0, 0)) //currencyID and currencyRate omitted
+	}
+
 	return invoiceItems
 }
 
-// buildReceiptItems constructs a list of ICountInvoiceItem based on the provided reservation IDs and their corresponding reservations in the reservationSet.
-func buildReceiptItems(ids []int64, reservationsSet reservationSet) []icount.ICountInvoiceItem {
-	invoiceItems := make([]icount.ICountInvoiceItem, 0, len(ids))
+// buildReceiptItems constructs a list of ICountInvoiceItem based on the provided reservation and penalty IDs and their corresponding entries in the sets.
+func buildReceiptItems(ids, penaltyIDs []int64, reservationsSet reservationSet, penaltiesSet penaltySet) []icount.ICountInvoiceItem {
+	invoiceItems := make([]icount.ICountInvoiceItem, 0, len(ids)+len(penaltyIDs))
 	for _, id := range ids {
 		reservation := reservationsSet[id]
 		m := 1.0
@@ -180,7 +200,43 @@ func buildReceiptItems(ids []int64, reservationsSet reservationSet) []icount.ICo
 		invoiceItems = append(invoiceItems, item)
 	}
 
+	for _, id := range penaltyIDs {
+		penalty := penaltiesSet[id]
+		currencyID, _ := icount.CurrencyIDsMap[penalty.CurrencyCode]
+		invoiceItems = append(invoiceItems, buildPenaltyInvoiceItem(penalty, currencyID, penalty.CurrencyRate))
+	}
+
 	return invoiceItems
+}
+
+// buildPenaltyInvoiceItem constructs the single line a penalty contributes to a document. The fee is
+// a pass-through of the supplier's charge, so it carries no profit and is fully tax exempt — the same
+// treatment as a reservation's car purchase price.
+func buildPenaltyInvoiceItem(penalty reservation.BillingPenalty, currencyID int, currencyRate float64) icount.ICountInvoiceItem {
+	return icount.ICountInvoiceItem{
+		Description:  fmt.Sprintf("%s %s", penaltyItemDescription(penalty.Type), penalty.BrokerReservationID),
+		Quantity:     1,
+		IsTaxExempt:  true,
+		SKU:          penaltySKU(penalty.ID),
+		UnitPrice:    floatPtr(penalty.Amount),
+		CurrencyID:   currencyID,
+		CurrencyRate: currencyRate,
+	}
+}
+
+// penaltyItemDescription returns the configured document description for a penalty type.
+func penaltyItemDescription(penaltyType string) string {
+	if penaltyType == reservation.PenaltyTypeNoShow {
+		return cfg.Invoice.NoShowPenaltyItemDescription()
+	}
+
+	return cfg.Invoice.CancellationPenaltyItemDescription()
+}
+
+// penaltySKU namespaces a penalty id, since reservations and penalties are numbered independently
+// and may otherwise collide on the same document.
+func penaltySKU(id int64) string {
+	return fmt.Sprintf("P%d", id)
 }
 
 func buildReservationInvoiceItems(reservation reservation.BillingReservation, currencyID int, currencyRate float64) []icount.ICountInvoiceItem {
@@ -223,6 +279,9 @@ func floatPtr(f float64) *float64 {
 // reservationSet is a helper type for efficient lookup of reservations by ID when building invoice items.
 type reservationSet map[int64]reservation.BillingReservation
 
+// penaltySet is a helper type for efficient lookup of penalties by ID when building invoice items.
+type penaltySet map[int64]reservation.BillingPenalty
+
 // createReservationSet creates a set of reservations indexed by their ID for efficient lookup.
 func createReservationSet(currencyGroups []reservation.CurrencyGroup) map[int64]reservation.BillingReservation {
 	reservationSet := make(map[int64]reservation.BillingReservation)
@@ -235,15 +294,36 @@ func createReservationSet(currencyGroups []reservation.CurrencyGroup) map[int64]
 	return reservationSet
 }
 
-// validateSelectedIDsShareCurrency checks if all selected reservation IDs correspond to reservations that share the same currency.
-func validateSelectedIDsShareCurrency(currency string, ids []int64, reservationSet reservationSet) error {
-	for _, id := range ids[1:] {
-		if reservationSet[id].CurrencyCode != currency {
-			return ErrMismatchedCurrencies
+// createPenaltySet creates a set of penalties indexed by their ID for efficient lookup.
+func createPenaltySet(currencyGroups []reservation.CurrencyGroup) map[int64]reservation.BillingPenalty {
+	penaltySet := make(map[int64]reservation.BillingPenalty)
+	for _, group := range currencyGroups {
+		for _, p := range group.Penalties {
+			penaltySet[p.ID] = p
 		}
 	}
 
-	return nil
+	return penaltySet
+}
+
+// resolveBillCurrency returns the currency the document is issued in, which every selected
+// reservation and penalty must share since a document covers a single currency.
+func resolveBillCurrency(p BillParams, reservationSet reservationSet, penaltySet penaltySet) (string, error) {
+	currencies := make([]string, 0, len(p.IDs)+len(p.PenaltyIDs))
+	for _, id := range p.IDs {
+		currencies = append(currencies, reservationSet[id].CurrencyCode)
+	}
+	for _, id := range p.PenaltyIDs {
+		currencies = append(currencies, penaltySet[id].CurrencyCode)
+	}
+
+	for _, currency := range currencies[1:] {
+		if currency != currencies[0] {
+			return "", ErrMismatchedCurrencies
+		}
+	}
+
+	return currencies[0], nil
 }
 
 // parseBillingResponse converts the response from the iCount service into a BillResponse. If the iCount response indicates failure, it logs the error details and returns a generic error with the combined error messages from iCount.
@@ -261,13 +341,54 @@ func parseBillingResponse(result *icount.ICountCreateDocResponse) (string, error
 	}
 }
 
+// resolveBilledItems resolves everything the bill covers: first the penalties, then the
+// reservations, which also updates the billing entity's balance by the total of both.
+func resolveBilledItems(ctx context.Context, p BillParams, total float64) error {
+	if err := resolvePenalties(ctx, p); err != nil {
+		return err
+	}
+
+	return resolveReservations(ctx, p, total)
+}
+
+// resolvePenalties marks the billed penalties as collected from the customer. As in
+// resolveReservations, a failure that happens after the money already moved is alerted on rather
+// than returned, so the caller does not retry a bill that has already been issued.
+func resolvePenalties(ctx context.Context, p BillParams) error {
+	if len(p.PenaltyIDs) == 0 {
+		return nil
+	}
+
+	if err := reservation.ResolvePenalties(ctx, reservation.ResolvePenaltiesParams{
+		IDs: p.PenaltyIDs,
+	}); err != nil {
+		if !p.SkipInvoiceCreation {
+			rlog.Error("failed to resolve penalties after successful billing", "error", err, "penalty_ids", p.PenaltyIDs)
+			if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
+				Subject: "Failed to resolve penalties after billing",
+				Message: fmt.Sprintf("failed to resolve penalties after successful billing, penalty_ids: %v, error: %v", p.PenaltyIDs, err),
+			}); publishErr != nil {
+				rlog.Error("failed to publish critical error email event", "penalty_ids", p.PenaltyIDs, "error", publishErr)
+			}
+			return nil
+		}
+		rlog.Error("failed to resolve penalties", "error", err, "penalty_ids", p.PenaltyIDs)
+		return api_errors.ErrInternalError
+	}
+
+	return nil
+}
+
 // resolveReservations attempts to resolve the reservations associated with the billed invoice.
 // If resolving fails after a successful billing, it logs the error and sends a critical error email notification.
 // It also updates the balance due for the associated office or organization based on the billing entity specified in the BillParams.
 func resolveReservations(ctx context.Context, p BillParams, total float64) error {
-	err := reservation.ResolveReservations(ctx, reservation.ResolveReservationsParams{
-		IDs: p.IDs,
-	})
+	var err error
+	if len(p.IDs) > 0 {
+		err = reservation.ResolveReservations(ctx, reservation.ResolveReservationsParams{
+			IDs: p.IDs,
+		})
+	}
 	if err != nil {
 		if !p.SkipInvoiceCreation {
 			rlog.Error("failed to resolve reservations after successful billing", "error", err, "reservation_ids", p.IDs)
@@ -312,20 +433,25 @@ func derefInt64(ptr *int64) int64 {
 	return *ptr
 }
 
-// calculateTotalAmount computes the total amount for the provided reservation set by summing the total price of each reservation multiplied by its currency rate. It returns the computed total as a float64.
-func calculateTotalAmount(reservationSet reservationSet, ids []int64) float64 {
+// calculateTotalAmount computes the total amount for the selected reservations and penalties by summing each one's price multiplied by its currency rate. It returns the computed total as a float64.
+func calculateTotalAmount(reservationSet reservationSet, penaltySet penaltySet, ids, penaltyIDs []int64) float64 {
 	var total float64
 	for _, id := range ids {
 		r := reservationSet[id]
 		total += (r.TotalPrice * r.CurrencyRate)
 	}
 
+	for _, id := range penaltyIDs {
+		p := penaltySet[id]
+		total += (p.Amount * p.CurrencyRate)
+	}
+
 	return total
 }
 
-func createInvoiceDoc(p BillParams, reservationSet reservationSet, clientID int32, currency string, accountID int) (string, error) {
+func createInvoiceDoc(p BillParams, reservationSet reservationSet, penaltySet penaltySet, clientID int32, currency string, accountID int) (string, error) {
 	ic := icount.NewIcount()
-	invoiceItems := buildInvoiceItems(p.IDs, reservationSet)
+	invoiceItems := buildInvoiceItems(p.IDs, p.PenaltyIDs, reservationSet, penaltySet)
 	res, err := ic.CreateInvoice(icount.CreateDocParams{
 		ClientID:      int(clientID),
 		CurrencyID:    icount.CurrencyIDsMap[currency],
@@ -347,9 +473,9 @@ func createInvoiceDoc(p BillParams, reservationSet reservationSet, clientID int3
 	return docNum, nil
 }
 
-func createReceiptDoc(p BillParams, reservationSet reservationSet, clientID int32, currency string, accountID int) (string, error) {
+func createReceiptDoc(p BillParams, reservationSet reservationSet, penaltySet penaltySet, clientID int32, currency string, accountID int) (string, error) {
 	ic := icount.NewIcount()
-	receiptItems := buildReceiptItems(p.IDs, reservationSet)
+	receiptItems := buildReceiptItems(p.IDs, p.PenaltyIDs, reservationSet, penaltySet)
 	res, err := ic.CreateReceipt(icount.CreateDocParams{
 		ClientID:      int(clientID),
 		CurrencyID:    icount.CurrencyIDsMap[currency],

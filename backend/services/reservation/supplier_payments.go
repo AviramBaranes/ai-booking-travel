@@ -39,11 +39,11 @@ func (s *Service) ValidateFlexPaymentSummary(w http.ResponseWriter, req *http.Re
 	sps.ValidateFlexPaymentSummaryRaw(w, req, file)
 }
 
-// PaySupplierReservations records an iCount expense for each of the given reservations that is
-// still outstanding, and marks it as paid to the supplier.
+// PaySupplier records an iCount expense for each of the given reservations and fees that is still
+// outstanding, and marks it as paid to the supplier.
 //
 // encore:api auth method=POST path=/supplier-payments tag:accountant
-func (s *Service) PaySupplierReservations(ctx context.Context, p supplier_payments.PaySupplierReservationsParams) (*supplier_payments.PaySupplierReservationsResponse, error) {
+func (s *Service) PaySupplier(ctx context.Context, p supplier_payments.PaySupplierParams) (*supplier_payments.PaySupplierResponse, error) {
 	sps := s.newSupplierPaymentsService()
-	return sps.PaySupplierReservations(ctx, p)
+	return sps.PaySupplier(ctx, p)
 }

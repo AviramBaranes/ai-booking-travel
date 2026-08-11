@@ -8,6 +8,7 @@ import (
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
 	actions "encore.app/services/reservation/handlers/actions"
+	"encore.app/services/reservation/handlers/penalties"
 	queries "encore.app/services/reservation/handlers/queries"
 	"encore.app/services/reservation/handlers/reservation_pricing"
 	"encore.app/services/reservation/handlers/supplier_payments"
@@ -28,6 +29,9 @@ const (
 	ReservationStatusBooked    = "booked"
 	ReservationStatusCanceled  = "canceled"
 	ReservationStatusVouchered = "vouchered"
+
+	PenaltyTypeCancellation = "cancellation"
+	PenaltyTypeNoShow       = "no_show"
 )
 
 type GetReservationResponse = queries.GetReservationResponse
@@ -35,6 +39,7 @@ type ListReservationsParams = queries.ListReservationsParams
 type ReservationSummary = queries.ReservationSummary
 type ListReservationsResponse = queries.ListReservationsResponse
 type OpenReservation = queries.OpenReservation
+type OpenPenalty = queries.OpenPenalty
 type GetOpenReservationsResponse = queries.GetOpenReservationsResponse
 type ListOpenReservationsByBillingEntityParams = queries.ListOpenReservationsByBillingEntityParams
 type BillingReservation = reservation_pricing.BillingReservation
@@ -46,16 +51,21 @@ type CurrencyGroup = queries.CurrencyGroup
 type ListUnpaidSupplierReservationsParams = supplier_payments.ListUnpaidSupplierReservationsParams
 type ListUnpaidSupplierReservationsResponse = supplier_payments.ListUnpaidSupplierReservationsResponse
 type UnpaidSupplierReservation = supplier_payments.UnpaidSupplierReservation
-type UnpaidSupplierCurrencyGroup = supplier_payments.UnpaidSupplierCurrencyGroup
+type UnpaidSupplierPenalty = supplier_payments.UnpaidSupplierPenalty
 type ValidateFlexPaymentSummaryResponse = supplier_payments.ValidateFlexPaymentSummaryResponse
 type ApprovedReservation = supplier_payments.ApprovedReservation
 type RejectedReservation = supplier_payments.RejectedReservation
-type PaySupplierReservationsParams = supplier_payments.PaySupplierReservationsParams
-type PaySupplierReservationsResponse = supplier_payments.PaySupplierReservationsResponse
+type ApprovedPenalty = supplier_payments.ApprovedPenalty
+type RejectedPenalty = supplier_payments.RejectedPenalty
+type PaySupplierParams = supplier_payments.PaySupplierParams
+type PaySupplierResponse = supplier_payments.PaySupplierResponse
 type PaidSupplierReservation = supplier_payments.PaidSupplierReservation
 type FailedSupplierPayment = supplier_payments.FailedSupplierPayment
+type PaidSupplierPenalty = supplier_payments.PaidSupplierPenalty
+type FailedSupplierPenalty = supplier_payments.FailedSupplierPenalty
 
 var ErrInvalidPaymentSummaryFile = supplier_payments.ErrInvalidPaymentSummaryFile
+var ErrNothingToPay = supplier_payments.ErrNothingToPay
 
 // --- Actions type aliases ---
 
@@ -64,10 +74,17 @@ type CreateReservationParams = actions.CreateReservationParams
 type CreateReservationResponse = actions.CreateReservationResponse
 type ApplyVoucherParams = actions.ApplyVoucherParams
 type ResolveReservationsParams = actions.ResolveReservationsParams
+type ResolvePenaltiesParams = actions.ResolvePenaltiesParams
 type SeedReservationsResponse = actions.SeedReservationsResponse
 type PayAtPickup = actions.PayAtPickup
 type SelectedAddon = actions.SelectedAddon
 type VoucherReservationAfterPaymentParams = actions.VoucherReservationAfterPaymentParams
+
+// --- Penalties type aliases ---
+
+type CreatePenaltyParams = penalties.CreatePenaltyParams
+type CreatePenaltyResponse = penalties.CreatePenaltyResponse
+type BillingPenalty = reservation_pricing.BillingPenalty
 
 // --- Error re-exports ---
 
@@ -75,6 +92,8 @@ var ErrInvalidBillingEntity = queries.ErrInvalidBillingEntity
 var ErrOfficeInOrganicOrg = queries.ErrOfficeInOrganicOrg
 var ErrOrgIsInorganic = queries.ErrOrgIsInorganic
 var ErrCancellationWindowExceeded = actions.ErrCancellationWindowExceeded
+var ErrReservationNotCanceled = penalties.ErrReservationNotCanceled
+var ErrPenaltyAlreadyExists = penalties.ErrPenaltyAlreadyExists
 
 // BookingCancellationEvents is a pub/sub topic that publishes events whenever a reservation is canceled.
 var BookingCancellationEvents = pubsub.NewTopic[*actions.BookingCancellationEvent]("booking-cancellation-events", pubsub.TopicConfig{

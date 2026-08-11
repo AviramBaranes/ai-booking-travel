@@ -56,3 +56,16 @@ type BillingReservation struct {
 	PickupDate          string  `json:"pickupDate"`
 	VoucheredAt         string  `json:"voucheredAt"`
 }
+
+// BillingPenalty is a cancellation or no-show fee tailored for accountant billing workflows.
+// It carries no price breakdown: the supplier's charge is passed on to the customer as is.
+type BillingPenalty struct {
+	ID                  int64   `json:"id"`
+	ReservationID       int64   `json:"reservationId"`
+	BrokerReservationID string  `json:"brokerReservationId"`
+	Type                string  `json:"type"`
+	Amount              float64 `json:"amount"`
+	CurrencyCode        string  `json:"currencyCode"`
+	CurrencyRate        float64 `json:"currencyRate"`
+	CreatedAt           string  `json:"createdAt"`
+}

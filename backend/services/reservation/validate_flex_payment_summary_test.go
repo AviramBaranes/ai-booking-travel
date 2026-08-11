@@ -26,6 +26,9 @@ const (
 	bookingUSD           = "4P114872"
 	bookingAlreadyPaid   = "4H770313"
 	bookingGhost         = "4P905544"
+	bookingPenalty       = "4H556677"
+	bookingPenaltyWrong  = "4P223344"
+	bookingCanceled      = "4H889900"
 )
 
 // --- Helpers ---
@@ -158,6 +161,22 @@ func rejectedByBookingID(rejected []RejectedReservation) map[string]RejectedRese
 	return byID
 }
 
+func approvedPenaltiesByBookingID(approved []ApprovedPenalty) map[string]ApprovedPenalty {
+	byID := make(map[string]ApprovedPenalty, len(approved))
+	for _, a := range approved {
+		byID[a.BrokerReservationID] = a
+	}
+	return byID
+}
+
+func rejectedPenaltiesByBookingID(rejected []RejectedPenalty) map[string]RejectedPenalty {
+	byID := make(map[string]RejectedPenalty, len(rejected))
+	for _, r := range rejected {
+		byID[r.BrokerReservationID] = r
+	}
+	return byID
+}
+
 // --- Tests ---
 
 func TestValidateFlexPaymentSummary(t *testing.T) {
@@ -194,12 +213,37 @@ func TestValidateFlexPaymentSummary(t *testing.T) {
 		t.Fatalf("failed to mark reservation as paid to supplier: %v", err)
 	}
 
+	// Fees sit on canceled reservations, which is also what keeps their booking id out of the
+	// outstanding reservation set so the line resolves to the fee.
+	const penaltyAmount = 75.0
+	cancelReservation := func(id int64) {
+		t.Helper()
+		if err := s.query.CancelReservation(ctx, id); err != nil {
+			t.Fatalf("failed to cancel reservation: %v", err)
+		}
+	}
+
+	penaltyResID := seedFlex(bookingPenalty, "EUR")
+	cancelReservation(penaltyResID)
+	penalty := seedPenalty(t, ctx, s, penaltyResID, db.PenaltyTypeNoShow, penaltyAmount, "EUR")
+
+	penaltyWrongResID := seedFlex(bookingPenaltyWrong, "EUR")
+	cancelReservation(penaltyWrongResID)
+	penaltyWrong := seedPenalty(t, ctx, s, penaltyWrongResID, db.PenaltyTypeCancellation, penaltyAmount, "EUR")
+
+	// Canceled with no fee recorded yet — the case the accountant is meant to act on.
+	canceledID := seedFlex(bookingCanceled, "EUR")
+	cancelReservation(canceledID)
+
 	file := buildFlexSummary(t, map[string][]summaryLine{
 		"EUR": {
 			{bookingID: bookingMatch, balance: owed},
 			{bookingID: bookingWrongPrice, balance: owed + 25},
 			{bookingID: bookingAlreadyPaid, balance: owed},
 			{bookingID: bookingGhost, balance: owed},
+			{bookingID: bookingPenalty, balance: penaltyAmount},
+			{bookingID: bookingPenaltyWrong, balance: penaltyAmount + 15},
+			{bookingID: bookingCanceled, balance: owed},
 		},
 		"USD": {
 			{bookingID: bookingUSD, balance: owed},
@@ -211,6 +255,8 @@ func TestValidateFlexPaymentSummary(t *testing.T) {
 	resp := decodeValidationResponse(t, postFlexSummary(t, s, "flex-summary.xlsx", file))
 	approved := approvedByBookingID(resp.Approved)
 	rejected := rejectedByBookingID(resp.Rejected)
+	approvedPenalties := approvedPenaltiesByBookingID(resp.ApprovedPenalties)
+	rejectedPenalties := rejectedPenaltiesByBookingID(resp.RejectedPenalties)
 
 	t.Run("approves lines matching an outstanding reservation", func(t *testing.T) {
 		for bookingID, wantID := range map[string]int64{
@@ -266,19 +312,81 @@ func TestValidateFlexPaymentSummary(t *testing.T) {
 		}
 	})
 
-	t.Run("rejects unknown and already-settled reservations", func(t *testing.T) {
-		for _, bookingID := range []string{bookingGhost, bookingAlreadyPaid} {
-			got, ok := rejected[bookingID]
-			if !ok {
-				t.Errorf("expected %s to be rejected", bookingID)
-				continue
-			}
-			if got.Reason != supplier_payments.ReasonNotFound {
-				t.Errorf("%s rejected with reason %q, want %q", bookingID, got.Reason, supplier_payments.ReasonNotFound)
-			}
-			if got.ReservationID != nil {
-				t.Errorf("%s should carry no reservation id, got %d", bookingID, *got.ReservationID)
-			}
+	t.Run("rejects a booking id we hold no reservation for", func(t *testing.T) {
+		got, ok := rejected[bookingGhost]
+		if !ok {
+			t.Fatalf("expected %s to be rejected", bookingGhost)
+		}
+		if got.Reason != supplier_payments.ReasonNotFound {
+			t.Errorf("rejected with reason %q, want %q", got.Reason, supplier_payments.ReasonNotFound)
+		}
+		if got.ReservationID != nil {
+			t.Errorf("should carry no reservation id, got %d", *got.ReservationID)
+		}
+	})
+
+	t.Run("tells an already-settled reservation apart from an unknown one", func(t *testing.T) {
+		got, ok := rejected[bookingAlreadyPaid]
+		if !ok {
+			t.Fatalf("expected %s to be rejected", bookingAlreadyPaid)
+		}
+		if got.Reason != supplier_payments.ReasonAlreadyPaid {
+			t.Errorf("rejected with reason %q, want %q", got.Reason, supplier_payments.ReasonAlreadyPaid)
+		}
+		// The refined reason carries the reservation, so the accountant can look it up.
+		if got.ReservationID == nil || *got.ReservationID != alreadyPaidID {
+			t.Errorf("reservation id is %v, want %d", got.ReservationID, alreadyPaidID)
+		}
+	})
+
+	t.Run("reports a canceled reservation with no fee recorded", func(t *testing.T) {
+		got, ok := rejected[bookingCanceled]
+		if !ok {
+			t.Fatalf("expected %s to be rejected", bookingCanceled)
+		}
+		if got.Reason != supplier_payments.ReasonCanceled {
+			t.Errorf("rejected with reason %q, want %q", got.Reason, supplier_payments.ReasonCanceled)
+		}
+		if got.ReservationID == nil || *got.ReservationID != canceledID {
+			t.Errorf("reservation id is %v, want %d", got.ReservationID, canceledID)
+		}
+	})
+
+	t.Run("approves a line matching an outstanding fee", func(t *testing.T) {
+		got, ok := approvedPenalties[bookingPenalty]
+		if !ok {
+			t.Fatalf("expected %s to be approved as a fee, got rejection %+v", bookingPenalty, rejected[bookingPenalty])
+		}
+
+		want := ApprovedPenalty{
+			PenaltyID:           penalty.ID,
+			ReservationID:       penaltyResID,
+			BrokerReservationID: bookingPenalty,
+			Type:                string(db.PenaltyTypeNoShow),
+			CurrencyCode:        "EUR",
+			Amount:              penaltyAmount,
+		}
+		if got != want {
+			t.Errorf("unexpected approved fee:\ngot  %+v\nwant %+v", got, want)
+		}
+	})
+
+	t.Run("rejects a fee billed at a different amount", func(t *testing.T) {
+		got, ok := rejectedPenalties[bookingPenaltyWrong]
+		if !ok {
+			t.Fatalf("expected %s to be rejected as a fee", bookingPenaltyWrong)
+		}
+		if got.Reason != supplier_payments.ReasonInvalidPrice {
+			t.Errorf("reason is %q, want %q", got.Reason, supplier_payments.ReasonInvalidPrice)
+		}
+		if got.PenaltyID != penaltyWrong.ID {
+			t.Errorf("penalty id is %d, want %d", got.PenaltyID, penaltyWrong.ID)
+		}
+		if got.ExpectedAmount != penaltyAmount {
+			t.Errorf("expected amount is %.2f, want %.2f", got.ExpectedAmount, penaltyAmount)
+		}
+		if got.Balance != penaltyAmount+15 {
+			t.Errorf("balance is %.2f, want %.2f", got.Balance, penaltyAmount+15)
 		}
 	})
 

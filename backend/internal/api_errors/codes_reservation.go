@@ -8,4 +8,7 @@ const (
 	CodeNoObligo               = "no_obligo"
 
 	CodeInvalidPaymentSummaryFile = "invalid_payment_summary_file"
+
+	CodeReservationNotCanceled = "reservation_not_canceled"
+	CodePenaltyAlreadyExists   = "penalty_already_exists"
 )

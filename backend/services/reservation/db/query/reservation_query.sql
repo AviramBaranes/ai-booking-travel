@@ -399,7 +399,7 @@ WHERE
     broker = sqlc.arg(broker)::broker
     AND reservation_status != 'canceled'
     AND supplier_paid_at IS NULL
-ORDER BY currency_code, pickup_date, id;
+ORDER BY pickup_date, id;
 
 -- name: ListUnpaidSupplierReservationsByIDs :many
 SELECT
@@ -415,6 +415,17 @@ WHERE
     id = ANY(sqlc.arg(ids)::BIGINT[])
     AND reservation_status != 'canceled'
     AND supplier_paid_at IS NULL;
+
+-- name: ListReservationsByBrokerReservationIDs :many
+SELECT
+    id,
+    broker_reservation_id,
+    reservation_status,
+    supplier_paid_at
+FROM reservations
+WHERE
+    broker = sqlc.arg(broker)::broker
+    AND broker_reservation_id = ANY(sqlc.arg(broker_reservation_ids)::TEXT[]);
 
 -- name: MarkReservationsPaidToSupplier :exec
 UPDATE reservations

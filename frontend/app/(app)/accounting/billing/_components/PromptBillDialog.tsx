@@ -32,6 +32,7 @@ interface PromptBillDialogProps {
   onOpenChange: (open: boolean) => void;
   entity: BillingEntity;
   selectedIds: number[];
+  selectedPenaltyIds: number[];
   onSuccess: () => void;
   onContinueToInvoiceCreation: () => void;
 }
@@ -41,6 +42,7 @@ export function PromptBillDialog({
   onOpenChange,
   entity,
   selectedIds,
+  selectedPenaltyIds,
   onSuccess,
   onContinueToInvoiceCreation,
 }: PromptBillDialogProps) {
@@ -60,6 +62,7 @@ export function PromptBillDialog({
     mutationFn: () =>
       bill({
         ids: selectedIds,
+        penalty_ids: selectedPenaltyIds,
         total_paid: 1, //skip validation
         transfer_date: "2006-01-02", //skip validation
         organization_id: entity.kind === "org" ? entity.id : undefined,

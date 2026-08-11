@@ -143,6 +143,120 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 		}
 	})
 
+	t.Run("returns open penalties in the currency group of their reservation", func(t *testing.T) {
+		t.Parallel()
+		const agentID int64 = 50001
+		orgID := int64(50)
+		isOrganic := true
+		ctx := context.Background()
+		s := &Service{query: testQuerier()}
+		qs := queries.NewQueryService(s.query)
+
+		vn := "VCH-PENALTY-1"
+		openID := seedReservation(t, ctx, s, agentID, func(p *CreateReservationParams) {
+			p.BrokerReservationID = "BILLING-PENALTY-OPEN"
+			p.CurrencyCode = "USD"
+			p.OrganizationID = &orgID
+			p.IsOrganizationOrganic = &isOrganic
+		})
+		if err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{ID: openID, UserID: agentID, VoucherNumber: &vn, CurrencyRate: dbadapters.NumericFromFloat64(1)}); err != nil {
+			t.Fatalf("failed to apply voucher: %v", err)
+		}
+
+		// A second, canceled reservation carrying the fee. It is unpaid, so it never shows up
+		// among the open reservations itself — only its penalty does.
+		canceledID := seedReservation(t, ctx, s, agentID, func(p *CreateReservationParams) {
+			p.BrokerReservationID = "BILLING-PENALTY-CANCELED"
+			p.CurrencyCode = "USD"
+			p.OrganizationID = &orgID
+			p.IsOrganizationOrganic = &isOrganic
+		})
+		penalty := seedPenalty(t, ctx, s, canceledID, db.PenaltyTypeNoShow, 120.00, "USD")
+
+		resp, err := qs.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OrgID: orgID})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		assertCurrencyGroups(t, resp.CurrencyGroups, map[string]int{"USD": 1})
+
+		got := resp.CurrencyGroups[0].Penalties
+		if len(got) != 1 {
+			t.Fatalf("expected 1 penalty in the USD group, got %d", len(got))
+		}
+		if got[0].ID != penalty.ID {
+			t.Errorf("expected penalty id %d, got %d", penalty.ID, got[0].ID)
+		}
+		if got[0].ReservationID != canceledID {
+			t.Errorf("expected reservation id %d, got %d", canceledID, got[0].ReservationID)
+		}
+		if got[0].BrokerReservationID != "BILLING-PENALTY-CANCELED" {
+			t.Errorf("expected brokerReservationId=BILLING-PENALTY-CANCELED, got %s", got[0].BrokerReservationID)
+		}
+		if got[0].Type != string(db.PenaltyTypeNoShow) {
+			t.Errorf("expected type=%s, got %s", db.PenaltyTypeNoShow, got[0].Type)
+		}
+		if got[0].Amount != 120.00 {
+			t.Errorf("expected amount=120.00, got %.2f", got[0].Amount)
+		}
+	})
+
+	t.Run("opens a currency group for a penalty with no open reservations in that currency", func(t *testing.T) {
+		t.Parallel()
+		const agentID int64 = 60001
+		officeID := int64(60)
+		orgID := int64(61)
+		isOrganic := false
+		ctx := context.Background()
+		s := &Service{query: testQuerier()}
+		qs := queries.NewQueryService(s.query)
+
+		canceledID := seedReservation(t, ctx, s, agentID, func(p *CreateReservationParams) {
+			p.BrokerReservationID = "BILLING-PENALTY-ONLY"
+			p.CurrencyCode = "EUR"
+			p.OfficeID = &officeID
+			p.OrganizationID = &orgID
+			p.IsOrganizationOrganic = &isOrganic
+		})
+		seedPenalty(t, ctx, s, canceledID, db.PenaltyTypeCancellation, 75.25, "EUR")
+
+		resp, err := qs.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OfficeID: officeID})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		assertCurrencyGroups(t, resp.CurrencyGroups, map[string]int{"EUR": 0})
+
+		if len(resp.CurrencyGroups[0].Penalties) != 1 {
+			t.Fatalf("expected 1 penalty in the EUR group, got %d", len(resp.CurrencyGroups[0].Penalties))
+		}
+	})
+
+	t.Run("excludes penalties of another billing entity", func(t *testing.T) {
+		t.Parallel()
+		const agentID int64 = 70001
+		orgID := int64(70)
+		otherOrgID := int64(71)
+		isOrganic := true
+		ctx := context.Background()
+		s := &Service{query: testQuerier()}
+		qs := queries.NewQueryService(s.query)
+
+		canceledID := seedReservation(t, ctx, s, agentID, func(p *CreateReservationParams) {
+			p.BrokerReservationID = "BILLING-PENALTY-OTHER-ORG"
+			p.CurrencyCode = "USD"
+			p.OrganizationID = &otherOrgID
+			p.IsOrganizationOrganic = &isOrganic
+		})
+		seedPenalty(t, ctx, s, canceledID, db.PenaltyTypeCancellation, 50.00, "USD")
+
+		resp, err := qs.ListOpenReservationsByBillingEntity(ctx, &ListOpenReservationsByBillingEntityParams{OrgID: orgID})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if len(resp.CurrencyGroups) != 0 {
+			t.Fatalf("expected 0 currency groups, got %d (%v)", len(resp.CurrencyGroups), resp.CurrencyGroups)
+		}
+	})
+
 	t.Run("maps price details and row data correctly", func(t *testing.T) {
 		t.Parallel()
 		// PurchasePrice=100, BrokerErpPrice=15 → carPurchasePrice=115
@@ -216,6 +330,22 @@ func TestListOpenReservationsByBillingEntity(t *testing.T) {
 			t.Errorf("ERPSellingPrice: want 20.00, got %.2f", r.ERPSellingPrice)
 		}
 	})
+}
+
+// seedPenalty inserts an unpaid penalty against the given reservation and returns the row.
+func seedPenalty(t *testing.T, ctx context.Context, s *Service, reservationID int64, penaltyType db.PenaltyType, amount float64, currencyCode string) db.ReservationPenalty {
+	t.Helper()
+	penalty, err := s.query.InsertReservationPenalty(ctx, db.InsertReservationPenaltyParams{
+		ReservationID: reservationID,
+		PenaltyType:   penaltyType,
+		CurrencyCode:  currencyCode,
+		CurrencyRate:  dbadapters.NumericFromFloat64(1),
+		Amount:        dbadapters.NumericFromFloat64(amount),
+	})
+	if err != nil {
+		t.Fatalf("failed to seed penalty: %v", err)
+	}
+	return penalty
 }
 
 // assertCurrencyGroups verifies that the response contains exactly the expected

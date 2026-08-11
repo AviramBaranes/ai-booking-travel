@@ -315,7 +315,7 @@ func reservationToReportRow(r Reservations) []any {
 	row[colAgentName] = r.AgentName
 	row[colDriverName] = r.DriverName
 	row[colReservationCreatedAt] = r.ReservationCreationDate
-	row[colReservationID] = r.ReservationBrokerID
+	row[colReservationID] = reportReservationIDLabel(r)
 	row[colVoucherDate] = r.VoucherDate
 	row[colVoucherNumber] = r.ReservationID
 	row[colAgentVoucherNumber] = r.VoucherNumber
@@ -324,8 +324,24 @@ func reservationToReportRow(r Reservations) []any {
 	row[colCountryCode] = r.CountryCode
 	row[colRentalDays] = r.RentalDays
 	row[colCurrency] = r.Currency
-	row[colNetPrice] = r.CarPrice
-	row[colFullCoverage] = r.ERPPrice
 	row[colTotalNetPrice] = r.TotalPrice
+
+	// A fee is a single amount rather than a priced rental, so it fills only the total and leaves
+	// the car price and coverage columns empty.
+	if r.PenaltyType == "" {
+		row[colNetPrice] = r.CarPrice
+		row[colFullCoverage] = r.ERPPrice
+	}
+
 	return row
+}
+
+// reportReservationIDLabel returns the booking reference shown in the reservation id column,
+// suffixed with the fee type so a cancellation or no-show row is identifiable at a glance.
+func reportReservationIDLabel(r Reservations) string {
+	if r.PenaltyType == "" {
+		return r.ReservationBrokerID
+	}
+
+	return fmt.Sprintf("%s - %s", r.ReservationBrokerID, penaltyItemDescription(r.PenaltyType))
 }

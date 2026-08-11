@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
-import { paySupplierReservations } from "@/shared/api/reservations-api";
+import { paySupplier } from "@/shared/api/reservations-api";
 import { formatDate } from "@/shared/utils/formatDate";
 import { cn } from "@/lib/utils";
 import type { supplier_payments } from "@/shared/client";
@@ -34,6 +34,7 @@ interface MarkAsPaidDialogProps {
   onOpenChange: (open: boolean) => void;
   brokerCode: string;
   reservationIds: number[];
+  penaltyIds: number[];
   /** Clears the table selection once the payment went through. */
   onPaid: () => void;
 }
@@ -43,18 +44,21 @@ export function MarkAsPaidDialog({
   onOpenChange,
   brokerCode,
   reservationIds,
+  penaltyIds,
   onPaid,
 }: MarkAsPaidDialogProps) {
   const queryClient = useQueryClient();
   const [paymentDate, setPaymentDate] = useState<Date>(new Date());
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [result, setResult] = useState<supplier_payments.PaySupplierReservationsResponse>();
+  const [result, setResult] =
+    useState<supplier_payments.PaySupplierResponse>();
 
   const mutation = useMutation({
     mutationFn: (date: Date) =>
-      paySupplierReservations({
+      paySupplier({
         reservationIds,
+        penaltyIds,
         paymentDate: formatDate(date),
       }),
     onSuccess: (response) => {
@@ -64,7 +68,12 @@ export function MarkAsPaidDialog({
       onPaid();
 
       // Everything settled — nothing left to report, so get out of the way.
-      if (response.failed.length === 0 && response.skipped.length === 0) {
+      if (
+        response.failed.length === 0 &&
+        response.skipped.length === 0 &&
+        response.failedPenalties.length === 0 &&
+        response.skippedPenalties.length === 0
+      ) {
         close();
         return;
       }
@@ -100,35 +109,52 @@ export function MarkAsPaidDialog({
         <div className="flex flex-col gap-1 ps-8">
           <DialogTitle className="type-h5 text-navy">סמן כשולם</DialogTitle>
           <p className="type-paragraph text-text-secondary">
-            {reservationIds.length} הזמנות ייווצרו כהוצאה ויסומנו כשולמו לספק.
+            {reservationIds.length + penaltyIds.length} שורות ייווצרו כהוצאה
+            ויסומנו כשולמו לספק.
           </p>
         </div>
 
         {result ? (
           <div className="flex flex-col gap-4">
             <p className="type-paragraph text-navy">
-              {result.paid.length} הזמנות סומנו כשולמו.
+              {result.paid.length + result.paidPenalties.length} שורות סומנו
+              כשולמו.
             </p>
 
-            {result.skipped.length > 0 && (
+            {result.skipped.length + result.skippedPenalties.length > 0 && (
               <p className="type-paragraph text-text-secondary">
-                {result.skipped.length} הזמנות דולגו מכיוון שכבר שולמו או בוטלו.
+                {result.skipped.length + result.skippedPenalties.length} שורות
+                דולגו מכיוון שכבר שולמו או בוטלו.
               </p>
             )}
 
-            {result.failed.length > 0 && (
+            {result.failed.length + result.failedPenalties.length > 0 && (
               <section className="flex flex-col gap-2">
                 <h3 className="type-h6 text-navy">
-                  נכשלו ({result.failed.length})
+                  נכשלו ({result.failed.length + result.failedPenalties.length})
                 </h3>
                 <ul className="flex flex-col gap-1 max-h-48 overflow-y-auto rounded-xl border border-border-light/60 p-3">
                   {result.failed.map((f) => (
                     <li
-                      key={f.reservationId}
+                      key={`reservation-${f.reservationId}`}
                       className="flex items-center justify-between gap-4 text-sm"
                     >
                       <span className="text-navy font-medium">
                         {f.reservationId}
+                      </span>
+                      <span className="text-destructive">
+                        {failureReason(f.reason)}
+                        {f.expenseId && ` (הוצאה ${f.expenseId})`}
+                      </span>
+                    </li>
+                  ))}
+                  {result.failedPenalties.map((f) => (
+                    <li
+                      key={`penalty-${f.penaltyId}`}
+                      className="flex items-center justify-between gap-4 text-sm"
+                    >
+                      <span className="text-navy font-medium">
+                        חיוב {f.penaltyId}
                       </span>
                       <span className="text-destructive">
                         {failureReason(f.reason)}

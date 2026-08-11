@@ -793,6 +793,55 @@ func (q *Queries) ListBusinessesBalancesReport(ctx context.Context) ([]ListBusin
 	return items, nil
 }
 
+const listReservationsByBrokerReservationIDs = `-- name: ListReservationsByBrokerReservationIDs :many
+SELECT
+    id,
+    broker_reservation_id,
+    reservation_status,
+    supplier_paid_at
+FROM reservations
+WHERE
+    broker = $1::broker
+    AND broker_reservation_id = ANY($2::TEXT[])
+`
+
+type ListReservationsByBrokerReservationIDsParams struct {
+	Broker               Broker
+	BrokerReservationIds []string
+}
+
+type ListReservationsByBrokerReservationIDsRow struct {
+	ID                  int64
+	BrokerReservationID string
+	ReservationStatus   ReservationStatus
+	SupplierPaidAt      pgtype.Timestamptz
+}
+
+func (q *Queries) ListReservationsByBrokerReservationIDs(ctx context.Context, arg ListReservationsByBrokerReservationIDsParams) ([]ListReservationsByBrokerReservationIDsRow, error) {
+	rows, err := q.db.Query(ctx, listReservationsByBrokerReservationIDs, arg.Broker, arg.BrokerReservationIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListReservationsByBrokerReservationIDsRow
+	for rows.Next() {
+		var i ListReservationsByBrokerReservationIDsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.BrokerReservationID,
+			&i.ReservationStatus,
+			&i.SupplierPaidAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listReservationsByUser = `-- name: ListReservationsByUser :many
 SELECT
     id,
@@ -1042,7 +1091,7 @@ WHERE
     broker = $1::broker
     AND reservation_status != 'canceled'
     AND supplier_paid_at IS NULL
-ORDER BY currency_code, pickup_date, id
+ORDER BY pickup_date, id
 `
 
 type ListUnpaidSupplierReservationsRow struct {
