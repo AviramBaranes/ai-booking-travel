@@ -10,7 +10,7 @@ import { formatPrice } from "@/shared/utils/formatPrice";
 import { MoneyCell, ReportColumn } from "../_components/reportTableUtils";
 import { CollectionsDetailDialog } from "../_components/CollectionsDetailDialog";
 import { BillingEntity } from "@/app/(app)/accounting/billing/_components/BillingEntityCombobox";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type CollectionRow = reports.BusinessesBalancesReportRow;
 
@@ -50,6 +50,21 @@ export default function CollectionsReportTable() {
 
   const rows = reportQuery.data?.businesses ?? [];
   const total = reportQuery.data?.total ?? 0;
+
+  // Currencies never mix into one figure: each is summed on its own, with everything that is
+  // neither euro nor dollar already converted to shekels by the report.
+  const totals = useMemo(
+    () =>
+      rows.reduce(
+        (acc, row) => ({
+          euro: acc.euro + row.totalOpenBalanceInEuro,
+          dollar: acc.dollar + row.totalOpenBalanceInDollar,
+          other: acc.other + row.totalInOtherCurrency,
+        }),
+        { euro: 0, dollar: 0, other: 0 },
+      ),
+    [rows],
+  );
 
   return (
     <>
@@ -134,6 +149,24 @@ export default function CollectionsReportTable() {
                 ))
               )}
             </tbody>
+            {rows.length > 0 && (
+              <tfoot>
+                <tr className="border-t-2 border-gray-300 bg-slate-100 text-sm font-bold text-slate-800">
+                  <td className="whitespace-nowrap px-3 py-3 align-middle">
+                    סה״כ לגבייה
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3 text-center align-middle">
+                    {formatPrice(totals.euro, "EUR")}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3 text-center align-middle">
+                    {formatPrice(totals.dollar, "USD")}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3 align-middle">
+                    {formatPrice(totals.other, "ILS")}
+                  </td>
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
 

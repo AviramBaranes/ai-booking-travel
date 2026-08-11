@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StatusBadge } from "@/app/(app)/admin/reports/_components/reportTableUtils";
+import { ReservationDetailDialog } from "@/app/(app)/admin/_components/ReservationDetailDialog";
 import { formatDate } from "@/shared/utils/formatDate";
 import { formatPriceFloat } from "@/shared/utils/formatPrice";
 import { LoadPaymentSummaryDialog } from "./LoadPaymentSummaryDialog";
@@ -49,6 +50,10 @@ export function UnpaidReservationsCard({
   );
   const [summaryDialogOpen, setSummaryDialogOpen] = useState(false);
   const [markAsPaidDialogOpen, setMarkAsPaidDialogOpen] = useState(false);
+  // A fee has no details of its own, so it opens the reservation it was charged on.
+  const [detailReservationId, setDetailReservationId] = useState<number | null>(
+    null,
+  );
 
   const selectedReservations = useMemo(
     () => reservations.filter((r) => selected.has(r.id)),
@@ -109,9 +114,16 @@ export function UnpaidReservationsCard({
   const togglePenalty = (id: number) => toggle(setSelectedPenaltyIds, id);
 
   // Approved ids come from the summary file, so keep only the ones actually on screen.
-  const selectApproved = (reservationIds: number[]) => {
-    const onScreen = new Set(reservations.map((r) => r.id));
-    setSelected(new Set(reservationIds.filter((id) => onScreen.has(id))));
+  const selectApproved = (reservationIds: number[], penaltyIds: number[]) => {
+    const reservationsOnScreen = new Set(reservations.map((r) => r.id));
+    setSelected(
+      new Set(reservationIds.filter((id) => reservationsOnScreen.has(id))),
+    );
+
+    const penaltiesOnScreen = new Set(penalties.map((p) => p.id));
+    setSelectedPenaltyIds(
+      new Set(penaltyIds.filter((id) => penaltiesOnScreen.has(id))),
+    );
   };
 
   const clearSelection = () => {
@@ -222,11 +234,17 @@ export function UnpaidReservationsCard({
               return (
                 <tr
                   key={`${penalty ? "penalty" : "reservation"}-${row.id}`}
-                  className={`border-t border-border-light/40 transition-colors ${
+                  className={`border-t border-border-light/40 transition-colors cursor-pointer ${
                     penalty ? PENALTY_ROW_CLASSES : "hover:bg-background/60"
                   }`}
+                  onClick={() =>
+                    setDetailReservationId(
+                      isPenalty(row) ? row.reservationId : row.id,
+                    )
+                  }
                 >
-                  <td className="px-4 py-3">
+                  {/* Stops the checkbox from also opening the reservation behind it. */}
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       checked={checked}
                       onCheckedChange={() =>
@@ -294,6 +312,10 @@ export function UnpaidReservationsCard({
         reservationIds={selectedReservations.map((r) => r.id)}
         penaltyIds={selectedPenalties.map((p) => p.id)}
         onPaid={clearSelection}
+      />
+      <ReservationDetailDialog
+        reservationId={detailReservationId}
+        onClose={() => setDetailReservationId(null)}
       />
     </section>
   );

@@ -84,9 +84,32 @@ export interface RejectedSupplierPayment {
   expectedCurrencyCode?: string;
 }
 
+export interface ApprovedSupplierPenalty {
+  penaltyId: number;
+  reservationId: number;
+  brokerReservationId: string;
+  type: string;
+  currencyCode: string;
+  amount: number;
+}
+
+export interface RejectedSupplierPenalty {
+  penaltyId: number;
+  reservationId: number;
+  brokerReservationId: string;
+  type: string;
+  reason: string;
+  currencyCode: string;
+  balance: number;
+  expectedAmount: number;
+  expectedCurrencyCode: string;
+}
+
 export interface ValidateFlexPaymentSummaryResponse {
   approved: ApprovedSupplierPayment[];
   rejected: RejectedSupplierPayment[];
+  approvedPenalties: ApprovedSupplierPenalty[];
+  rejectedPenalties: RejectedSupplierPenalty[];
 }
 
 export function validateFlexPaymentSummary(file: File) {

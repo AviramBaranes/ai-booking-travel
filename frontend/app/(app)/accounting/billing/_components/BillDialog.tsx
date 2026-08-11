@@ -41,6 +41,7 @@ interface BillDialogProps {
   entity: BillingEntity;
   currencyCode: string;
   selectedIds: number[];
+  selectedPenaltyIds: number[];
   onSuccess: () => void;
 }
 
@@ -53,6 +54,7 @@ export function BillDialog({
   entity,
   currencyCode,
   selectedIds,
+  selectedPenaltyIds,
   onSuccess,
 }: BillDialogProps) {
   const queryClient = useQueryClient();
@@ -84,8 +86,7 @@ export function BillDialog({
     mutationFn: (values: FormValues) =>
       bill({
         ids: selectedIds,
-        // This screen does not select fees yet, so none are billed.
-        penalty_ids: [],
+        penalty_ids: selectedPenaltyIds,
         total_paid: values.total_paid,
         transfer_date: format(values.transfer_date, "yyyy-MM-dd"),
         organization_id: entity.kind === "org" ? entity.id : undefined,
@@ -115,7 +116,7 @@ export function BillDialog({
         <div className="flex flex-col gap-1">
           <DialogTitle className="type-h5 text-navy">הפקת חיוב</DialogTitle>
           <p className="type-paragraph text-text-secondary">
-            {`${entity.name} • ${currencyCode} • ${selectedIds.length} הזמנות`}
+            {`${entity.name} • ${currencyCode} • ${selectedIds.length + selectedPenaltyIds.length} שורות`}
           </p>
         </div>
 
