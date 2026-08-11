@@ -354,6 +354,21 @@ func (mr *MockQuerierMockRecorder) ListUnpaidSupplierPenalties(ctx, broker any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUnpaidSupplierPenalties", reflect.TypeOf((*MockQuerier)(nil).ListUnpaidSupplierPenalties), ctx, broker)
 }
 
+// ListUnpaidSupplierPenaltiesByIDs mocks base method.
+func (m *MockQuerier) ListUnpaidSupplierPenaltiesByIDs(ctx context.Context, ids []int64) ([]db.ListUnpaidSupplierPenaltiesByIDsRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListUnpaidSupplierPenaltiesByIDs", ctx, ids)
+	ret0, _ := ret[0].([]db.ListUnpaidSupplierPenaltiesByIDsRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListUnpaidSupplierPenaltiesByIDs indicates an expected call of ListUnpaidSupplierPenaltiesByIDs.
+func (mr *MockQuerierMockRecorder) ListUnpaidSupplierPenaltiesByIDs(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListUnpaidSupplierPenaltiesByIDs", reflect.TypeOf((*MockQuerier)(nil).ListUnpaidSupplierPenaltiesByIDs), ctx, ids)
+}
+
 // ListUnpaidSupplierReservations mocks base method.
 func (m *MockQuerier) ListUnpaidSupplierReservations(ctx context.Context, broker db.Broker) ([]db.ListUnpaidSupplierReservationsRow, error) {
 	m.ctrl.T.Helper()

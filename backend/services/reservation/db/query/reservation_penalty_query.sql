@@ -63,6 +63,21 @@ WHERE
     AND p.supplier_paid_at IS NULL
 ORDER BY r.pickup_date, p.id;
 
+-- name: ListUnpaidSupplierPenaltiesByIDs :many
+SELECT
+    p.id,
+    p.reservation_id,
+    p.amount,
+    p.currency_code,
+    p.currency_rate,
+    r.broker_reservation_id,
+    r.broker
+FROM reservation_penalties p
+JOIN reservations r ON r.id = p.reservation_id
+WHERE
+    p.id = ANY(sqlc.arg(ids)::BIGINT[])
+    AND p.supplier_paid_at IS NULL;
+
 -- name: MarkPenaltiesPaidToSupplier :exec
 UPDATE reservation_penalties
 SET

@@ -57,12 +57,15 @@ type ApprovedReservation = supplier_payments.ApprovedReservation
 type RejectedReservation = supplier_payments.RejectedReservation
 type ApprovedPenalty = supplier_payments.ApprovedPenalty
 type RejectedPenalty = supplier_payments.RejectedPenalty
-type PaySupplierReservationsParams = supplier_payments.PaySupplierReservationsParams
-type PaySupplierReservationsResponse = supplier_payments.PaySupplierReservationsResponse
+type PaySupplierParams = supplier_payments.PaySupplierParams
+type PaySupplierResponse = supplier_payments.PaySupplierResponse
 type PaidSupplierReservation = supplier_payments.PaidSupplierReservation
 type FailedSupplierPayment = supplier_payments.FailedSupplierPayment
+type PaidSupplierPenalty = supplier_payments.PaidSupplierPenalty
+type FailedSupplierPenalty = supplier_payments.FailedSupplierPenalty
 
 var ErrInvalidPaymentSummaryFile = supplier_payments.ErrInvalidPaymentSummaryFile
+var ErrNothingToPay = supplier_payments.ErrNothingToPay
 
 // --- Actions type aliases ---
 

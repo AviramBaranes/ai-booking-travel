@@ -30,6 +30,7 @@ type Querier interface {
 	ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error)
 	ListReservationsReport(ctx context.Context, arg ListReservationsReportParams) ([]Reservation, error)
 	ListUnpaidSupplierPenalties(ctx context.Context, broker Broker) ([]ListUnpaidSupplierPenaltiesRow, error)
+	ListUnpaidSupplierPenaltiesByIDs(ctx context.Context, ids []int64) ([]ListUnpaidSupplierPenaltiesByIDsRow, error)
 	ListUnpaidSupplierReservations(ctx context.Context, broker Broker) ([]ListUnpaidSupplierReservationsRow, error)
 	ListUnpaidSupplierReservationsByIDs(ctx context.Context, ids []int64) ([]ListUnpaidSupplierReservationsByIDsRow, error)
 	MarkPenaltiesPaidToSupplier(ctx context.Context, arg MarkPenaltiesPaidToSupplierParams) error

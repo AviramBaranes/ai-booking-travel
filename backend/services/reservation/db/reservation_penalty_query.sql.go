@@ -321,6 +321,60 @@ func (q *Queries) ListUnpaidSupplierPenalties(ctx context.Context, broker Broker
 	return items, nil
 }
 
+const listUnpaidSupplierPenaltiesByIDs = `-- name: ListUnpaidSupplierPenaltiesByIDs :many
+SELECT
+    p.id,
+    p.reservation_id,
+    p.amount,
+    p.currency_code,
+    p.currency_rate,
+    r.broker_reservation_id,
+    r.broker
+FROM reservation_penalties p
+JOIN reservations r ON r.id = p.reservation_id
+WHERE
+    p.id = ANY($1::BIGINT[])
+    AND p.supplier_paid_at IS NULL
+`
+
+type ListUnpaidSupplierPenaltiesByIDsRow struct {
+	ID                  int64
+	ReservationID       int64
+	Amount              pgtype.Numeric
+	CurrencyCode        string
+	CurrencyRate        pgtype.Numeric
+	BrokerReservationID string
+	Broker              Broker
+}
+
+func (q *Queries) ListUnpaidSupplierPenaltiesByIDs(ctx context.Context, ids []int64) ([]ListUnpaidSupplierPenaltiesByIDsRow, error) {
+	rows, err := q.db.Query(ctx, listUnpaidSupplierPenaltiesByIDs, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUnpaidSupplierPenaltiesByIDsRow
+	for rows.Next() {
+		var i ListUnpaidSupplierPenaltiesByIDsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ReservationID,
+			&i.Amount,
+			&i.CurrencyCode,
+			&i.CurrencyRate,
+			&i.BrokerReservationID,
+			&i.Broker,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const markPenaltiesPaidToSupplier = `-- name: MarkPenaltiesPaidToSupplier :exec
 UPDATE reservation_penalties
 SET
