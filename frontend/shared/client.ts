@@ -480,6 +480,7 @@ export namespace accounts {
 export namespace billing {
     export interface BillParams {
         ids: number[]
+        "penalty_ids": number[]
         "skip_invoice_creation"?: boolean
         "total_paid": number
         "transfer_date": string
@@ -1030,6 +1031,7 @@ export namespace reservation {
             this.baseClient = baseClient
             this.ApplyVoucher = this.ApplyVoucher.bind(this)
             this.CancelReservation = this.CancelReservation.bind(this)
+            this.CreatePenalty = this.CreatePenalty.bind(this)
             this.GetBusinessReport = this.GetBusinessReport.bind(this)
             this.GetBusinessesBalancesReport = this.GetBusinessesBalancesReport.bind(this)
             this.GetFullReservation = this.GetFullReservation.bind(this)
@@ -1038,7 +1040,7 @@ export namespace reservation {
             this.ListOpenReservationsByBillingEntity = this.ListOpenReservationsByBillingEntity.bind(this)
             this.ListReservations = this.ListReservations.bind(this)
             this.ListUnpaidSupplierReservations = this.ListUnpaidSupplierReservations.bind(this)
-            this.PaySupplierReservations = this.PaySupplierReservations.bind(this)
+            this.PaySupplier = this.PaySupplier.bind(this)
             this.ValidateFlexPaymentSummary = this.ValidateFlexPaymentSummary.bind(this)
         }
 
@@ -1048,6 +1050,16 @@ export namespace reservation {
 
         public async CancelReservation(id: number): Promise<void> {
             await this.baseClient.callTypedAPI("POST", `/api/reservation/${encodeURIComponent(id)}/cancel`)
+        }
+
+        /**
+         * CreatePenalty records a cancellation fee or no-show fee the supplier charged on a canceled
+         * reservation, which we in turn charge the customer.
+         */
+        public async CreatePenalty(params: penalties.CreatePenaltyParams): Promise<penalties.CreatePenaltyResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/penalties`, JSON.stringify(params))
+            return await resp.json() as penalties.CreatePenaltyResponse
         }
 
         public async GetBusinessReport(params: reports.ReportParams): Promise<reports.BusinessReportResponse> {
@@ -1164,13 +1176,13 @@ export namespace reservation {
         }
 
         /**
-         * PaySupplierReservations records an iCount expense for each of the given reservations that is
-         * still outstanding, and marks it as paid to the supplier.
+         * PaySupplier records an iCount expense for each of the given reservations and fees that is still
+         * outstanding, and marks it as paid to the supplier.
          */
-        public async PaySupplierReservations(params: supplier_payments.PaySupplierReservationsParams): Promise<supplier_payments.PaySupplierReservationsResponse> {
+        public async PaySupplier(params: supplier_payments.PaySupplierParams): Promise<supplier_payments.PaySupplierResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/supplier-payments`, JSON.stringify(params))
-            return await resp.json() as supplier_payments.PaySupplierReservationsResponse
+            return await resp.json() as supplier_payments.PaySupplierResponse
         }
 
         /**
@@ -1933,6 +1945,27 @@ export namespace organization {
     }
 }
 
+export namespace penalties {
+    /**
+     * CreatePenaltyParams is the request payload for recording a penalty the supplier charged us.
+     */
+    export interface CreatePenaltyParams {
+        reservationId: number
+        type: string
+        amount: number
+    }
+
+    export interface CreatePenaltyResponse {
+        id: number
+        reservationId: number
+        type: string
+        amount: number
+        currencyCode: string
+        currencyRate: number
+        createdAt: string
+    }
+}
+
 export namespace pgtype {
     export type InfinityModifier = number
 
@@ -2083,11 +2116,14 @@ export namespace price_offer {
 
 export namespace queries {
     /**
-     * CurrencyGroup is a set of billing reservations sharing the same currency.
+     * CurrencyGroup is a set of billing reservations and penalties sharing the same currency.
+     * They are grouped together because an invoice covers a single currency, so the accountant
+     * settles reservations and fees of one currency in the same document.
      */
     export interface CurrencyGroup {
         currencyCode: string
         reservations: reservation_pricing.BillingReservation[]
+        penalties: reservation_pricing.BillingPenalty[]
     }
 
     export interface GetFullReservationResponse {
@@ -2378,6 +2414,21 @@ export namespace reports {
 
 export namespace reservation_pricing {
     /**
+     * BillingPenalty is a cancellation or no-show fee tailored for accountant billing workflows.
+     * It carries no price breakdown: the supplier's charge is passed on to the customer as is.
+     */
+    export interface BillingPenalty {
+        id: number
+        reservationId: number
+        brokerReservationId: string
+        type: string
+        amount: number
+        currencyCode: string
+        currencyRate: number
+        createdAt: string
+    }
+
+    /**
      * BillingReservation is a reservation summary tailored for accountant billing workflows.
      */
     export interface BillingReservation {
@@ -2412,6 +2463,18 @@ export namespace supplier_payments {
     }
 
     /**
+     * FailedSupplierPenalty is a fee that could not be settled.
+     */
+    export interface FailedSupplierPenalty {
+        penaltyId: number
+        reason: string
+        /**
+         * ExpenseID is set when the expense was created but could not be linked to the fee.
+         */
+        expenseId: string
+    }
+
+    /**
      * ListUnpaidSupplierReservationsParams selects the broker (supplier) whose outstanding
      * reservations should be listed.
      */
@@ -2419,8 +2482,25 @@ export namespace supplier_payments {
         Broker: string
     }
 
+    /**
+     * ListUnpaidSupplierReservationsResponse lists what is still owed to the supplier, both lists
+     * ordered by pickup date. Each row carries its own currency code, since a supplier is settled per
+     * currency but the screen lists them together.
+     */
     export interface ListUnpaidSupplierReservationsResponse {
-        currencyGroups: UnpaidSupplierCurrencyGroup[]
+        reservations: UnpaidSupplierReservation[]
+        penalties: UnpaidSupplierPenalty[]
+    }
+
+    /**
+     * PaidSupplierPenalty is a fee now settled and linked to its iCount expense.
+     */
+    export interface PaidSupplierPenalty {
+        penaltyId: number
+        reservationId: number
+        expenseId: string
+        amount: number
+        currencyCode: string
     }
 
     /**
@@ -2433,16 +2513,17 @@ export namespace supplier_payments {
         currencyCode: string
     }
 
-    export interface PaySupplierReservationsParams {
+    export interface PaySupplierParams {
         reservationIds: number[]
+        penaltyIds: number[]
         /**
          * PaymentDate is the day the supplier was actually paid. It is recorded both on the iCount
-         * expense and as the reservation's supplier_paid_at.
+         * expense and as the supplier_paid_at of the reservation or fee.
          */
         paymentDate: string
     }
 
-    export interface PaySupplierReservationsResponse {
+    export interface PaySupplierResponse {
         paid: PaidSupplierReservation[]
         /**
          * Skipped holds the requested ids that are no longer outstanding — unknown, canceled, or
@@ -2451,15 +2532,29 @@ export namespace supplier_payments {
         skipped: number[]
 
         failed: FailedSupplierPayment[]
+        paidPenalties: PaidSupplierPenalty[]
+        /**
+         * SkippedPenalties holds the requested fee ids that are unknown or already paid to the supplier.
+         */
+        skippedPenalties: number[]
+
+        failedPenalties: FailedSupplierPenalty[]
     }
 
     /**
-     * UnpaidSupplierCurrencyGroup is a set of unpaid reservations sharing the same currency.
-     * Suppliers are settled per currency, so the payment summary is reconciled group by group.
+     * UnpaidSupplierPenalty is a cancellation or no-show fee we still owe the supplier. The supplier
+     * charges the fee and we charge the customer the same amount, so a single amount covers both sides.
      */
-    export interface UnpaidSupplierCurrencyGroup {
+    export interface UnpaidSupplierPenalty {
+        id: number
+        reservationId: number
+        brokerReservationId: string
+        type: string
+        driverName: string
+        pickupDate: string
+        pickupLocationName: string
+        amountOwed: number
         currencyCode: string
-        reservations: UnpaidSupplierReservation[]
     }
 
     /**
@@ -2478,6 +2573,7 @@ export namespace supplier_payments {
          */
         amountOwed: number
 
+        currencyCode: string
         reservationStatus: string
         paymentStatus: string
     }

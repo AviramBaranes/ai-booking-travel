@@ -60,6 +60,8 @@ export function PromptBillDialog({
     mutationFn: () =>
       bill({
         ids: selectedIds,
+        // This screen does not select fees yet, so none are billed.
+        penalty_ids: [],
         total_paid: 1, //skip validation
         transfer_date: "2006-01-02", //skip validation
         organization_id: entity.kind === "org" ? entity.id : undefined,

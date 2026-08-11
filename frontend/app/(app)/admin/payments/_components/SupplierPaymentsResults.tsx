@@ -19,8 +19,9 @@ export function SupplierPaymentsResults({
   });
 
   const reservations = data?.reservations ?? [];
+  const penalties = data?.penalties ?? [];
 
-  if (reservations.length === 0) {
+  if (reservations.length === 0 && penalties.length === 0) {
     return (
       <div className="bg-card rounded-2xl shadow-card p-12 text-center flex flex-col items-center gap-2">
         <h3 className="type-h6 text-navy">אין הזמנות לתשלום</h3>
@@ -32,6 +33,10 @@ export function SupplierPaymentsResults({
   }
 
   return (
-    <UnpaidReservationsCard broker={broker} reservations={reservations} />
+    <UnpaidReservationsCard
+      broker={broker}
+      reservations={reservations}
+      penalties={penalties}
+    />
   );
 }

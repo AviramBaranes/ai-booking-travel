@@ -1,4 +1,4 @@
-import { queries, reports, supplier_payments } from "../client";
+import { penalties, queries, reports, supplier_payments } from "../client";
 import { withErrorHandler } from "./_api";
 
 export function listReservations(params: queries.ListReservationsParams) {
@@ -102,12 +102,12 @@ export function validateFlexPaymentSummary(file: File) {
   });
 }
 
-export function paySupplierReservations(
-  params: supplier_payments.PaySupplierReservationsParams,
-) {
-  return withErrorHandler((client) =>
-    client.reservation.PaySupplierReservations(params),
-  );
+export function paySupplier(params: supplier_payments.PaySupplierParams) {
+  return withErrorHandler((client) => client.reservation.PaySupplier(params));
+}
+
+export function createPenalty(params: penalties.CreatePenaltyParams) {
+  return withErrorHandler((client) => client.reservation.CreatePenalty(params));
 }
 
 export function getFullReservation(reservationId: number) {

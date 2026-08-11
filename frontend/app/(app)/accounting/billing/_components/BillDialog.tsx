@@ -84,6 +84,8 @@ export function BillDialog({
     mutationFn: (values: FormValues) =>
       bill({
         ids: selectedIds,
+        // This screen does not select fees yet, so none are billed.
+        penalty_ids: [],
         total_paid: values.total_paid,
         transfer_date: format(values.transfer_date, "yyyy-MM-dd"),
         organization_id: entity.kind === "org" ? entity.id : undefined,
