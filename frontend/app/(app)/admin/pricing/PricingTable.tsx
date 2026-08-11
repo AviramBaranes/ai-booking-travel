@@ -132,6 +132,7 @@ export default function PricingTable() {
       deleteFn={deleteMarkupRate}
       createSchema={rateSchema}
       updateSchema={rateSchema}
+      pageSize={15}
       filterSlot={<FilterBar filters={filters} onChange={setFilters} />}
     />
   );
