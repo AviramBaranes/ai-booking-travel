@@ -2417,6 +2417,7 @@ export namespace reports {
         btERPPriceInILS: number
         totalPrice: number
         totalPriceInILS: number
+        couponName: string
         voucherNumber: string
         voucheredAt: string
         createdAt: string

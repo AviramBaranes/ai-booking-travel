@@ -175,7 +175,7 @@ export function makeBaseColumns<
       key: "officeName",
       label: "משרד",
       className: "min-w-52",
-      render: (row) => row.officeName || "-",
+      render: (row) => row.officeName || row.couponName,
     },
     {
       key: "userName",
