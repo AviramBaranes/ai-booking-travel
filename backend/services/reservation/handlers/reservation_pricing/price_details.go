@@ -22,21 +22,44 @@ func roundPrice(price float64) float64 {
 	return math.Round(price*100) / 100
 }
 
-// GetReservationPriceDetails computes purchase price, selling price, profit, and ERP price from a db row.
-func GetReservationPriceDetails(row db.GetPaymentPendingReservationsByBillingEntityRow) PriceDetails {
-	purchasePrice := dbadapters.NumericToFloat64(row.PurchasePrice) + dbadapters.NumericToFloat64(row.BrokerErpPrice)
-	mp := dbadapters.NumericToFloat64(row.MarkupPercentage)
-	carSellingPrice := pricing.ApplyMarkup(purchasePrice, mp)
-	tp := dbadapters.NumericToFloat64(row.TotalPrice)
-	profit := tp - purchasePrice
+// PriceInputs are the raw reservation price columns, already converted out of pgtype.
+// It exists so the price breakdown can be computed from any query's row shape.
+type PriceInputs struct {
+	PurchasePrice    float64
+	BrokerErpPrice   float64
+	MarkupPercentage float64
+	BtErpPrice       float64
+	TotalPrice       float64
+}
+
+// ComputePriceDetails is the single place the reservation price breakdown is defined.
+//
+// Cost is what we owe the supplier (the car plus the broker's ERP day charge), and profit
+// is what is left of the price the customer actually pays after that cost — so any discount
+// already baked into total_price reduces the profit, as it should.
+func ComputePriceDetails(in PriceInputs) PriceDetails {
+	purchasePrice := in.PurchasePrice + in.BrokerErpPrice
+	carSellingPrice := pricing.ApplyMarkup(purchasePrice, in.MarkupPercentage)
+	profit := in.TotalPrice - purchasePrice
 
 	return PriceDetails{
 		CarPurchasePrice: roundPrice(purchasePrice),
 		CarSellingPrice:  roundPrice(carSellingPrice),
 		TotalProfit:      roundPrice(profit),
-		ErpSellingPrice:  dbadapters.NumericToFloat64(row.BtErpPrice),
-		TotalPrice:       tp,
+		ErpSellingPrice:  in.BtErpPrice,
+		TotalPrice:       in.TotalPrice,
 	}
+}
+
+// GetReservationPriceDetails computes purchase price, selling price, profit, and ERP price from a db row.
+func GetReservationPriceDetails(row db.GetPaymentPendingReservationsByBillingEntityRow) PriceDetails {
+	return ComputePriceDetails(PriceInputs{
+		PurchasePrice:    dbadapters.NumericToFloat64(row.PurchasePrice),
+		BrokerErpPrice:   dbadapters.NumericToFloat64(row.BrokerErpPrice),
+		MarkupPercentage: dbadapters.NumericToFloat64(row.MarkupPercentage),
+		BtErpPrice:       dbadapters.NumericToFloat64(row.BtErpPrice),
+		TotalPrice:       dbadapters.NumericToFloat64(row.TotalPrice),
+	})
 }
 
 // BillingReservation is a reservation summary tailored for accountant billing workflows.

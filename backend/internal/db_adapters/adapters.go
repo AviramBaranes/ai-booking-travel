@@ -8,7 +8,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Numeric = pgtype.Numeric
+type (
+	Numeric     = pgtype.Numeric
+	Timestamptz = pgtype.Timestamptz
+	Date        = pgtype.Date
+)
 
 // NumericFromFloat64 converts a float64 to a pgtype.Numeric.
 func NumericFromFloat64(f float64) pgtype.Numeric {

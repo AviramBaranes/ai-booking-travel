@@ -23,3 +23,9 @@ func (s *Service) GetBusinessesBalancesReport(ctx context.Context) (*reports.Bus
 	rs := reports.NewReportsService(s.query)
 	return rs.GetBusinessesBalancesReport(ctx)
 }
+
+// encore:api auth tag:admin method=GET path=/reports/dashboard
+func (s *Service) GetDashboardReport(ctx context.Context, p *reports.DashboardParams) (*reports.DashboardResponse, error) {
+	rs := reports.NewReportsService(s.query)
+	return rs.GetDashboardReport(ctx, p)
+}
