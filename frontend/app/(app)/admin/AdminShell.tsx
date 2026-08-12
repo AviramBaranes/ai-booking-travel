@@ -19,6 +19,7 @@ import {
   Wallet,
   Languages,
   Landmark,
+  FolderClosed,
   Menu,
 } from "lucide-react";
 import AdminNavbar from "@/shared/components/admin/AdminNavbar";
@@ -57,6 +58,11 @@ const navItems = [
     icon: TrendingUp,
   },
   { label: "דוח גבייה", href: "/admin/reports/collections", icon: Banknote },
+  {
+    label: "דוחות חודשיים",
+    href: "/admin/monthly-reports",
+    icon: FolderClosed,
+  },
 ];
 
 export default function AdminShell({

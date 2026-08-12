@@ -531,10 +531,42 @@ export namespace billing {
         url: string
     }
 
+    export interface GetMonthlyReportURLResponse {
+        url: string
+    }
+
     export interface GetPaymentStatusResponse {
         paymentStatus: string
         reservationId?: number
         login?: auth.LoginResponse
+    }
+
+    export interface ListMonthlyReportsResponse {
+        folders: MonthlyReportFolder[]
+    }
+
+    export interface MonthlyReportFile {
+        /**
+         * YYYY-MM
+         */
+        period: string
+
+        size: number
+    }
+
+    /**
+     * MonthlyReportFolder is every report archived for one billing entity, presented as a folder named
+     * after the entity.
+     */
+    export interface MonthlyReportFolder {
+        /**
+         * "organizations" or "offices"
+         */
+        entityType: string
+
+        entityId: number
+        name: string
+        files: MonthlyReportFile[]
     }
 
     export class ServiceClient {
@@ -546,7 +578,9 @@ export namespace billing {
             this.CustomerPaymentIPNGateway = this.CustomerPaymentIPNGateway.bind(this)
             this.GenerateCustomerPaymentIframe = this.GenerateCustomerPaymentIframe.bind(this)
             this.GenerateOrderIframe = this.GenerateOrderIframe.bind(this)
+            this.GetMonthlyReportURL = this.GetMonthlyReportURL.bind(this)
             this.GetPaymentStatus = this.GetPaymentStatus.bind(this)
+            this.ListMonthlyReports = this.ListMonthlyReports.bind(this)
             this.OrderPaymentIPNGateway = this.OrderPaymentIPNGateway.bind(this)
             this.SuccessPaymentGateway = this.SuccessPaymentGateway.bind(this)
         }
@@ -584,10 +618,31 @@ export namespace billing {
             return await resp.json() as GenerateOrderIframeResponse
         }
 
+        /**
+         * GetMonthlyReportURL returns a short-lived link to one archived monthly report. The key is rebuilt
+         * from the validated path params rather than taken from the caller, since the bucket also holds
+         * other private files.
+         */
+        public async GetMonthlyReportURL(entityType: string, entityID: number, period: string): Promise<GetMonthlyReportURLResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/monthly-reports/${encodeURIComponent(entityType)}/${encodeURIComponent(entityID)}/${encodeURIComponent(period)}/download-url`)
+            return await resp.json() as GetMonthlyReportURLResponse
+        }
+
         public async GetPaymentStatus(token: string): Promise<GetPaymentStatusResponse> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/billing/customer-payment-status/${encodeURIComponent(token)}`)
             return await resp.json() as GetPaymentStatusResponse
+        }
+
+        /**
+         * ListMonthlyReports lists the archived monthly reports, grouped into a folder per billing entity.
+         * Only entities that have at least one report get a folder.
+         */
+        public async ListMonthlyReports(): Promise<ListMonthlyReportsResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/monthly-reports`)
+            return await resp.json() as ListMonthlyReportsResponse
         }
 
         public async OrderPaymentIPNGateway(method: "POST", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {

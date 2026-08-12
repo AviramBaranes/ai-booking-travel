@@ -15,8 +15,13 @@ import (
 )
 
 type Report struct {
-	OrganizationName  string
-	IsOrganic         bool
+	OrganizationID   int64
+	OrganizationName string
+	IsOrganic        bool
+	// OfficeID identifies the billing entity of an inorganic organization, whose offices pay for
+	// themselves — a billing contact of such an organization is responsible for a single office.
+	// It is nil for an organic organization, which is billed as a whole.
+	OfficeID          *int64
 	ContactName       string
 	ContactEmail      string
 	TransactionGroups []TransactionGroup
@@ -95,8 +100,10 @@ func generateReports(openReservations *reservation.GetOpenReservationsResponse, 
 	reports := make([]Report, 0, len(billingContacts.Contacts))
 	for _, c := range billingContacts.Contacts {
 		report := Report{
+			OrganizationID:    c.OrganizationID,
 			OrganizationName:  c.OrganizationName,
 			IsOrganic:         c.IsOrganic,
+			OfficeID:          billedOfficeID(c),
 			ContactName:       c.ContactName,
 			ContactEmail:      c.ContactEmail,
 			TransactionGroups: generateTransactionGroups(openReservations, c),
@@ -106,6 +113,17 @@ func generateReports(openReservations *reservation.GetOpenReservationsResponse, 
 	}
 
 	return reports
+}
+
+// billedOfficeID returns the office a report is billed to, which only exists for an inorganic
+// organization: its billing contacts are attached to one office each, and that office pays for
+// itself. An organic organization is billed as a whole, so it has no billed office.
+func billedOfficeID(c contact.BillingContact) *int64 {
+	if c.IsOrganic || len(c.Offices) == 0 {
+		return nil
+	}
+
+	return &c.Offices[0].ID
 }
 
 func generateTransactionGroups(openReservations *reservation.GetOpenReservationsResponse, contact contact.BillingContact) []TransactionGroup {
@@ -218,11 +236,18 @@ func toReportPenalty(p reservation.OpenPenalty, agentInfo AgentInfo) Reservation
 }
 
 func sendReports(ctx context.Context, reports []Report) {
+	period := billingPeriod(time.Now())
+
 	for _, r := range reports {
 		excelReport, err := generateExcelReport(r)
 		if err != nil {
 			rlog.Error("failed to generate excel report", "error", err, "contact_email", r.ContactEmail)
 			continue
+		}
+
+		// Archiving is best effort: a report that cannot be stored is still worth emailing.
+		if err := storeMonthlyReport(ctx, r, excelReport, period); err != nil {
+			rlog.Error("failed to store monthly report", "error", err, "organization_id", r.OrganizationID)
 		}
 
 		base64ExcelReport := base64.StdEncoding.EncodeToString(excelReport)
