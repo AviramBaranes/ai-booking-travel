@@ -20,6 +20,7 @@ import {
   Languages,
   Landmark,
   FolderClosed,
+  LayoutDashboard,
   Menu,
 } from "lucide-react";
 import AdminNavbar from "@/shared/components/admin/AdminNavbar";
@@ -34,6 +35,7 @@ import { useEffect, useState } from "react";
 
 const navItems = [
   { label: "ראשי", href: "/admin", icon: Home },
+  { label: "לוח בקרה", href: "/admin/dashboard", icon: LayoutDashboard },
   { label: "מנהלים", href: "/admin/admins", icon: UserCog },
   { label: "רואי חשבון", href: "/admin/accountants", icon: Calculator },
   { label: "רשתות", href: "/admin/organizations", icon: Landmark },
