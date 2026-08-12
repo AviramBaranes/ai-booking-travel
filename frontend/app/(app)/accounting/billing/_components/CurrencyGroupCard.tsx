@@ -77,7 +77,7 @@ export function CurrencyGroupCard({
   const selectedTotal = useMemo(
     () =>
       selectedReservations.reduce((sum, r) => {
-        const m = r.reservationStatus === "refund_pending" ? -1 : 1;
+        const m = r.paymentStatus === "refund_pending" ? -1 : 1;
         return sum + r.totalPrice * m;
       }, 0) + selectedPenalties.reduce((sum, p) => sum + p.amount, 0),
     [selectedReservations, selectedPenalties],
