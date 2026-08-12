@@ -437,3 +437,47 @@ SET
     updated_at = CURRENT_TIMESTAMP
 WHERE id = ANY(sqlc.arg(ids)::BIGINT[])
 AND supplier_paid_at IS NULL;
+
+-- name: ListReservationsForDashboard :many
+-- Powers the admin dashboard: every reservation created inside a window, with the
+-- columns the dashboard visualises and its penalty (if any) folded in. The join is
+-- safe because reservation_penalties is UNIQUE (reservation_id), so it cannot fan out.
+SELECT
+    r.id,
+    r.created_at,
+    r.reservation_status,
+    r.payment_status,
+    r.user_id,
+    r.office_id,
+    r.organization_id,
+    r.is_organization_organic,
+    r.admin_ref_id,
+    r.broker,
+    r.supplier_code,
+    r.car_details,
+    r.country_code,
+    r.pickup_date,
+    r.rental_days,
+    r.driver_age,
+    r.coupon_name,
+    r.currency_code,
+    r.currency_rate,
+    r.purchase_price,
+    r.markup_percentage,
+    r.broker_erp_price,
+    r.bt_erp_price,
+    r.discount_percentage,
+    r.total_price,
+    r.supplier_paid_at,
+    r.vouchered_at,
+    p.penalty_type,
+    p.amount AS penalty_amount,
+    p.currency_rate AS penalty_currency_rate,
+    p.paid_at AS penalty_paid_at,
+    p.supplier_paid_at AS penalty_supplier_paid_at
+FROM reservations r
+LEFT JOIN reservation_penalties p ON p.reservation_id = r.id
+WHERE
+    r.created_at >= sqlc.arg(created_from)::TIMESTAMPTZ
+    AND r.created_at < sqlc.arg(created_to)::TIMESTAMPTZ
+ORDER BY r.created_at;

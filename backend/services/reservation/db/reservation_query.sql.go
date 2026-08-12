@@ -939,6 +939,144 @@ func (q *Queries) ListReservationsByUser(ctx context.Context, arg ListReservatio
 	return items, nil
 }
 
+const listReservationsForDashboard = `-- name: ListReservationsForDashboard :many
+SELECT
+    r.id,
+    r.created_at,
+    r.reservation_status,
+    r.payment_status,
+    r.user_id,
+    r.office_id,
+    r.organization_id,
+    r.is_organization_organic,
+    r.admin_ref_id,
+    r.broker,
+    r.supplier_code,
+    r.car_details,
+    r.country_code,
+    r.pickup_date,
+    r.rental_days,
+    r.driver_age,
+    r.coupon_name,
+    r.currency_code,
+    r.currency_rate,
+    r.purchase_price,
+    r.markup_percentage,
+    r.broker_erp_price,
+    r.bt_erp_price,
+    r.discount_percentage,
+    r.total_price,
+    r.supplier_paid_at,
+    r.vouchered_at,
+    p.penalty_type,
+    p.amount AS penalty_amount,
+    p.currency_rate AS penalty_currency_rate,
+    p.paid_at AS penalty_paid_at,
+    p.supplier_paid_at AS penalty_supplier_paid_at
+FROM reservations r
+LEFT JOIN reservation_penalties p ON p.reservation_id = r.id
+WHERE
+    r.created_at >= $1::TIMESTAMPTZ
+    AND r.created_at < $2::TIMESTAMPTZ
+ORDER BY r.created_at
+`
+
+type ListReservationsForDashboardParams struct {
+	CreatedFrom pgtype.Timestamptz
+	CreatedTo   pgtype.Timestamptz
+}
+
+type ListReservationsForDashboardRow struct {
+	ID                    int64
+	CreatedAt             pgtype.Timestamptz
+	ReservationStatus     ReservationStatus
+	PaymentStatus         PaymentStatus
+	UserID                int64
+	OfficeID              *int64
+	OrganizationID        *int64
+	IsOrganizationOrganic *bool
+	AdminRefID            *int64
+	Broker                Broker
+	SupplierCode          string
+	CarDetails            []byte
+	CountryCode           string
+	PickupDate            pgtype.Date
+	RentalDays            int32
+	DriverAge             int32
+	CouponName            string
+	CurrencyCode          string
+	CurrencyRate          pgtype.Numeric
+	PurchasePrice         pgtype.Numeric
+	MarkupPercentage      pgtype.Numeric
+	BrokerErpPrice        pgtype.Numeric
+	BtErpPrice            pgtype.Numeric
+	DiscountPercentage    pgtype.Numeric
+	TotalPrice            pgtype.Numeric
+	SupplierPaidAt        pgtype.Timestamptz
+	VoucheredAt           pgtype.Timestamptz
+	PenaltyType           *PenaltyType
+	PenaltyAmount         pgtype.Numeric
+	PenaltyCurrencyRate   pgtype.Numeric
+	PenaltyPaidAt         pgtype.Timestamptz
+	PenaltySupplierPaidAt pgtype.Timestamptz
+}
+
+// Powers the admin dashboard: every reservation created inside a window, with the
+// columns the dashboard visualises and its penalty (if any) folded in. The join is
+// safe because reservation_penalties is UNIQUE (reservation_id), so it cannot fan out.
+func (q *Queries) ListReservationsForDashboard(ctx context.Context, arg ListReservationsForDashboardParams) ([]ListReservationsForDashboardRow, error) {
+	rows, err := q.db.Query(ctx, listReservationsForDashboard, arg.CreatedFrom, arg.CreatedTo)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListReservationsForDashboardRow
+	for rows.Next() {
+		var i ListReservationsForDashboardRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.ReservationStatus,
+			&i.PaymentStatus,
+			&i.UserID,
+			&i.OfficeID,
+			&i.OrganizationID,
+			&i.IsOrganizationOrganic,
+			&i.AdminRefID,
+			&i.Broker,
+			&i.SupplierCode,
+			&i.CarDetails,
+			&i.CountryCode,
+			&i.PickupDate,
+			&i.RentalDays,
+			&i.DriverAge,
+			&i.CouponName,
+			&i.CurrencyCode,
+			&i.CurrencyRate,
+			&i.PurchasePrice,
+			&i.MarkupPercentage,
+			&i.BrokerErpPrice,
+			&i.BtErpPrice,
+			&i.DiscountPercentage,
+			&i.TotalPrice,
+			&i.SupplierPaidAt,
+			&i.VoucheredAt,
+			&i.PenaltyType,
+			&i.PenaltyAmount,
+			&i.PenaltyCurrencyRate,
+			&i.PenaltyPaidAt,
+			&i.PenaltySupplierPaidAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listReservationsReport = `-- name: ListReservationsReport :many
 SELECT id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num, invoice_doc_num, excess, excess_currency, supplier_terms_id, pickup_details, dropoff_details, pickup_location_code, dropoff_location_code, supplier_paid_at, supplier_expense_id, payment_received_at, coupon_name
 FROM reservations

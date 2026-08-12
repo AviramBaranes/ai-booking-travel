@@ -324,6 +324,21 @@ func (mr *MockQuerierMockRecorder) ListReservationsByUser(ctx, arg any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListReservationsByUser", reflect.TypeOf((*MockQuerier)(nil).ListReservationsByUser), ctx, arg)
 }
 
+// ListReservationsForDashboard mocks base method.
+func (m *MockQuerier) ListReservationsForDashboard(ctx context.Context, arg db.ListReservationsForDashboardParams) ([]db.ListReservationsForDashboardRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListReservationsForDashboard", ctx, arg)
+	ret0, _ := ret[0].([]db.ListReservationsForDashboardRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListReservationsForDashboard indicates an expected call of ListReservationsForDashboard.
+func (mr *MockQuerierMockRecorder) ListReservationsForDashboard(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListReservationsForDashboard", reflect.TypeOf((*MockQuerier)(nil).ListReservationsForDashboard), ctx, arg)
+}
+
 // ListReservationsReport mocks base method.
 func (m *MockQuerier) ListReservationsReport(ctx context.Context, arg db.ListReservationsReportParams) ([]db.Reservation, error) {
 	m.ctrl.T.Helper()

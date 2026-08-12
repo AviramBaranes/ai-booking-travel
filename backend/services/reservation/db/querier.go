@@ -28,6 +28,10 @@ type Querier interface {
 	ListBusinessesBalancesReport(ctx context.Context) ([]ListBusinessesBalancesReportRow, error)
 	ListReservationsByBrokerReservationIDs(ctx context.Context, arg ListReservationsByBrokerReservationIDsParams) ([]ListReservationsByBrokerReservationIDsRow, error)
 	ListReservationsByUser(ctx context.Context, arg ListReservationsByUserParams) ([]ListReservationsByUserRow, error)
+	// Powers the admin dashboard: every reservation created inside a window, with the
+	// columns the dashboard visualises and its penalty (if any) folded in. The join is
+	// safe because reservation_penalties is UNIQUE (reservation_id), so it cannot fan out.
+	ListReservationsForDashboard(ctx context.Context, arg ListReservationsForDashboardParams) ([]ListReservationsForDashboardRow, error)
 	ListReservationsReport(ctx context.Context, arg ListReservationsReportParams) ([]Reservation, error)
 	ListUnpaidSupplierPenalties(ctx context.Context, broker Broker) ([]ListUnpaidSupplierPenaltiesRow, error)
 	ListUnpaidSupplierPenaltiesByIDs(ctx context.Context, ids []int64) ([]ListUnpaidSupplierPenaltiesByIDsRow, error)
