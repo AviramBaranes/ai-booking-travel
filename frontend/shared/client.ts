@@ -112,6 +112,8 @@ export interface ClientOptions {
 }
 
 export namespace accounts {
+    export type AccountName = lookup.AccountName
+
     export interface TempAgentTagUsageResponse {
     }
 
@@ -1096,6 +1098,7 @@ export namespace reservation {
             this.CreatePenalty = this.CreatePenalty.bind(this)
             this.GetBusinessReport = this.GetBusinessReport.bind(this)
             this.GetBusinessesBalancesReport = this.GetBusinessesBalancesReport.bind(this)
+            this.GetDashboardReport = this.GetDashboardReport.bind(this)
             this.GetFullReservation = this.GetFullReservation.bind(this)
             this.GetProfitReport = this.GetProfitReport.bind(this)
             this.GetReservation = this.GetReservation.bind(this)
@@ -1156,6 +1159,18 @@ export namespace reservation {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/reports/businesses-balances`)
             return await resp.json() as reports.BusinessesBalancesReportResponse
+        }
+
+        public async GetDashboardReport(params: reports.DashboardParams): Promise<reports.DashboardResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                from: params.From,
+                to:   params.To,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/reports/dashboard`, undefined, {query})
+            return await resp.json() as reports.DashboardResponse
         }
 
         public async GetFullReservation(id: number): Promise<queries.GetFullReservationResponse> {
@@ -1846,6 +1861,13 @@ export namespace location {
     }
 }
 
+export namespace lookup {
+    export interface AccountName {
+        id: number
+        name: string
+    }
+}
+
 export namespace markup_rate {
     export interface CreateMarkupRateParams {
         countryCode: string
@@ -2435,6 +2457,74 @@ export namespace reports {
         totalOpenBalanceInEuro: number
         totalOpenBalanceInDollar: number
         totalInOtherCurrency: number
+    }
+
+    export interface DashboardParams {
+        /**
+         * From and To are calendar dates ("2006-01-02") in the business timezone, inclusive.
+         */
+        From: string
+
+        To: string
+    }
+
+    /**
+     * DashboardReservation is one reservation as the dashboard sees it: the dimensions it
+     * slices by, plus a money breakdown that is already derived and already converted to ILS.
+     * The client only ever sums, groups and averages these numbers — it never re-derives them.
+     */
+    export interface DashboardReservation {
+        reservationId: number
+        createdAt: string
+        status: string
+        paymentStatus: string
+        isBusiness: boolean
+        userId: number
+        officeId: number
+        organizationId: number
+        isOrganizationOrganic: boolean
+        broker: string
+        supplierCode: string
+        supplierName: string
+        carType: string
+        carGroup: string
+        gearType: string
+        countryCode: string
+        pickupDate: string
+        rentalDays: number
+        leadTimeDays: number
+        driverAge: number
+        couponName: string
+        hasErp: boolean
+        currencyCode: string
+        /**
+         * Money, all in ILS.
+         */
+        revenueIls: number
+
+        costIls: number
+        profitIls: number
+        erpRevenueIls: number
+        erpCostIls: number
+        discountIls: number
+        supplierPaid: boolean
+        penaltyType: string
+        penaltyAmountIls: number
+        penaltyPaid: boolean
+        penaltySupplierPaid: boolean
+    }
+
+    /**
+     * DashboardResponse carries the rows plus the id→name lookups they reference. Names are
+     * sent once here rather than repeated on every row.
+     */
+    export interface DashboardResponse {
+        reservations: DashboardReservation[]
+        organizations: accounts.AccountName[]
+        offices: accounts.AccountName[]
+        users: accounts.AccountName[]
+        from: string
+        to: string
     }
 
     export interface ProfitReportResponse {

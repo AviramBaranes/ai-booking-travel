@@ -47,6 +47,12 @@ export function profitabilityReport(params: reports.ReportParams) {
   );
 }
 
+export function dashboardReport(params: reports.DashboardParams) {
+  return withErrorHandler((client) =>
+    client.reservation.GetDashboardReport(params),
+  );
+}
+
 export function collectionsReport() {
   return withErrorHandler((client) =>
     client.reservation.GetBusinessesBalancesReport(),
