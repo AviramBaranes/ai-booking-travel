@@ -49,6 +49,7 @@ type CreateReservationParams struct {
 	PurchasePrice         float64                         `json:"purchasePrice" validate:"required,gt=0"`
 	MarkupPercentage      float64                         `json:"markupPercentage" validate:"required,gt=0"`
 	DiscountPercentage    float64                         `json:"discountPercentage" validate:"gte=0,lte=100"`
+	CouponName            string                          `json:"couponName" encore:"optional" validate:"omitempty"` //only customers can book with a coupon, so this is empty for agent reservations
 	BrokerErpPrice        float64                         `json:"brokerErpPrice" validate:"gte=0"`
 	BtErpPrice            float64                         `json:"btErpPrice" validate:"gte=0"`
 	PickupDate            string                          `json:"pickupDate" validate:"required,datetime=2006-01-02"`
@@ -129,6 +130,7 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 		PurchasePrice:         dbadapters.NumericFromFloat64(p.PurchasePrice),
 		MarkupPercentage:      dbadapters.NumericFromFloat64(p.MarkupPercentage),
 		DiscountPercentage:    dbadapters.NumericFromFloat64(p.DiscountPercentage),
+		CouponName:            p.CouponName,
 		BrokerErpPrice:        dbadapters.NumericFromFloat64(p.BrokerErpPrice),
 		BtErpPrice:            dbadapters.NumericFromFloat64(p.BtErpPrice),
 		VatPercentage:         dbadapters.NumericFromFloat64(s.cfg.VAT),

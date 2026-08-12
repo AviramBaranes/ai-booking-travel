@@ -23,6 +23,7 @@ type PlanPriceDetails struct {
 	CurrencyCode           string            `json:"currencyCode"`
 	CurrencyRate           float64           `json:"currencyRate"`
 	DiscountPercentage     float64           `json:"discountPercentage"`
+	CouponName             string            `json:"couponName"` //the name of the coupon that produced DiscountPercentage, empty when no coupon was applied
 	CarPurchasePrice       float64           `json:"carPurchasePrice"`
 	SupplierErpPrice       float64           `json:"supplierErpPrice"`
 	MarkupPercentage       float64           `json:"markupPercentage"`

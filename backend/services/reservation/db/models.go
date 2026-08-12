@@ -243,6 +243,7 @@ type Reservation struct {
 	SupplierPaidAt          pgtype.Timestamptz
 	SupplierExpenseID       *string
 	PaymentReceivedAt       pgtype.Timestamptz
+	CouponName              string
 }
 
 type ReservationPenalty struct {

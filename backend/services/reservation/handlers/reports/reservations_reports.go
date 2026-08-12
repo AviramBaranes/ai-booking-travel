@@ -42,6 +42,7 @@ type BusinessReservationReportRow struct {
 	BtERPPriceInILS                float64 `json:"btERPPriceInILS"`
 	TotalPrice                     float64 `json:"totalPrice"`
 	TotalPriceInILS                float64 `json:"totalPriceInILS"`
+	CouponName                     string  `json:"couponName"`
 	VoucherNumber                  *string `json:"voucherNumber,omitempty"`
 	VoucheredAt                    *string `json:"voucheredAt,omitempty"`
 	CreatedAt                      string  `json:"createdAt"`
@@ -156,6 +157,7 @@ func buildBusinessReportRows(reservations []db.Reservation, accountsLookup *acco
 			BtERPPriceInILS:                btERPPrice * currencyRate,
 			TotalPrice:                     totalPrice,
 			TotalPriceInILS:                totalPrice * currencyRate,
+			CouponName:                     r.CouponName,
 			VoucherNumber:                  r.VoucherNumber,
 			VoucheredAt:                    voucheredAt,
 			CreatedAt:                      dbadapters.TimestamptzToString(r.CreatedAt),

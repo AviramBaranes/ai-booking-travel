@@ -30,7 +30,7 @@ const (
 )
 
 // buildAvailabilityArtifacts applies markup, coupon discounts, and currency data to produce the final response vehicles and plan snapshots.
-func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, locs availabilityLocations, avResp *broker.AvailabilityResponse, couponDiscount float64) (availabilityArtifacts, error) {
+func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, locs availabilityLocations, avResp *broker.AvailabilityResponse, couponDiscount float64, couponName string) (availabilityArtifacts, error) {
 	artifacts := availabilityArtifacts{
 		availableCars: make([]AvailableVehicle, 0, len(avResp.AvailableVehicles)),
 		plansDetails:  make([]PlanPriceDetails, 0, len(avResp.AvailableVehicles)*2), //most cars have 1-2 plans
@@ -132,6 +132,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 				CurrencyCode:           v.PriceDetails.Currency,
 				CurrencyRate:           cr,
 				DiscountPercentage:     couponDiscount,
+				CouponName:             couponName,
 				CarPurchasePrice:       p.Price,
 				MarkupPercentage:       markupPercentage,
 				SupplierErpPrice:       p.BrokerErpPrice,

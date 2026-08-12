@@ -98,8 +98,9 @@ func (s *AvailabilityService) SearchAvailability(ctx context.Context, p SearchAv
 	authData := auth.GetAuthData()
 	isAgent := authData != nil && (authData.Role == auth.UserRoleAgent)
 	couponDiscount := 0
+	couponName := ""
 	if !isAgent {
-		couponDiscount, err = s.getCouponDiscount(ctx, p.CouponCode)
+		couponDiscount, couponName, err = s.getCouponDiscount(ctx, p.CouponCode)
 		if err != nil {
 			return nil, err
 		}
@@ -115,7 +116,7 @@ func (s *AvailabilityService) SearchAvailability(ctx context.Context, p SearchAv
 		return emptySearchAvailabilityResponse(), nil
 	}
 
-	artifacts, err := s.buildAvailabilityArtifacts(ctx, locs, resp, float64(couponDiscount))
+	artifacts, err := s.buildAvailabilityArtifacts(ctx, locs, resp, float64(couponDiscount), couponName)
 	if err != nil {
 		return nil, err
 	}

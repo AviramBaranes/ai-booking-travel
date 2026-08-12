@@ -94,6 +94,7 @@ func (s *BookingService) buildCreateCustomerReservationParams(
 		PurchasePrice:       plan.CarPurchasePrice,
 		MarkupPercentage:    plan.MarkupPercentage,
 		DiscountPercentage:  plan.DiscountPercentage,
+		CouponName:          plan.CouponName,
 		BrokerErpPrice:      brokerErpPrice,
 		BtErpPrice:          btErpPrice,
 		PickupTime:          snapshot.PickupTime,
