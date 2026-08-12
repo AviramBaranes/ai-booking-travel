@@ -3,6 +3,7 @@ import { addDays } from "date-fns/addDays";
 import { addMonths } from "date-fns/addMonths";
 import { startOfWeek } from "date-fns/startOfWeek";
 import { startOfMonth } from "date-fns/startOfMonth";
+import { isSameMonth } from "date-fns/isSameMonth";
 import { he } from "date-fns/locale/he";
 import { accounts, reports } from "@/shared/client";
 
@@ -128,6 +129,12 @@ export function computeTotals(rows: DashboardRow[]): Totals {
 
 export type Granularity = "day" | "week" | "month";
 
+/**
+ * The default bucket size for a window. Kept conservative on purpose: daily buckets over a
+ * long window turn sparse, spiky data into noise, since most days sit at zero and the few
+ * busy ones become spikes with nothing to compare against. Anyone who wants finer detail
+ * can override this from the filter row.
+ */
 export function pickGranularity(range: DateRangeValue): Granularity {
   const days = rangeLengthInDays(range);
   if (days <= 31) return "day";
@@ -137,7 +144,10 @@ export function pickGranularity(range: DateRangeValue): Granularity {
 
 export interface TimeBucket {
   key: string;
+  /** Short form for the axis tick, where space is tight. */
   label: string;
+  /** The full period the bucket covers, for the tooltip. */
+  periodLabel: string;
   count: number;
   revenue: number;
   cost: number;
@@ -162,10 +172,30 @@ function bucketLabel(key: string, granularity: Granularity): string {
   return format(date, "d MMM", { locale: he });
 }
 
+/**
+ * Spells out the whole span a bucket covers. The axis tick is necessarily terse — a weekly
+ * bucket there reads like a single day — so the tooltip carries the unambiguous version.
+ */
+function bucketPeriodLabel(key: string, granularity: Granularity): string {
+  const date = parseDateValue(key);
+
+  if (granularity === "month") return format(date, "MMMM yyyy", { locale: he });
+
+  if (granularity === "week") {
+    const end = addDays(date, 6);
+    return isSameMonth(date, end)
+      ? `${format(date, "d")}-${format(end, "d בMMMM yyyy", { locale: he })}`
+      : `${format(date, "d בMMMM", { locale: he })} - ${format(end, "d בMMMM yyyy", { locale: he })}`;
+  }
+
+  return format(date, "d בMMMM yyyy", { locale: he });
+}
+
 function emptyBucket(key: string, granularity: Granularity): TimeBucket {
   return {
     key,
     label: bucketLabel(key, granularity),
+    periodLabel: bucketPeriodLabel(key, granularity),
     count: 0,
     revenue: 0,
     cost: 0,
@@ -216,6 +246,45 @@ export function buildTimeSeries(
   }
 
   return [...buckets.values()].sort((a, b) => a.key.localeCompare(b.key));
+}
+
+/**
+ * Turns per-period buckets into running totals over the selected window, starting from zero.
+ *
+ * Seeding the start with the all-time total before the window was rejected deliberately:
+ * that number dwarfs anything the window itself contributes, flattening the line into a
+ * meaningless plateau. From zero, the curve answers "how much did this period build up",
+ * and its slope — not its direction — is what carries the rate of business.
+ *
+ * Callers that want per-period figures keep using the original buckets; this returns a new
+ * array and never mutates them.
+ */
+export function toCumulative(buckets: TimeBucket[]): TimeBucket[] {
+  let count = 0;
+  let revenue = 0;
+  let cost = 0;
+  let profit = 0;
+  let business = 0;
+  let apiPrivate = 0;
+
+  return buckets.map((bucket) => {
+    count += bucket.count;
+    revenue += bucket.revenue;
+    cost += bucket.cost;
+    profit += bucket.profit;
+    business += bucket.business;
+    apiPrivate += bucket.private;
+
+    return {
+      ...bucket,
+      count,
+      revenue,
+      cost,
+      profit,
+      business,
+      private: apiPrivate,
+    };
+  });
 }
 
 // --- Grouping ---------------------------------------------------------------

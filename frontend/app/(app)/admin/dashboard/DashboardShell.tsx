@@ -11,7 +11,12 @@ import { DashboardDateRangePicker } from "./_components/DashboardDateRangePicker
 // import { DashboardHelp } from "./_components/DashboardHelp";
 import { SegmentedControl } from "./_components/SegmentedControl";
 import { HeroFigure, StatTile } from "./_components/StatTile";
-import { TimeSeriesCard, VolumeCard } from "./_components/TimeSeriesCard";
+import {
+  CumulativeVolumeCard,
+  MoneyPerPeriodCard,
+  TimeSeriesCard,
+  VolumeCard,
+} from "./_components/TimeSeriesCard";
 import { EntityBreakdownCard } from "./_components/EntityBreakdownCard";
 import {
   CategoryBarCard,
@@ -23,6 +28,7 @@ import { PaymentsPanel } from "./_components/PaymentsPanel";
 import { CouponPanel } from "./_components/CouponPanel";
 import {
   Audience,
+  Granularity,
   DRIVER_AGE_BANDS,
   LEAD_TIME_BANDS,
   Metric,
@@ -56,8 +62,22 @@ import {
   previousPeriod,
 } from "./_lib/dateRange";
 
-const FILTER_KEYS = ["from", "to", "audience", "canceled", "metric"] as const;
+const FILTER_KEYS = [
+  "from",
+  "to",
+  "audience",
+  "canceled",
+  "metric",
+  "bucket",
+] as const;
 type FilterKey = (typeof FILTER_KEYS)[number];
+
+const BUCKET_OPTIONS = [
+  { value: "auto", label: "אוטומטי" },
+  { value: "day", label: "יום" },
+  { value: "week", label: "שבוע" },
+  { value: "month", label: "חודש" },
+];
 
 const AUDIENCE_OPTIONS = [
   { value: "all", label: "הכל" },
@@ -125,7 +145,15 @@ export default function DashboardShell() {
   const previousTotals = useMemo(() => computeTotals(previousRows), [previousRows]);
   const payments = useMemo(() => computePayments(rows), [rows]);
 
-  const granularity = useMemo(() => pickGranularity(range), [range]);
+  // "auto" picks a readable default for the window; an explicit choice always wins.
+  const bucketChoice = urlFilters.bucket || "auto";
+  const granularity = useMemo(
+    () =>
+      bucketChoice === "auto"
+        ? pickGranularity(range)
+        : (bucketChoice as Granularity),
+    [bucketChoice, range],
+  );
   const buckets = useMemo(
     () => buildTimeSeries(rows, range, granularity),
     [rows, range, granularity],
@@ -235,6 +263,13 @@ export default function DashboardShell() {
             options={METRIC_OPTIONS}
           />
         </FilterField>
+        <FilterField label="רזולוציית זמן">
+          <SegmentedControl
+            value={bucketChoice}
+            onChange={(next) => setUrlFilters({ bucket: next })}
+            options={BUCKET_OPTIONS}
+          />
+        </FilterField>
       </div>
 
       {current.isError && (
@@ -291,8 +326,15 @@ export default function DashboardShell() {
             </div>
           </section>
 
+          {/* Running totals: how much the period built up, read by slope. */}
           <section className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             <TimeSeriesCard buckets={buckets} granularity={granularity} />
+            <CumulativeVolumeCard buckets={buckets} granularity={granularity} />
+          </section>
+
+          {/* The same measures bucket by bucket, so one strong or weak period stands out. */}
+          <section className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+            <MoneyPerPeriodCard buckets={buckets} granularity={granularity} />
             <VolumeCard buckets={buckets} granularity={granularity} />
           </section>
 
