@@ -8,6 +8,7 @@ import { dashboardReport } from "@/shared/api/reservations-api";
 import { cn } from "@/lib/utils";
 
 import { DashboardDateRangePicker } from "./_components/DashboardDateRangePicker";
+// import { DashboardHelp } from "./_components/DashboardHelp";
 import { SegmentedControl } from "./_components/SegmentedControl";
 import { HeroFigure, StatTile } from "./_components/StatTile";
 import { TimeSeriesCard, VolumeCard } from "./_components/TimeSeriesCard";
@@ -34,7 +35,6 @@ import {
   groupRows,
   histogram,
   pickGranularity,
-  topN,
 } from "./_lib/aggregate";
 import {
   BROKER_LABELS,
@@ -75,10 +75,13 @@ export default function DashboardShell() {
   const [urlFilters, setUrlFilters] = useUrlFilters<FilterKey>([...FILTER_KEYS]);
 
   const fallbackRange = useMemo(() => defaultDateRange(), []);
-  const range: DateRangeValue = {
-    from: urlFilters.from || fallbackRange.from,
-    to: urlFilters.to || fallbackRange.to,
-  };
+  const range = useMemo<DateRangeValue>(
+    () => ({
+      from: urlFilters.from || fallbackRange.from,
+      to: urlFilters.to || fallbackRange.to,
+    }),
+    [urlFilters.from, urlFilters.to, fallbackRange],
+  );
   const audience = (urlFilters.audience || "all") as Audience;
   const includeCanceled = urlFilters.canceled === "true";
   const metric = (urlFilters.metric || "count") as Metric;
@@ -91,7 +94,7 @@ export default function DashboardShell() {
   });
 
   // The equal-length window immediately before, so every headline number carries a delta.
-  const comparison = useMemo(() => previousPeriod(range), [range.from, range.to]);
+  const comparison = useMemo(() => previousPeriod(range), [range]);
   const previous = useQuery({
     queryKey: ["admin-dashboard", comparison.from, comparison.to],
     queryFn: () => dashboardReport({ From: comparison.from, To: comparison.to }),
@@ -122,10 +125,10 @@ export default function DashboardShell() {
   const previousTotals = useMemo(() => computeTotals(previousRows), [previousRows]);
   const payments = useMemo(() => computePayments(rows), [rows]);
 
-  const granularity = useMemo(() => pickGranularity(range), [range.from, range.to]);
+  const granularity = useMemo(() => pickGranularity(range), [range]);
   const buckets = useMemo(
     () => buildTimeSeries(rows, range, granularity),
-    [rows, range.from, range.to, granularity],
+    [rows, range, granularity],
   );
 
   // Every "all rows" grouping below reads the same filtered slice, so the whole page
@@ -168,24 +171,18 @@ export default function DashboardShell() {
       ),
     [rows, metric],
   );
+  // These go in complete; each card folds its own tail and can be expanded in place.
   const countryGroups = useMemo(
-    () => topN(groupRows(rows, (row) => row.countryCode, countryLabel, metric), 8),
+    () => groupRows(rows, (row) => row.countryCode, countryLabel, metric),
     [rows, metric],
   );
   const supplierGroups = useMemo(
     () =>
-      topN(
-        groupRows(rows, (row) => orEmptyLabel(row.supplierName), (key) => key, metric),
-        8,
-      ),
+      groupRows(rows, (row) => orEmptyLabel(row.supplierName), (key) => key, metric),
     [rows, metric],
   );
   const carTypeGroups = useMemo(
-    () =>
-      topN(
-        groupRows(rows, (row) => orEmptyLabel(row.carType), (key) => key, metric),
-        8,
-      ),
+    () => groupRows(rows, (row) => orEmptyLabel(row.carType), (key) => key, metric),
     [rows, metric],
   );
 
@@ -202,6 +199,7 @@ export default function DashboardShell() {
             כל הנתונים מחושבים על הזמנות שנוצרו בטווח שנבחר, בשקלים.
           </p>
         </div>
+        {/* <DashboardHelp /> */}
       </header>
 
       {/* One filter row above everything it scopes. */}

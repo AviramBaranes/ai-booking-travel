@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Bar, BarChart, LabelList, XAxis, YAxis } from "recharts";
 
 import {
@@ -13,25 +13,31 @@ import {
 import { DashboardRow, groupRows, topN } from "../_lib/aggregate";
 import { ChartCard } from "./ChartCard";
 import { EmptyState } from "./EntityBreakdownCard";
+import { ExpandToggle } from "./ExpandToggle";
 import { count, ils, percent } from "../_lib/format";
 
 const config = {
   value: { label: "שימושים", color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
+const LIMIT = 8;
+
 export function CouponPanel({ rows }: { rows: DashboardRow[] }) {
+  const [expanded, setExpanded] = useState(false);
+
   const groups = useMemo(
     () =>
-      topN(
-        groupRows(
-          rows,
-          (row) => row.couponName || null,
-          (key) => key,
-          "count",
-        ),
-        8,
+      groupRows(
+        rows,
+        (row) => row.couponName || null,
+        (key) => key,
+        "count",
       ),
     [rows],
+  );
+  const visible = useMemo(
+    () => (expanded ? groups : topN(groups, LIMIT)),
+    [groups, expanded],
   );
 
   const discountByCoupon = useMemo(() => {
@@ -50,6 +56,14 @@ export function CouponPanel({ rows }: { rows: DashboardRow[] }) {
     <ChartCard
       title="קופונים"
       subtitle="שימושים והשפעה על הרווח"
+      actions={
+        <ExpandToggle
+          expanded={expanded}
+          onToggle={() => setExpanded((current) => !current)}
+          hiddenCount={groups.length - LIMIT}
+          limit={LIMIT}
+        />
+      }
       tableView={{
         columns: [
           { label: "קופון" },
@@ -72,14 +86,17 @@ export function CouponPanel({ rows }: { rows: DashboardRow[] }) {
       {groups.length === 0 ? (
         <EmptyState message="לא נעשה שימוש בקופונים בטווח שנבחר" />
       ) : (
-        <div dir="ltr">
+        <div
+          dir="ltr"
+          className={expanded ? "max-h-[32rem] overflow-y-auto" : undefined}
+        >
           <ChartContainer
             config={config}
             className="w-full"
-            style={{ height: Math.max(groups.length * 32 + 24, 140) }}
+            style={{ height: Math.max(visible.length * 32 + 24, 140) }}
           >
             <BarChart
-              data={groups}
+              data={visible}
               layout="vertical"
               margin={{ top: 4, right: 44, left: 4, bottom: 4 }}
               barCategoryGap={6}

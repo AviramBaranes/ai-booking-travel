@@ -20,6 +20,7 @@ import {
   topN,
 } from "../_lib/aggregate";
 import { ChartCard } from "./ChartCard";
+import { ExpandToggle } from "./ExpandToggle";
 import { SegmentedControl } from "./SegmentedControl";
 import { count, ils, ilsCompact, labelFormatter, percent } from "../_lib/format";
 
@@ -29,6 +30,9 @@ const DIMENSIONS: { value: EntityDimension; label: string }[] = [
   { value: "agent", label: "סוכנים" },
   { value: "customer", label: "לקוחות פרטיים" },
 ];
+
+/** How many entities the chart shows before folding the tail; overridable per card. */
+const LIMIT = 10;
 
 const METRICS: { value: Metric; label: string }[] = [
   { value: "profit", label: "רווח" },
@@ -51,20 +55,29 @@ export function EntityBreakdownCard({
 }) {
   const [dimension, setDimension] = useState<EntityDimension>("organization");
   const [metric, setMetric] = useState<Metric>("profit");
+  const [expanded, setExpanded] = useState(false);
 
   const groups = useMemo(() => {
     const { keyOf, labelOf } = entityGrouping(dimension, lookups);
     return groupRows(rows, keyOf, labelOf, metric);
   }, [rows, dimension, lookups, metric]);
 
-  const top = useMemo(() => topN(groups, 10), [groups]);
+  const visible = useMemo(
+    () => (expanded ? groups : topN(groups, LIMIT)),
+    [groups, expanded],
+  );
   const formatValue = (value: number) =>
     metric === "count" ? count(value) : ils(value);
+  const metricLabel = METRICS.find((m) => m.value === metric)?.label;
 
   return (
     <ChartCard
       title="ביצועים לפי ישות"
-      subtitle={`10 המובילים לפי ${METRICS.find((m) => m.value === metric)?.label}`}
+      subtitle={
+        expanded
+          ? `כל הישויות לפי ${metricLabel}`
+          : `${LIMIT} המובילים לפי ${metricLabel}`
+      }
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <SegmentedControl
@@ -76,6 +89,12 @@ export function EntityBreakdownCard({
             value={metric}
             onChange={(next) => setMetric(next as Metric)}
             options={METRICS}
+          />
+          <ExpandToggle
+            expanded={expanded}
+            onToggle={() => setExpanded((current) => !current)}
+            hiddenCount={groups.length - LIMIT}
+            limit={LIMIT}
           />
         </div>
       }
@@ -98,17 +117,20 @@ export function EntityBreakdownCard({
         ]),
       }}
     >
-      {top.length === 0 ? (
+      {visible.length === 0 ? (
         <EmptyState />
       ) : (
-        <div dir="ltr">
+        <div
+          dir="ltr"
+          className={expanded ? "max-h-[36rem] overflow-y-auto" : undefined}
+        >
           <ChartContainer
             config={config}
             className="w-full"
-            style={{ height: Math.max(top.length * 34 + 32, 160) }}
+            style={{ height: Math.max(visible.length * 34 + 32, 160) }}
           >
             <BarChart
-              data={top}
+              data={visible}
               layout="vertical"
               margin={{ top: 4, right: 56, left: 8, bottom: 4 }}
               barCategoryGap={6}

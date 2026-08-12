@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Bar, BarChart, Cell, LabelList, Pie, PieChart, XAxis, YAxis } from "recharts";
 
 import {
@@ -10,9 +10,10 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-import { Group, Metric } from "../_lib/aggregate";
+import { Group, Metric, topN } from "../_lib/aggregate";
 import { ChartCard } from "./ChartCard";
 import { EmptyState } from "./EntityBreakdownCard";
+import { ExpandToggle } from "./ExpandToggle";
 import {
   CATEGORICAL,
   count,
@@ -216,13 +217,19 @@ export function CategoryBarCard({
   title,
   groups,
   metric,
+  limit = 8,
   labelWidth = 110,
 }: {
   title: string;
+  /** The complete set. The card folds the tail itself so the table view stays complete. */
   groups: Group[];
   metric: Metric;
+  limit?: number;
   labelWidth?: number;
 }) {
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? groups : topN(groups, limit);
+
   const config = {
     value: { label: metricLabel(metric), color: "var(--chart-1)" },
   } satisfies ChartConfig;
@@ -231,19 +238,27 @@ export function CategoryBarCard({
     <ChartCard
       title={title}
       subtitle={`לפי ${metricLabel(metric)}`}
+      actions={
+        <ExpandToggle
+          expanded={expanded}
+          onToggle={() => setExpanded((current) => !current)}
+          hiddenCount={groups.length - limit}
+          limit={limit}
+        />
+      }
       tableView={tableView(groups)}
     >
       {groups.length === 0 ? (
         <EmptyState />
       ) : (
-        <div dir="ltr">
+        <div dir="ltr" className={expanded ? "max-h-[32rem] overflow-y-auto" : undefined}>
           <ChartContainer
             config={config}
             className="w-full"
-            style={{ height: Math.max(groups.length * 30 + 24, 140) }}
+            style={{ height: Math.max(visible.length * 30 + 24, 140) }}
           >
             <BarChart
-              data={groups}
+              data={visible}
               layout="vertical"
               margin={{ top: 4, right: 52, left: 4, bottom: 4 }}
               barCategoryGap={6}
