@@ -2,10 +2,15 @@ package pdf
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"mime/multipart"
 	"net/http"
 	"time"
+
+	"encore.dev"
+	"google.golang.org/api/idtoken"
+	"google.golang.org/api/option"
 )
 
 const (
@@ -27,6 +32,34 @@ type gotenberg struct {
 // NewPdfConverter creates a new PDFConverter that uses Gotenberg for HTML to PDF conversion.
 func NewPdfConverter(baseURL string) PDFConverter {
 	return NewPdfConverterWithHTTPClient(baseURL, nil)
+}
+
+// The service account Gotenberg's IAM check accepts. Declared here rather than per service so that
+// every caller signs its requests the same way without redeclaring the secret.
+var secrets struct {
+	GoogleServiceAccountJSON string
+}
+
+// NewDeployedPdfConverter creates a PDFConverter for the Gotenberg deployment at baseURL, signing
+// requests with an identity token when one is needed. Deployed Gotenberg sits behind Google IAM, so
+// it only answers authenticated calls; locally and under test it is a plain unauthenticated
+// container and the identity token is skipped.
+func NewDeployedPdfConverter(ctx context.Context, baseURL string) (PDFConverter, error) {
+	meta := encore.Meta()
+	if meta.Environment.Type == encore.EnvTest || meta.Environment.Cloud == encore.CloudLocal {
+		return NewPdfConverter(baseURL), nil
+	}
+
+	httpClient, err := idtoken.NewClient(
+		ctx,
+		baseURL,
+		option.WithAuthCredentialsJSON(option.ServiceAccount, []byte(secrets.GoogleServiceAccountJSON)),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("creating gotenberg identity token client: %w", err)
+	}
+
+	return NewPdfConverterWithHTTPClient(baseURL, httpClient), nil
 }
 
 func NewPdfConverterWithHTTPClient(baseURL string, httpClient *http.Client) PDFConverter {

@@ -3,12 +3,14 @@ package reservation
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	// "time"
 
 	// dbadapters "encore.app/internal/db_adapters"
 	emailevents "encore.app/services/notifications/events"
 	actions "encore.app/services/reservation/handlers/actions"
+	"encore.dev/beta/errs"
 	"encore.dev/cron"
 	"encore.dev/pubsub"
 	"encore.dev/rlog"
@@ -24,7 +26,7 @@ var emailRequestedTopic = pubsub.TopicRef[pubsub.Publisher[*emailevents.EmailEve
 var emailPublisher = emailevents.NewPublisher(emailRequestedTopic)
 
 func (s *Service) newActionService() *actions.ActionService {
-	return actions.NewActionService(s.query, s.pool, s.cancellationTopic, s.currencyCache, actions.Config{
+	return actions.NewActionService(s.query, s.pool, s.cancellationTopic, s.currencyCache, s.pdfConverter, actions.Config{
 		VAT: cfg.VAT(),
 	},
 	)
@@ -43,6 +45,20 @@ func (s *Service) CancelReservation(ctx context.Context, id int64) error {
 // encore:api auth method=POST path=/reservations/:id/voucher tag:agent
 func (s *Service) ApplyVoucher(ctx context.Context, id int64, p actions.ApplyVoucherParams) error {
 	return s.newActionService().ApplyVoucher(ctx, id, p)
+}
+
+// DownloadVoucher streams back the voucher PDF of one of the caller's own reservations, so a user
+// can fetch the voucher again without waiting on the email sent when it was first applied.
+//
+//encore:api auth method=GET path=/reservations/:id/voucher/download tag:agent_customer raw
+func (s *Service) DownloadVoucher(w http.ResponseWriter, req *http.Request) {
+	id, err := rawPathParamInt64("id")
+	if err != nil {
+		errs.HTTPError(w, err)
+		return
+	}
+
+	s.newActionService().DownloadVoucherRaw(w, req, id)
 }
 
 // encore:api private

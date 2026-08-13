@@ -2,6 +2,7 @@ package actions
 
 import (
 	"encore.app/internal/currency"
+	"encore.app/internal/pdf"
 	"encore.app/services/reservation/db"
 	"encore.dev/pubsub"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,6 +20,7 @@ type ActionService struct {
 	cancellationTopic pubsub.Publisher[*BookingCancellationEvent]
 	cfg               Config
 	currencyCache     *currency.CurrenciesCache
+	pdfConverter      pdf.PDFConverter
 }
 
 // NewActionService creates a new ActionService with the given dependencies.
@@ -27,6 +29,7 @@ func NewActionService(
 	pool *pgxpool.Pool,
 	topic pubsub.Publisher[*BookingCancellationEvent],
 	currencyCache *currency.CurrenciesCache,
+	pdfConverter pdf.PDFConverter,
 	cfg Config,
 ) *ActionService {
 	return &ActionService{
@@ -35,5 +38,6 @@ func NewActionService(
 		cancellationTopic: topic,
 		cfg:               cfg,
 		currencyCache:     currencyCache,
+		pdfConverter:      pdfConverter,
 	}
 }

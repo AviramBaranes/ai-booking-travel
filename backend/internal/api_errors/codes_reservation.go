@@ -9,6 +9,7 @@ const (
 
 	CodeInvalidPaymentSummaryFile = "invalid_payment_summary_file"
 
-	CodeReservationNotCanceled = "reservation_not_canceled"
-	CodePenaltyAlreadyExists   = "penalty_already_exists"
+	CodeReservationNotCanceled  = "reservation_not_canceled"
+	CodePenaltyAlreadyExists    = "penalty_already_exists"
+	CodeReservationNotVouchered = "reservation_not_vouchered"
 )

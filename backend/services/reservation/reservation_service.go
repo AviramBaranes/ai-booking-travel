@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"encore.app/internal/currency"
+	"encore.app/internal/pdf"
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
 	actions "encore.app/services/reservation/handlers/actions"
@@ -14,6 +15,7 @@ import (
 	"encore.app/services/reservation/handlers/supplier_payments"
 	"encore.dev/config"
 	"encore.dev/pubsub"
+	"encore.dev/rlog"
 	"encore.dev/storage/cache"
 	"encore.dev/storage/sqldb"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -92,6 +94,7 @@ var ErrInvalidBillingEntity = queries.ErrInvalidBillingEntity
 var ErrOfficeInOrganicOrg = queries.ErrOfficeInOrganicOrg
 var ErrOrgIsInorganic = queries.ErrOrgIsInorganic
 var ErrCancellationWindowExceeded = actions.ErrCancellationWindowExceeded
+var ErrReservationNotVouchered = actions.ErrReservationNotVouchered
 var ErrReservationNotCanceled = penalties.ErrReservationNotCanceled
 var ErrPenaltyAlreadyExists = penalties.ErrPenaltyAlreadyExists
 
@@ -112,6 +115,7 @@ type Service struct {
 	pool              *pgxpool.Pool
 	cancellationTopic pubsub.Publisher[*actions.BookingCancellationEvent]
 	currencyCache     *currency.CurrenciesCache
+	pdfConverter      pdf.PDFConverter
 }
 
 var reservationsDB = sqldb.NewDatabase("reservations", sqldb.DatabaseConfig{
@@ -122,6 +126,8 @@ var query *db.Queries
 
 type ReservationCfg struct {
 	VAT config.Float64
+	// GotenbergURL is the HTML-to-PDF service used to render vouchers on demand.
+	GotenbergURL config.String
 
 	Icount icountConfig
 }
@@ -150,10 +156,17 @@ func initService() (*Service, error) {
 	outbox.RegisterTopic(relay, cancellationTopic)
 	go relay.PollForMessages(context.Background(), -1)
 
+	pdfConverter, err := pdf.NewDeployedPdfConverter(context.Background(), cfg.GotenbergURL())
+	if err != nil {
+		rlog.Error("failed to create gotenberg pdf converter", "error", err)
+		return nil, err
+	}
+
 	return &Service{
 		query:             query,
 		pool:              pgxdb,
 		cancellationTopic: cancellationTopic,
 		currencyCache:     currency.NewCurrenciesCache(currenciesRates),
+		pdfConverter:      pdfConverter,
 	}, nil
 }

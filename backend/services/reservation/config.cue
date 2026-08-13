@@ -2,6 +2,13 @@ package reservation
 
 VAT: 18.0
 
+GotenbergURL: [
+	if #Meta.Environment.Type == "development" && #Meta.Environment.Cloud == "local" { "http://localhost:8080" },
+	if #Meta.Environment.Name == "staging" { "https://gotenberg-217822056800.me-west1.run.app" },
+	if #Meta.Environment.Type == "production" { "https://gotenberg-217822056800.me-west1.run.app" },
+	"https://gotenberg-217822056800.me-west1.run.app",
+][0]
+
 Icount:{
 	CID: "aibookingtravel",
 	User: "accounting",
