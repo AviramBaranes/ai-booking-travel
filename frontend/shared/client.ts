@@ -1096,6 +1096,7 @@ export namespace reservation {
             this.ApplyVoucher = this.ApplyVoucher.bind(this)
             this.CancelReservation = this.CancelReservation.bind(this)
             this.CreatePenalty = this.CreatePenalty.bind(this)
+            this.DownloadVoucher = this.DownloadVoucher.bind(this)
             this.GetBusinessReport = this.GetBusinessReport.bind(this)
             this.GetBusinessesBalancesReport = this.GetBusinessesBalancesReport.bind(this)
             this.GetDashboardReport = this.GetDashboardReport.bind(this)
@@ -1125,6 +1126,14 @@ export namespace reservation {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("POST", `/penalties`, JSON.stringify(params))
             return await resp.json() as penalties.CreatePenaltyResponse
+        }
+
+        /**
+         * DownloadVoucher streams back the voucher PDF of one of the caller's own reservations, so a user
+         * can fetch the voucher again without waiting on the email sent when it was first applied.
+         */
+        public async DownloadVoucher(method: "GET", id: string, body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
+            return this.baseClient.callAPI(method, `/reservations/${encodeURIComponent(id)}/voucher/download`, body, options)
         }
 
         public async GetBusinessReport(params: reports.ReportParams): Promise<reports.BusinessReportResponse> {

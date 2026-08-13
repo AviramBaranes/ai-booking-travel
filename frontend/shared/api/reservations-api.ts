@@ -144,3 +144,26 @@ export function getFullReservation(reservationId: number) {
     client.reservation.GetFullReservation(reservationId),
   );
 }
+
+/**
+ * DownloadVoucher is a raw endpoint, so the generated client hands back an untyped Response
+ * carrying the PDF. The filename the backend put on Content-Disposition comes back with the blob,
+ * since a blob on its own has no name to save it under.
+ */
+export function downloadVoucher(reservationId: number) {
+  return withErrorHandler(async (client) => {
+    const response = await client.reservation.DownloadVoucher(
+      "GET",
+      String(reservationId),
+    );
+
+    return {
+      blob: await response.blob(),
+      filename: voucherFilename(response.headers.get("Content-Disposition")),
+    };
+  });
+}
+
+function voucherFilename(contentDisposition: string | null): string {
+  return contentDisposition?.match(/filename="?([^";]+)"?/)?.[1] ?? "voucher.pdf";
+}

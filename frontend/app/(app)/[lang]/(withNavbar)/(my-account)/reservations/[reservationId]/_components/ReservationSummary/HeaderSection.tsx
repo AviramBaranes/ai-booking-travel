@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { queries, reservation } from "@/shared/client";
+import { queries } from "@/shared/client";
 import { DeleteReservationButton } from "./DeleteReservationButton";
+import { DownloadVoucherButton } from "./DownloadVoucherButton";
 import { statusToColor } from "../../../_utils/statusesStyles";
 import { SummaryRow } from "../../../../_components/SummaryRow";
 
@@ -24,6 +25,12 @@ export function HeaderSection({
           {res.reservationStatus !== "canceled" && (
             <>
               <DeleteReservationButton reservationId={res.id} />
+              <div className="border-l border-cars-border h-5"></div>
+            </>
+          )}
+          {res.reservationStatus === "vouchered" && (
+            <>
+              <DownloadVoucherButton reservationId={res.id} />
               <div className="border-l border-cars-border h-5"></div>
             </>
           )}
