@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import { notFound } from "next/navigation";
 import { Toaster } from "@/components/ui/sonner";
 import { setRequestLocale } from "next-intl/server";
+import { WhatsAppButton } from "./_components/WhatsAppButton";
 
 export const metadata: Metadata = {
   verification: {
@@ -45,6 +46,7 @@ export default async function LangRootLayout({
     >
       <body className={`min-h-full flex flex-col`}>
         {children}
+        <WhatsAppButton lang={lang} />
         <Toaster />
       </body>
     </html>

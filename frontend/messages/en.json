@@ -535,5 +535,8 @@
         "next": "Next"
       }
     }
+  },
+  "WhatsApp": {
+    "tooltip": "Available on WhatsApp"
   }
 }
