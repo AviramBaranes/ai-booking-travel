@@ -28,17 +28,22 @@ func init() {
 		return israeliPhoneRegex.MatchString(fl.Field().String())
 	})
 
+	// uppercase_only accepts A-Z and spaces only (e.g. "BEN DAVID"), and requires at
+	// least one letter so a blank/whitespace-only value never passes.
 	validator.RegisterValidation("uppercase_only", func(fl v.FieldLevel) bool {
 		s := fl.Field().String()
+		hasLetter := false
 		for _, r := range s {
-			if r < 'A' || r > 'Z' {
-				if r != ' ' {
-					return false
-				}
+			switch {
+			case r >= 'A' && r <= 'Z':
+				hasLetter = true
+			case r == ' ':
+			default:
+				return false
 			}
 		}
 
-		return len(s) > 0
+		return hasLetter
 	})
 }
 
