@@ -22,8 +22,8 @@ import (
 
 type GenerateCustomerPaymentIframeParams struct {
 	Phone           string               `json:"phone" validate:"required,israeli_phone"`
-	FirstName       string               `json:"firstName" validate:"required,notblank,uppercase_only"`
-	LastName        string               `json:"lastName" validate:"required,notblank,uppercase_only"`
+	FirstName       string               `json:"firstName" validate:"required,notblank,person_name"`
+	LastName        string               `json:"lastName" validate:"required,notblank,person_name"`
 	Email           string               `json:"email" validate:"required,email"`
 	SnapshotID      int64                `json:"snapshotId" validate:"required"`
 	RateQualifier   string               `json:"rateQualifier" validate:"required"`

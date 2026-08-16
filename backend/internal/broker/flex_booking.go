@@ -44,21 +44,24 @@ func (f *Flex) Book(p BookingParams) (BookingResponse, error) {
 	form.Set("AgentRef", "")
 	form.Set("AdditionalParameters", "")
 
+	// Captured before postForm, which adds the agent code and password to these same values.
+	request := form.Encode()
+
 	body, err := f.postForm("PlaceBooking", form)
 	if err != nil {
-		return BookingResponse{}, fmt.Errorf("failed to place booking: %w", err)
+		return BookingResponse{}, fmt.Errorf("failed to place booking: %w (request: %s)", err, request)
 	}
 
 	var resp flexBookingResponse
 	if err := xml.Unmarshal(body, &resp); err != nil {
-		return BookingResponse{}, fmt.Errorf("flex PlaceBooking unmarshal response: %w", err)
+		return BookingResponse{}, fmt.Errorf("flex PlaceBooking unmarshal response: %w (request: %s)", err, request)
 	}
 
 	if resp.ReturnCode != 0 {
 		if resp.ErrorMessage == flightNumberRequiredErrorMessage {
-			return BookingResponse{}, ErrFlightNumberRequired
+			return BookingResponse{}, fmt.Errorf("%w (request: %s)", ErrFlightNumberRequired, request)
 		}
-		return BookingResponse{}, fmt.Errorf("booking failed with error: %s", resp.ErrorMessage)
+		return BookingResponse{}, fmt.Errorf("booking failed with error: %s (request: %s)", resp.ErrorMessage, request)
 	}
 
 	return BookingResponse{

@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"unicode"
 
 	"encore.app/internal/api_errors"
 	"encore.dev/beta/errs"
@@ -38,6 +39,24 @@ func init() {
 			case r >= 'A' && r <= 'Z':
 				hasLetter = true
 			case r == ' ':
+			default:
+				return false
+			}
+		}
+
+		return hasLetter
+	})
+
+	// person_name accepts letters in any script (Hebrew included) plus spaces, hyphens
+	// and apostrophes (e.g. "בן דוד", "Ben-David"), and requires at least one letter.
+	validator.RegisterValidation("person_name", func(fl v.FieldLevel) bool {
+		s := fl.Field().String()
+		hasLetter := false
+		for _, r := range s {
+			switch {
+			case unicode.IsLetter(r):
+				hasLetter = true
+			case r == ' ' || r == '-' || r == '\'':
 			default:
 				return false
 			}
