@@ -14,7 +14,7 @@ export async function WhatsAppButton({ lang }: { lang: string }) {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="group fixed bottom-10 inset-e-10 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg transition-transform hover:scale-105 print:hidden"
+      className="group fixed bottom-5 inset-e-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg transition-transform hover:scale-105 print:hidden"
     >
       {/* Served unoptimized at its native 115px into a 56px box: the source is
           already tiny, and re-encoding it to a 56px WebP softens the edges. */}
