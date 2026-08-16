@@ -1,8 +1,15 @@
 import "@/app/globals.css";
+import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { notFound } from "next/navigation";
 import { Toaster } from "@/components/ui/sonner";
 import { setRequestLocale } from "next-intl/server";
+
+export const metadata: Metadata = {
+  verification: {
+    google: "UN8qR1oNrkF6zgPN-ie4aKefDzkhXq_ThFYum22gLeY",
+  },
+};
 
 const polin = localFont({
   src: [
