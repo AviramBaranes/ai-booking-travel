@@ -288,11 +288,17 @@ func (s *BookingService) createReservation(
 ) (int64, error) {
 	res, err := reservation.CreateReservation(ctx, reservationReq)
 	if err != nil {
+		// CreateReservation is private, so its request validation runs before the handler and
+		// leaves no span or log of its own. The error Code and rejected Field only reach us
+		// through the details, and the error message carries neither — log them explicitly.
+		details := api_errors.DetailsOf(err)
 		rlog.Error("failed to create reservation after successful booking",
-			"confirmationNumber", reservationReq.BrokerReservationID, "error", err)
+			"confirmationNumber", reservationReq.BrokerReservationID,
+			"errorCode", details.Code, "invalidField", details.Field, "error", err)
 		if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
 			Subject: "Reservation creation failed after successful booking",
-			Message: fmt.Sprintf("failed to create reservation after successful booking, confirmationNumber: %s, error: %v", reservationReq.BrokerReservationID, err),
+			Message: fmt.Sprintf("failed to create reservation after successful booking, confirmationNumber: %s, error: %v (code: %s, field: %s)",
+				reservationReq.BrokerReservationID, err, details.Code, details.Field),
 		}); publishErr != nil {
 			rlog.Error("failed to publish critical error email event", "confirmationNumber", reservationReq.BrokerReservationID, "error", publishErr)
 		}
