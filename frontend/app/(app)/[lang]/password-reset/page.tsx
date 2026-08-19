@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { SUPPORTED_LANGS } from "@/shared/constants/supported_langs";
 import Link from "next/link";
 import Image from "next/image";
@@ -6,6 +7,10 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { AppProviders } from "../_components/providers/AppProviders";
 import { Suspense } from "react";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export async function generateStaticParams() {
   const params = SUPPORTED_LANGS.map((locale) => ({ lang: locale }));

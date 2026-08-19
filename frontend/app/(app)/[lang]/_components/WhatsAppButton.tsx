@@ -1,8 +1,6 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-
-const WHATSAPP_NUMBER = "97235555999";
-const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
+import { WHATSAPP_URL } from "@/shared/constants/contact";
 
 export async function WhatsAppButton({ lang }: { lang: string }) {
   const t = await getTranslations({ locale: lang, namespace: "WhatsApp" });

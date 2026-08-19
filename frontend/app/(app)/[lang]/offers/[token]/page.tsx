@@ -10,11 +10,50 @@ import { fetchAddonsGallery, fetchSuppliersGallery } from "@/shared/server/cms";
 import { ClientOfferSummary } from "./_components/ClientOfferSummary/ClientOfferSummary";
 import { addonsGalleryKey } from "@/shared/hooks/useAddonsGallery";
 import { notFound } from "next/navigation";
-export default async function OfferPage({
-  params,
-}: {
+import { cache } from "react";
+import type { Metadata } from "next";
+import { formatRangeDate } from "@/shared/utils/formatDate";
+
+type Props = {
   params: Promise<{ token: string; lang: string }>;
-}) {
+};
+
+const getOffer = cache((token: string) =>
+  getClientPriceOffer(token, () => notFound()),
+);
+
+// For the WhatsApp link preview, not search. Excludes offer.name (usually the
+// customer's) and the price: previews are cached and re-rendered wherever the
+// link is forwarded.
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { token, lang } = await params;
+  const offer = await getOffer(token);
+
+  const car = offer.carDetails;
+  const carName = car.model || car.carGroup;
+  const dates = `${formatRangeDate(lang, new Date(offer.pickupDate))} – ${formatRangeDate(lang, new Date(offer.dropoffDate))}`;
+  const days =
+    lang === "he"
+      ? `${offer.rentalDays} ימי השכרה`
+      : `${offer.rentalDays} rental days`;
+
+  const title = `${carName} · ${offer.pickupLocationName}`;
+  const description = `${dates} · ${days}`;
+
+  return {
+    title,
+    description,
+    robots: { index: false, follow: false },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      images: car.imageUrl ? [{ url: car.imageUrl }] : undefined,
+    },
+  };
+}
+
+export default async function OfferPage({ params }: Props) {
   const { token, lang } = await params;
 
   const queryClient = new QueryClient({
@@ -29,7 +68,7 @@ export default async function OfferPage({
   const [offer, _, addonsGallery] = await Promise.all([
     queryClient.fetchQuery({
       queryKey: ["priceOffer", token],
-      queryFn: () => getClientPriceOffer(token, () => notFound()),
+      queryFn: () => getOffer(token),
     }),
     queryClient.fetchQuery({
       queryKey: suppliersGalleryKey,

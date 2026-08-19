@@ -10,6 +10,7 @@ import { Providers } from "./Providers";
 export const metadata: Metadata = {
   title: "BT Admin Panel",
   description: "AI Booking Travel Admin Panel",
+  robots: { index: false, follow: false },
 };
 
 const polin = localFont({

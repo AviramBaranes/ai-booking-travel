@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { cache } from "react";
 import type { Metadata } from "next";
 import type { BlogCategory, BlogPost, Form, Media } from "@/payload-types";
 import type { Populated } from "@/shared/types/payload";
@@ -11,6 +12,21 @@ import {
   SupportedLang,
 } from "@/shared/constants/supported_langs";
 import { getCachedPayload } from "@/shared/server/cms";
+import { absoluteUrl, SITE_NAME } from "@/shared/seo/site";
+import { ogImages } from "@/shared/seo/metadata";
+import { JsonLd } from "@/shared/seo/JsonLd";
+import {
+  blogPostingSchema,
+  breadcrumbSchema,
+  faqSchema,
+} from "@/shared/seo/schema";
+import {
+  buildAlternates,
+  hasTranslation,
+  localePath,
+  localizedPaths,
+  type LocalizedValue,
+} from "@/shared/seo/alternates";
 import { PayloadFormRenderer } from "@/shared/components/forms/FormRenderer";
 import { RelatedPosts } from "../../_components/posts/RelatedPosts";
 import Link from "next/link";
@@ -19,55 +35,88 @@ type Props = {
   params: Promise<{ lang: string; slug: string }>;
 };
 
-const getPost = async (
-  slug: string,
-  lang: string,
-): Promise<BlogPost | null> => {
-  const payload = await getCachedPayload();
-  const result = await payload.find({
-    collection: "blog-posts",
-    where: { slug: { equals: slug } },
-    locale: lang as SupportedLang,
-    draft: false,
-    limit: 1,
-    depth: 2,
-  });
+const getPost = cache(
+  async (slug: string, lang: string): Promise<BlogPost | null> => {
+    const payload = await getCachedPayload();
+    const result = await payload.find({
+      collection: "blog-posts",
+      where: { slug: { equals: slug } },
+      locale: lang as SupportedLang,
+      draft: false,
+      limit: 1,
+      depth: 2,
+    });
 
-  return (result.docs[0] as BlogPost) ?? null;
-};
+    return (result.docs[0] as BlogPost) ?? null;
+  },
+);
+
+/** Sibling slugs for hreflang — see the note in the `[slug]` page route. */
+const getPostSlugs = cache(async (id: number) => {
+  const payload = await getCachedPayload();
+  const doc = await payload.findByID({
+    collection: "blog-posts",
+    id,
+    locale: "all",
+    depth: 0,
+  });
+  return (doc as unknown as { slug?: LocalizedValue }).slug;
+});
 
 export const revalidate = 3600;
 export async function generateStaticParams() {
   const payload = await getCachedPayload();
-  const params = await Promise.all(
-    SUPPORTED_LANGS.map(async (lang) => {
-      const result = await payload.find({
-        collection: "blog-posts",
-        locale: lang,
-        draft: false,
-        limit: 1000,
-        select: {
-          slug: true,
-        },
-      });
+  // See the note in the `[slug]` page route: per-locale queries hand back the
+  // Hebrew slug for untranslated posts, which then prerender as 404s.
+  const result = await payload.find({
+    collection: "blog-posts",
+    locale: "all",
+    draft: false,
+    limit: 1000,
+    depth: 0,
+    select: {
+      slug: true,
+    },
+  });
 
-      return result.docs.map((page) => ({
-        lang,
-        slug: page.slug,
-      }));
-    }),
-  );
-
-  return params.flat();
+  return result.docs.flatMap((post) => {
+    const slugs = (post as unknown as { slug?: LocalizedValue }).slug;
+    return SUPPORTED_LANGS.filter((lang) => hasTranslation(slugs, lang)).map(
+      (lang) => ({ lang, slug: slugs![lang]!.trim() }),
+    );
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, slug } = await params;
   const post = await getPost(decodeURIComponent(slug), lang);
   if (!post) return {};
+
+  const slugs = await getPostSlugs(post.id);
+  const pathByLang = localizedPaths(slugs, (code, postSlug) =>
+    localePath(code, "blog", postSlug),
+  );
+
+  const title = post.seo?.title ?? post.title;
+  const description = post.seo?.description ?? post.excerpt ?? undefined;
+
   return {
-    title: post.seo?.title ?? post.title,
-    description: post.seo?.description ?? post.excerpt ?? undefined,
+    title,
+    description,
+    alternates: buildAlternates(lang as SupportedLang, pathByLang),
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      url: pathByLang[lang as SupportedLang]
+        ? absoluteUrl(pathByLang[lang as SupportedLang]!)
+        : undefined,
+      // `publishedAt` is only set by a hook that never fires (see notes) —
+      // fall back to createdAt so the date is never missing.
+      publishedTime: post.publishedAt ?? post.createdAt,
+      modifiedTime: post.updatedAt,
+      images: ogImages(post.seo?.image, post.featuredImage),
+    },
   };
 }
 
@@ -134,9 +183,31 @@ export default async function SlugPage({ params }: Props) {
   const relatedPostsData = await getRelatedPosts(post, lang);
   const image = post.featuredImage as Populated<BlogPost["featuredImage"]>;
 
+  const postUrl = absoluteUrl(
+    localePath(lang as SupportedLang, "blog", post.slug),
+  );
+  const faq = faqSchema(post.layout, post.layout_out);
+
   return (
     <>
       <PayloadLivePreview />
+      <JsonLd data={blogPostingSchema(post, postUrl, lang as SupportedLang)} />
+      <JsonLd
+        data={breadcrumbSchema([
+          {
+            name: SITE_NAME,
+            url: absoluteUrl(localePath(lang as SupportedLang)),
+          },
+          {
+            name: (post.category as BlogCategory).title,
+            url: absoluteUrl(
+              localePath(lang as SupportedLang, "blog", "page", "1"),
+            ),
+          },
+          { name: post.title, url: postUrl },
+        ])}
+      />
+      {faq && <JsonLd data={faq} />}
       <div className="relative isolate">
         <div className="bg-navy lg:py-20 lg:px-72 px-5 py-10 flex flex-col gap-5.5">
           <Link href={`/${lang}/blog/page/1`}>

@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 
 type Props = {
   params: Promise<{
@@ -9,5 +9,5 @@ type Props = {
 export default async function BlogPage({ params }: Props) {
   const { lang } = await params;
 
-  redirect(`/${lang}/blog/page/1`);
+  permanentRedirect(`/${lang}/blog/page/1`);
 }

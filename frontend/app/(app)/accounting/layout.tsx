@@ -1,8 +1,13 @@
 import "@/app/globals.css";
+import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { Providers } from "../admin/Providers";
 import AccountingShell from "./AccountingShell";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function AccountingRootLayout({
   children,

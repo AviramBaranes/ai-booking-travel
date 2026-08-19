@@ -5,12 +5,31 @@ import { notFound } from "next/navigation";
 import { Toaster } from "@/components/ui/sonner";
 import { setRequestLocale } from "next-intl/server";
 import { WhatsAppButton } from "./_components/WhatsAppButton";
+import { IS_INDEXABLE, SITE_NAME, SITE_URL } from "@/shared/seo/site";
 
-export const metadata: Metadata = {
-  verification: {
-    google: "UN8qR1oNrkF6zgPN-ie4aKefDzkhXq_ThFYum22gLeY",
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+
+  return {
+    // Without this, relative OpenGraph/Twitter image URLs resolve to nothing
+    // and every share preview breaks.
+    metadataBase: new URL(SITE_URL),
+    title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
+    openGraph: {
+      siteName: SITE_NAME,
+      type: "website",
+      locale: lang === "he" ? "he_IL" : "en_US",
+    },
+    twitter: { card: "summary_large_image" },
+    // Belt-and-braces with robots.txt: keeps stage and previews out of the
+    // index even if a crawler reaches them without reading robots.txt.
+    robots: { index: IS_INDEXABLE, follow: IS_INDEXABLE },
+  };
+}
 
 const polin = localFont({
   src: [

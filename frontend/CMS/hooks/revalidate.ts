@@ -3,7 +3,16 @@ import type {
   GlobalAfterChangeHook,
 } from "payload";
 
-async function revalidateAllPages(origin: string, payload?: unknown) {
+export type RevalidateRequest = {
+  collection?: string;
+  slug?: string;
+  global?: boolean;
+};
+
+async function revalidateAllPages(
+  origin: string,
+  payload?: RevalidateRequest,
+) {
   await fetch(`${origin}/api/revalidate`, {
     method: "POST",
     headers: {
@@ -17,9 +26,12 @@ async function revalidateAllPages(origin: string, payload?: unknown) {
 export const revalidateOnCollectionChange: CollectionAfterChangeHook = async ({
   req,
   doc,
+  collection,
 }) => {
   await revalidateAllPages(req.origin, {
-    collection: "pages",
+    // Must come from the firing collection — blog posts live under
+    // /{lang}/blog/{slug}, not /{lang}/{slug}.
+    collection: collection.slug,
     slug: doc.slug,
   });
 };

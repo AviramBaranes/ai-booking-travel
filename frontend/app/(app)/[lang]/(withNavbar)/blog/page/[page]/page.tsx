@@ -1,5 +1,9 @@
 import { notFound } from "next/navigation";
+import { cache } from "react";
+import type { Metadata } from "next";
 import type { BlogPost } from "@/payload-types";
+import { POSTS_PER_PAGE } from "@/shared/constants/blog";
+import { buildAlternates, localePath } from "@/shared/seo/alternates";
 import {
   SUPPORTED_LANGS,
   type SupportedLang,
@@ -14,9 +18,41 @@ import { getCardImageUrl } from "../../../_components/posts/RelatedPosts";
 import Link from "next/link";
 import { BlogPagination } from "../_components/BlogPagination";
 
-const POSTS_PER_PAGE = 16;
 type FeaturedImage = Populated<BlogPost["featuredImage"]>;
 export const revalidate = 3600;
+
+const getBlogSettings = cache(async (lang: SupportedLang) => {
+  const payload = await getCachedPayload();
+  return payload.findGlobal({ slug: "site-settings", locale: lang });
+});
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lang, page } = await params;
+  if (!SUPPORTED_LANGS.includes(lang as SupportedLang)) return {};
+
+  const pageNumber = Number(page);
+  const settings = await getBlogSettings(lang as SupportedLang);
+
+  // Paginated pages stay indexable and self-canonical — rel prev/next is
+  // deprecated, and canonicalling them all to page 1 hides posts from Google.
+  const suffix =
+    pageNumber > 1
+      ? ` — ${lang === "he" ? `עמוד ${pageNumber}` : `Page ${pageNumber}`}`
+      : "";
+
+  const pathByLang = Object.fromEntries(
+    SUPPORTED_LANGS.map((code) => [
+      code,
+      localePath(code, "blog", "page", String(pageNumber)),
+    ]),
+  ) as Record<SupportedLang, string>;
+
+  return {
+    title: `${settings?.title ?? "Blog"}${suffix}`,
+    description: settings?.subtitle ?? undefined,
+    alternates: buildAlternates(lang as SupportedLang, pathByLang),
+  };
+}
 
 type Props = {
   params: Promise<{
