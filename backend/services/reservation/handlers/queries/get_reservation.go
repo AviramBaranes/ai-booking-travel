@@ -73,7 +73,7 @@ func (s *QueryService) GetReservation(ctx context.Context, id int64) (*GetReserv
 		return nil, api_errors.ErrInternalError
 	}
 
-	rpd := calculatePriceDetails(row)
+	price := pricing.NewWithReservation(row).Details()
 
 	voucheredAt := dbadapters.TimestamptzToString(row.VoucheredAt)
 	return &GetReservationResponse{
@@ -83,12 +83,12 @@ func (s *QueryService) GetReservation(ctx context.Context, id int64) (*GetReserv
 		PaymentStatus:       string(row.PaymentStatus),
 		CarDetails:          carDetails,
 		PlanInclusions:      row.PlanInclusions,
-		CurrencyCode:        row.CurrencyCode,
-		CurrencyRate:        dbadapters.NumericToFloat64(row.CurrencyRate),
-		CarFullPrice:        rpd.carFullPrice,
-		ErpPrice:            rpd.erpPrice,
-		DiscountAmount:      rpd.discountAmount,
-		TotalPrice:          pricing.RoundToInt(dbadapters.NumericToFloat64(row.TotalPrice)),
+		CurrencyCode:        price.CurrencyCode,
+		CurrencyRate:        price.CurrencyRate,
+		CarFullPrice:        pricing.RoundToInt(price.CarWithMarkup.Value),
+		ErpPrice:            pricing.RoundToInt(price.ErpFullPrice.Value),
+		DiscountAmount:      pricing.RoundToInt(price.TotalDiscount.Value),
+		TotalPrice:          pricing.RoundToInt(price.TotalPrice.Value),
 		PayAtPickup:         payAtPickup,
 		FlightNumber:        row.FlightNumber,
 		PickupDate:          dbadapters.DateToString(row.PickupDate),
@@ -110,7 +110,7 @@ func (s *QueryService) GetReservation(ctx context.Context, id int64) (*GetReserv
 		SupplierTerms:       s.getSupplierTerms(ctx, row),
 		PickupDetails:       unmarshalStationInfo(row.PickupDetails),
 		DropoffDetails:      unmarshalStationInfo(row.DropoffDetails),
-		TotalPriceFloat:     dbadapters.NumericToFloat64(row.TotalPrice),
+		TotalPriceFloat:     price.TotalPrice.Value,
 	}, nil
 }
 
@@ -154,31 +154,6 @@ func unmarshalStationInfo(detailsJSON []byte) *broker.StationInfo {
 	}
 
 	return &details
-}
-
-// reservationPriceDetails holds the calculated price details for a reservation.
-type reservationPriceDetails struct {
-	carFullPrice   int
-	erpPrice       int
-	discountAmount int
-}
-
-// calculatePriceDetails calculates the price details for a reservation based on the given parameters.
-func calculatePriceDetails(reservation db.Reservation) reservationPriceDetails {
-	pp := dbadapters.NumericToFloat64(reservation.PurchasePrice)
-	mp := dbadapters.NumericToFloat64(reservation.MarkupPercentage)
-	bErp := dbadapters.NumericToFloat64(reservation.BrokerErpPrice)
-	btErp := dbadapters.NumericToFloat64(reservation.BtErpPrice)
-
-	carFullPrice := pricing.ApplyMarkup(pp, mp)
-	erpFullPrice := pricing.ApplyMarkup(bErp, mp) + btErp
-	discountAmount := (erpFullPrice + carFullPrice) - dbadapters.NumericToFloat64(reservation.TotalPrice)
-
-	return reservationPriceDetails{
-		carFullPrice:   pricing.RoundToInt(carFullPrice),
-		erpPrice:       pricing.RoundToInt(erpFullPrice),
-		discountAmount: pricing.RoundToInt(discountAmount),
-	}
 }
 
 func unmarshalJsons(carDetailsJson, payAtPickupJson []byte) (broker.CarDetails, actions.PayAtPickup, error) {

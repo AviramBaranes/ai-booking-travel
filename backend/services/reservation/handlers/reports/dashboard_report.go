@@ -8,10 +8,10 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	dbadapters "encore.app/internal/db_adapters"
+	"encore.app/internal/pricing"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
-	"encore.app/services/reservation/handlers/reservation_pricing"
 	"encore.dev/rlog"
 )
 
@@ -151,18 +151,16 @@ func buildDashboardRows(rows []db.ListReservationsForDashboardRow) ([]DashboardR
 			return nil, api_errors.ErrInternalError
 		}
 
-		currencyRate := dbadapters.NumericToFloat64(r.CurrencyRate)
-		btErpPrice := dbadapters.NumericToFloat64(r.BtErpPrice)
-		brokerErpPrice := dbadapters.NumericToFloat64(r.BrokerErpPrice)
-		discountPercentage := dbadapters.NumericToFloat64(r.DiscountPercentage)
-
-		price := reservation_pricing.ComputePriceDetails(reservation_pricing.PriceInputs{
-			PurchasePrice:    dbadapters.NumericToFloat64(r.PurchasePrice),
-			BrokerErpPrice:   brokerErpPrice,
-			MarkupPercentage: dbadapters.NumericToFloat64(r.MarkupPercentage),
-			BtErpPrice:       btErpPrice,
-			TotalPrice:       dbadapters.NumericToFloat64(r.TotalPrice),
-		})
+		price := pricing.NewWithNumerics(pricing.NumericParams{
+			PurchasePrice:      r.PurchasePrice,
+			BrokerErpPrice:     r.BrokerErpPrice,
+			BtErpPrice:         r.BtErpPrice,
+			MarkupPercentage:   r.MarkupPercentage,
+			DiscountPercentage: r.DiscountPercentage,
+			CurrencyCode:       r.CurrencyCode,
+			CurrencyRate:       r.CurrencyRate,
+			TotalPrice:         r.TotalPrice,
+		}).Details()
 
 		out = append(out, DashboardReservation{
 			ReservationID: r.ID,
@@ -189,15 +187,15 @@ func buildDashboardRows(rows []db.ListReservationsForDashboardRow) ([]DashboardR
 			LeadTimeDays: leadTimeDays(r.CreatedAt, r.PickupDate),
 			DriverAge:    r.DriverAge,
 			CouponName:   r.CouponName,
-			HasERP:       btErpPrice > 0 || brokerErpPrice > 0,
-			CurrencyCode: r.CurrencyCode,
+			HasERP:       price.BtErpPrice.Value > 0 || price.BrokerErpCost.Value > 0,
+			CurrencyCode: price.CurrencyCode,
 
-			RevenueILS:    price.TotalPrice * currencyRate,
-			CostILS:       price.CarPurchasePrice * currencyRate,
-			ProfitILS:     price.TotalProfit * currencyRate,
-			ErpRevenueILS: price.ErpSellingPrice * currencyRate,
-			ErpCostILS:    brokerErpPrice * currencyRate,
-			DiscountILS:   discountAmount(price, discountPercentage) * currencyRate,
+			RevenueILS:    price.TotalPrice.ILS,
+			CostILS:       price.TotalCost.ILS,
+			ProfitILS:     price.TotalProfit.ILS,
+			ErpRevenueILS: price.BtErpPrice.ILS,
+			ErpCostILS:    price.BrokerErpCost.ILS,
+			DiscountILS:   price.TotalDiscount.ILS,
 
 			SupplierPaid:        r.SupplierPaidAt.Valid,
 			PenaltyType:         penaltyType(r.PenaltyType),
@@ -208,16 +206,6 @@ func buildDashboardRows(rows []db.ListReservationsForDashboardRow) ([]DashboardR
 	}
 
 	return out, nil
-}
-
-// discountAmount is what the coupon took off the price the customer would otherwise have
-// paid. The discount applies to the marked-up car price only — the BT ERP charge is added
-// after it (see pricing.CalculateTotalPrice).
-func discountAmount(price reservation_pricing.PriceDetails, discountPercentage float64) float64 {
-	if discountPercentage <= 0 {
-		return 0
-	}
-	return price.CarSellingPrice * discountPercentage / 100
 }
 
 func gearType(carDetails broker.CarDetails) string {

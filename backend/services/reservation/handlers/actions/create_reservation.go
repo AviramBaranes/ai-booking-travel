@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"time"
 
 	"encore.app/internal/api_errors"
@@ -111,7 +110,15 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 
 	supplierTermsID := s.upsertSupplierTerms(ctx, p)
 
-	totalPrice := pricing.CalculateTotalPrice(p.PurchasePrice, p.MarkupPercentage, p.BrokerErpPrice, p.BtErpPrice, p.DiscountPercentage)
+	price := pricing.New(pricing.Params{
+		PurchasePrice:      p.PurchasePrice,
+		BrokerErpPrice:     p.BrokerErpPrice,
+		BtErpPrice:         p.BtErpPrice,
+		MarkupPercentage:   p.MarkupPercentage,
+		DiscountPercentage: p.DiscountPercentage,
+		CurrencyCode:       p.CurrencyCode,
+		CurrencyRate:       p.CurrencyRate,
+	}).Details()
 
 	id, err := s.query.InsertReservation(ctx, db.InsertReservationParams{
 		UserID:                p.UserID,
@@ -134,7 +141,7 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 		BrokerErpPrice:        dbadapters.NumericFromFloat64(p.BrokerErpPrice),
 		BtErpPrice:            dbadapters.NumericFromFloat64(p.BtErpPrice),
 		VatPercentage:         dbadapters.NumericFromFloat64(s.cfg.VAT),
-		TotalPrice:            dbadapters.NumericFromFloat64(totalPrice),
+		TotalPrice:            dbadapters.NumericFromFloat64(price.TotalPrice.Value),
 		PickupDate:            dbadapters.DateFromString(p.PickupDate),
 		DropoffDate:           dbadapters.DateFromString(p.DropoffDate),
 		PickupTime:            p.PickupTime,
@@ -164,7 +171,7 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 	if _, err := emailPublisher.Publish(ctx, emailevents.EmailEventTypeNewOrder, emailevents.NewOrderEmailPayload{
 		UserID:             p.UserID,
 		BookingReferenceID: p.BrokerReservationID,
-		ReservationPDFData: buildReservationPDFData(id, p, totalPrice),
+		ReservationPDFData: buildReservationPDFData(id, p, price),
 		DriverFullName:     fmt.Sprintf("%s %s %s", p.DriverTitle, p.DriverFirstName, p.DriverLastName),
 	}); err != nil {
 		rlog.Error("failed to publish new order email event", "error", err, "brokerReservationId", p.BrokerReservationID)
@@ -204,15 +211,7 @@ func (s *ActionService) upsertSupplierTerms(ctx context.Context, p CreateReserva
 	return &id
 }
 
-func buildReservationPDFData(id int64, p CreateReservationParams, totalPrice float64) emailevents.ReservationPDFData {
-	carPriceWithMarkup := pricing.ApplyMarkup(p.PurchasePrice, p.MarkupPercentage)
-	erpFullPrice := pricing.ApplyMarkup(p.BrokerErpPrice, p.MarkupPercentage) + p.BtErpPrice
-
-	var discountAmount float64
-	if p.DiscountPercentage > 0 {
-		discountAmount = (erpFullPrice + carPriceWithMarkup) - totalPrice
-	}
-
+func buildReservationPDFData(id int64, p CreateReservationParams, price pricing.Details) emailevents.ReservationPDFData {
 	addons := make([]emailevents.SelectedAddon, len(p.PayAtPickup.SelectedAddons))
 	for i, addon := range p.PayAtPickup.SelectedAddons {
 		addons[i] = emailevents.SelectedAddon{
@@ -228,10 +227,10 @@ func buildReservationPDFData(id int64, p CreateReservationParams, totalPrice flo
 		CarDetails:          *p.CarDetails,
 		PlanInclusions:      p.PlanInclusions,
 		CurrencyCode:        getCurrencyCode(p.CurrencyCode),
-		CarFullPrice:        int(math.Round(carPriceWithMarkup)),
-		DiscountAmount:      int(math.Round(discountAmount)),
-		ErpPrice:            int(math.Round(erpFullPrice)),
-		TotalPrice:          int(math.Round(totalPrice)),
+		CarFullPrice:        pricing.RoundToInt(price.CarWithMarkup.Value),
+		DiscountAmount:      pricing.RoundToInt(price.TotalDiscount.Value),
+		ErpPrice:            pricing.RoundToInt(price.ErpFullPrice.Value),
+		TotalPrice:          pricing.RoundToInt(price.TotalPrice.Value),
 		PayAtPickup: emailevents.PayAtPickup{
 			Fees: broker.Fees{
 				DropCharge:             p.PayAtPickup.Fees.DropCharge,

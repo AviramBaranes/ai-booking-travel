@@ -754,6 +754,8 @@ Billing an office/organization (`services/billing/bill.go`) issues two iCount do
 
 A penalty (no-show / cancellation) is a pass-through of the supplier's fee with no profit, so it contributes a **single** tax-exempt row, treated like the purchase price. The receipt collapses each reservation to one tax-exempt row for its total price.
 
+The numbers those rows are built from come from `pricing.Params.Details()` — see `<reservation_pricing>` below.
+
 Consequences for anything touching the invoice:
 - **Discounts come out of the profit, so they go on as a negative item, never as iCount's document-level `discount`/`discount_incvat`.** That field is apportioned pro-rata across exempt and taxable lines, so most of a discount lands on the tax-free purchase price, VAT barely moves, and the invoice ends up above what the receipt collects (invoice 2051: of a £90.86 discount only £21.30 reached the profit). A line priced `unitprice_incvat: -discount`, `tax_exempt: false` puts all of it on the profit and makes the invoice total equal `total_paid + deduction` exactly.
 - **The receipt must balance, or iCount rejects it** with a bare `create_doc_failed` and no details. Its payments have to cover its items, so a receipt for a bill that was partly withheld or discounted cannot simply list the reservations at full price: the discount goes on as a negative item and the withholding as a `deductions` entry, leaving exactly `total_paid` for the transfer to cover.
@@ -761,6 +763,19 @@ Consequences for anything touching the invoice:
 - **Amounts are never converted to ILS.** The API docs mark every document total as ILS "regardless of document currency"; that is wrong, and following it produced two bad invoices (2050, 2051) where the discount came out inflated by the exchange rate. iCount reads amounts in the document's own currency. Items carry currency explicitly, which is a further reason to express money as items rather than as document-level totals.
 - **Never drop an iCount error.** A failed document that returns a doc number of `""` up the stack settles the reservations and moves the balance against an invoice that has no receipt behind it.
 </invoicing>
+
+<reservation_pricing>
+**Every money number a reservation is worth comes from `internal/pricing`, and from nowhere else.** Build the inputs with `pricing.New` (plain floats — a plan off a snapshot, a reservation about to be created), `pricing.NewWithReservation` (a full `db.Reservation`) or `pricing.NewWithNumerics` (a query row that selects only the price columns), then call `.Details()`. Never re-derive a price by calling `ApplyMarkup`/`CalculateDiscountedPrice` at a call site — that is exactly how the reports drifted apart from each other.
+
+`Details` states every field in the reservation's own currency **and** in shekels, exactly and rounded to the agora: `Amount{Value, ILS, ValueRounded, ILSRounded}`. **Anything feeding further arithmetic — the `total_price` column above all — reads `Value`/`ILS`.** Rounding mid-calculation loses agorot the next step would have kept, so round once, at the edge that displays or bills the number.
+
+The chain, which is the definition the whole app agrees on:
+- **Cost** is what the broker charges us: the car (`purchase_price`) plus the broker's ERP day charge (`broker_erp_price`). Both are marked up.
+- **`bt_erp_price` is our own ERP charge.** It has no cost behind it, takes no markup, and the discount never touches it — it is added *after* the discount and is profit in full.
+- **The discount** applies to the marked-up car and the marked-up broker ERP at the same rate, so it splits cleanly between them and each side can state its own profit.
+- **Profit is net of the discount**: `TotalPrice - TotalCost`, equal to `CarProfit + ErpProfit`. A discount reduces profit, never revenue.
+- **A written reservation prices off its `total_price` column, never off the recomputation.** The column is `NUMERIC(12,2)`, so Postgres settles it to the agora on write: a reservation that computes to `170.07499999999999` is stored, billed and invoiced as `170.08`. Rounding the recomputed total in Go gets back to `170.08`, but what is *derived* from it does not survive the trip — profit off the computed total settles to `55.07` where profit off the column is `55.08`, because Go rounds the binary float and Postgres rounded the exact decimal. That cent is VAT on an invoice a receipt has to balance. Pass the column through `StoredTotalPrice` (`NewWithReservation` and `NewWithNumerics` do it for you); only a reservation that has not been inserted yet recomputes.
+</reservation_pricing>
 
 <localization>
 The application supports Hebrew and English, implemented via the Next.js App Router `[lang]` segment using the `next-intl` library.

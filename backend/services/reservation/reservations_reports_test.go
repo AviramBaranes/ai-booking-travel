@@ -262,6 +262,82 @@ func TestGetProfitReport(t *testing.T) {
 	})
 }
 
+// TestGetProfitReportForDiscountedCustomerReservation covers the B2C case the agent fixtures above
+// cannot reach: only customers book with a coupon, so a discount only ever appears on their rows.
+//
+// Profit is what is left of the price the customer actually paid, which means the coupon comes out
+// of it. Reporting the pre-discount sell price as revenue - as this report did until the price
+// breakdown moved into internal/pricing - books the discount as profit that was never made.
+func TestGetProfitReportForDiscountedCustomerReservation(t *testing.T) {
+	ctx := adminAuthContext(900004)
+	query := testQuerier()
+	s := &Service{query: query}
+
+	unique := time.Now().UnixNano()
+	customerID := 900004000 + unique%100000
+	supplier := fmt.Sprintf("PROFIT-DISC-SUP-%d", unique)
+	booking := fmt.Sprintf("PROFIT-DISC-%d", unique)
+
+	// Purchase 100 plus 20 of broker ERP, marked up 50%, sells for 180. A 10% coupon takes 18 off
+	// that, and our own 30 of BT ERP is added after the discount, so the customer pays 192 against
+	// a cost of 120 - leaving 72.
+	id := seedReservation(t, ctx, s, customerID, func(p *CreateReservationParams) {
+		p.BrokerReservationID = booking
+		p.SupplierCode = supplier
+		p.PickupDate = "2099-06-01"
+		p.DropoffDate = "2099-06-05"
+		p.CurrencyRate = 4
+		p.PurchasePrice = 100
+		p.MarkupPercentage = 50
+		p.BrokerErpPrice = 20
+		p.BtErpPrice = 30
+		p.DiscountPercentage = 10
+		p.CouponName = "SUMMER10"
+		// No OfficeID and no OrganizationID: that is what makes this a customer reservation.
+	})
+
+	voucher := fmt.Sprintf("PROFIT-DISC-VOUCHER-%d", unique)
+	if err := query.ApplyVoucher(ctx, db.ApplyVoucherParams{
+		ID:            id,
+		UserID:        customerID,
+		VoucherNumber: &voucher,
+		CurrencyRate:  dbadapters.NumericFromFloat64(4),
+	}); err != nil {
+		t.Fatalf("failed to apply voucher: %v", err)
+	}
+
+	resp, err := GetProfitReport(ctx, reports.ReportParams{
+		Page:           1,
+		PageSize:       25,
+		PickupDateFrom: "2099-01-01",
+		PickupDateTo:   "2099-12-31",
+		Supplier:       supplier,
+		UserType:       "customer",
+	})
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if len(resp.Reservations) != 1 {
+		t.Fatalf("expected 1 reservation, got %d", len(resp.Reservations))
+	}
+
+	row := resp.Reservations[0]
+	assertFloatEqual(t, row.CarSellPriceWithBrokerERP, 180) // (100 + 20) marked up 50%, before the coupon
+	assertFloatEqual(t, row.PurchasePrice, 120)             // 100 purchase + 20 broker ERP
+	assertFloatEqual(t, row.PurchasePriceInILS, 480)        // 120 * currency rate 4
+	assertFloatEqual(t, row.TotalPrice, 192)                // 180 less the 10% coupon, plus 30 BT ERP
+	assertFloatEqual(t, row.Profit, 72)                     // 192 paid - 120 cost; the old formula reported 90
+	assertFloatEqual(t, row.ProfitInILS, 288)               // 72 * currency rate 4
+	assertFloatEqual(t, row.ProfitPercentage, 37.5)         // 72 of the 192 paid
+
+	// The rows and the totals are two independent calculations - the totals sum total_price in SQL,
+	// the rows derive it from the reservation - so a single-reservation report is where they have
+	// to agree exactly. Before the fix the row claimed 360 ILS of profit against a total of 288.
+	assertFloatEqual(t, resp.TotalSales, 768)
+	assertFloatEqual(t, resp.TotalProfit, row.ProfitInILS)
+	assertFloatEqual(t, resp.ProfitPercentage, row.ProfitPercentage)
+}
+
 func TestGetBusinessesBalancesReport(t *testing.T) {
 	ctx := adminAuthContext(900003)
 	query := testQuerier()

@@ -127,10 +127,7 @@ func buildBusinessReportRows(reservations []db.Reservation, accountsLookup *acco
 			return nil, api_errors.ErrInternalError
 		}
 
-		currencyRate := dbadapters.NumericToFloat64(r.CurrencyRate)
-		carSellPriceWithBrokerERP := calculateCarSellPriceWithBrokerERP(r)
-		btERPPrice := dbadapters.NumericToFloat64(r.BtErpPrice)
-		totalPrice := dbadapters.NumericToFloat64(r.TotalPrice)
+		price := pricing.NewWithReservation(r).Details()
 		adminName := namePtr(userNames, r.AdminRefID)
 		voucheredAt := optionalString(dbadapters.TimestamptzToString(r.VoucheredAt))
 
@@ -149,14 +146,14 @@ func buildBusinessReportRows(reservations []db.Reservation, accountsLookup *acco
 			DropoffDate:                    dbadapters.DateToString(r.DropoffDate),
 			RentalDays:                     r.RentalDays,
 			DriverName:                     fmt.Sprintf("%s %s %s", r.DriverTitle, r.DriverFirstName, r.DriverLastName),
-			CurrencyCode:                   r.CurrencyCode,
-			CurrencyRate:                   currencyRate,
-			CarSellPriceWithBrokerERP:      carSellPriceWithBrokerERP,
-			CarSellPriceWithBrokerERPInILS: carSellPriceWithBrokerERP * currencyRate,
-			BtERPPrice:                     btERPPrice,
-			BtERPPriceInILS:                btERPPrice * currencyRate,
-			TotalPrice:                     totalPrice,
-			TotalPriceInILS:                totalPrice * currencyRate,
+			CurrencyCode:                   price.CurrencyCode,
+			CurrencyRate:                   price.CurrencyRate,
+			CarSellPriceWithBrokerERP:      price.CarWithBrokerErpWithMarkup.Value,
+			CarSellPriceWithBrokerERPInILS: price.CarWithBrokerErpWithMarkup.ILS,
+			BtERPPrice:                     price.BtErpPrice.Value,
+			BtERPPriceInILS:                price.BtErpPrice.ILS,
+			TotalPrice:                     price.TotalPrice.Value,
+			TotalPriceInILS:                price.TotalPrice.ILS,
 			CouponName:                     r.CouponName,
 			VoucherNumber:                  r.VoucherNumber,
 			VoucheredAt:                    voucheredAt,
@@ -165,14 +162,6 @@ func buildBusinessReportRows(reservations []db.Reservation, accountsLookup *acco
 	}
 
 	return rows, nil
-}
-
-func calculateCarSellPriceWithBrokerERP(reservation db.Reservation) float64 {
-	purchasePrice := dbadapters.NumericToFloat64(reservation.PurchasePrice)
-	markupPercentage := dbadapters.NumericToFloat64(reservation.MarkupPercentage)
-	brokerERPPrice := dbadapters.NumericToFloat64(reservation.BrokerErpPrice)
-
-	return pricing.ApplyMarkup(purchasePrice, markupPercentage) + pricing.ApplyMarkup(brokerERPPrice, markupPercentage)
 }
 
 func namesByID(rows []accounts.AccountName) map[int64]string {

@@ -3,7 +3,7 @@ package reports
 import (
 	"context"
 
-	dbadapters "encore.app/internal/db_adapters"
+	"encore.app/internal/pricing"
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
 	"encore.dev/rlog"
@@ -68,26 +68,31 @@ func buildProfitReportRows(reservations []db.Reservation, accountsLookup *accoun
 
 	rows := make([]ProfitReportRow, 0, len(reservations))
 	for i, r := range reservations {
-		currencyRate := dbadapters.NumericToFloat64(r.CurrencyRate)
-		btErpPrice := dbadapters.NumericToFloat64(r.BtErpPrice)
-		purchasePrice := calculateCarPurchasePriceWithBrokerERP(r)
-		profit := businessRows[i].CarSellPriceWithBrokerERP - purchasePrice + btErpPrice
+		price := pricing.NewWithReservation(r).Details()
 
 		rows = append(rows, ProfitReportRow{
 			BusinessReservationReportRow: businessRows[i],
-			PurchasePrice:                purchasePrice,
-			PurchasePriceInILS:           purchasePrice * currencyRate,
-			Profit:                       profit,
-			ProfitInILS:                  profit * currencyRate,
-			ProfitPercentage:             (profit / businessRows[i].CarSellPriceWithBrokerERP) * 100,
+			PurchasePrice:                price.TotalCost.Value,
+			PurchasePriceInILS:           price.TotalCost.ILS,
+			Profit:                       price.TotalProfit.Value,
+			ProfitInILS:                  price.TotalProfit.ILS,
+			ProfitPercentage:             profitPercentage(price),
 		})
 	}
 
 	return rows, nil
 }
 
-func calculateCarPurchasePriceWithBrokerERP(reservation db.Reservation) float64 {
-	return dbadapters.NumericToFloat64(reservation.PurchasePrice) + dbadapters.NumericToFloat64(reservation.BrokerErpPrice)
+// profitPercentage is the share of what the customer actually paid that we kept.
+//
+// It divides by the total price, the same denominator the report-level ProfitPercentage uses, so a
+// row and the footer state the same measure. Dividing by the pre-discount sell price - as this did
+// until the price breakdown was centralized - counted a coupon as revenue we never received.
+func profitPercentage(price pricing.Details) float64 {
+	if price.TotalPrice.Value <= 0 {
+		return 0
+	}
+	return price.TotalProfit.Value / price.TotalPrice.Value * 100
 }
 
 // calculateProfit calculates total profit and profit percentage based on the report result

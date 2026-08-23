@@ -5,6 +5,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
+	"encore.app/internal/pricing"
 	"encore.app/services/reservation/db"
 	"encore.app/services/reservation/handlers/reservation_pricing"
 	"encore.dev/beta/errs"
@@ -115,22 +116,33 @@ func toCurrencyGroups(
 	for _, r := range rows {
 		groupIndex := groupIndexFor(r.CurrencyCode)
 
-		pd := reservation_pricing.GetReservationPriceDetails(r)
+		price := pricing.NewWithNumerics(pricing.NumericParams{
+			PurchasePrice:      r.PurchasePrice,
+			BrokerErpPrice:     r.BrokerErpPrice,
+			BtErpPrice:         r.BtErpPrice,
+			MarkupPercentage:   r.MarkupPercentage,
+			DiscountPercentage: r.DiscountPercentage,
+			CurrencyCode:       r.CurrencyCode,
+			CurrencyRate:       r.CurrencyRate,
+			TotalPrice:         r.TotalPrice,
+		}).Details()
+
 		groups[groupIndex].Reservations = append(groups[groupIndex].Reservations, reservation_pricing.BillingReservation{
 			ID:                  r.ID,
 			BrokerReservationID: r.BrokerReservationID,
 			PaymentStatus:       string(r.PaymentStatus),
 			ReservationStatus:   string(r.ReservationStatus),
-			CarPurchasePrice:    pd.CarPurchasePrice,
-			CarSellingPrice:     pd.CarSellingPrice,
-			ERPSellingPrice:     pd.ErpSellingPrice,
-			TotalProfit:         pd.TotalProfit,
-			TotalPrice:          pd.TotalPrice,
-			CurrencyCode:        r.CurrencyCode,
-			CurrencyRate:        dbadapters.NumericToFloat64(r.CurrencyRate),
-			CreatedAt:           dbadapters.TimestamptzToString(r.CreatedAt),
-			PickupDate:          dbadapters.DateToString(r.PickupDate),
-			VoucheredAt:         dbadapters.TimestamptzToString(r.VoucheredAt),
+			// The invoice is settled to the agora, so the rounded faces go on it.
+			CarPurchasePrice: price.TotalCost.ValueRounded,
+			CarSellingPrice:  price.CarWithBrokerErpWithMarkup.ValueRounded,
+			ERPSellingPrice:  price.BtErpPrice.Value,
+			TotalProfit:      price.TotalProfit.ValueRounded,
+			TotalPrice:       price.TotalPrice.Value,
+			CurrencyCode:     price.CurrencyCode,
+			CurrencyRate:     dbadapters.NumericToFloat64(r.CurrencyRate),
+			CreatedAt:        dbadapters.TimestamptzToString(r.CreatedAt),
+			PickupDate:       dbadapters.DateToString(r.PickupDate),
+			VoucheredAt:      dbadapters.TimestamptzToString(r.VoucheredAt),
 		})
 	}
 

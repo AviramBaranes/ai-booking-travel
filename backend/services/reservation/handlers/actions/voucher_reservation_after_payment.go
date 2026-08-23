@@ -5,6 +5,7 @@ import (
 
 	"encore.app/internal/api_errors"
 	dbadapters "encore.app/internal/db_adapters"
+	"encore.app/internal/pricing"
 	"encore.app/services/reservation/db"
 	"encore.app/services/reservation/handlers/reservation_pricing"
 	"encore.dev/rlog"
@@ -35,20 +36,7 @@ func (s *ActionService) VoucherReservationAfterPayment(ctx context.Context, p Vo
 	s.updateReservationCurrencyRate(ctx, reservation.ID, reservation.CurrencyCode)
 	sendReservationVoucherToUser(ctx, reservation, p.UserEmail, "N/A")
 
-	pd := reservation_pricing.GetReservationPriceDetails(db.GetPaymentPendingReservationsByBillingEntityRow{
-		ID:                  reservation.ID,
-		BrokerReservationID: reservation.BrokerReservationID,
-		PaymentStatus:       reservation.PaymentStatus,
-		ReservationStatus:   reservation.ReservationStatus,
-		PurchasePrice:       reservation.PurchasePrice,
-		MarkupPercentage:    reservation.MarkupPercentage,
-		BtErpPrice:          reservation.BtErpPrice,
-		BrokerErpPrice:      reservation.BrokerErpPrice,
-		TotalPrice:          reservation.TotalPrice,
-		CurrencyCode:        reservation.CurrencyCode,
-		CreatedAt:           reservation.CreatedAt,
-		PickupDate:          reservation.PickupDate,
-	})
+	price := pricing.NewWithReservation(reservation).Details()
 
 	return &VoucherReservationAfterPaymentResponse{
 		BillingReservation: reservation_pricing.BillingReservation{
@@ -56,15 +44,16 @@ func (s *ActionService) VoucherReservationAfterPayment(ctx context.Context, p Vo
 			BrokerReservationID: reservation.BrokerReservationID,
 			PaymentStatus:       string(reservation.PaymentStatus),
 			ReservationStatus:   string(reservation.ReservationStatus),
-			CarPurchasePrice:    pd.CarPurchasePrice,
-			CarSellingPrice:     pd.CarSellingPrice,
-			ERPSellingPrice:     pd.ErpSellingPrice,
-			TotalProfit:         pd.TotalProfit,
-			TotalPrice:          pd.TotalPrice,
-			CurrencyCode:        reservation.CurrencyCode,
-			CurrencyRate:        dbadapters.NumericToFloat64(reservation.CurrencyRate),
-			CreatedAt:           dbadapters.TimestamptzToString(reservation.CreatedAt),
-			PickupDate:          dbadapters.DateToString(reservation.PickupDate),
+			// The invoice is settled to the agora, so the rounded faces go on it.
+			CarPurchasePrice: price.TotalCost.ValueRounded,
+			CarSellingPrice:  price.CarWithBrokerErpWithMarkup.ValueRounded,
+			ERPSellingPrice:  price.BtErpPrice.Value,
+			TotalProfit:      price.TotalProfit.ValueRounded,
+			TotalPrice:       price.TotalPrice.Value,
+			CurrencyCode:     price.CurrencyCode,
+			CurrencyRate:     dbadapters.NumericToFloat64(reservation.CurrencyRate),
+			CreatedAt:        dbadapters.TimestamptzToString(reservation.CreatedAt),
+			PickupDate:       dbadapters.DateToString(reservation.PickupDate),
 		}}, nil
 
 }
