@@ -42,6 +42,15 @@ func (s *Service) CancelReservation(ctx context.Context, id int64) error {
 	return s.newActionService().CancelReservation(ctx, id)
 }
 
+// CancelReservationByAdmin lets an admin cancel any reservation, including ones past the
+// cancellation window or already paid by credit card. It does not adjust balance due and
+// does not refund the payment — those stay manual.
+//
+// encore:api auth method=POST path=/admin/reservations/:id/cancel tag:admin
+func (s *Service) CancelReservationByAdmin(ctx context.Context, id int64) error {
+	return s.newActionService().CancelReservationByAdmin(ctx, id)
+}
+
 // encore:api auth method=POST path=/reservations/:id/voucher tag:agent
 func (s *Service) ApplyVoucher(ctx context.Context, id int64, p actions.ApplyVoucherParams) error {
 	return s.newActionService().ApplyVoucher(ctx, id, p)

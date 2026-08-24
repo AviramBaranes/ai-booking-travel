@@ -1095,6 +1095,7 @@ export namespace reservation {
             this.baseClient = baseClient
             this.ApplyVoucher = this.ApplyVoucher.bind(this)
             this.CancelReservation = this.CancelReservation.bind(this)
+            this.CancelReservationByAdmin = this.CancelReservationByAdmin.bind(this)
             this.CreatePenalty = this.CreatePenalty.bind(this)
             this.DownloadVoucher = this.DownloadVoucher.bind(this)
             this.GetBusinessReport = this.GetBusinessReport.bind(this)
@@ -1116,6 +1117,15 @@ export namespace reservation {
 
         public async CancelReservation(id: number): Promise<void> {
             await this.baseClient.callTypedAPI("POST", `/api/reservation/${encodeURIComponent(id)}/cancel`)
+        }
+
+        /**
+         * CancelReservationByAdmin lets an admin cancel any reservation, including ones past the
+         * cancellation window or already paid by credit card. It does not adjust balance due and
+         * does not refund the payment — those stay manual.
+         */
+        public async CancelReservationByAdmin(id: number): Promise<void> {
+            await this.baseClient.callTypedAPI("POST", `/admin/reservations/${encodeURIComponent(id)}/cancel`)
         }
 
         /**

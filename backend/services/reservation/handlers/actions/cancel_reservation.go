@@ -40,13 +40,9 @@ type BookingCancellationEvent struct {
 }
 
 func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
-	reservation, err := s.query.GetReservationByID(ctx, id)
+	reservation, err := s.getReservationForCancellation(ctx, id)
 	if err != nil {
-		if errors.Is(err, db.ErrNoRows) {
-			return api_errors.ErrNotFound
-		}
-		rlog.Error("failed to get reservation by id", "error", err, "reservationId", id)
-		return api_errors.ErrInternalError
+		return err
 	}
 
 	authData := accounts.GetAuthData()
@@ -62,12 +58,7 @@ func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
 		return ErrCancellationWindowExceeded
 	}
 
-	if err := db.WithTx(ctx, s.pool, func(q db.Querier, tx pgx.Tx) error {
-		if err := q.CancelReservation(ctx, id); err != nil {
-			rlog.Error("failed to cancel reservation", "error", err, "reservationId", id)
-			return err
-		}
-
+	if err := s.cancelReservationTx(ctx, reservation, func() error {
 		if err := updateBalanceDue(ctx, reservation); err != nil {
 			rlog.Error("failed to update balance due after cancellation", "error", err, "reservationId", id)
 			return err
@@ -76,6 +67,79 @@ func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
 		if err := refundReservationPayment(reservation); err != nil {
 			rlog.Error("failed to refund reservation payment", "error", err, "reservationId", id)
 			return err
+		}
+
+		return nil
+	}); err != nil {
+		return api_errors.ErrInternalError
+	}
+
+	publishCancellationEmail(ctx, reservation)
+
+	if isLateCancellation {
+		if _, err := emailPublisher.Publish(ctx, emailevents.EmailEventTypeLateCancellationAlert, emailevents.LateCancellationAlertEmailPayload{
+			ReservationID:       reservation.ID,
+			BrokerReservationID: reservation.BrokerReservationID,
+			AgentID:             reservation.UserID,
+			OfficeID:            reservation.OfficeID,
+			OrganizationID:      reservation.OrganizationID,
+		}); err != nil {
+			rlog.Error("failed to publish late cancellation alert email event", "error", err, "reservationId", reservation.ID)
+		}
+	}
+
+	return nil
+}
+
+// CancelReservationByAdmin cancels a reservation on behalf of an admin, bypassing the
+// ownership and cancellation-window checks that apply to agents and customers. It only
+// marks the reservation canceled, enqueues the supplier cancellation and sends the
+// cancellation email — no balance due update and no credit card refund are attempted, so
+// any money movement stays a manual decision.
+func (s *ActionService) CancelReservationByAdmin(ctx context.Context, id int64) error {
+	reservation, err := s.getReservationForCancellation(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if err := s.cancelReservationTx(ctx, reservation, nil); err != nil {
+		return api_errors.ErrInternalError
+	}
+
+	publishCancellationEmail(ctx, reservation)
+
+	return nil
+}
+
+// getReservationForCancellation loads the reservation to cancel, mapping a missing row to
+// a not found API error.
+func (s *ActionService) getReservationForCancellation(ctx context.Context, id int64) (db.Reservation, error) {
+	reservation, err := s.query.GetReservationByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, db.ErrNoRows) {
+			return db.Reservation{}, api_errors.ErrNotFound
+		}
+		rlog.Error("failed to get reservation by id", "error", err, "reservationId", id)
+		return db.Reservation{}, api_errors.ErrInternalError
+	}
+
+	return reservation, nil
+}
+
+// cancelReservationTx marks the reservation canceled and binds the booking cancellation
+// event to the outbox in a single transaction. withinTx, when provided, runs inside that
+// same transaction after the reservation is canceled.
+func (s *ActionService) cancelReservationTx(ctx context.Context, reservation db.Reservation, withinTx func() error) error {
+	return db.WithTx(ctx, s.pool, func(q db.Querier, tx pgx.Tx) error {
+		if err := q.CancelReservation(ctx, reservation.ID); err != nil {
+			rlog.Error("failed to cancel reservation", "error", err, "reservationId", reservation.ID)
+			return err
+		}
+
+		if withinTx != nil {
+			if err := withinTx(); err != nil {
+				return err
+			}
 		}
 
 		event := &BookingCancellationEvent{
@@ -93,10 +157,12 @@ func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
 		}
 
 		return nil
-	}); err != nil {
-		return api_errors.ErrInternalError
-	}
+	})
+}
 
+// publishCancellationEmail notifies the reservation owner that the booking was canceled.
+// A failure here is logged and swallowed: the reservation is already canceled.
+func publishCancellationEmail(ctx context.Context, reservation db.Reservation) {
 	if _, err := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCancellation, emailevents.CancellationEmailPayload{
 		UserID:             reservation.UserID,
 		BookingReferenceID: reservation.BrokerReservationID,
@@ -104,20 +170,6 @@ func (s *ActionService) CancelReservation(ctx context.Context, id int64) error {
 	}); err != nil {
 		rlog.Error("failed to publish cancellation email event", "error", err, "reservationId", reservation.ID)
 	}
-
-	if isLateCancellation {
-		if _, err := emailPublisher.Publish(ctx, emailevents.EmailEventTypeLateCancellationAlert, emailevents.LateCancellationAlertEmailPayload{
-			ReservationID:       reservation.ID,
-			BrokerReservationID: reservation.BrokerReservationID,
-			AgentID:             reservation.UserID,
-			OfficeID:            reservation.OfficeID,
-			OrganizationID:      reservation.OrganizationID,
-		}); err != nil {
-			rlog.Error("failed to publish late cancellation alert email event", "error", err, "reservationId", reservation.ID)
-		}
-	}
-
-	return nil
 }
 
 // canCancel checks if the reservation can be canceled based on the current time and the pickup time.

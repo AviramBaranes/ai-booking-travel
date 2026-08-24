@@ -12,6 +12,7 @@ import {
 import { getFullReservation } from "@/shared/api/reservations-api";
 import { queries } from "@/shared/client";
 import { formatPrice, formatPriceFloat } from "@/shared/utils/formatPrice";
+import { CancelReservationButton } from "./CancelReservationButton";
 import { CreatePenaltyForm } from "./CreatePenaltyForm";
 
 const RESERVATION_STATUS_CANCELED = "canceled";
@@ -173,6 +174,11 @@ export function ReservationDetailDialog({
               <Row label="סטטוס תשלום" value={r.paymentStatus} />
               {r.voucherNumber && <Row label="מספר שובר" value={r.voucherNumber} />}
               {r.voucheredAt && <Row label="תאריך כרטוס" value={formatIsraeliDateTime(r.voucheredAt)} />}
+              {r.reservationStatus !== RESERVATION_STATUS_CANCELED && (
+                <div className="pt-2">
+                  <CancelReservationButton reservationId={r.id} />
+                </div>
+              )}
             </Section>
 
             <Section title="רכב">

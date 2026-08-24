@@ -27,6 +27,17 @@ export function cancelReservation(reservationId: number) {
   );
 }
 
+/**
+ * cancelReservationByAdmin cancels a reservation regardless of the cancellation window or
+ * how it was paid. The backend deliberately leaves balance due and refunds untouched, so
+ * any money movement stays a manual decision.
+ */
+export function cancelReservationByAdmin(reservationId: number) {
+  return withErrorHandler((client) =>
+    client.reservation.CancelReservationByAdmin(reservationId),
+  );
+}
+
 export function listOpenReservations(
   params: queries.ListOpenReservationsByBillingEntityParams,
 ) {
