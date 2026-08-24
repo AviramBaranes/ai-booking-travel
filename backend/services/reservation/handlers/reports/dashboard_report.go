@@ -57,6 +57,10 @@ type DashboardReservation struct {
 	CreatedAt     string `json:"createdAt"`
 	Status        string `json:"status"`
 	PaymentStatus string `json:"paymentStatus"`
+	// IsVouchered reports whether a voucher was ever issued, not the current status: a
+	// reservation cancelled after ticketing stays vouchered here, so the dashboard can
+	// narrow to ticketed business and still account for its cancellations.
+	IsVouchered bool `json:"isVouchered"`
 
 	IsBusiness            bool   `json:"isBusiness"`
 	UserID                int64  `json:"userId"`
@@ -167,6 +171,7 @@ func buildDashboardRows(rows []db.ListReservationsForDashboardRow) ([]DashboardR
 			CreatedAt:     dbadapters.TimestamptzToString(r.CreatedAt),
 			Status:        string(r.ReservationStatus),
 			PaymentStatus: string(r.PaymentStatus),
+			IsVouchered:   r.VoucheredAt.Valid,
 
 			IsBusiness:            r.OfficeID != nil && r.OrganizationID != nil,
 			UserID:                r.UserID,

@@ -16,9 +16,12 @@ export type Audience = "all" | "business" | "private";
 export interface RowFilters {
   audience: Audience;
   includeCanceled: boolean;
+  /** Keep only reservations a voucher was issued for, dropping ones that never ticketed. */
+  onlyVouchered: boolean;
 }
 
 export const CANCELED = "canceled";
+export const VOUCHERED = "vouchered";
 
 /**
  * The one place rows are narrowed. Every panel reads the same filtered slice, so the whole
@@ -26,10 +29,13 @@ export const CANCELED = "canceled";
  */
 export function filterRows(
   rows: DashboardRow[],
-  { audience, includeCanceled }: RowFilters,
+  { audience, includeCanceled, onlyVouchered }: RowFilters,
 ): DashboardRow[] {
   return rows.filter((row) => {
     if (!includeCanceled && row.status === CANCELED) return false;
+    // isVouchered survives a later cancellation, so a ticketed booking that was canceled
+    // still counts here — otherwise the two filters would silently cancel each other out.
+    if (onlyVouchered && !row.isVouchered) return false;
     if (audience === "business" && !row.isBusiness) return false;
     if (audience === "private" && row.isBusiness) return false;
     return true;
@@ -206,15 +212,14 @@ function emptyBucket(key: string, granularity: Granularity): TimeBucket {
 }
 
 /**
- * Buckets rows over the full range, including empty periods — a line that silently skips
- * quiet days misrepresents the trend.
+ * Every bucket the range covers, in order — including the quiet ones, which each series
+ * then seeds with an empty bucket of its own shape.
  */
-export function buildTimeSeries(
-  rows: DashboardRow[],
+function bucketKeysInRange(
   range: DateRangeValue,
   granularity: Granularity,
-): TimeBucket[] {
-  const buckets = new Map<string, TimeBucket>();
+): string[] {
+  const keys: string[] = [];
 
   const start = bucketStart(parseDateValue(range.from), granularity);
   const end = parseDateValue(range.to);
@@ -226,7 +231,24 @@ export function buildTimeSeries(
         ? addMonths(cursor, 1)
         : addDays(cursor, granularity === "week" ? 7 : 1)
   ) {
-    const key = format(cursor, "yyyy-MM-dd");
+    keys.push(format(cursor, "yyyy-MM-dd"));
+  }
+
+  return keys;
+}
+
+/**
+ * Buckets rows over the full range, including empty periods — a line that silently skips
+ * quiet days misrepresents the trend.
+ */
+export function buildTimeSeries(
+  rows: DashboardRow[],
+  range: DateRangeValue,
+  granularity: Granularity,
+): TimeBucket[] {
+  const buckets = new Map<string, TimeBucket>();
+
+  for (const key of bucketKeysInRange(range, granularity)) {
     buckets.set(key, emptyBucket(key, granularity));
   }
 
@@ -242,6 +264,80 @@ export function buildTimeSeries(
     } else {
       bucket.private += row.profitIls;
     }
+    buckets.set(key, bucket);
+  }
+
+  return [...buckets.values()].sort((a, b) => a.key.localeCompare(b.key));
+}
+
+// --- Status over time -------------------------------------------------------
+
+/** Stacking and legend order: settled business first, then open, then lost. */
+export const STATUS_KEYS = ["vouchered", "booked", "canceled"] as const;
+export type StatusKey = (typeof STATUS_KEYS)[number];
+
+export type StatusBucket = {
+  key: string;
+  label: string;
+  periodLabel: string;
+  total: number;
+} & Record<StatusKey, number>;
+
+/**
+ * Where a reservation stands *now*, which is not the same question as whether it was ever
+ * ticketed: one that was vouchered and later canceled belongs to "בוטל" here, so the three
+ * series always add up to the period's total.
+ */
+function statusKeyOf(row: DashboardRow): StatusKey {
+  if (row.status === CANCELED) return "canceled";
+  if (row.status === VOUCHERED) return "vouchered";
+  return "booked";
+}
+
+/** What one row contributes under the currently selected פילוחים metric. */
+function metricValue(row: DashboardRow, metric: Metric): number {
+  if (metric === "revenue") return row.revenueIls;
+  if (metric === "profit") return row.profitIls;
+  return 1;
+}
+
+function emptyStatusBucket(key: string, granularity: Granularity): StatusBucket {
+  return {
+    key,
+    label: bucketLabel(key, granularity),
+    periodLabel: bucketPeriodLabel(key, granularity),
+    vouchered: 0,
+    booked: 0,
+    canceled: 0,
+    total: 0,
+  };
+}
+
+/**
+ * Splits each period by the current status of the reservations created in it, measured in
+ * whichever unit the פילוחים selector is set to.
+ *
+ * Callers pass the population deliberately: this is the one series that must see canceled
+ * and unticketed rows, or two of its three bands could never appear.
+ */
+export function buildStatusSeries(
+  rows: DashboardRow[],
+  range: DateRangeValue,
+  granularity: Granularity,
+  metric: Metric,
+): StatusBucket[] {
+  const buckets = new Map<string, StatusBucket>();
+
+  for (const key of bucketKeysInRange(range, granularity)) {
+    buckets.set(key, emptyStatusBucket(key, granularity));
+  }
+
+  for (const row of rows) {
+    const key = bucketKey(new Date(row.createdAt), granularity);
+    const bucket = buckets.get(key) ?? emptyStatusBucket(key, granularity);
+    const value = metricValue(row, metric);
+    bucket[statusKeyOf(row)] += value;
+    bucket.total += value;
     buckets.set(key, bucket);
   }
 

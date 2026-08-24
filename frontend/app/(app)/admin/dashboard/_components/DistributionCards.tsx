@@ -17,21 +17,13 @@ import { ExpandToggle } from "./ExpandToggle";
 import {
   CATEGORICAL,
   count,
+  formatMetric,
   ils,
   ilsCompact,
   labelFormatter,
+  metricLabel,
   percent,
 } from "../_lib/format";
-
-function metricLabel(metric: Metric): string {
-  if (metric === "count") return "הזמנות";
-  if (metric === "revenue") return "הכנסות";
-  return "רווח";
-}
-
-function formatMetric(value: number, metric: Metric): string {
-  return metric === "count" ? count(value) : ils(value);
-}
 
 function tableView(groups: Group[]) {
   return {

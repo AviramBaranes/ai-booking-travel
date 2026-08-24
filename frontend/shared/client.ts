@@ -2487,6 +2487,13 @@ export namespace reports {
         createdAt: string
         status: string
         paymentStatus: string
+        /**
+         * IsVouchered reports whether a voucher was ever issued, not the current status: a
+         * reservation cancelled after ticketing stays vouchered here, so the dashboard can
+         * narrow to ticketed business and still account for its cancellations.
+         */
+        isVouchered: boolean
+
         isBusiness: boolean
         userId: number
         officeId: number

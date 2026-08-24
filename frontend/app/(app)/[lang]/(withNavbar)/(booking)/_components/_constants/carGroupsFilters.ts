@@ -545,7 +545,6 @@ export const CAR_GROUPS_FILTERS: CarGroupFilter[] = [
       "OVAC",
 
       // Common MPV / monospace classes that suppliers often use for family carriers.
-      "CMMR",
       "CMAR",
       "IMMR",
       "IMAR",

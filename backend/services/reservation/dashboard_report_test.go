@@ -265,6 +265,58 @@ func TestGetDashboardReport(t *testing.T) {
 		}
 	})
 
+	t.Run("reports voucher state", func(t *testing.T) {
+		if findDashboardRow(t, resp.Reservations, agentReservationID).IsVouchered {
+			t.Fatal("expected a freshly created reservation not to be vouchered")
+		}
+
+		voucherNumber := fmt.Sprintf("DASH-VOUCHER-%d", unique)
+		if err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{
+			ID:            agentReservationID,
+			UserID:        agent.ID,
+			VoucherNumber: &voucherNumber,
+			CurrencyRate:  dbadapters.NumericFromFloat64(4),
+		}); err != nil {
+			t.Fatalf("failed to apply a voucher: %v", err)
+		}
+
+		vouchered, err := GetDashboardReport(ctx, &reports.DashboardParams{From: day, To: day})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+		if !findDashboardRow(t, vouchered.Reservations, agentReservationID).IsVouchered {
+			t.Fatal("expected the reservation to be reported as vouchered")
+		}
+	})
+
+	t.Run("keeps a reservation vouchered after it is canceled", func(t *testing.T) {
+		voucherNumber := fmt.Sprintf("DASH-VOUCHER-CANCELED-%d", unique)
+		if err := s.query.ApplyVoucher(ctx, db.ApplyVoucherParams{
+			ID:            customerReservationID,
+			UserID:        agent.ID,
+			VoucherNumber: &voucherNumber,
+			CurrencyRate:  dbadapters.NumericFromFloat64(1),
+		}); err != nil {
+			t.Fatalf("failed to apply a voucher: %v", err)
+		}
+		if err := s.query.CancelReservation(ctx, customerReservationID); err != nil {
+			t.Fatalf("failed to cancel the reservation: %v", err)
+		}
+
+		canceled, err := GetDashboardReport(ctx, &reports.DashboardParams{From: day, To: day})
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		row := findDashboardRow(t, canceled.Reservations, customerReservationID)
+		if row.Status != string(db.ReservationStatusCanceled) {
+			t.Fatalf("expected status %q, got %q", db.ReservationStatusCanceled, row.Status)
+		}
+		if !row.IsVouchered {
+			t.Fatal("expected a canceled reservation that was ticketed to stay vouchered")
+		}
+	})
+
 	t.Run("folds a penalty into the reservation row", func(t *testing.T) {
 		if err := s.query.CancelReservation(ctx, customerReservationID); err != nil {
 			t.Fatalf("failed to cancel the reservation: %v", err)

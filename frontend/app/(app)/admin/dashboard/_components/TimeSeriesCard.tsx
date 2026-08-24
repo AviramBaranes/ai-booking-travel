@@ -20,10 +20,25 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-import { Granularity, TimeBucket, toCumulative } from "../_lib/aggregate";
+import {
+  Granularity,
+  Metric,
+  STATUS_KEYS,
+  StatusBucket,
+  TimeBucket,
+  toCumulative,
+} from "../_lib/aggregate";
 import { ChartCard } from "./ChartCard";
 import { SegmentedControl } from "./SegmentedControl";
-import { count, ils, ilsCompact } from "../_lib/format";
+import {
+  RESERVATION_STATUS_COLORS,
+  RESERVATION_STATUS_LABELS,
+  count,
+  formatMetric,
+  ils,
+  ilsCompact,
+  metricLabel,
+} from "../_lib/format";
 
 const GRANULARITY_LABELS: Record<Granularity, string> = {
   day: "לפי יום",
@@ -46,6 +61,22 @@ const countConfig = {
   count: { label: "הזמנות", color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
+/** Status keeps the colours and labels it carries everywhere else on the page. */
+const statusConfig = {
+  vouchered: {
+    label: RESERVATION_STATUS_LABELS.vouchered,
+    color: RESERVATION_STATUS_COLORS.vouchered,
+  },
+  booked: {
+    label: RESERVATION_STATUS_LABELS.booked,
+    color: RESERVATION_STATUS_COLORS.booked,
+  },
+  canceled: {
+    label: RESERVATION_STATUS_LABELS.canceled,
+    color: RESERVATION_STATUS_COLORS.canceled,
+  },
+} satisfies ChartConfig;
+
 type View = "combined" | "split";
 
 const MONEY_KEYS = ["revenue", "cost", "profit"] as const;
@@ -65,9 +96,9 @@ function periodTooltipLabel(_label: unknown, payload?: readonly { payload?: Time
  * slightly-negative period drags the floor thousands below zero and squashes everything
  * that matters into the top half of the plot.
  */
-function moneyDomain(
-  buckets: TimeBucket[],
-  keys: readonly (keyof TimeBucket)[],
+function moneyDomain<T>(
+  buckets: T[],
+  keys: readonly (keyof T)[],
 ): [number, "auto"] {
   let min = 0;
   for (const bucket of buckets) {
@@ -388,6 +419,173 @@ export function VolumeCard({
               content={<ChartTooltipContent labelFormatter={periodTooltipLabel} />}
             />
             <Bar dataKey="count" fill="var(--color-count)" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ChartContainer>
+      </div>
+    </ChartCard>
+  );
+}
+
+/**
+ * Where each period's reservations stand today: ticketed, still open, or canceled. Read as
+ * three lines rather than a stack because the question is usually "did ticketing keep up
+ * with bookings", which is a comparison between the bands, not their sum.
+ *
+ * The population is deliberately wider than the rest of the page: with ביטולים and כרטוסים
+ * at their defaults the shared slice holds a single status, and two of the three bands
+ * could never appear. The subtitle says so, so this is never misread as the filtered view.
+ */
+export function StatusPerPeriodCard({
+  buckets,
+  granularity,
+  metric,
+}: {
+  buckets: StatusBucket[];
+  granularity: Granularity;
+  metric: Metric;
+}) {
+  return (
+    <ChartCard
+      title="סטטוס הזמנות לפי תקופה"
+      subtitle={`לפי ${metricLabel(metric)} · ${GRANULARITY_LABELS[granularity]} · כל ההזמנות שנוצרו בתקופה, ללא תלות בפילטרי הביטולים והכרטוסים`}
+      tableView={{
+        columns: [
+          { label: "תקופה" },
+          { label: RESERVATION_STATUS_LABELS.vouchered, align: "end" },
+          { label: RESERVATION_STATUS_LABELS.booked, align: "end" },
+          { label: RESERVATION_STATUS_LABELS.canceled, align: "end" },
+          { label: "סה״כ", align: "end" },
+        ],
+        rows: buckets.map((bucket) => [
+          bucket.periodLabel,
+          formatMetric(bucket.vouchered, metric),
+          formatMetric(bucket.booked, metric),
+          formatMetric(bucket.canceled, metric),
+          formatMetric(bucket.total, metric),
+        ]),
+      }}
+    >
+      <div dir="ltr">
+        <ChartContainer config={statusConfig} className="h-64 w-full">
+          <LineChart data={buckets} margin={{ top: 8, right: 12, left: 4, bottom: 0 }}>
+            <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
+            <XAxis
+              dataKey="label"
+              tickLine={false}
+              axisLine={{ stroke: "var(--chart-axis)" }}
+              tickMargin={8}
+              minTickGap={16}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={4}
+              width={metric === "count" ? 40 : 56}
+              allowDecimals={metric !== "count"}
+              domain={metric === "count" ? [0, "auto"] : moneyDomain(buckets, STATUS_KEYS)}
+              tickFormatter={metric === "count" ? count : ilsCompact}
+            />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  labelFormatter={periodTooltipLabel}
+                  formatter={(value) => formatMetric(Number(value), metric)}
+                />
+              }
+            />
+            <ChartLegend content={<ChartLegendContent />} />
+            {STATUS_KEYS.map((key) => (
+              <Line
+                key={key}
+                dataKey={key}
+                type="linear"
+                stroke={`var(--color-${key})`}
+                strokeWidth={2}
+                dot={dotProps(buckets.length, `var(--color-${key})`)}
+                activeDot={{ r: 5, strokeWidth: 2, stroke: "var(--card)" }}
+              />
+            ))}
+          </LineChart>
+        </ChartContainer>
+      </div>
+    </ChartCard>
+  );
+}
+
+/**
+ * The same three bands stacked into one column per period: full-width bars that stay
+ * readable at any density, where three bars side by side turn into slivers. Total height is
+ * the period's whole volume in the selected metric, split by status — not a share, so a
+ * busy period still reads as a taller column than a quiet one.
+ */
+export function StatusCompositionCard({
+  buckets,
+  granularity,
+  metric,
+}: {
+  buckets: StatusBucket[];
+  granularity: Granularity;
+  metric: Metric;
+}) {
+  return (
+    <ChartCard
+      title="הרכב סטטוסים לפי תקופה"
+      subtitle={`לפי ${metricLabel(metric)} · ${GRANULARITY_LABELS[granularity]}`}
+      tableView={{
+        columns: [
+          { label: "תקופה" },
+          { label: RESERVATION_STATUS_LABELS.vouchered, align: "end" },
+          { label: RESERVATION_STATUS_LABELS.booked, align: "end" },
+          { label: RESERVATION_STATUS_LABELS.canceled, align: "end" },
+          { label: "סה״כ", align: "end" },
+        ],
+        rows: buckets.map((bucket) => [
+          bucket.periodLabel,
+          formatMetric(bucket.vouchered, metric),
+          formatMetric(bucket.booked, metric),
+          formatMetric(bucket.canceled, metric),
+          formatMetric(bucket.total, metric),
+        ]),
+      }}
+    >
+      <div dir="ltr">
+        <ChartContainer config={statusConfig} className="h-40 w-full">
+          <BarChart data={buckets} margin={{ top: 8, right: 12, left: 4, bottom: 0 }}>
+            <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
+            <XAxis
+              dataKey="label"
+              tickLine={false}
+              axisLine={{ stroke: "var(--chart-axis)" }}
+              tickMargin={8}
+              minTickGap={16}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={4}
+              width={metric === "count" ? 40 : 56}
+              allowDecimals={metric !== "count"}
+              domain={metric === "count" ? [0, "auto"] : moneyDomain(buckets, STATUS_KEYS)}
+              tickFormatter={metric === "count" ? count : ilsCompact}
+            />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  labelFormatter={periodTooltipLabel}
+                  formatter={(value) => formatMetric(Number(value), metric)}
+                />
+              }
+            />
+            {/* One stack per period, bottom to top: settled, still open, lost. */}
+            {STATUS_KEYS.map((key) => (
+              <Bar
+                key={key}
+                dataKey={key}
+                stackId="status"
+                fill={`var(--color-${key})`}
+                maxBarSize={40}
+              />
+            ))}
           </BarChart>
         </ChartContainer>
       </div>

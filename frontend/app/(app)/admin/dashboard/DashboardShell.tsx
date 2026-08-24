@@ -14,6 +14,8 @@ import { HeroFigure, StatTile } from "./_components/StatTile";
 import {
   CumulativeVolumeCard,
   MoneyPerPeriodCard,
+  StatusCompositionCard,
+  StatusPerPeriodCard,
   TimeSeriesCard,
   VolumeCard,
 } from "./_components/TimeSeriesCard";
@@ -34,6 +36,7 @@ import {
   Metric,
   RENTAL_DAYS_BANDS,
   buildLookups,
+  buildStatusSeries,
   buildTimeSeries,
   computePayments,
   computeTotals,
@@ -67,6 +70,7 @@ const FILTER_KEYS = [
   "to",
   "audience",
   "canceled",
+  "vouchered",
   "metric",
   "bucket",
 ] as const;
@@ -83,6 +87,16 @@ const AUDIENCE_OPTIONS = [
   { value: "all", label: "הכל" },
   { value: "business", label: "עסקי" },
   { value: "private", label: "פרטי" },
+];
+
+const CANCELED_OPTIONS = [
+  { value: "false", label: "ללא מבוטלות" },
+  { value: "true", label: "כולל מבוטלות" },
+];
+
+const VOUCHERED_OPTIONS = [
+  { value: "only", label: "רק מכורטסים" },
+  { value: "all", label: "כולל הזמנות" },
 ];
 
 const METRIC_OPTIONS = [
@@ -104,6 +118,9 @@ export default function DashboardShell() {
   );
   const audience = (urlFilters.audience || "all") as Audience;
   const includeCanceled = urlFilters.canceled === "true";
+  // Ticketed business is the default read of the dashboard; bookings that never issued a
+  // voucher are opt-in.
+  const onlyVouchered = urlFilters.vouchered !== "all";
   const metric = (urlFilters.metric || "count") as Metric;
 
   const current = useQuery({
@@ -132,13 +149,21 @@ export default function DashboardShell() {
 
   const rows = useMemo(
     () =>
-      filterRows(current.data?.reservations ?? [], { audience, includeCanceled }),
-    [current.data, audience, includeCanceled],
+      filterRows(current.data?.reservations ?? [], {
+        audience,
+        includeCanceled,
+        onlyVouchered,
+      }),
+    [current.data, audience, includeCanceled, onlyVouchered],
   );
   const previousRows = useMemo(
     () =>
-      filterRows(previous.data?.reservations ?? [], { audience, includeCanceled }),
-    [previous.data, audience, includeCanceled],
+      filterRows(previous.data?.reservations ?? [], {
+        audience,
+        includeCanceled,
+        onlyVouchered,
+      }),
+    [previous.data, audience, includeCanceled, onlyVouchered],
   );
 
   const totals = useMemo(() => computeTotals(rows), [rows]);
@@ -157,6 +182,23 @@ export default function DashboardShell() {
   const buckets = useMemo(
     () => buildTimeSeries(rows, range, granularity),
     [rows, range, granularity],
+  );
+
+  // The status split is the one panel that cannot read the shared slice: the ביטולים and
+  // כרטוסים filters exist to remove exactly the statuses it is there to show, so it takes
+  // the whole audience-filtered population and says as much on the card.
+  const statusRows = useMemo(
+    () =>
+      filterRows(current.data?.reservations ?? [], {
+        audience,
+        includeCanceled: true,
+        onlyVouchered: false,
+      }),
+    [current.data, audience],
+  );
+  const statusBuckets = useMemo(
+    () => buildStatusSeries(statusRows, range, granularity, metric),
+    [statusRows, range, granularity, metric],
   );
 
   // Every "all rows" grouping below reads the same filtered slice, so the whole page
@@ -250,10 +292,14 @@ export default function DashboardShell() {
           <SegmentedControl
             value={includeCanceled ? "true" : "false"}
             onChange={(next) => setUrlFilters({ canceled: next })}
-            options={[
-              { value: "false", label: "ללא מבוטלות" },
-              { value: "true", label: "כולל מבוטלות" },
-            ]}
+            options={CANCELED_OPTIONS}
+          />
+        </FilterField>
+        <FilterField label="כרטוסים">
+          <SegmentedControl
+            value={onlyVouchered ? "only" : "all"}
+            onChange={(next) => setUrlFilters({ vouchered: next })}
+            options={VOUCHERED_OPTIONS}
           />
         </FilterField>
         <FilterField label="פילוחים">
@@ -336,6 +382,20 @@ export default function DashboardShell() {
           <section className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             <MoneyPerPeriodCard buckets={buckets} granularity={granularity} />
             <VolumeCard buckets={buckets} granularity={granularity} />
+          </section>
+
+          {/* Where each period's bookings stand today, and in what proportion. */}
+          <section className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+            <StatusPerPeriodCard
+              buckets={statusBuckets}
+              granularity={granularity}
+              metric={metric}
+            />
+            <StatusCompositionCard
+              buckets={statusBuckets}
+              granularity={granularity}
+              metric={metric}
+            />
           </section>
 
           <EntityBreakdownCard rows={rows} lookups={lookups} />

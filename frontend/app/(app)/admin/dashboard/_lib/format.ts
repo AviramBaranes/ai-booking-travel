@@ -1,5 +1,7 @@
 import { formatPrice } from "@/shared/utils/formatPrice";
 
+import type { Metric } from "./aggregate";
+
 /** Money on the dashboard is always ILS — the backend converts every row before sending it. */
 export function ils(value: number): string {
   return formatPrice(value, "ILS");
@@ -27,6 +29,18 @@ export function percent(value: number, digits = 1): string {
 
 export function count(value: number): string {
   return new Intl.NumberFormat("he-IL").format(value);
+}
+
+/** What the פילוחים selector is currently measuring, for a card's subtitle or legend. */
+export function metricLabel(metric: Metric): string {
+  if (metric === "count") return "הזמנות";
+  if (metric === "revenue") return "הכנסות";
+  return "רווח";
+}
+
+/** A metric's value in its own unit: a plain number for counts, shekels for money. */
+export function formatMetric(value: number, metric: Metric): string {
+  return metric === "count" ? count(value) : ils(value);
 }
 
 export function decimal(value: number, digits = 1): string {
