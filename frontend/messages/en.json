@@ -164,7 +164,8 @@
       "backToPriceOffers": "Back to Price Offers"
     },
     "shared": {
-      "rentalPriceForDays": "Rental price for {daysCount} days:"
+      "rentalPriceForDays": "Rental price for {daysCount} days:",
+      "erpPriceForDays": "Coverage price for {daysCount} days:"
     },
     "plansPage": {
       "inclusionsTitle": "What does the plan include?",

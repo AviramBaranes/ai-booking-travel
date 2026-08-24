@@ -65,7 +65,7 @@ export function ErpCheckbox({
           </p>
         </div>
         <div className="w-1/4 mt-4 flex items-end flex-col">
-          <RentalPriceForDays daysCount={daysCount} />
+          <RentalPriceForDays daysCount={daysCount} isErp/>
           <h4 className="type-h4 text-navy">
             {formatPrice(
               vehicle.plans[selectedPlan].erpPrice,

@@ -163,7 +163,8 @@
       "backToPriceOffers": "חזרה לרשימת הצעות מחיר"
     },
     "shared": {
-      "rentalPriceForDays": "מחיר השכרה ל- {daysCount} ימים"
+      "rentalPriceForDays": "מחיר השכרה ל- {daysCount} ימים",
+      "erpPriceForDays": "מחיר כיסוי ל- {daysCount} ימים"
     },
     "plansPage": {
       "inclusionsTitle": "מה התוכנית כוללת?",
