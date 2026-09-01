@@ -90,6 +90,8 @@ func getBrokerByName(cfg *AvailableVehiclesConfig, name broker.Name) (broker.Ava
 		return broker.NewFlexWithErpCfg(cfg.FlexErpDayCharge()), nil
 	case broker.BrokerHertz:
 		return broker.NewHertzWithCharges(cfg.HertzErpDayChargeUS(), cfg.HertzErpDayChargeCA()), nil
+	case broker.BrokerAvance:
+		return broker.NewAvance(), nil
 	default:
 		return nil, api_errors.ErrInternalError
 	}

@@ -14,8 +14,9 @@ import (
 type Broker string
 
 const (
-	BrokerFlex  Broker = "flex"
-	BrokerHertz Broker = "hertz"
+	BrokerFlex   Broker = "flex"
+	BrokerHertz  Broker = "hertz"
+	BrokerAvance Broker = "avance"
 )
 
 func (e *Broker) Scan(src interface{}) error {

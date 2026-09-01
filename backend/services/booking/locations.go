@@ -55,6 +55,14 @@ func (s *Service) InsertHertzLocations(w http.ResponseWriter, req *http.Request)
 	ls.InsertHertzLocations(w, req)
 }
 
+// InsertAvanceLocations reads an xlsx file upload and upserts Avance locations.
+//
+//encore:api auth method=POST path=/locations/avance tag:admin raw
+func (s *Service) InsertAvanceLocations(w http.ResponseWriter, req *http.Request) {
+	ls := location.NewLocationService(s.query)
+	ls.InsertAvanceLocations(w, req)
+}
+
 // ToggleLocation enables or disables a location broker code by ID.
 //
 //encore:api auth method=PATCH path=/locations/:id tag:admin

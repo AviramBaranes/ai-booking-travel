@@ -6,8 +6,9 @@ import "io"
 type Name string
 
 const (
-	BrokerFlex  Name = "flex"
-	BrokerHertz Name = "hertz"
+	BrokerFlex   Name = "flex"
+	BrokerHertz  Name = "hertz"
+	BrokerAvance Name = "avance"
 )
 
 // secrets hold broker-specific secrets such as API credentials.
@@ -20,11 +21,18 @@ var secrets struct {
 	// hertzAgentDutyCode string
 	// hertzVendorNumber  string
 	// hertzCodeContext   string
+
+	// Avance secrets, packed into a single value because Encore bills per secret.
+	// Format: "<accountNo>,<linkCode>,<agentCode>", e.g. "10268,TBAVA,ABTAV".
+	avanceCredentials string
 }
 
 const (
 	flexBaseURL  = "http://www.flexibleautos.com/horizon/horizonxml.asmx"
 	hertzBaseURL = "https://vv.xnet.hertz.com/DirectLinkWEB/handlers/DirectLinkHandler?id=ota2007a"
+	// avanceBaseURL is the Wheelsys host; the account number and link code come from the
+	// credentials secret and are spliced into each page URL. See avance_client.go.
+	avanceBaseURL = "https://endpoint.wheelsys.io"
 )
 
 // LocationSearcher provides location listing capabilities for a broker.

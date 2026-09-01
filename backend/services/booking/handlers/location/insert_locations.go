@@ -71,6 +71,28 @@ func (s *LocationService) InsertHertzLocations(w http.ResponseWriter, req *http.
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// InsertAvanceLocations reads an xlsx workbook from the multipart request and upserts Avance locations.
+func (s *LocationService) InsertAvanceLocations(w http.ResponseWriter, req *http.Request) {
+	file, err := fileupload.ExtractFile(req)
+	if err != nil {
+		errs.HTTPError(w, err)
+		return
+	}
+	defer file.Close()
+
+	avance := broker.NewAvanceWithReader(file)
+
+	ctx := req.Context()
+	err = s.InsertLocations(ctx, avance, "")
+	if err != nil {
+		rlog.Error("failed to insert locations", "broker", avance.Name(), "error", err)
+		http.Error(w, "failed to insert locations", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // InsertLocations fetches locations from the given broker and inserts them into the database.
 func (s *LocationService) InsertLocations(ctx context.Context, b broker.LocationSearcher, cursor string) error {
 	skippedCursors := make([]string, 0)
@@ -188,6 +210,8 @@ func toDbBroker(sn broker.Name) (db.Broker, error) {
 		return db.BrokerFlex, nil
 	case broker.BrokerHertz:
 		return db.BrokerHertz, nil
+	case broker.BrokerAvance:
+		return db.BrokerAvance, nil
 	default:
 		return "", fmt.Errorf("unknown broker: %s", sn)
 	}
