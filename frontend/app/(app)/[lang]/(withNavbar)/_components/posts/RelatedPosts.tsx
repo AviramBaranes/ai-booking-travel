@@ -40,21 +40,28 @@ export function RelatedPosts({
         <SectionHeader pillText={pillText} title={title} subtitle={subtitle} />
       </div>
       <div className="flex w-full flex-nowrap gap-6 overflow-x-auto pb-4">
-        {posts.map((post) => (
-          <div
-            key={post.id}
-            className="flex shrink-0 basis-[85%] items-stretch sm:basis-90 lg:basis-[calc((100%-4.5rem)/4)]"
-          >
+        {posts.map((post) => {
+          // Empty at depth 0, or when the upload row behind the relationship is
+          // gone — next/image throws on an empty src, taking the page with it.
+          const imageUrl = getCardImageUrl(post);
+
+          return (
+            <div
+              key={post.id}
+              className="flex shrink-0 basis-[85%] items-stretch sm:basis-90 lg:basis-[calc((100%-4.5rem)/4)]"
+            >
             {post.featuredImage && (
               <div className="flex h-full flex-col justify-between gap-4 rounded-xl border border-border p-4 shadow-card">
-                <div className="relative aspect-275/195 w-full overflow-hidden rounded-xl">
-                  <Image
-                    src={getCardImageUrl(post)}
-                    alt={(post.featuredImage as FeaturedImage).alt}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
+                {imageUrl && (
+                  <div className="relative aspect-275/195 w-full overflow-hidden rounded-xl">
+                    <Image
+                      src={imageUrl}
+                      alt={(post.featuredImage as FeaturedImage).alt ?? ""}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
 
                 <h6 className="type-h6 text-navy">{post.title}</h6>
 
@@ -67,10 +74,11 @@ export function RelatedPosts({
                     קרא עוד &gt;
                   </span>
                 </Link>
-              </div>
-            )}
-          </div>
-        ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
       {showButton && (
         <Link href={`/${lang}/blog`} className="text-center w-full">

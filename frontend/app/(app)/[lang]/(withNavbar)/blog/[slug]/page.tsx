@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import type { Metadata } from "next";
-import type { BlogCategory, BlogPost, Form, Media } from "@/payload-types";
+import type { BlogCategory, BlogPost, Media } from "@/payload-types";
 import type { Populated } from "@/shared/types/payload";
 import Image from "next/image";
 import { BlocksRenderer } from "../../_components/blocks/BlocksRenderer";
@@ -120,6 +120,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+/**
+ * The post's category as a populated doc, or null.
+ *
+ * Payload hands back `null` for a relationship whose target row no longer
+ * exists — `required: true` is only enforced on write — and `typeof null` is
+ * `"object"`, so the naive populated-check dereferences null and 500s the page.
+ */
+function categoryOf(post: BlogPost): BlogCategory | null {
+  return post.category && typeof post.category === "object"
+    ? post.category
+    : null;
+}
+
 async function getRelatedPosts(post: BlogPost, lang: string) {
   const payload = await getCachedPayload();
 
@@ -141,8 +154,18 @@ async function getRelatedPosts(post: BlogPost, lang: string) {
     };
   }
 
-  const category =
-    typeof post.category === "object" ? post.category.id : post.category;
+  // `category` is required on write, but a relationship whose target row was
+  // deleted comes back as null — never dereference it unguarded.
+  const category = categoryOf(post)?.id ?? post.category;
+
+  if (typeof category !== "number") {
+    return {
+      rpPillText: settings.rpPillText,
+      rpTitle: settings.rpTitle,
+      rpSubtitle: settings.rpSubtitle,
+      posts: [] as BlogPost[],
+    };
+  }
 
   const posts = await payload.find({
     collection: "blog-posts",
@@ -181,7 +204,14 @@ export default async function SlugPage({ params }: Props) {
   if (!post) notFound();
 
   const relatedPostsData = await getRelatedPosts(post, lang);
+  const category = categoryOf(post);
   const image = post.featuredImage as Populated<BlogPost["featuredImage"]>;
+  const heroSrc = image?.sizes?.blogHero?.url || image?.url;
+  const bannerImage =
+    post.banner?.image && typeof post.banner.image === "object"
+      ? (post.banner.image as Media)
+      : null;
+  const form = post.form && typeof post.form === "object" ? post.form : null;
 
   const postUrl = absoluteUrl(
     localePath(lang as SupportedLang, "blog", post.slug),
@@ -198,12 +228,16 @@ export default async function SlugPage({ params }: Props) {
             name: SITE_NAME,
             url: absoluteUrl(localePath(lang as SupportedLang)),
           },
-          {
-            name: (post.category as BlogCategory).title,
-            url: absoluteUrl(
-              localePath(lang as SupportedLang, "blog", "page", "1"),
-            ),
-          },
+          ...(category
+            ? [
+                {
+                  name: category.title,
+                  url: absoluteUrl(
+                    localePath(lang as SupportedLang, "blog", "page", "1"),
+                  ),
+                },
+              ]
+            : []),
           { name: post.title, url: postUrl },
         ])}
       />
@@ -212,7 +246,7 @@ export default async function SlugPage({ params }: Props) {
         <div className="bg-navy lg:py-20 lg:px-72 px-5 py-10 flex flex-col gap-5.5">
           <Link href={`/${lang}/blog/page/1`}>
             <p className="type-paragraph text-white/55">
-              ראשי / {(post.category as BlogCategory).title}
+              ראשי{category ? ` / ${category.title}` : ""}
             </p>
           </Link>
           <h3 className="type-h3 text-white lg:w-2/3">{post.title}</h3>
@@ -224,17 +258,17 @@ export default async function SlugPage({ params }: Props) {
         <div className="lg:w-2/3 lg:mx-auto mx-5">
           <div className="lg:shadow-card lg:bg-white lg:p-10 flex justify-between lg:gap-24 rounded-b-xl">
             <div className="lg:w-7/10">
-              {image?.url && (
+              {heroSrc && (
                 <div className="overflow-hidden mt-5 lg:mt-0 rounded-2xl shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
                   <picture>
                     <source
                       media="(max-width: 1023px)"
-                      srcSet={image.sizes?.blogCard?.url || image.url || ""}
+                      srcSet={image.sizes?.blogCard?.url || heroSrc}
                     />
 
                     <Image
-                      src={image.sizes?.blogHero?.url || image.url || ""}
-                      alt={image.alt}
+                      src={heroSrc}
+                      alt={image.alt ?? ""}
                       width={image.width ?? 780}
                       height={image.height ?? 280}
                       className="h-auto w-full object-cover"
@@ -263,28 +297,28 @@ export default async function SlugPage({ params }: Props) {
             <div className="w-3/10 hidden lg:block">
               <div className="sticky hidden lg:flex top-24 flex-col gap-6">
                 <>
-                  {post.form && (
+                  {form && (
                     <div className="rounded-xl border border-border-light pb-8">
                       <h6 className="type-h6 bg-navy text-white font-semibold mb-4 rounded-t-xl p-6">
-                        {(post.form as Form).title}
+                        {form.title}
                       </h6>
                       <div className="px-4">
-                        <PayloadFormRenderer form={post.form as Form} />
+                        <PayloadFormRenderer form={form} />
                       </div>
                     </div>
                   )}
-                  {post.banner && post.banner.image && (
+                  {bannerImage?.url && (
                     <a
-                      href={post.banner.link ?? "#"}
+                      href={post.banner?.link ?? "#"}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="block"
                     >
                       <Image
-                        src={(post.banner.image as Media)?.url ?? ""}
-                        alt={(post.banner.image as Media)?.alt}
-                        width={(post.banner.image as Media)?.width ?? 300}
-                        height={(post.banner.image as Media)?.height ?? 250}
+                        src={bannerImage.url}
+                        alt={bannerImage.alt ?? ""}
+                        width={bannerImage.width ?? 300}
+                        height={bannerImage.height ?? 250}
                         className="h-auto w-full object-cover rounded-xl"
                         priority
                       />
