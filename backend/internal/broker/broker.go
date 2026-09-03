@@ -169,10 +169,12 @@ type PriceDetails struct {
 }
 
 type Fees struct {
-	DropCharge             int    `json:"dropCharge"`
-	DropChargeCurrency     string `json:"dropChargeCurrency"`
-	YoungDriverFee         int    `json:"youngDriverFee"`
-	YoungDriverFeeCurrency string `json:"youngDriverFeeCurrency"`
+	DropCharge              int    `json:"dropCharge"`
+	DropChargeCurrency      string `json:"dropChargeCurrency"`
+	YoungDriverFee          int    `json:"youngDriverFee"`
+	YoungDriverFeeCurrency  string `json:"youngDriverFeeCurrency"`
+	SeniorDriverFee         int    `json:"seniorDriverFee"`
+	SeniorDriverFeeCurrency string `json:"seniorDriverFeeCurrency"`
 }
 
 // LocationDetails holds the locationType of a rental location

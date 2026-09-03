@@ -233,10 +233,12 @@ func buildReservationPDFData(id int64, p CreateReservationParams, price pricing.
 		TotalPrice:          pricing.RoundToInt(price.TotalPrice.Value),
 		PayAtPickup: emailevents.PayAtPickup{
 			Fees: broker.Fees{
-				DropCharge:             p.PayAtPickup.Fees.DropCharge,
-				DropChargeCurrency:     getCurrencyCode(p.PayAtPickup.Fees.DropChargeCurrency),
-				YoungDriverFee:         p.PayAtPickup.Fees.YoungDriverFee,
-				YoungDriverFeeCurrency: getCurrencyCode(p.PayAtPickup.Fees.YoungDriverFeeCurrency),
+				DropCharge:              p.PayAtPickup.Fees.DropCharge,
+				DropChargeCurrency:      getCurrencyCode(p.PayAtPickup.Fees.DropChargeCurrency),
+				YoungDriverFee:          p.PayAtPickup.Fees.YoungDriverFee,
+				YoungDriverFeeCurrency:  getCurrencyCode(p.PayAtPickup.Fees.YoungDriverFeeCurrency),
+				SeniorDriverFee:         p.PayAtPickup.Fees.SeniorDriverFee,
+				SeniorDriverFeeCurrency: getCurrencyCode(p.PayAtPickup.Fees.SeniorDriverFeeCurrency),
 			},
 			SelectedAddons: addons,
 		},

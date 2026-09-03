@@ -680,6 +680,7 @@ export namespace booking {
             this.GetAgentPriceOffer = this.GetAgentPriceOffer.bind(this)
             this.GetClientPriceOffer = this.GetClientPriceOffer.bind(this)
             this.GetPendingTranslations = this.GetPendingTranslations.bind(this)
+            this.InsertAvanceLocations = this.InsertAvanceLocations.bind(this)
             this.InsertHertzLocations = this.InsertHertzLocations.bind(this)
             this.InsertLocation = this.InsertLocation.bind(this)
             this.InsertLocationAlias = this.InsertLocationAlias.bind(this)
@@ -832,6 +833,13 @@ export namespace booking {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/booking/translations/pending`, undefined, {headers})
             return await resp.json() as translation.GetPendingTranslationsResponse
+        }
+
+        /**
+         * InsertAvanceLocations reads an xlsx file upload and upserts Avance locations.
+         */
+        public async InsertAvanceLocations(method: "POST", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
+            return this.baseClient.callAPI(method, `/locations/avance`, body, options)
         }
 
         /**
@@ -1547,6 +1555,8 @@ export namespace broker {
         dropChargeCurrency: string
         youngDriverFee: number
         youngDriverFeeCurrency: string
+        seniorDriverFee: number
+        seniorDriverFeeCurrency: string
     }
 
     export interface Inclusions {

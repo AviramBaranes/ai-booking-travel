@@ -1472,6 +1472,8 @@ export interface BookingSetting {
   erpPopupDeclineButtonText: string;
   youngDriverTitle: string;
   youngDriverContent: string;
+  seniorDriverTitle: string;
+  seniorDriverContent: string;
   dropoffChargeTitle: string;
   dropoffChargeContent: string;
   depositChargeTitle: string;
@@ -1684,6 +1686,8 @@ export interface BookingSettingsSelect<T extends boolean = true> {
   erpPopupDeclineButtonText?: T;
   youngDriverTitle?: T;
   youngDriverContent?: T;
+  seniorDriverTitle?: T;
+  seniorDriverContent?: T;
   dropoffChargeTitle?: T;
   dropoffChargeContent?: T;
   depositChargeTitle?: T;

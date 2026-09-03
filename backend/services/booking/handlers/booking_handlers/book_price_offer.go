@@ -104,7 +104,10 @@ func bookPriceOfferAtBroker(offer db.GetPriceOfferByIdRow, p BookPriceOfferParam
 	bookingRes, err := b.Book(buildPriceOfferBookingParams(offer, p, offerCarDetails))
 	if err != nil {
 		rlog.Error("failed to book car at broker", "broker", b.Name(), "error", err)
-		return broker.BookingResponse{}, broker.CarDetails{}, err
+		if errors.Is(err, broker.ErrFlightNumberRequired) {
+			return broker.BookingResponse{}, broker.CarDetails{}, errFlightNumberRequired
+		}
+		return broker.BookingResponse{}, broker.CarDetails{}, ErrBookingFailed
 	}
 
 	return bookingRes, offerCarDetails, nil
@@ -133,7 +136,7 @@ func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, p BookPriceOffe
 	return broker.BookingParams{
 		RateQualifier:   offer.RateQualifier,
 		SupplierCode:    offer.SupplierCode,
-		Acriss:          offerCarDetails.Acriss,
+		Acriss:          offerCarDetails.FullAcriss,
 		PlanID:          offer.PlanID,
 		PickupLocation:  offer.PickupBrokerLocationID,
 		DropoffLocation: offer.DropoffBrokerLocationID,

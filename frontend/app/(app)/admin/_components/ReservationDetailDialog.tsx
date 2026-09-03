@@ -78,6 +78,7 @@ function PayAtPickupSection({
   const hasContent =
     fees.dropCharge > 0 ||
     fees.youngDriverFee > 0 ||
+    fees.seniorDriverFee > 0 ||
     (selectedAddons && selectedAddons.length > 0);
 
   if (!hasContent) return <Row label="תוכן" value="אין" />;
@@ -94,6 +95,15 @@ function PayAtPickupSection({
         <Row
           label="תוספת נהג צעיר"
           value={formatPrice(fees.youngDriverFee, fees.youngDriverFeeCurrency)}
+        />
+      )}
+      {fees.seniorDriverFee > 0 && (
+        <Row
+          label="תוספת נהג מבוגר"
+          value={formatPrice(
+            fees.seniorDriverFee,
+            fees.seniorDriverFeeCurrency,
+          )}
         />
       )}
       {selectedAddons?.map((addon) => (

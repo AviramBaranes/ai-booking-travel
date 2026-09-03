@@ -16,6 +16,7 @@ export function FeesNote({
   if (
     !vehicle.priceDetails.fees.dropCharge &&
     !vehicle.priceDetails.fees.youngDriverFee &&
+    !vehicle.priceDetails.fees.seniorDriverFee &&
     !vehicle.plans[selectedPlan].deposit
   ) {
     return null;
@@ -30,6 +31,14 @@ export function FeesNote({
           content={data.youngDriverContent}
           amount={vehicle.priceDetails.fees.youngDriverFee}
           currency={vehicle.priceDetails.fees.youngDriverFeeCurrency}
+        />
+      )}
+      {!!vehicle.priceDetails.fees.seniorDriverFee && (
+        <FeeDisplay
+          title={data.seniorDriverTitle}
+          content={data.seniorDriverContent}
+          amount={vehicle.priceDetails.fees.seniorDriverFee}
+          currency={vehicle.priceDetails.fees.seniorDriverFeeCurrency}
         />
       )}
       {!!vehicle.priceDetails.fees.dropCharge && (
