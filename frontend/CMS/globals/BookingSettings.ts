@@ -77,6 +77,20 @@ export const BookingSettings: GlobalConfig = {
           required: true,
         },
         {
+          name: "seniorDriverTitle",
+          label: "כותרת נהג מבוגר",
+          type: "text",
+          localized: true,
+          required: true,
+        },
+        {
+          name: "seniorDriverContent",
+          label: "תוכן נהג מבוגר",
+          type: "textarea",
+          localized: true,
+          required: true,
+        },
+        {
           name: "dropoffChargeTitle",
           label: "כותרת עמלת החזר",
           type: "text",

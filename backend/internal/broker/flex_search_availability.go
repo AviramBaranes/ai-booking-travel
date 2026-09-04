@@ -87,7 +87,7 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResp
 
 		plans := f.getPlans(c, dayCount, supplierDetails, p.CountryCode)
 		if len(plans) == 0 {
-			rlog.Warn("no valid plans found for car in CarAvailability response, skipping vehicle", "car_name", c.Name)
+			rlog.Warn("no valid plans found for car in CarAvailability response, skipping vehicle", "car_name", c.Name, "supplier_code", c.SupplierCode, "supplier", s.name)
 			continue
 		}
 
@@ -100,6 +100,7 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResp
 
 		carDetails := flexCarToBrokerCar(c, s.name)
 		ydFee, ydFeeCurrency := f.getYoungDriverFee(c.Information)
+		sdFee, sdFeeCurrency := f.getSeniorDriverFee(c.Information)
 
 		car := AvailableVehicle{
 			Broker:     BrokerFlex,
@@ -111,10 +112,12 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResp
 			PriceDetails: PriceDetails{
 				Currency: c.Currency,
 				Fees: Fees{
-					DropCharge:             pricing.RoundToInt(parseFloat(c.DropCharge)),
-					DropChargeCurrency:     c.DropChargeCurrency,
-					YoungDriverFee:         ydFee,
-					YoungDriverFeeCurrency: ydFeeCurrency,
+					DropCharge:              pricing.RoundToInt(parseFloat(c.DropCharge)),
+					DropChargeCurrency:      c.DropChargeCurrency,
+					YoungDriverFee:          ydFee,
+					YoungDriverFeeCurrency:  ydFeeCurrency,
+					SeniorDriverFee:         sdFee,
+					SeniorDriverFeeCurrency: sdFeeCurrency,
 				},
 			},
 		}
@@ -140,6 +143,14 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResp
 // "MANDATORY CHARGES - OneWay:149.99:EUR,YoungDriverFee:150.00:EUR,moreinfo:10:$"
 func (f *Flex) getYoungDriverFee(info []string) (int, string) {
 	return f.getAmountAndCurrency(info, "YoungDriverFee:")
+}
+
+// getSeniorDriverFee returns the senior driver fee and its currency.
+// The senior driver fee is expected to appear as "SeniorDriverFee:amount:currency", usually inside a
+// bundled charges item, e.g.
+// "MANDATORY CHARGES - SeniorDriverFee:70.00:EUR"
+func (f *Flex) getSeniorDriverFee(info []string) (int, string) {
+	return f.getAmountAndCurrency(info, "SeniorDriverFee:")
 }
 
 // getDeposit returns the deposit amount and its currency.
@@ -244,7 +255,7 @@ func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDet
 		if cc == "US" || cc == "CA" {
 			id, ok := flexProductMap[p.Product]
 			if !ok {
-				rlog.Warn("unknown product in CarAvailability response, skipping plan", "car_name", c.Name, "product", p.Product)
+				rlog.Warn("unknown product in CarAvailability response, skipping plan", "car_name", c.Name, "product", p.Product, "supplier_code", c.SupplierCode, "supplier", c.Supplier)
 				continue
 			}
 			planID = id
@@ -252,7 +263,7 @@ func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDet
 
 		price := parseFloat(p.Price)
 		if price == 0 {
-			rlog.Warn("plan price is zero in CarAvailability response, skipping plan", "car_name", c.Name, "product", p.Product)
+			rlog.Warn("plan price is zero in CarAvailability response, skipping plan", "car_name", c.Name, "product", p.Product, "supplier_code", c.SupplierCode, "supplier", c.Supplier)
 			continue
 		}
 

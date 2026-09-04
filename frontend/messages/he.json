@@ -357,6 +357,7 @@
         "title": "לתשלום בתחנה",
         "dropCharge": "דמי החזר להשכרה חד כיוונית",
         "youngDriverFee": "דמי נהג צעיר",
+        "seniorDriverFee": "דמי נהג מבוגר",
         "quantity": "X {quantity}",
         "deposit": "פיקדון"
       },
