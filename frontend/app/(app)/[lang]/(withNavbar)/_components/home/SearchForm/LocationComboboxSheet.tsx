@@ -66,6 +66,13 @@ export function LocationComboboxSheet({
         side="top"
         ref={setSheetContentEl}
         showCloseButton={false}
+        // iOS only opens the keyboard when focus() runs inside the tap that
+        // opened the sheet. This fires there; the rAF above is a late fallback
+        // that focuses without raising the keyboard.
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          ref.current?.focus();
+        }}
         className="p-0 rounded-none border-0 w-full bottom-0"
       >
         <SheetTitle className="sr-only">Location Search</SheetTitle>

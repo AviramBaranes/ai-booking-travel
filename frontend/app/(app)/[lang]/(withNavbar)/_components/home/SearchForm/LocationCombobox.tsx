@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { useLocations } from "./useLocations";
 import {
   Combobox,
@@ -44,6 +45,16 @@ export function LocationCombobox({
   const [selectedName, setSelectedName] = useState(value ?? "");
   const { locations } = useLocations(search);
 
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const setInputRef = useCallback(
+    (el: HTMLInputElement | null) => {
+      inputRef.current = el;
+      if (typeof ref === "function") ref(el);
+      else if (ref) ref.current = el;
+    },
+    [ref],
+  );
+
   useEffect(() => {
     setSelectedName(value ?? "");
   }, [value]);
@@ -57,7 +68,15 @@ export function LocationCombobox({
       value={selectedName}
       open={open}
       onValueChange={(val) => {
-        setSelectedName(val ?? "");
+        // Clearing has to reach the DOM before we re-focus: the input is
+        // readOnly while a location is selected, and iOS opens no keyboard for
+        // a readOnly input — nor for one that is already the focused element,
+        // which is why tapping it again did nothing until a page reload.
+        flushSync(() => setSelectedName(val ?? ""));
+        if (!val) {
+          inputRef.current?.blur();
+          inputRef.current?.focus();
+        }
         const loc = locations.find((l) => l.name === val);
         if (loc) {
           onSelect(loc.id, loc.name);
@@ -78,7 +97,7 @@ export function LocationCombobox({
           showTrigger={false}
           onChange={(e) => setSearch(e.target.value)}
           readOnly={!!selectedName}
-          ref={ref}
+          ref={setInputRef}
         >
           <MapPin className="pointer-events-none absolute inset-s-3 top-1/2 size-4.5 -translate-y-1/2 text-brand" />
         </ComboboxInput>
