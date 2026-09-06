@@ -72,7 +72,7 @@ export function CarResults({ searchRequest }: CarResultsProps) {
         </div>
 
         {filteredCars.length ? (
-          <div className="lg:w-3/4 mx-5 lg:mx-0 flex flex-col gap-6">
+          <div className="w-full lg:w-3/4 mx-5 lg:mx-0 flex flex-col gap-6">
             {filteredCars.map((vehicle) => (
               <CarCard
                 key={vehicle.id}
@@ -83,7 +83,7 @@ export function CarResults({ searchRequest }: CarResultsProps) {
             ))}
           </div>
         ) : (
-          <div className="p-20 text-center flex flex-col items-center gap-4">
+          <div className="w-full p-20 text-center flex flex-col items-center gap-4">
             <h4 className="type-h4 text-navy">{t("error.filterNoResults")}</h4>
             <Button
               variant="outline"

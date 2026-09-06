@@ -292,7 +292,8 @@
       "filters": {
         "mobileSheet": {
           "title": "סינון תוצאות:",
-          "buttonTitle": "סינון תוצאות"
+          "buttonTitle": "סינון תוצאות",
+          "applyButton": "סנן"
         },
         "pickupLocation": {
           "title": "מיקום איסוף",

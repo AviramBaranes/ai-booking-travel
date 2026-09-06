@@ -26,6 +26,13 @@ interface LocationComboboxProps {
   value?: string;
   open?: boolean;
   container?: HTMLElement | null;
+  /**
+   * Keep the input typeable while a location is selected. iOS never opens a
+   * keyboard for a readOnly input, and once such an input holds focus no tap
+   * can revive it — so the mobile sheet stays editable and selects the current
+   * text on focus instead.
+   */
+  editable?: boolean;
 }
 export function LocationCombobox({
   placeholder,
@@ -37,6 +44,7 @@ export function LocationCombobox({
   initializedLocations,
   open,
   container,
+  editable = false,
 }: LocationComboboxProps) {
   const dir = useDirection();
   const [search, setSearch] = useState("");
@@ -69,7 +77,7 @@ export function LocationCombobox({
           showClear={!!selectedName}
           placeholder={placeholder}
           aria-invalid={error ? "true" : "false"}
-          inputClassName="text-sm"
+          inputClassName="text-base md:text-sm"
           className="search-form-input md:text-base px-7"
           clearClassName={clsx("p-0 absolute", {
             "left-3": dir === "rtl",
@@ -77,7 +85,8 @@ export function LocationCombobox({
           })}
           showTrigger={false}
           onChange={(e) => setSearch(e.target.value)}
-          readOnly={!!selectedName}
+          onFocus={(e) => editable && e.currentTarget.select()}
+          readOnly={!editable && !!selectedName}
           ref={ref}
         >
           <MapPin className="pointer-events-none absolute inset-s-3 top-1/2 size-4.5 -translate-y-1/2 text-brand" />
@@ -91,7 +100,7 @@ export function LocationCombobox({
         className="w-(--anchor-width)! min-w-(--anchor-width)! max-w-(--anchor-width)! rounded-xl p-1"
       >
         <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>
-        <ComboboxList className="divide-y divide-border" dir="ltr">
+        <ComboboxList showScrollbar className="divide-y divide-border" dir="ltr">
           {(loc: location.LocationResult) => (
             <ComboboxItem
               key={loc.id}
