@@ -42,6 +42,8 @@ function ComboboxClear({ className, ...props }: ComboboxPrimitive.Clear.Props) {
       data-slot="combobox-clear"
       render={<InputGroupButton variant="ghost" size="icon-xs" />}
       className={cn(className)}
+      // Keep focus (and with it the iOS keyboard) in the input while clearing.
+      onPointerDown={(event) => event.preventDefault()}
       {...props}
     >
       <XIcon className="pointer-events-none" />
@@ -132,12 +134,17 @@ function ComboboxContent({
   );
 }
 
-function ComboboxList({ className, ...props }: ComboboxPrimitive.List.Props) {
+function ComboboxList({
+  className,
+  showScrollbar = false,
+  ...props
+}: ComboboxPrimitive.List.Props & { showScrollbar?: boolean }) {
   return (
     <ComboboxPrimitive.List
       data-slot="combobox-list"
       className={cn(
-        "no-scrollbar max-h-[min(calc(--spacing(72)---spacing(9)),calc(var(--available-height)---spacing(9)))] scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0",
+        showScrollbar ? "scrollbar-visible" : "no-scrollbar",
+        "max-h-[min(calc(--spacing(72)---spacing(9)),calc(var(--available-height)---spacing(9)))] scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0",
         className,
       )}
       {...props}

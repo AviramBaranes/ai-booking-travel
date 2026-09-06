@@ -34,7 +34,7 @@ export function FiltersSheet({ cars, hasActiveFilters }: FiltersSheetProps) {
       <SheetContent
         side="top"
         showCloseButton={false}
-        className="p-0 rounded-none border-0 w-full bottom-0 flex flex-col lg:hidden overflow-y-scroll"
+        className="p-0 rounded-none border-0 w-full bottom-0 flex flex-col lg:hidden"
       >
         <div className="flex items-center justify-between mt-12 ">
           <SheetTitle className="mx-5 type-h5 text-navy">{t("title")}</SheetTitle>
@@ -47,11 +47,26 @@ export function FiltersSheet({ cars, hasActiveFilters }: FiltersSheetProps) {
           </div>
         </div>
 
-        <div className="mx-5">
-          <CarGroupsFilter title={""} />
+        <div className="flex-1 overflow-y-auto">
+          <div className="mx-5">
+            <CarGroupsFilter title={""} />
+          </div>
+          <div className="mx-11">
+            <FiltersPanel cars={cars} hasActiveFilters={hasActiveFilters} />
+          </div>
         </div>
-        <div className="mx-11">
-          <FiltersPanel cars={cars} hasActiveFilters={hasActiveFilters} />
+
+        {/* Apply button fixed to the bottom */}
+        <div className="px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-border-light shrink-0">
+          <SheetClose asChild>
+            <Button
+              type="button"
+              variant="brand"
+              className="w-full py-6 type-paragraph font-bold cursor-pointer"
+            >
+              {t("applyButton")}
+            </Button>
+          </SheetClose>
         </div>
       </SheetContent>
     </Sheet>

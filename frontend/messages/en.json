@@ -293,7 +293,8 @@
       "filters": {
         "mobileSheet": {
           "title": "Filter Results:",
-          "buttonTitle": "Filter Results"
+          "buttonTitle": "Filter Results",
+          "applyButton": "Filter"
         },
         "pickupLocation": {
           "title": "Pickup location",

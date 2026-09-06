@@ -102,9 +102,9 @@ export function CalendarSheet({
       >
         <SheetTitle className="sr-only">{t("selectDates")}</SheetTitle>
         {/* Top bar */}
-        <div className="flex h-15 items-center justify-between px-4 border-b border-border-light shrink-0">
+        <div className="flex h-16 items-center justify-between px-5 border-b border-border-light shrink-0">
           <SheetClose asChild>
-            <button aria-label="Close menu">
+            <button aria-label="Close menu" className="-m-1.5 p-1.5">
               <X className="size-5 text-navy" />
             </button>
           </SheetClose>
@@ -132,7 +132,7 @@ export function CalendarSheet({
         </div>
 
         {/* Confirm button fixed to the bottom */}
-        <div className="p-4 border-t border-border-light shrink-0">
+        <div className="px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-border-light shrink-0">
           <p className="type-paragraph text-center">
             {range?.from && range?.to
               ? `${formatRangeDate(lang as string, range.from)} - ${formatRangeDate(lang as string, range.to)}`
