@@ -5,7 +5,7 @@ import { Dialog as SheetPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { useVisualViewportHeight } from "@/shared/hooks/useVisualViewportHeight"
+import { useViewportHeight } from "@/shared/hooks/useViewportHeight"
 import { XIcon } from "lucide-react"
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
@@ -60,7 +60,7 @@ function SheetContent({
   // A full-height sheet (top-0 + bottom-0) otherwise runs behind iOS Safari's
   // bottom toolbar, hiding whatever sits at its bottom edge. No viewport unit
   // reports that area correctly, so cap the sheet at the measured height.
-  const visibleHeight = useVisualViewportHeight()
+  const visibleHeight = useViewportHeight()
 
   return (
     <SheetPortal>

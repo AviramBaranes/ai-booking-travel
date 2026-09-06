@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { flushSync } from "react-dom";
+import { useEffect, useState } from "react";
 import { useLocations } from "./useLocations";
 import {
   Combobox,
@@ -27,6 +26,13 @@ interface LocationComboboxProps {
   value?: string;
   open?: boolean;
   container?: HTMLElement | null;
+  /**
+   * Keep the input typeable while a location is selected. iOS never opens a
+   * keyboard for a readOnly input, and once such an input holds focus no tap
+   * can revive it — so the mobile sheet stays editable and selects the current
+   * text on focus instead.
+   */
+  editable?: boolean;
 }
 export function LocationCombobox({
   placeholder,
@@ -38,22 +44,13 @@ export function LocationCombobox({
   initializedLocations,
   open,
   container,
+  editable = false,
 }: LocationComboboxProps) {
   const dir = useDirection();
   const [search, setSearch] = useState("");
   const anchorRef = useComboboxAnchor();
   const [selectedName, setSelectedName] = useState(value ?? "");
   const { locations } = useLocations(search);
-
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const setInputRef = useCallback(
-    (el: HTMLInputElement | null) => {
-      inputRef.current = el;
-      if (typeof ref === "function") ref(el);
-      else if (ref) ref.current = el;
-    },
-    [ref],
-  );
 
   useEffect(() => {
     setSelectedName(value ?? "");
@@ -68,15 +65,7 @@ export function LocationCombobox({
       value={selectedName}
       open={open}
       onValueChange={(val) => {
-        // Clearing has to reach the DOM before we re-focus: the input is
-        // readOnly while a location is selected, and iOS opens no keyboard for
-        // a readOnly input — nor for one that is already the focused element,
-        // which is why tapping it again did nothing until a page reload.
-        flushSync(() => setSelectedName(val ?? ""));
-        if (!val) {
-          inputRef.current?.blur();
-          inputRef.current?.focus();
-        }
+        setSelectedName(val ?? "");
         const loc = locations.find((l) => l.name === val);
         if (loc) {
           onSelect(loc.id, loc.name);
@@ -88,7 +77,7 @@ export function LocationCombobox({
           showClear={!!selectedName}
           placeholder={placeholder}
           aria-invalid={error ? "true" : "false"}
-          inputClassName="text-sm"
+          inputClassName="text-base md:text-sm"
           className="search-form-input md:text-base px-7"
           clearClassName={clsx("p-0 absolute", {
             "left-3": dir === "rtl",
@@ -96,8 +85,9 @@ export function LocationCombobox({
           })}
           showTrigger={false}
           onChange={(e) => setSearch(e.target.value)}
-          readOnly={!!selectedName}
-          ref={setInputRef}
+          onFocus={(e) => editable && e.currentTarget.select()}
+          readOnly={!editable && !!selectedName}
+          ref={ref}
         >
           <MapPin className="pointer-events-none absolute inset-s-3 top-1/2 size-4.5 -translate-y-1/2 text-brand" />
         </ComboboxInput>

@@ -87,6 +87,7 @@ export function LocationComboboxSheet({
         <div className="px-5">
           <LocationCombobox
             ref={ref}
+            editable
             placeholder={placeholder}
             emptyMessage={emptyMessage}
             error={error}

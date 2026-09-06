@@ -42,6 +42,8 @@ function ComboboxClear({ className, ...props }: ComboboxPrimitive.Clear.Props) {
       data-slot="combobox-clear"
       render={<InputGroupButton variant="ghost" size="icon-xs" />}
       className={cn(className)}
+      // Keep focus (and with it the iOS keyboard) in the input while clearing.
+      onPointerDown={(event) => event.preventDefault()}
       {...props}
     >
       <XIcon className="pointer-events-none" />
