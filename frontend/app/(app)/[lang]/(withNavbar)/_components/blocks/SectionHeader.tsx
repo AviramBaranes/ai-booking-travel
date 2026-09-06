@@ -17,9 +17,9 @@ export function SectionHeader({
         </span>
       )}
 
-      <h3 className="type-h5 font-extrabold lg:type-h3 text-navy">{title}</h3>
+      <h2 className="type-h5 font-extrabold lg:type-h3 text-navy">{title}</h2>
 
-      {subtitle && <p className="type-h6 text-muted">{subtitle}</p>}
+      {subtitle && <h3 className="type-h6 text-muted">{subtitle}</h3>}
     </div>
   );
 }
