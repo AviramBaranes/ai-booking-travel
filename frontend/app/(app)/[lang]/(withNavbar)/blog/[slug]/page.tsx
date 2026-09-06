@@ -249,7 +249,7 @@ export default async function SlugPage({ params }: Props) {
               ראשי{category ? ` / ${category.title}` : ""}
             </p>
           </Link>
-          <h3 className="type-h3 text-white lg:w-2/3">{post.title}</h3>
+          <h1 className="type-h3 text-white lg:w-2/3">{post.title}</h1>
           <p className="type-paragraph text-white font-semibold">
             {post.excerpt}
           </p>
