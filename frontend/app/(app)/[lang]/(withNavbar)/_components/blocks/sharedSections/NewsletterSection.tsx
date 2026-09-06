@@ -30,10 +30,10 @@ export function NewsletterSection({ section }: NewsletterSectionProps) {
       <div className="relative flex flex-col items-center gap-10 md:flex-row md:items-center md:justify-center md:gap-20">
         {/* ── Right (in RTL): hero text + benefits ── */}
         <div className="flex w-full flex-col items-start gap-5 text-start md:w-100.25">
-          <h3 className="type-h4 lg:type-h3 w-3/4 lg:w-full font-black leading-tight text-background">
+          <h2 className="type-h4 lg:type-h3 w-3/4 lg:w-full font-black leading-tight text-background">
             {title}
-          </h3>
-          {subtitle && <p className="type-p text-muted">{subtitle}</p>}
+          </h2>
+          {subtitle && <h3 className="type-p text-muted">{subtitle}</h3>}
           {benefits && benefits.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 lg:gap-5">
               {benefits.map((b) => (
@@ -50,9 +50,9 @@ export function NewsletterSection({ section }: NewsletterSectionProps) {
         <form className="flex flex-1 flex-col items-start gap-5">
           {/* Heading */}
           <div className="flex flex-col items-start gap-1.5 text-start">
-            {formTitle && <h5 className="type-h5 text-white">{formTitle}</h5>}
+            {formTitle && <h2 className="type-h5 text-white">{formTitle}</h2>}
             {formSubTitle && (
-              <p className="type-p text-muted">{formSubTitle}</p>
+              <h3 className="type-p text-muted">{formSubTitle}</h3>
             )}
           </div>
 
