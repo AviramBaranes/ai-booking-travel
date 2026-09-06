@@ -70,14 +70,14 @@ export function LocationComboboxSheet({
       >
         <SheetTitle className="sr-only">Location Search</SheetTitle>
         {/* Top bar */}
-        <div className="flex h-15 items-center justify-between px-4 border-b border-border-light">
+        <div className="flex h-16 items-center justify-between px-5 border-b border-border-light">
           <SheetClose asChild>
-            <button aria-label="Close menu">
+            <button aria-label="Close menu" className="-m-1.5 p-1.5">
               <X className="size-5 text-navy" />
             </button>
           </SheetClose>
         </div>
-        <div className="w-11/12 mx-auto">
+        <div className="px-5">
           <LocationCombobox
             ref={ref}
             placeholder={placeholder}

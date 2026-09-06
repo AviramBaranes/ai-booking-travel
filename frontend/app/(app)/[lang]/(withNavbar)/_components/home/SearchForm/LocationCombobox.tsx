@@ -91,7 +91,7 @@ export function LocationCombobox({
         className="w-(--anchor-width)! min-w-(--anchor-width)! max-w-(--anchor-width)! rounded-xl p-1"
       >
         <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>
-        <ComboboxList className="divide-y divide-border" dir="ltr">
+        <ComboboxList showScrollbar className="divide-y divide-border" dir="ltr">
           {(loc: location.LocationResult) => (
             <ComboboxItem
               key={loc.id}
