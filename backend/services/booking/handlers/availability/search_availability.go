@@ -51,6 +51,7 @@ type AvailableVehiclesConfig struct {
 	HertzErpDayChargeUS config.Float64
 	HertzErpDayChargeCA config.Float64
 	FlexErpDayCharge    config.Float64
+	AvanceBaseURL       config.String
 	MarkUpGross         config.Float64
 	MarkUpNet           config.Float64
 }

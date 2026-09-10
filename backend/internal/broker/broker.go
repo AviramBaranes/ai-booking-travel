@@ -30,9 +30,8 @@ var secrets struct {
 const (
 	flexBaseURL  = "http://www.flexibleautos.com/horizon/horizonxml.asmx"
 	hertzBaseURL = "https://vv.xnet.hertz.com/DirectLinkWEB/handlers/DirectLinkHandler?id=ota2007a"
-	// avanceBaseURL is the Wheelsys host; the account number and link code come from the
-	// credentials secret and are spliced into each page URL. See avance_client.go.
-	avanceBaseURL = "https://endpoint.wheelsys.io"
+	// Avance has no constant here: only production egresses through the static address Wheelsys
+	// allow-lists, so its base URL is per-environment config passed to NewAvance.
 )
 
 // LocationSearcher provides location listing capabilities for a broker.

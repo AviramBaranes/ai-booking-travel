@@ -11,13 +11,16 @@ import (
 // Avance is a struct that implements the Broker interface for the Avance car rental service,
 // which is served by the Wheelsys "Link v3" API.
 type Avance struct {
+	baseURL    string
 	httpClient *http.Client
 	r          io.Reader
 }
 
 // NewAvance creates a new instance of the Avance broker with a default HTTP client and timeout.
-func NewAvance() *Avance {
-	return &Avance{httpClient: &http.Client{Timeout: defaultTimeout}}
+// baseURL is per-environment: production reaches Wheelsys directly, while every other environment
+// goes through the egress proxy, since only production's address is allow-listed.
+func NewAvance(baseURL string) *Avance {
+	return &Avance{baseURL: baseURL, httpClient: &http.Client{Timeout: defaultTimeout}}
 }
 
 // NewAvanceWithReader creates an Avance broker that reads its locations from the given workbook.
@@ -78,7 +81,7 @@ func (a *Avance) get(page string, q url.Values) ([]byte, error) {
 
 	q.Set("agent", avanceCreds.agentCode)
 	endpoint := fmt.Sprintf("%s/%s/link/v3/%s_%s.html?%s",
-		avanceBaseURL, avanceCreds.accountNo, page, avanceCreds.linkCode, q.Encode())
+		a.baseURL, avanceCreds.accountNo, page, avanceCreds.linkCode, q.Encode())
 
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
