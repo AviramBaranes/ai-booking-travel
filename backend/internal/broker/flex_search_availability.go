@@ -19,9 +19,9 @@ func (f *Flex) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResp
 	form.Set("SupplierCode", "")
 
 	productID := "1"
-	if p.CountryCode == "US" || p.CountryCode == "CA" {
-		productID = "1,3" // Include both "Inclusive" and "Gold" products for US and CA markets
-	}
+	// if p.CountryCode == "US" || p.CountryCode == "CA" {
+	// 	productID = "1,3" // Include both "Inclusive" and "Gold" products for US and CA markets
+	// }
 	form.Set("ProductID", productID)
 	form.Set("Language", "UK")
 	form.Set("AdditionalParameters", "Timeout=25000")
@@ -233,11 +233,11 @@ func createSupplierMap(suppliers []flexSupplierDetails) map[string]flexSupplierD
 
 // flexProductMap maps flex product name to its ids
 var flexProductMap = map[string]int{
-	"Inclusive":            1,
-	"Inclusive GPS":        2,
-	"Gold":                 3,
-	"Gold GPS":             4,
-	"Young Driver Package": 10,
+	"Inclusive": 1,
+	// "Inclusive GPS":        2,
+	"Gold": 3,
+	// "Gold GPS":             4,
+	// "Young Driver Package": 10,
 }
 
 // getInsuranceExtraCost calculates the extra insurance cost based on the number of rental days, using a fixed daily rate.
@@ -255,7 +255,7 @@ func (f *Flex) getPlans(c flexCar, dayCount int, supplierDetails flexSupplierDet
 		if cc == "US" || cc == "CA" {
 			id, ok := flexProductMap[p.Product]
 			if !ok {
-				rlog.Warn("unknown product in CarAvailability response, skipping plan", "car_name", c.Name, "product", p.Product, "supplier_code", c.SupplierCode, "supplier", c.Supplier)
+				// rlog.Warn("unknown product in CarAvailability response, skipping plan", "car_name", c.Name, "product", p.Product, "supplier_code", c.SupplierCode, "supplier", c.Supplier)
 				continue
 			}
 			planID = id

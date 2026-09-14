@@ -296,6 +296,26 @@ func TestUpdateUser(t *testing.T) {
 		api_errors.AssertApiError(t, invalidValueErr("email"), err)
 	})
 
+	t.Run("validation rejects invalid phone", func(t *testing.T) {
+		t.Parallel()
+		err := user.UpdateUserParams{PhoneNumber: ptrStr("12345")}.Validate()
+		api_errors.AssertApiError(t, invalidValueErr("phoneNumber"), err)
+	})
+
+	t.Run("validation accepts international phone", func(t *testing.T) {
+		t.Parallel()
+		if err := (user.UpdateUserParams{PhoneNumber: ptrStr("+14155552671")}).Validate(); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+
+	t.Run("validation passes when phone is omitted", func(t *testing.T) {
+		t.Parallel()
+		if err := (user.UpdateUserParams{FirstName: ptrStr("Only")}).Validate(); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+
 	t.Run("validation rejects officeId 0", func(t *testing.T) {
 		t.Parallel()
 		officeID := int64(0)

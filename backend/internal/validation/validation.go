@@ -18,6 +18,9 @@ var validator = v.New()
 var usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9](?:[a-zA-Z0-9._-]{1,30}[a-zA-Z0-9])?$`)
 var israeliPhoneRegex = regexp.MustCompile(`^05\d{8}$`)
 
+// e164PhoneRegex matches E.164: "+" then a country code starting with 1-9, 7 to 15 digits total.
+var e164PhoneRegex = regexp.MustCompile(`^\+[1-9]\d{6,14}$`)
+
 func init() {
 	validator.RegisterValidation("notblank", func(fl v.FieldLevel) bool {
 		s := fl.Field().String()
@@ -27,6 +30,13 @@ func init() {
 	// israeli_phone accepts digits only, must start with 05 followed by exactly 8 digits (e.g. 0521234567).
 	validator.RegisterValidation("israeli_phone", func(fl v.FieldLevel) bool {
 		return israeliPhoneRegex.MatchString(fl.Field().String())
+	})
+
+	// phone accepts either an Israeli local number (see israeli_phone) or an international
+	// number in E.164 format: a leading "+" followed by digits only (e.g. +972521234567, +14155552671).
+	validator.RegisterValidation("phone", func(fl v.FieldLevel) bool {
+		s := fl.Field().String()
+		return israeliPhoneRegex.MatchString(s) || e164PhoneRegex.MatchString(s)
 	})
 
 	// uppercase_only accepts A-Z and spaces only (e.g. "BEN DAVID"), and requires at

@@ -5,8 +5,8 @@ AccountsEmailFromName: "BookingTravel Accounts"
 ReservationsEmailFrom: "reservations@aibookingtravel.com"
 ReservationsEmailFromName: "AI Booking Travel"
 
-SMSUsername: "sogomatic"
-SMSSenderName: "Sogomatic"
+SMSUsername: "aibookingtravel"
+SMSSenderName: "AI Booking"
 
 GotenbergURL: [
 	if #Meta.Environment.Type == "development" && #Meta.Environment.Cloud == "local" { "http://localhost:8080" },

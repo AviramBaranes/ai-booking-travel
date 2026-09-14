@@ -72,12 +72,22 @@ const columns: ColumnDef<user.AgentResponse>[] = [
   },
 ];
 
+// Mirrors the backend `phone` validation tag: Israeli local (05XXXXXXXX)
+// or international E.164 (+ followed by 7-15 digits, e.g. +14155552671).
+const phoneSchema = z
+  .string()
+  .min(1, "שדה חובה")
+  .regex(
+    /^(05\d{8}|\+[1-9]\d{6,14})$/,
+    "מספר טלפון לא תקין (לדוגמה 0521234567 או +14155552671)",
+  );
+
 const createSchema = z.object({
   firstName: z.string().min(1, "שדה חובה"),
   lastName: z.string().min(1, "שדה חובה"),
   email: z.string().email("אימייל לא תקין"),
   password: z.string().min(8, "סיסמה חייבת להכיל לפחות 8 תווים"),
-  phoneNumber: z.string().min(1, "שדה חובה"),
+  phoneNumber: phoneSchema,
   officeId: z.coerce.number().min(1, "יש לבחור משרד"),
 });
 
@@ -85,7 +95,7 @@ const updateSchema = z.object({
   firstName: z.string().min(1, "שדה חובה").optional(),
   lastName: z.string().min(1, "שדה חובה").optional(),
   email: z.string().email("אימייל לא תקין"),
-  phoneNumber: z.string().optional(),
+  phoneNumber: phoneSchema,
   officeId: z.coerce.number().optional(),
   password: z.string().optional().default(""),
 });
