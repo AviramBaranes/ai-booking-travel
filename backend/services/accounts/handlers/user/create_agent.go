@@ -17,7 +17,7 @@ type CreateAgentParams struct {
 	LastName    string `json:"lastName" validate:"required"`
 	Email       string `json:"email" validate:"required,email"`
 	Password    string `json:"password" validate:"required,min=8" encore:"sensitive"`
-	PhoneNumber string `json:"phoneNumber" validate:"required,israeli_phone"`
+	PhoneNumber string `json:"phoneNumber" validate:"required,phone"`
 	OfficeID    int64  `json:"officeId" validate:"required,gte=1"`
 }
 

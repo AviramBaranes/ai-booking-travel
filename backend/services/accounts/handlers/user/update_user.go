@@ -16,7 +16,7 @@ type UpdateUserParams struct {
 	FirstName   *string `json:"firstName" encore:"optional"`
 	LastName    *string `json:"lastName" encore:"optional"`
 	Email       *string `json:"email" validate:"omitempty,email" encore:"optional"`
-	PhoneNumber *string `json:"phoneNumber" encore:"optional"`
+	PhoneNumber *string `json:"phoneNumber" validate:"omitempty,phone" encore:"optional"`
 	OfficeID    *int64  `json:"officeId" validate:"omitempty,gte=1" encore:"optional"`
 	Password    *string `json:"password" validate:"omitempty,min=8" encore:"sensitive,optional"`
 }
