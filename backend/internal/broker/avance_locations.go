@@ -129,7 +129,15 @@ func avanceStationIata(code, stationType string) string {
 		return ""
 	}
 
-	return strings.ToUpper(code[:3])
+	// Some airports have numeric live codes (Athens is 022), whose prefix is not an IATA code.
+	prefix := strings.ToUpper(code[:3])
+	for _, r := range prefix {
+		if r < 'A' || r > 'Z' {
+			return ""
+		}
+	}
+
+	return prefix
 }
 
 // avanceCountryName maps the sheet's ISO code to the display name held in locations.country. The

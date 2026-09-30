@@ -136,6 +136,8 @@ func TestAvanceStationIata(t *testing.T) {
 		{"RHOPR", "Port", ""},
 		{"ALD", "Hotel", ""},
 		{"AB", "Airport", ""},
+		{"022", "Airport", ""},   // Athens: live codes can be numeric
+		{"114", "Airport 1", ""}, // Milos
 	}
 
 	for _, tt := range tests {
