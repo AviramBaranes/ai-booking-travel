@@ -6,7 +6,7 @@ Detailed project conventions and an Encore framework reference live in [context/
 
 ## What this is
 
-A B2B/B2C car rental brokerage that aggregates inventory from external suppliers (Flex, Hertz). Two monorepo halves:
+A B2B/B2C car rental brokerage that aggregates inventory from external suppliers (Flex, Hertz, Avance). Two monorepo halves:
 
 - [backend/](backend/) — Go on the [Encore](https://encore.dev) framework (app id `ai-booking-travel-bo22`). Postgres via `sqlc`.
 - [frontend/](frontend/) — Next.js App Router + React Query over a generated Encore client, next-intl (Hebrew/English), Shadcn/Tailwind, with **Payload CMS embedded in the same Next app** (see [frontend/CMS/](frontend/CMS/) and the `app/(payload)` route group, backed by its own Postgres — Neon in deployed envs).
@@ -61,7 +61,9 @@ Five Encore services under [backend/services/](backend/services/): `accounts`, `
 
 **Persistence.** Per-service `db/` package: `query/<entity>_query.sql` (one file per entity), `migrations/NN_description.up.sql`, `sqlc.yaml` generating pgx/v5 code with `emit_interface` (so handlers depend on `db.Querier` and tests use the generated mocks in `services/*/mocks/`). Edit the `.sql` files and migrations, then `make gen` — never hand-edit `*.sql.go`, `models.go`, or the mocks.
 
-**Broker abstraction.** [internal/broker/](backend/internal/broker/) hides supplier differences behind narrow interfaces — `LocationSearcher`, `AvailabilitySearcher`, `Booker`, `Canceler`, `VoucherProvider` — implemented per supplier in `flex_*.go` / `hertz_*.go` (Flex speaks SOAP/XML, Hertz speaks OTA XML). Supplier-specific quirks belong in those files; everything above the interface stays broker-agnostic.
+**Broker abstraction.** [internal/broker/](backend/internal/broker/) hides supplier differences behind narrow interfaces — `LocationSearcher`, `AvailabilitySearcher`, `Booker`, `Canceler`, `VoucherProvider` — implemented per supplier in `flex_*.go` / `hertz_*.go` / `avance_*.go` (Flex speaks SOAP/XML, Hertz speaks OTA XML, Avance speaks Wheelsys Link v3 — plain GETs returning XML). Supplier-specific quirks belong in those files; everything above the interface stays broker-agnostic.
+
+**Adding a broker is more than a new `internal/broker` file.** Each broker name is switched on by hand in `getBrokerByName`, `getBrokerByPlan`, `getBroker`/`getCanceler`, `toDbBroker`, `getVoucherProvider`, `supplierIDForBroker` and `brokerAttachments`; the `broker` Postgres enum exists separately in the booking and the reservation databases; and several request types validate with `oneof=flex hertz …`. Grep for an existing broker name to find them all. A broker must also return a `SuppliersInfo` entry named like its plans' `SupplierName` — plans with no match are silently dropped before pricing.
 
 **Availability → booking is snapshot-based.** A search computes a full price breakdown per plan (`PlanPriceDetails` in [handlers/availability/availability_snapshot.go](backend/services/booking/handlers/availability/availability_snapshot.go)), serializes all plans as JSON into `available_plans_snapshots`, and returns the snapshot id + plan id. Booking re-reads the snapshot rather than re-pricing, so **any new priced field must be added to `PlanPriceDetails` and threaded through booking/reservation**, not just to the search response.
 
@@ -77,10 +79,14 @@ Route groups under [frontend/app/](frontend/app/) separate the audiences: `(app)
 
 **Errors in UI** go through `useTranslatedError` ([shared/hooks/useTranslatedError.ts](frontend/shared/hooks/useTranslatedError.ts)), which resolves `AppError.code` against the `ApiErrors` namespace.
 
+**Car group filters** on the results page ([carGroupsFilters.ts](frontend/app/(app)/[lang]/(withNavbar)/(booking)/_components/_constants/carGroupsFilters.ts)) are explicit ACRISS allow-lists. A car whose code is in no list disappears as soon as any filter is selected, so a new supplier's codes must be added by hand.
+
 **Components** are colocated: put a component in a `_components` folder at the nearest route segment; only genuinely reused ones go to [frontend/shared/components/](frontend/shared/components/). Auth state is Zustand ([shared/auth/authStore.ts](frontend/shared/auth/authStore.ts)). Theme tokens are defined in `globals.css`; use those Tailwind tokens with Shadcn components rather than raw colors.
 
 ## Working notes
 
 - Both `//encore:api` and `// encore:api` (with a space) appear in the tree; match the surrounding file.
 - Branches: `dev` deploys to stage, `main` to production. Backend deploys to Encore Cloud, frontend to Vercel.
+- Avance (Wheelsys) only accepts calls from production's static egress IP. Local and dev reach it through a Cloud Run egress proxy; `AvanceBaseURL` in [services/booking/config.cue](backend/services/booking/config.cue) picks the route per environment. Wheelsys reports failures inside an HTTP 200 (an `<errors>` block), so never rely on the status code.
+- Avance stations are imported by uploading their xlsx to `POST /locations/avance`. Their sheet uses codes the live feed rejects for about twenty stations (Athens Airport is `ATHAP` in the sheet, `022` live); the codes are corrected in the sheet before upload, not in code or the database.
 - An Encore MCP server is configured in `.vscode/mcp.json` (`encore mcp run --app=ai-booking-travel-bo22`) for querying local endpoints, DBs, and API specs.
