@@ -11,7 +11,7 @@ import (
 
 type ListMarkupRatesParams struct {
 	Country string `query:"country" validate:"omitempty"`
-	Broker  string `json:"broker" validate:"omitempty,oneof=hertz flex"`
+	Broker  string `json:"broker" validate:"omitempty,oneof=hertz flex avance"`
 	SortBy  string `query:"sortBy" validate:"omitempty"`
 	SortDir string `query:"sortDir" validate:"omitempty,oneof=asc desc"`
 	Page    int32  `query:"page" validate:"required,gte=1"`
