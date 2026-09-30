@@ -352,6 +352,7 @@ export const CAR_GROUPS_FILTERS: CarGroupFilter[] = [
       "LFAC",
       "LGAR",
       "LGMR",
+      "LFDR",
 
       // Luxury Elite SUV
       "WFMR",
@@ -492,6 +493,7 @@ export const CAR_GROUPS_FILTERS: CarGroupFilter[] = [
       "RVAH",
       "RVAE",
       "RVAC",
+      "RVAN",
 
       "FVMR",
       "FVAR",
