@@ -14,8 +14,9 @@ import (
 type Broker string
 
 const (
-	BrokerFlex  Broker = "flex"
-	BrokerHertz Broker = "hertz"
+	BrokerFlex   Broker = "flex"
+	BrokerHertz  Broker = "hertz"
+	BrokerAvance Broker = "avance"
 )
 
 func (e *Broker) Scan(src interface{}) error {
@@ -244,6 +245,8 @@ type Reservation struct {
 	SupplierExpenseID       *string
 	PaymentReceivedAt       pgtype.Timestamptz
 	CouponName              string
+	TheftExcess             int32
+	TheftExcessCurrency     string
 }
 
 type ReservationPenalty struct {

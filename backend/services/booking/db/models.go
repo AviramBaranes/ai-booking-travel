@@ -263,4 +263,6 @@ type PriceOffer struct {
 	SupplierTerms       []byte
 	PickupDetails       []byte
 	DropoffDetails      []byte
+	TheftExcess         int32
+	TheftExcessCurrency string
 }

@@ -28,6 +28,8 @@ INSERT INTO price_offers (
     pay_at_pickup,
     excess,
     excess_currency,
+    theft_excess,
+    theft_excess_currency,
     supplier_terms,
     pickup_details,
     dropoff_details
@@ -60,6 +62,8 @@ INSERT INTO price_offers (
     sqlc.arg(pay_at_pickup),
     sqlc.arg(excess),
     sqlc.arg(excess_currency),
+    sqlc.arg(theft_excess),
+    sqlc.arg(theft_excess_currency),
     sqlc.arg(supplier_terms),
     sqlc.arg(pickup_details),
     sqlc.arg(dropoff_details)
@@ -109,6 +113,11 @@ UPDATE price_offers SET
     bt_erp_price = sqlc.arg(bt_erp_price),
     total_price = sqlc.arg(total_price),
     pay_at_pickup = sqlc.arg(pay_at_pickup),
+    rate_qualifier = sqlc.arg(rate_qualifier),
+    excess = sqlc.arg(excess),
+    excess_currency = sqlc.arg(excess_currency),
+    theft_excess = sqlc.arg(theft_excess),
+    theft_excess_currency = sqlc.arg(theft_excess_currency),
     renewed_at = now(),
     updated_at = now()
 WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id) AND status != 'unavailable';
