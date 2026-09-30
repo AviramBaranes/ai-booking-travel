@@ -48,12 +48,14 @@ type Plan struct {
 
 // AvailableVehiclesConfig holds markup percentages and ERP day-charge values per broker.
 type AvailableVehiclesConfig struct {
-	HertzErpDayChargeUS config.Float64
-	HertzErpDayChargeCA config.Float64
-	FlexErpDayCharge    config.Float64
-	AvanceBaseURL       config.String
-	MarkUpGross         config.Float64
-	MarkUpNet           config.Float64
+	HertzErpDayChargeUS          config.Float64
+	HertzErpDayChargeCA          config.Float64
+	FlexErpDayCharge             config.Float64
+	AvanceErpDayChargeStandard   config.Float64
+	AvanceErpDayChargeZeroExcess config.Float64
+	AvanceBaseURL                config.String
+	MarkUpGross                  config.Float64
+	MarkUpNet                    config.Float64
 }
 
 // SearchAvailabilityRequest represents the request for searching availability of vehicles.

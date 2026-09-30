@@ -102,7 +102,7 @@ func TestAvanceGetLocationsPage(t *testing.T) {
 
 func TestAvanceGetLocationsPageErrors(t *testing.T) {
 	t.Run("reader not initialised", func(t *testing.T) {
-		if _, err := NewAvance("").GetLocationsPage(""); !errors.Is(err, ErrAvanceReaderNotInitialized) {
+		if _, err := NewAvance("", 0, 0).GetLocationsPage(""); !errors.Is(err, ErrAvanceReaderNotInitialized) {
 			t.Errorf("err = %v, want ErrAvanceReaderNotInitialized", err)
 		}
 	})

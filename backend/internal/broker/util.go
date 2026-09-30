@@ -37,6 +37,16 @@ func isElectric(acrissCode string) bool {
 	return acrissCode[3] == 'E' || acrissCode[3] == 'C'
 }
 
+// acrissHasAC reports whether the ACRISS code describes a car with air conditioning. The fourth
+// letter pairs fuel type with air conditioning; these are the letters that mean "no air".
+func acrissHasAC(acrissCode string) bool {
+	if len(acrissCode) < 4 {
+		rlog.Warn("invalid acriss code, cannot determine if the car has air conditioning", "acrissCode", acrissCode)
+		return false
+	}
+	return !strings.ContainsRune("NQSBFZX", rune(acrissCode[3]))
+}
+
 // normalizeModelName removes the "or similar" suffix from the model name if it exists
 func normalizeModelName(model string) string {
 	const suffix = " or similar"

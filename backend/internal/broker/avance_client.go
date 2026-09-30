@@ -6,21 +6,36 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
+
+// avanceTimeout bounds each Wheelsys call. Quotes answer in well under a second, and they run on
+// the availability search path, so a hung call must not hold the whole search for defaultTimeout.
+const avanceTimeout = 30 * time.Second
 
 // Avance is a struct that implements the Broker interface for the Avance car rental service,
 // which is served by the Wheelsys "Link v3" API.
 type Avance struct {
-	baseURL    string
-	httpClient *http.Client
-	r          io.Reader
+	baseURL string
+	// erpDayCharges is our own ERP day charge, keyed by product (CDP): it differs between the
+	// standard and the zero-excess product.
+	erpDayCharges map[string]float64
+	httpClient    *http.Client
+	r             io.Reader
 }
 
-// NewAvance creates a new instance of the Avance broker with a default HTTP client and timeout.
+// NewAvance creates a new instance of the Avance broker.
 // baseURL is per-environment: production reaches Wheelsys directly, while every other environment
 // goes through the egress proxy, since only production's address is allow-listed.
-func NewAvance(baseURL string) *Avance {
-	return &Avance{baseURL: baseURL, httpClient: &http.Client{Timeout: defaultTimeout}}
+func NewAvance(baseURL string, standardErpDayCharge, zeroExcessErpDayCharge float64) *Avance {
+	return &Avance{
+		baseURL: baseURL,
+		erpDayCharges: map[string]float64{
+			avanceCDPStandard:   standardErpDayCharge,
+			avanceCDPZeroExcess: zeroExcessErpDayCharge,
+		},
+		httpClient: &http.Client{Timeout: avanceTimeout},
+	}
 }
 
 // NewAvanceWithReader creates an Avance broker that reads its locations from the given workbook.
