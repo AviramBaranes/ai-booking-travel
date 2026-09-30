@@ -34,6 +34,8 @@ type PlanPriceDetails struct {
 	DepositCurrency        string            `json:"depositCurrency"`
 	Excess                 int               `json:"excess"`
 	ExcessCurrency         string            `json:"excessCurrency"`
+	TheftExcess            int               `json:"theftExcess"`
+	TheftExcessCurrency    string            `json:"theftExcessCurrency"`
 	Fees                   broker.Fees       `json:"fees"`
 	Inclusions             []string          `json:"inclusions"`
 }

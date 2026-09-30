@@ -145,6 +145,8 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 				DepositCurrency:        p.DepositCurrency,
 				Excess:                 p.Excess,
 				ExcessCurrency:         p.ExcessCurrency,
+				TheftExcess:            p.TheftExcess,
+				TheftExcessCurrency:    p.TheftExcessCurrency,
 			}
 
 			artifacts.plansDetails = append(artifacts.plansDetails, pd)

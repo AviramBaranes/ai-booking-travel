@@ -221,6 +221,8 @@ type Plan struct {
 	DepositCurrency        string
 	Excess                 int
 	ExcessCurrency         string
+	TheftExcess            int
+	TheftExcessCurrency    string
 }
 
 // AddOn represents an additional service or product that can be added to a rental, including its ID, name, price, allowed quantity, and rental period.
