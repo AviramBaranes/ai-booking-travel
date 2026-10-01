@@ -190,20 +190,16 @@ func toVoucherData(reservation db.Reservation) (*broker.VoucherData, error) {
 		return nil, fmt.Errorf("unmarshalling car details: %w", err)
 	}
 
+	// The details below only enrich the voucher, so one that can't be read is left blank rather
+	// than costing the customer the voucher.
 	var payAtPickup PayAtPickup
 	if err := json.Unmarshal(reservation.PayAtPickup, &payAtPickup); err != nil {
-		return nil, fmt.Errorf("unmarshalling pay at pickup: %w", err)
+		rlog.Error("unmarshalling voucher pay at pickup, leaving it blank", "id", reservation.ID, "error", err)
+		payAtPickup = PayAtPickup{}
 	}
 
-	pickup, err := unmarshalStationInfo(reservation.PickupDetails)
-	if err != nil {
-		return nil, fmt.Errorf("unmarshalling pickup details: %w", err)
-	}
-
-	dropoff, err := unmarshalStationInfo(reservation.DropoffDetails)
-	if err != nil {
-		return nil, fmt.Errorf("unmarshalling dropoff details: %w", err)
-	}
+	pickup := unmarshalVoucherStation(reservation.ID, "pickup", reservation.PickupDetails)
+	dropoff := unmarshalVoucherStation(reservation.ID, "dropoff", reservation.DropoffDetails)
 
 	var flightNumber string
 	if reservation.FlightNumber != nil {
@@ -251,15 +247,20 @@ func toVoucherData(reservation db.Reservation) (*broker.VoucherData, error) {
 	}, nil
 }
 
-// unmarshalStationInfo reads a station detail blob, which older reservations may lack entirely.
-func unmarshalStationInfo(detailsJSON []byte) (broker.StationInfo, error) {
+// unmarshalVoucherStation reads a station detail blob, which older reservations may lack entirely.
+// One that can't be read is logged and left blank.
+func unmarshalVoucherStation(id int64, station string, detailsJSON []byte) broker.StationInfo {
 	var details broker.StationInfo
 	if len(detailsJSON) == 0 {
-		return details, nil
+		return details
 	}
 
-	err := json.Unmarshal(detailsJSON, &details)
-	return details, err
+	if err := json.Unmarshal(detailsJSON, &details); err != nil {
+		rlog.Error("unmarshalling voucher station details, leaving them blank", "id", id, "station", station, "error", err)
+		return broker.StationInfo{}
+	}
+
+	return details
 }
 
 func voucherOptionalServices(addons []SelectedAddon) []string {
