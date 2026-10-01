@@ -99,8 +99,11 @@ func findRenewalPlan(snapshot db.AvailablePlansSnapshot, offer db.GetPriceOfferB
 		return availability.PlanPriceDetails{}, api_errors.ErrInternalError
 	}
 
+	// The plan id tells apart plans on the same car, such as Avance's Standard and Gold, which
+	// would otherwise match the first of them.
 	for _, plan := range plans {
-		if plan.SupplierCode == offer.SupplierCode &&
+		if strconv.Itoa(plan.PlanID) == offer.PlanID &&
+			plan.SupplierCode == offer.SupplierCode &&
 			plan.CarDetails.Model == offerCarDetails.Model &&
 			plan.CarDetails.SupplierName == offerCarDetails.SupplierName &&
 			plan.CarDetails.Acriss == offerCarDetails.Acriss {
@@ -155,6 +158,13 @@ func (s *PriceOfferService) renewPriceOfferDetails(ctx context.Context, offer db
 		BtErpPrice:       dbadapters.NumericFromFloat64(btErpPrice),
 		TotalPrice:       dbadapters.NumericFromFloat64(totalPrice),
 		PayAtPickup:      payAtPickupJSON,
+		// The rate qualifier is renewed too: for Avance it holds the quote id, which expires
+		// about 20 minutes after the search that produced it.
+		RateQualifier:       plan.RateQualifier,
+		Excess:              int32(plan.Excess),
+		ExcessCurrency:      plan.ExcessCurrency,
+		TheftExcess:         int32(plan.TheftExcess),
+		TheftExcessCurrency: plan.TheftExcessCurrency,
 	})
 	if err != nil {
 		rlog.Error("failed to renew price offer details", "id", offer.ID, "error", err)

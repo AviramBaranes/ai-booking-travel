@@ -135,6 +135,8 @@ func (s *PriceOfferService) CreatePriceOffer(ctx context.Context, p CreatePriceO
 		PayAtPickup:         payAtPickup,
 		Excess:              int32(plan.Excess),
 		ExcessCurrency:      plan.ExcessCurrency,
+		TheftExcess:         int32(plan.TheftExcess),
+		TheftExcessCurrency: plan.TheftExcessCurrency,
 		SupplierTerms:       supplierTerms,
 		PickupDetails:       pickupDetails,
 		DropoffDetails:      dropoffDetails,
