@@ -29,7 +29,7 @@ func (s *BookingService) CustomerBook(ctx context.Context, p CustomerBookParams)
 		return nil, err
 	}
 
-	confID, err := s.bookCarAtBroker(snapshot, plan, p.BookParams)
+	confID, err := s.bookCarAtBroker(ctx, snapshot, plan, p.BookParams)
 	if err != nil {
 		if errors.Is(err, broker.ErrFlightNumberRequired) {
 			rlog.Error("booking failed due to missing flight number", "snapshotID", snapshot.ID, "rateQualifier", p.RateQualifier, "supplierCode", p.SupplierCode, "planID", p.PlanID, "error", err)

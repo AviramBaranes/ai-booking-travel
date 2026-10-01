@@ -37,7 +37,7 @@ func (s *BookingService) BookPriceOffer(ctx context.Context, p BookPriceOfferPar
 		return nil, err
 	}
 
-	bookingRes, offerCarDetails, err := s.bookPriceOfferAtBroker(offer, p)
+	bookingRes, offerCarDetails, err := s.bookPriceOfferAtBroker(ctx, offer, p)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func ensurePriceOfferRenewedRecently(offer db.GetPriceOfferByIdRow, priceOfferID
 	return nil
 }
 
-func (s *BookingService) bookPriceOfferAtBroker(offer db.GetPriceOfferByIdRow, p BookPriceOfferParams) (broker.BookingResponse, broker.CarDetails, error) {
+func (s *BookingService) bookPriceOfferAtBroker(ctx context.Context, offer db.GetPriceOfferByIdRow, p BookPriceOfferParams) (broker.BookingResponse, broker.CarDetails, error) {
 	b, err := s.getBroker(offer.Broker)
 	if err != nil {
 		rlog.Error("failed to get broker for price offer booking", "error", err)
@@ -104,6 +104,7 @@ func (s *BookingService) bookPriceOfferAtBroker(offer db.GetPriceOfferByIdRow, p
 	bookingRes, err := b.Book(buildPriceOfferBookingParams(offer, p, offerCarDetails))
 	if err != nil {
 		rlog.Error("failed to book car at broker", "broker", b.Name(), "error", err)
+		notifyIfBookingLeftOpen(ctx, b.Name(), err)
 		if errors.Is(err, broker.ErrFlightNumberRequired) {
 			return broker.BookingResponse{}, broker.CarDetails{}, errFlightNumberRequired
 		}
@@ -151,7 +152,7 @@ func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, p BookPriceOffe
 		DropoffDate:     dbadapters.DateToString(offer.DropoffDate),
 		PickupTime:      offer.PickupTime,
 		DropoffTime:     offer.DropoffTime,
-		CountryCode:     offer.CurrencyCode,
+		CountryCode:     offer.CountryCode,
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -18,6 +19,10 @@ const (
 	// the paid drivers, so booking sends one more than was selected.
 	avanceAdditionalDriver = "ADD"
 )
+
+// ErrBookingLeftOpen means the broker created a booking we could not confirm and then failed to
+// cancel, so it is still open at the broker and must be cancelled by hand.
+var ErrBookingLeftOpen = errors.New("booking left open at the broker")
 
 // avanceAPIError is an error Wheelsys reported inside a successful HTTP response.
 type avanceAPIError struct {
@@ -60,7 +65,7 @@ func (a *Avance) Book(p BookingParams) (BookingResponse, error) {
 	irn := res.Reservation.IRN
 	if irn != "" {
 		if err := a.Cancel(irn, "", ""); err != nil {
-			return BookingResponse{}, fmt.Errorf("avance new-res %s came back %q and could not be cancelled: %w", irn, res.Reservation.ResStatus, err)
+			return BookingResponse{}, fmt.Errorf("%w: avance new-res %s came back %q and could not be cancelled: %v", ErrBookingLeftOpen, irn, res.Reservation.ResStatus, err)
 		}
 	}
 

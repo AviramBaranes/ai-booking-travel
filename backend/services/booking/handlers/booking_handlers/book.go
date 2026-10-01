@@ -52,7 +52,7 @@ func (s *BookingService) Book(ctx context.Context, p BookParams) (*BookResponse,
 		return nil, err
 	}
 
-	confID, err := s.bookCarAtBroker(snapshot, plan, p)
+	confID, err := s.bookCarAtBroker(ctx, snapshot, plan, p)
 	if err != nil {
 		if errors.Is(err, broker.ErrFlightNumberRequired) {
 			return nil, errFlightNumberRequired
@@ -185,7 +185,7 @@ func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode, p
 	return availability.PlanPriceDetails{}, errPlanNotFound
 }
 
-func (s *BookingService) bookCarAtBroker(snapshot db.AvailablePlansSnapshot, plan availability.PlanPriceDetails, p BookParams) (string, error) {
+func (s *BookingService) bookCarAtBroker(ctx context.Context, snapshot db.AvailablePlansSnapshot, plan availability.PlanPriceDetails, p BookParams) (string, error) {
 	b, err := s.getBrokerByPlan(plan)
 	if err != nil {
 		rlog.Error("failed to get broker for plan", "RateQualifier", plan.RateQualifier, "error", err)
@@ -218,10 +218,26 @@ func (s *BookingService) bookCarAtBroker(snapshot db.AvailablePlansSnapshot, pla
 	})
 	if err != nil {
 		rlog.Error("failed to book car at broker", "broker", b.Name(), "error", err)
+		notifyIfBookingLeftOpen(ctx, b.Name(), err)
 		return "", err
 	}
 
 	return res.ConfirmationNumber, nil
+}
+
+// notifyIfBookingLeftOpen alerts the admins to a booking the broker still holds after we failed to
+// release it, since only a person can cancel it now.
+func notifyIfBookingLeftOpen(ctx context.Context, b broker.Name, err error) {
+	if !errors.Is(err, broker.ErrBookingLeftOpen) {
+		return
+	}
+
+	if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
+		Subject: "Unconfirmed booking left open at the broker",
+		Message: fmt.Sprintf("broker: %s, error: %v. The booking failed on our side; cancel it at the broker by hand.", b, err),
+	}); publishErr != nil {
+		rlog.Error("failed to publish critical error email event", "broker", b, "error", publishErr)
+	}
 }
 
 func (s *BookingService) getBrokerByPlan(plan availability.PlanPriceDetails) (broker.Booker, error) {

@@ -1,6 +1,7 @@
 package broker
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -115,6 +116,18 @@ func TestAvanceBook(t *testing.T) {
 		}
 		if got := (*calls)[1].Query().Get("irn"); got != "5NS061" {
 			t.Errorf("cancelled irn = %q, want 5NS061", got)
+		}
+	})
+
+	t.Run("on request that can't be cancelled is left open", func(t *testing.T) {
+		a, _ := avanceTestServer(t, map[string]string{
+			"new-res":    avanceFixtureNewResOnRequest,
+			"cancel-res": `<response><reservation irn="5NS061" status="ERR/999" /></response>`,
+		})
+
+		_, err := a.Book(avanceTestBooking)
+		if !errors.Is(err, ErrBookingLeftOpen) || !strings.Contains(err.Error(), "5NS061") {
+			t.Errorf("err = %v, want ErrBookingLeftOpen naming 5NS061", err)
 		}
 	})
 
