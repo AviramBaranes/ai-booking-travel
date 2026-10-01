@@ -1478,6 +1478,8 @@ export interface BookingSetting {
   dropoffChargeContent: string;
   depositChargeTitle: string;
   depositChargeContent: string;
+  theftExcessTitle: string;
+  theftExcessContent: string;
   orderTermsLink: number | Page;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1692,6 +1694,8 @@ export interface BookingSettingsSelect<T extends boolean = true> {
   dropoffChargeContent?: T;
   depositChargeTitle?: T;
   depositChargeContent?: T;
+  theftExcessTitle?: T;
+  theftExcessContent?: T;
   orderTermsLink?: T;
   updatedAt?: T;
   createdAt?: T;

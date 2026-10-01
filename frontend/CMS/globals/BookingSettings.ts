@@ -117,7 +117,26 @@ export const BookingSettings: GlobalConfig = {
           type: "textarea",
           localized: true,
           required: true,
-        }
+        },
+        // The empty defaultValue becomes a column DEFAULT, which lets the schema push add these
+        // NOT NULL columns to the existing row instead of truncating the table. Never remove it:
+        // dropping the default makes the push truncate the table too.
+        {
+          name: "theftExcessTitle",
+          label: "כותרת השתתפות עצמית בגניבה",
+          type: "text",
+          localized: true,
+          required: true,
+          defaultValue: "",
+        },
+        {
+          name: "theftExcessContent",
+          label: "תוכן השתתפות עצמית בגניבה",
+          type: "textarea",
+          localized: true,
+          required: true,
+          defaultValue: "",
+        },
       ],
     },
 

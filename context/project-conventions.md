@@ -783,6 +783,11 @@ The application supports Hebrew and English, implemented via the Next.js App Rou
 
 <payload_cms>
 The app uses Payload CMS for managing content. It is located strictly inside the `frontend` application, utilizing the `collections`, `globals`, and `blocks` folders.
+
+**Schema changes.** There are no Payload migrations: `pnpm dev` pushes the schema (drizzle-kit) straight into whatever `DATABASE_URL` points at, and production never pushes. So:
+- **A new `required` field on a collection or global that already has rows needs a static `defaultValue` (e.g. `""`).** `required` makes the column `NOT NULL`, and drizzle-kit can only add a `NOT NULL` column without a default by truncating the table — which wipes the content. A static default becomes a column `DEFAULT`, so the column is added in place. Never remove such a default later: dropping a default from a `NOT NULL` column with rows also truncates.
+- **Never accept a "DATA LOSS WARNING" prompt** in the `pnpm dev` terminal. Answer No and find out what caused it. Renaming a field is a drop plus an add.
+- **Push to the database before deploying the frontend** that reads the new fields; code that selects a missing column crashes every page reading that collection or global. Rehearse on a Neon branch first.
 </payload_cms>
 </project_specific_context>
 
