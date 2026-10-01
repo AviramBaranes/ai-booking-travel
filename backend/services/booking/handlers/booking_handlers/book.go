@@ -52,7 +52,7 @@ func (s *BookingService) Book(ctx context.Context, p BookParams) (*BookResponse,
 		return nil, err
 	}
 
-	confID, err := bookCarAtBroker(snapshot, plan, p)
+	confID, err := s.bookCarAtBroker(snapshot, plan, p)
 	if err != nil {
 		if errors.Is(err, broker.ErrFlightNumberRequired) {
 			return nil, errFlightNumberRequired
@@ -139,6 +139,8 @@ func (s *BookingService) buildCreateReservationParams(
 		PayAtPickup:           GetPayAtPickup(p.SelectedAddOns, plan),
 		Excess:                plan.Excess,
 		ExcessCurrency:        plan.ExcessCurrency,
+		TheftExcess:           plan.TheftExcess,
+		TheftExcessCurrency:   plan.TheftExcessCurrency,
 		PickupLocationCode:    plan.PickupLocationCode,
 		DropoffLocationCode:   plan.DropoffLocationCode,
 		SupplierTerms:         supplierInfo.TermsAndConditions,
@@ -183,8 +185,8 @@ func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode, p
 	return availability.PlanPriceDetails{}, errPlanNotFound
 }
 
-func bookCarAtBroker(snapshot db.AvailablePlansSnapshot, plan availability.PlanPriceDetails, p BookParams) (string, error) {
-	b, err := getBrokerByPlan(plan)
+func (s *BookingService) bookCarAtBroker(snapshot db.AvailablePlansSnapshot, plan availability.PlanPriceDetails, p BookParams) (string, error) {
+	b, err := s.getBrokerByPlan(plan)
 	if err != nil {
 		rlog.Error("failed to get broker for plan", "RateQualifier", plan.RateQualifier, "error", err)
 		return "", err
@@ -222,12 +224,14 @@ func bookCarAtBroker(snapshot db.AvailablePlansSnapshot, plan availability.PlanP
 	return res.ConfirmationNumber, nil
 }
 
-func getBrokerByPlan(plan availability.PlanPriceDetails) (broker.Booker, error) {
+func (s *BookingService) getBrokerByPlan(plan availability.PlanPriceDetails) (broker.Booker, error) {
 	switch plan.Broker {
 	case broker.BrokerHertz:
 		return broker.NewHertz(), nil
 	case broker.BrokerFlex:
 		return broker.NewFlex(), nil
+	case broker.BrokerAvance:
+		return s.newAvance(), nil
 	default:
 		return nil, api_errors.ErrInternalError
 	}

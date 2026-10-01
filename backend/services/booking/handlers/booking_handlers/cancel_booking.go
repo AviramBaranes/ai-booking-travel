@@ -16,7 +16,7 @@ var emailPublisher = emailevents.NewPublisher(emailRequestedTopic)
 
 // CancelBooking handles the cancellation of a booking by processing the BookingCancellationEvent received from the reservation service.
 func (s *BookingService) CancelBooking(ctx context.Context, e *reservation.BookingCancellationEvent) error {
-	b, err := getCanceler(db.Broker(e.Broker))
+	b, err := s.getCanceler(db.Broker(e.Broker))
 	if err != nil {
 		rlog.Error("unsupported broker for cancellation", "broker", b, "reservationId", e.ReservationID)
 		if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{

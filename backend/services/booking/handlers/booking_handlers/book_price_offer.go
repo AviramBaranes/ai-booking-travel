@@ -37,7 +37,7 @@ func (s *BookingService) BookPriceOffer(ctx context.Context, p BookPriceOfferPar
 		return nil, err
 	}
 
-	bookingRes, offerCarDetails, err := bookPriceOfferAtBroker(offer, p)
+	bookingRes, offerCarDetails, err := s.bookPriceOfferAtBroker(offer, p)
 	if err != nil {
 		return nil, err
 	}
@@ -89,8 +89,8 @@ func ensurePriceOfferRenewedRecently(offer db.GetPriceOfferByIdRow, priceOfferID
 	return nil
 }
 
-func bookPriceOfferAtBroker(offer db.GetPriceOfferByIdRow, p BookPriceOfferParams) (broker.BookingResponse, broker.CarDetails, error) {
-	b, err := getBroker(offer.Broker)
+func (s *BookingService) bookPriceOfferAtBroker(offer db.GetPriceOfferByIdRow, p BookPriceOfferParams) (broker.BookingResponse, broker.CarDetails, error) {
+	b, err := s.getBroker(offer.Broker)
 	if err != nil {
 		rlog.Error("failed to get broker for price offer booking", "error", err)
 		return broker.BookingResponse{}, broker.CarDetails{}, api_errors.ErrInternalError
@@ -212,6 +212,8 @@ func buildPriceOfferReservationRequest(
 		PayAtPickup:           unmarshalPayAtPickup(offer.PayAtPickup),
 		Excess:                int(offer.Excess),
 		ExcessCurrency:        offer.ExcessCurrency,
+		TheftExcess:           int(offer.TheftExcess),
+		TheftExcessCurrency:   offer.TheftExcessCurrency,
 		PickupLocationCode:    offer.PickupBrokerLocationID,
 		DropoffLocationCode:   offer.DropoffBrokerLocationID,
 		SupplierTerms:         unmarshalSupplierTerms(offer),

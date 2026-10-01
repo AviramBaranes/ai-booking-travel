@@ -31,7 +31,7 @@ type GetSnapshotPlanSummaryResponse struct {
 //
 // encore:api private method=POST path=/snapshot/plan-summary
 func (s *Service) GetSnapshotPlanSummary(ctx context.Context, p *GetSnapshotPlanSummaryParams) (*GetSnapshotPlanSummaryResponse, error) {
-	bs := booking_handlers.NewBookingService(s.query)
+	bs := booking_handlers.NewBookingService(s.query, AvCfg)
 	result, err := bs.GetSnapshotPlanSummary(ctx, booking_handlers.SnapshotPlanSummaryParams{
 		SnapshotID:    p.SnapshotID,
 		RateQualifier: p.RateQualifier,

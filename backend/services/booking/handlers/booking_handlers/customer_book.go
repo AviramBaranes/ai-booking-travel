@@ -29,7 +29,7 @@ func (s *BookingService) CustomerBook(ctx context.Context, p CustomerBookParams)
 		return nil, err
 	}
 
-	confID, err := bookCarAtBroker(snapshot, plan, p.BookParams)
+	confID, err := s.bookCarAtBroker(snapshot, plan, p.BookParams)
 	if err != nil {
 		if errors.Is(err, broker.ErrFlightNumberRequired) {
 			rlog.Error("booking failed due to missing flight number", "snapshotID", snapshot.ID, "rateQualifier", p.RateQualifier, "supplierCode", p.SupplierCode, "planID", p.PlanID, "error", err)
@@ -105,6 +105,8 @@ func (s *BookingService) buildCreateCustomerReservationParams(
 		PayAtPickup:         GetPayAtPickup(p.SelectedAddOns, plan),
 		Excess:              plan.Excess,
 		ExcessCurrency:      plan.ExcessCurrency,
+		TheftExcess:         plan.TheftExcess,
+		TheftExcessCurrency: plan.TheftExcessCurrency,
 		PickupLocationCode:  plan.PickupLocationCode,
 		DropoffLocationCode: plan.DropoffLocationCode,
 		SupplierTerms:       supplierInfo.TermsAndConditions,
