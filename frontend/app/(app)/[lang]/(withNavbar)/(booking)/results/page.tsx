@@ -39,8 +39,8 @@ export default async function ResultsPage({
         queryFn: fetchAddonsGallery,
       }),
       queryClient.fetchQuery({
-        queryKey: bookingSettingsKey,
-        queryFn: fetchBookingSettings,
+        queryKey: bookingSettingsKey(lang),
+        queryFn: () => fetchBookingSettings(lang),
       }),
     ]);
   } catch {

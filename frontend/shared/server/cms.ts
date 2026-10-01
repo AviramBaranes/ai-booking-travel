@@ -12,9 +12,13 @@ export async function fetchAddonsGallery() {
   return payload.findGlobal({ slug: "addonsGallery", draft: false });
 }
 
-export async function fetchBookingSettings() {
+export async function fetchBookingSettings(lang: string) {
   const payload = await getCachedPayload();
-  return payload.findGlobal({ slug: "booking-settings", draft: false });
+  return payload.findGlobal({
+    slug: "booking-settings",
+    draft: false,
+    locale: lang === "en" ? "en" : "he",
+  });
 }
 
 let payloadPromise: ReturnType<typeof getPayload> | null = null;

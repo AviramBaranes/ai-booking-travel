@@ -12,12 +12,14 @@ export function FeesNote({
   const t = useTranslations("booking.plansPage");
   const { data } = useBookingSettings();
   const selectedPlan = useBookingSessionStore((s) => s.selectedPlanIndex);
+  const plan = vehicle.plans[selectedPlan];
 
   if (
     !vehicle.priceDetails.fees.dropCharge &&
     !vehicle.priceDetails.fees.youngDriverFee &&
     !vehicle.priceDetails.fees.seniorDriverFee &&
-    !vehicle.plans[selectedPlan].deposit
+    !plan.deposit &&
+    !plan.theftExcess
   ) {
     return null;
   }
@@ -49,12 +51,20 @@ export function FeesNote({
           currency={vehicle.priceDetails.fees.dropChargeCurrency}
         />
       )}
-      {!!vehicle.plans[selectedPlan].deposit && (
+      {!!plan.deposit && (
         <FeeDisplay
-          title={"פיקדון"}
-          content={"הפיקדון יוחזר לאחר סיום ההשכרה, בהתאם למדיניות ההשכרה"}
-          amount={vehicle.plans[selectedPlan].deposit}
-          currency={vehicle.plans[selectedPlan].depositCurrency}
+          title={data.depositChargeTitle}
+          content={data.depositChargeContent}
+          amount={plan.deposit}
+          currency={plan.depositCurrency}
+        />
+      )}
+      {!!plan.theftExcess && (
+        <FeeDisplay
+          title={data.theftExcessTitle}
+          content={data.theftExcessContent}
+          amount={plan.theftExcess}
+          currency={plan.theftExcessCurrency}
         />
       )}
     </div>

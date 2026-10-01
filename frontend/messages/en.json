@@ -376,6 +376,8 @@
         "fullCoverage": "Full coverage:",
         "flightNumber": "Flight number:",
         "excess": "Maximum excess in case of damage or theft:",
+        "damageExcess": "Maximum excess in case of damage:",
+        "theftExcess": "Maximum excess in case of theft:",
         "totalToPay": "Total to pay:"
       },
       "sections": {

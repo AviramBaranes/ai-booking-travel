@@ -13,6 +13,8 @@ interface CarDetailsSectionProps {
   isAutomatic: boolean;
   excess?: number;
   excessCurrency?: string;
+  theftExcess?: number;
+  theftExcessCurrency?: string;
 }
 
 export function CarDetailsSection({
@@ -23,8 +25,13 @@ export function CarDetailsSection({
   isAutomatic,
   excess,
   excessCurrency,
+  theftExcess,
+  theftExcessCurrency,
 }: CarDetailsSectionProps) {
   const t = useTranslations("MyAccount.summary");
+  // A theft excess equal to the damage excess is covered by the combined "damage or theft" row.
+  const showTheftExcess =
+    !!theftExcess && !!theftExcessCurrency && theftExcess !== excess;
 
   return (
     <>
@@ -45,8 +52,14 @@ export function CarDetailsSection({
       />
       {!!excess && excessCurrency && (
         <SummaryRow
-          label={t("labels.excess")}
+          label={showTheftExcess ? t("labels.damageExcess") : t("labels.excess")}
           value={formatPrice(excess, excessCurrency)}
+        />
+      )}
+      {showTheftExcess && (
+        <SummaryRow
+          label={t("labels.theftExcess")}
+          value={formatPrice(theftExcess, theftExcessCurrency)}
         />
       )}
     </>

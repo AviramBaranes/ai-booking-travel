@@ -46,6 +46,8 @@ type GetReservationResponse struct {
 	CreatedAt           string                          `json:"createdAt"`
 	Excess              int32                           `json:"excess"`
 	ExcessCurrency      string                          `json:"excessCurrency"`
+	TheftExcess         int32                           `json:"theftExcess"`
+	TheftExcessCurrency string                          `json:"theftExcessCurrency"`
 	SupplierTerms       []broker.TermsAndConditionsItem `json:"supplierTerms,omitempty" encore:"optional"`
 	PickupDetails       *broker.StationInfo             `json:"pickupDetails,omitempty" encore:"optional"`
 	DropoffDetails      *broker.StationInfo             `json:"dropoffDetails,omitempty" encore:"optional"`
@@ -107,6 +109,8 @@ func (s *QueryService) GetReservation(ctx context.Context, id int64) (*GetReserv
 		VoucheredAt:         &voucheredAt,
 		Excess:              row.Excess,
 		ExcessCurrency:      row.ExcessCurrency,
+		TheftExcess:         row.TheftExcess,
+		TheftExcessCurrency: row.TheftExcessCurrency,
 		SupplierTerms:       s.getSupplierTerms(ctx, row),
 		PickupDetails:       unmarshalStationInfo(row.PickupDetails),
 		DropoffDetails:      unmarshalStationInfo(row.DropoffDetails),

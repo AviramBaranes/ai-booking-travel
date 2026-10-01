@@ -47,6 +47,8 @@ export function ReservationSummary({
         isAutomatic={reservation.carDetails.isAutoGear}
         excess={reservation.excess}
         excessCurrency={reservation.excessCurrency}
+        theftExcess={reservation.theftExcess}
+        theftExcessCurrency={reservation.theftExcessCurrency}
       />
       <IncludedSection planInclusions={reservation.planInclusions} />
       <PayAtPickupSection

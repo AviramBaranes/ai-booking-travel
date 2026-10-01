@@ -33,8 +33,8 @@ export default async function PriceOfferPage({
       queryFn: fetchSuppliersGallery,
     }),
     queryClient.fetchQuery({
-      queryKey: bookingSettingsKey,
-      queryFn: fetchBookingSettings,
+      queryKey: bookingSettingsKey(lang),
+      queryFn: () => fetchBookingSettings(lang),
     }),
     queryClient.fetchQuery({
       queryKey: addonsGalleryKey,

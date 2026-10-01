@@ -1462,6 +1462,8 @@ export namespace availability {
         supplierCode: string
         deposit: number
         depositCurrency: string
+        theftExcess: number
+        theftExcessCurrency: string
     }
 
     /**
@@ -2377,6 +2379,8 @@ export namespace queries {
         createdAt: string
         excess: number
         excessCurrency: string
+        theftExcess: number
+        theftExcessCurrency: string
         supplierTerms?: broker.TermsAndConditionsItem[]
         pickupDetails?: broker.StationInfo
         dropoffDetails?: broker.StationInfo

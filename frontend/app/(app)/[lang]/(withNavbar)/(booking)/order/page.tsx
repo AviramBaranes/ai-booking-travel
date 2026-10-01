@@ -11,13 +11,15 @@ import { Loading } from "@/shared/components/Loading";
 import { getQueryClient } from "@/shared/hooks/getQueryClient";
 import { bookingSettingsKey } from "@/shared/hooks/useBookingSettings";
 import { fetchBookingSettings } from "@/shared/server/cms";
+import { getLang } from "@/shared/lang/lang";
 
 export default async function OrderPage() {
+  const lang = await getLang();
   const queryClient = getQueryClient();
 
   await queryClient.prefetchQuery({
-    queryKey: bookingSettingsKey,
-    queryFn: fetchBookingSettings,
+    queryKey: bookingSettingsKey(lang),
+    queryFn: () => fetchBookingSettings(lang),
   });
 
   return (

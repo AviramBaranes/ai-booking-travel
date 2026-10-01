@@ -163,19 +163,21 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 			chargedErpPriceWithVat := pricing.ApplyMarkup(p.ChargedErpPriceWithVat, grossMarkup)
 
 			avPlan := Plan{
-				PlanID:          p.PlanID,
-				PlanName:        p.PlanName,
-				FullPrice:       pricing.RoundToInt(carPriceWithMarkup),
-				Discount:        pricing.RoundToInt(couponDiscount),
-				Price:           pricing.RoundToInt(discountedCarPrice),
-				ErpFullPrice:    pricing.RoundToInt(erpWithMarkup + chargedErpPriceWithVat),
-				ErpPrice:        pricing.RoundToInt(discountedErp + chargedErpPriceWithVat), // no discount on charged erp
-				Info:            p.Info,
-				RateQualifier:   p.RateQualifier,
-				SupplierName:    sp.Name,
-				SupplierCode:    p.SupplierCode,
-				Deposit:         p.Deposit,
-				DepositCurrency: p.DepositCurrency,
+				PlanID:              p.PlanID,
+				PlanName:            p.PlanName,
+				FullPrice:           pricing.RoundToInt(carPriceWithMarkup),
+				Discount:            pricing.RoundToInt(couponDiscount),
+				Price:               pricing.RoundToInt(discountedCarPrice),
+				ErpFullPrice:        pricing.RoundToInt(erpWithMarkup + chargedErpPriceWithVat),
+				ErpPrice:            pricing.RoundToInt(discountedErp + chargedErpPriceWithVat), // no discount on charged erp
+				Info:                p.Info,
+				RateQualifier:       p.RateQualifier,
+				SupplierName:        sp.Name,
+				SupplierCode:        p.SupplierCode,
+				Deposit:             p.Deposit,
+				DepositCurrency:     p.DepositCurrency,
+				TheftExcess:         p.TheftExcess,
+				TheftExcessCurrency: p.TheftExcessCurrency,
 			}
 			avPlans = append(avPlans, avPlan)
 		}
