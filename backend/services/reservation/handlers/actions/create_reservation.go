@@ -38,7 +38,7 @@ type CreateReservationParams struct {
 	IsOrganizationOrganic *bool                           `json:"isOrganizationOrganic,omitempty" validate:"omitempty"`
 	AdminRefID            *int64                          `json:"adminRefId,omitempty" validate:"omitempty"`
 	BrokerReservationID   string                          `json:"brokerReservationId" validate:"required,notblank"`
-	Broker                string                          `json:"broker" validate:"required,oneof=flex hertz"`
+	Broker                string                          `json:"broker" validate:"required,oneof=flex hertz avance"`
 	SupplierCode          string                          `json:"supplierCode" validate:"required,notblank"`
 	CarDetails            *broker.CarDetails              `json:"carDetails" validate:"required"`
 	PlanInclusions        []string                        `json:"planInclusions" validate:"required"`
@@ -66,6 +66,8 @@ type CreateReservationParams struct {
 	PayAtPickup           PayAtPickup                     `json:"payAtPickup"`
 	Excess                int                             `json:"excess" validate:"gte=0"`
 	ExcessCurrency        string                          `json:"excessCurrency" validate:"omitempty"` //not every plan carries an excess, so an empty currency is valid
+	TheftExcess           int                             `json:"theftExcess" encore:"optional" validate:"gte=0"`
+	TheftExcessCurrency   string                          `json:"theftExcessCurrency" encore:"optional" validate:"omitempty"`
 	PickupLocationCode    string                          `json:"pickupLocationCode" validate:"required,notblank"`
 	DropoffLocationCode   string                          `json:"dropoffLocationCode" validate:"required,notblank"`
 	SupplierTerms         []broker.TermsAndConditionsItem `json:"supplierTerms" encore:"optional" validate:"omitempty"`
@@ -157,6 +159,8 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 		PayAtPickup:           payAtPickupJSON,
 		Excess:                int32(p.Excess),
 		ExcessCurrency:        p.ExcessCurrency,
+		TheftExcess:           int32(p.TheftExcess),
+		TheftExcessCurrency:   p.TheftExcessCurrency,
 		PickupLocationCode:    p.PickupLocationCode,
 		DropoffLocationCode:   p.DropoffLocationCode,
 		SupplierTermsID:       supplierTermsID,

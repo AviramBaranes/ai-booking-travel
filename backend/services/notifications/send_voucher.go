@@ -17,8 +17,9 @@ var assetsFS embed.FS
 type VoucherBroker string
 
 const (
-	VoucherBrokerFlex  VoucherBroker = "flex"
-	VoucherBrokerHertz VoucherBroker = "hertz"
+	VoucherBrokerFlex   VoucherBroker = "flex"
+	VoucherBrokerHertz  VoucherBroker = "hertz"
+	VoucherBrokerAvance VoucherBroker = "avance"
 
 	TermsFileName = "תנאים-כלליים.pdf"
 	ERPFileName   = "תנאי-כיסוי-מלא.pdf"
@@ -83,6 +84,9 @@ func brokerAttachments(b VoucherBroker) ([]email.Attachment, error) {
 		}, nil
 	case VoucherBrokerHertz:
 		// No static attachments for Hertz yet.
+		return nil, nil
+	case VoucherBrokerAvance:
+		// No static attachments for Avance yet.
 		return nil, nil
 	default:
 		return nil, fmt.Errorf("unknown broker: %s", b)

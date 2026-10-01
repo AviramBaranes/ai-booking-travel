@@ -151,6 +151,8 @@ func getVoucherProvider(b db.Broker) (broker.VoucherProvider, error) {
 		return broker.NewFlex(), nil
 	case db.BrokerHertz:
 		return broker.NewHertz(), nil
+	case db.BrokerAvance:
+		return broker.NewAvance(broker.AvanceConfig{}), nil
 	default:
 		return nil, errors.New("unsupported broker")
 	}
@@ -188,23 +190,100 @@ func toVoucherData(reservation db.Reservation) (*broker.VoucherData, error) {
 		return nil, fmt.Errorf("unmarshalling car details: %w", err)
 	}
 
+	var payAtPickup PayAtPickup
+	if err := json.Unmarshal(reservation.PayAtPickup, &payAtPickup); err != nil {
+		return nil, fmt.Errorf("unmarshalling pay at pickup: %w", err)
+	}
+
+	pickup, err := unmarshalStationInfo(reservation.PickupDetails)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshalling pickup details: %w", err)
+	}
+
+	dropoff, err := unmarshalStationInfo(reservation.DropoffDetails)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshalling dropoff details: %w", err)
+	}
+
+	var flightNumber string
+	if reservation.FlightNumber != nil {
+		flightNumber = *reservation.FlightNumber
+	}
+
+	fees := payAtPickup.Fees
+	var dropoffFee string
+	if fees.DropCharge > 0 {
+		dropoffFee = fmt.Sprintf("%d %s", fees.DropCharge, fees.DropChargeCurrency)
+	}
+
 	return &broker.VoucherData{
-		ReservationNum:     reservation.BrokerReservationID,
-		BookingReferenceID: reservation.BrokerReservationID,
-		CustomerName:       strings.TrimSpace(reservation.DriverTitle + " " + reservation.DriverFirstName + " " + reservation.DriverLastName),
-		Supplier:           reservation.SupplierCode,
-		PickupLoc:          reservation.PickupLocationName,
-		PickupDate:         dbadapters.DateToString(reservation.PickupDate),
-		PickupTime:         reservation.PickupTime,
-		DropoffLoc:         reservation.DropoffLocationName,
-		DropoffDate:        dbadapters.DateToString(reservation.DropoffDate),
-		DropoffTime:        reservation.DropoffTime,
-		CarGroupDesc:       carDetails.CarGroup,
-		LeadModel:          carDetails.Model,
-		Passengers:         carDetails.Seats,
-		Suitcases:          carDetails.Bags,
-		PrepaidIncludes:    reservation.PlanInclusions,
+		ReservationNum:      reservation.BrokerReservationID,
+		BookingReferenceID:  reservation.BrokerReservationID,
+		CustomerName:        strings.TrimSpace(reservation.DriverTitle + " " + reservation.DriverFirstName + " " + reservation.DriverLastName),
+		FlightNumber:        flightNumber,
+		Supplier:            reservation.SupplierCode,
+		PickupLoc:           reservation.PickupLocationName,
+		PickupBranch:        pickup.Address,
+		PickupPhone:         pickup.PhoneNumber,
+		PickupInstructions:  pickup.LocationInfo,
+		PickupDate:          dbadapters.DateToString(reservation.PickupDate),
+		PickupTime:          reservation.PickupTime,
+		DropoffLoc:          reservation.DropoffLocationName,
+		DropoffBranch:       dropoff.Address,
+		DropoffPhone:        dropoff.PhoneNumber,
+		DropoffInstructions: dropoff.LocationInfo,
+		DropoffDate:         dbadapters.DateToString(reservation.DropoffDate),
+		DropoffTime:         reservation.DropoffTime,
+		DropoffFee:          dropoffFee,
+		CarGroupDesc:        carDetails.CarGroup,
+		LeadModel:           carDetails.Model,
+		Passengers:          carDetails.Seats,
+		Suitcases:           carDetails.Bags,
+		PrepaidIncludes:     reservation.PlanInclusions,
+		OptionalServices:    voucherOptionalServices(payAtPickup.SelectedAddons),
+		PayAtPickup:         voucherStationFees(fees),
+		Deposit:             payAtPickup.Deposit,
+		DepositCurrency:     payAtPickup.DepositCurrency,
+		Excess:              int(reservation.Excess),
+		ExcessCurrency:      reservation.ExcessCurrency,
+		TheftExcess:         int(reservation.TheftExcess),
+		TheftExcessCurrency: reservation.TheftExcessCurrency,
 	}, nil
+}
+
+// unmarshalStationInfo reads a station detail blob, which older reservations may lack entirely.
+func unmarshalStationInfo(detailsJSON []byte) (broker.StationInfo, error) {
+	var details broker.StationInfo
+	if len(detailsJSON) == 0 {
+		return details, nil
+	}
+
+	err := json.Unmarshal(detailsJSON, &details)
+	return details, err
+}
+
+func voucherOptionalServices(addons []SelectedAddon) []string {
+	services := make([]string, 0, len(addons))
+	for _, a := range addons {
+		if a.Quantity > 0 {
+			services = append(services, fmt.Sprintf("%s × %d", a.Name, a.Quantity))
+		}
+	}
+	return services
+}
+
+func voucherStationFees(f broker.Fees) []string {
+	var fees []string
+	if f.YoungDriverFee > 0 {
+		fees = append(fees, fmt.Sprintf("Young driver fee: %d %s", f.YoungDriverFee, f.YoungDriverFeeCurrency))
+	}
+	if f.SeniorDriverFee > 0 {
+		fees = append(fees, fmt.Sprintf("Senior driver fee: %d %s", f.SeniorDriverFee, f.SeniorDriverFeeCurrency))
+	}
+	if f.DropCharge > 0 {
+		fees = append(fees, fmt.Sprintf("One-way fee: %d %s", f.DropCharge, f.DropChargeCurrency))
+	}
+	return fees
 }
 
 // checkCredit retrieves the balance of the user billing entity and checks if it is sufficient to cover the total price of the reservation after applying the currency rate.
