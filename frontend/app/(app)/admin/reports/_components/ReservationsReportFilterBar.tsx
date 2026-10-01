@@ -203,6 +203,7 @@ export function ReservationsReportFilterBar({
           <option value="">הכל</option>
           <option value="flex">Flex</option>
           <option value="hertz">Hertz</option>
+          <option value="avance">Avance</option>
         </select>
       </div>
       <div className="min-w-40">

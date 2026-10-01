@@ -81,6 +81,7 @@ export const GEAR_TYPE_LABELS: Record<string, string> = {
 export const BROKER_LABELS: Record<string, string> = {
   flex: "Flex",
   hertz: "Hertz",
+  avance: "Avance",
 };
 
 /** Status colours are reserved for state and are always paired with the label above. */

@@ -28,6 +28,7 @@ const supplierOptions = [
   { label: "Auto Menorca", value: "AU,A7,A8" },
   { label: "Auto Via", value: "AV" },
   { label: "Autos Union", value: "IO,I6" },
+  { label: "Avance", value: "AVANCE" },
   { label: "AVIS", value: "VI,V7" },
   { label: "Avis Canaries", value: "AC,A5" },
   { label: "B-Rent", value: "B1,B2" },
