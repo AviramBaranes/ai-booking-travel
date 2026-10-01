@@ -31,7 +31,7 @@ const (
 	flexBaseURL  = "http://www.flexibleautos.com/horizon/horizonxml.asmx"
 	hertzBaseURL = "https://vv.xnet.hertz.com/DirectLinkWEB/handlers/DirectLinkHandler?id=ota2007a"
 	// Avance has no constant here: only production egresses through the static address Wheelsys
-	// allow-lists, so its base URL is per-environment config passed to NewAvance.
+	// allow-lists, so its base URL is per-environment config, see AvanceConfig.
 )
 
 // LocationSearcher provides location listing capabilities for a broker.
@@ -120,6 +120,17 @@ type VoucherData struct {
 	Suitcases          int
 	PrepaidIncludes    []string
 	OptionalServices   []string
+
+	PickupInstructions  string
+	DropoffInstructions string
+	// PayAtPickup lists the charges settled at the station besides the optional services.
+	PayAtPickup         []string
+	Deposit             int
+	DepositCurrency     string
+	Excess              int
+	ExcessCurrency      string
+	TheftExcess         int
+	TheftExcessCurrency string
 }
 
 // Broker composes all broker capabilities into a single interface.

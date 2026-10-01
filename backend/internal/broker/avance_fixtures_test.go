@@ -218,3 +218,23 @@ const avanceFixtureOptions = `<response>
 	<option code="THW" name="Theft Waiver with Excess" quant="false" />
 	<option code="YDR" name="Young Driver Fee 19-22" quant="false" />
 </response>`
+
+// Live new-res responses from the September test bookings: a confirmed booking, and one that came
+// back on request.
+const avanceFixtureNewResConfirmed = `<?xml version="1.0" encoding="utf-8"?><response xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><reservation irn="5RLDDC" status="OK" refno="AIBT-TEST-005" res-status="RES" checkouturl="https://checkout.wheelsys.ms/10268/5RLDDC/AIBOOKINGTRAVEL/20261015/" /></response>`
+
+const avanceFixtureNewResOnRequest = `<?xml version="1.0" encoding="utf-8"?><response xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><reservation irn="5NS061" status="OK" refno="AIBT-TEST-001" res-status="REQ" /></response>`
+
+// The cancel-res response as documented by Wheelsys.
+const avanceFixtureCancelRes = `<?xml version="1.0" encoding="utf-8" ?>
+<response>
+	<reservation irn="3QW187" status="OK" res-status="CNC" ></reservation>
+</response>`
+
+// Error shapes: the documentation puts the ERR code in status, while the quote reports errors in an
+// <errors> block, so both are covered.
+const avanceFixtureResStatusError = `<?xml version="1.0" encoding="utf-8"?><response><reservation status="ERR/111" /></response>`
+
+const avanceFixtureResErrorsBlock = `<?xml version="1.0" encoding="utf-8"?><response><errors><error code="ERR/110">Price Quote Not Found or has Expired</error></errors></response>`
+
+const avanceFixtureCancelAlreadyCancelled = `<?xml version="1.0" encoding="utf-8"?><response><reservation irn="5RLDDC" status="ERR/104" /></response>`

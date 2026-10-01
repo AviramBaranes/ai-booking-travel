@@ -95,3 +95,14 @@ type avanceOptionsXML struct {
 		Quant bool   `xml:"quant,attr"`
 	} `xml:"option"`
 }
+
+// avanceReservationResXML is the new-res and cancel-res response. status is OK or an ERR code, and
+// res-status is the reservation's own status: RES, REQ or CNC.
+type avanceReservationResXML struct {
+	Reservation struct {
+		IRN       string `xml:"irn,attr"`
+		Status    string `xml:"status,attr"`
+		ResStatus string `xml:"res-status,attr"`
+	} `xml:"reservation"`
+	Errors []avanceErrorXML `xml:"errors>error"`
+}

@@ -212,7 +212,7 @@ func TestAvanceBuildAvailability(t *testing.T) {
 			{ID: 9001, Name: "Baby Seat", Price: 49, Currency: "EUR", AllowedQuantity: 3, Period: "Per Rental"},
 			{ID: 9002, Name: "Booster Seat", Price: 49, Currency: "EUR", AllowedQuantity: 3, Period: "Per Rental"},
 			{ID: 9003, Name: "Snow Chains", Price: 50, Currency: "EUR", AllowedQuantity: 1, Period: "Per Rental"},
-			{ID: 9004, Name: "Additional Driver", Price: 28, Currency: "EUR", AllowedQuantity: 3, Period: "Per Rental"},
+			{ID: 9004, Name: "Additional Driver", Price: 28, Currency: "EUR", AllowedQuantity: 2, Period: "Per Rental"},
 		}
 		if got := resp.SuppliersInfo[0].AddOns; !slices.Equal(got, want) {
 			t.Errorf("AddOns = %+v\nwant    %+v", got, want)
@@ -309,4 +309,19 @@ func planEqual(a, b Plan) bool {
 		a.Excess == b.Excess && a.ExcessCurrency == b.ExcessCurrency &&
 		a.TheftExcess == b.TheftExcess && a.TheftExcessCurrency == b.TheftExcessCurrency &&
 		slices.Equal(a.Info, b.Info)
+}
+
+func TestAvanceAdditionalDriverNotFirstFree(t *testing.T) {
+	// Booking adds the free first driver to the paid ones, so a quote without it offers none.
+	fixture := strings.ReplaceAll(avanceFixtureQuoteVCH, `code="ADD" rate="2800" firstfree="true"`, `code="ADD" rate="2800" firstfree="false"`)
+	resp := buildAvanceAvailability(avanceTestParams, 7, avanceTestErpDayCharges, []*avanceQuoteXML{avanceTestQuote(t, fixture), nil}, avanceTestReference(t))
+
+	for _, ao := range resp.SuppliersInfo[0].AddOns {
+		if ao.ID == avanceAddOnIDs[avanceAdditionalDriver] {
+			t.Errorf("AddOns has %+v, want no additional driver", ao)
+		}
+	}
+	if slices.Contains(resp.SuppliersInfo[0].Inclusions[0].ProductInclusions, "First additional driver free") {
+		t.Error("Inclusions has a free additional driver the quote doesn't give")
+	}
 }

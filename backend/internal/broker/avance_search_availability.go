@@ -23,7 +23,7 @@ const (
 	avanceAvailable = "AVAILABLE"
 
 	// avanceMaxQuantity caps the extras Avance lets us book in quantity. Their terms allow at most
-	// three drivers.
+	// three additional drivers.
 	avanceMaxQuantity = 3
 )
 
@@ -372,7 +372,7 @@ func avanceInclusions(c *avanceCategoryXML, ref avanceReference) []string {
 		incs = append(incs, fmt.Sprintf("%d km included", c.IncludedKm))
 	}
 
-	if add := c.option("ADD"); add != nil && add.FirstFree {
+	if add := c.option(avanceAdditionalDriver); add != nil && add.FirstFree {
 		incs = append(incs, "First additional driver free")
 	}
 
@@ -393,6 +393,15 @@ func avanceAddOns(q *avanceQuoteXML, c *avanceCategoryXML, ref avanceReference) 
 		qty := 1
 		if ref.options[code].quant {
 			qty = avanceMaxQuantity
+		}
+
+		// The add-on counts only paid drivers, which booking relies on to add the free first one.
+		// A quote without the free driver would be mis-booked, so it isn't offered at all.
+		if code == avanceAdditionalDriver {
+			if !o.FirstFree {
+				continue
+			}
+			qty = avanceMaxQuantity - 1
 		}
 
 		addOns = append(addOns, AddOn{

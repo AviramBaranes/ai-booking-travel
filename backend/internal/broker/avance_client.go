@@ -24,15 +24,23 @@ type Avance struct {
 	r             io.Reader
 }
 
+// AvanceConfig configures the Avance broker. Only availability reads the ERP day charges, and the
+// voucher needs none of it.
+type AvanceConfig struct {
+	// BaseURL is per-environment: production reaches Wheelsys directly, while every other
+	// environment goes through the egress proxy, since only production's address is allow-listed.
+	BaseURL                string
+	StandardErpDayCharge   float64
+	ZeroExcessErpDayCharge float64
+}
+
 // NewAvance creates a new instance of the Avance broker.
-// baseURL is per-environment: production reaches Wheelsys directly, while every other environment
-// goes through the egress proxy, since only production's address is allow-listed.
-func NewAvance(baseURL string, standardErpDayCharge, zeroExcessErpDayCharge float64) *Avance {
+func NewAvance(cfg AvanceConfig) *Avance {
 	return &Avance{
-		baseURL: baseURL,
+		baseURL: cfg.BaseURL,
 		erpDayCharges: map[string]float64{
-			avanceCDPStandard:   standardErpDayCharge,
-			avanceCDPZeroExcess: zeroExcessErpDayCharge,
+			avanceCDPStandard:   cfg.StandardErpDayCharge,
+			avanceCDPZeroExcess: cfg.ZeroExcessErpDayCharge,
 		},
 		httpClient: &http.Client{Timeout: avanceTimeout},
 	}
