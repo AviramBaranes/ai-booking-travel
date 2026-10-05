@@ -13,14 +13,7 @@ import (
 //go:embed assets/*.pdf
 var assetsFS embed.FS
 
-// VoucherBroker identifies which broker issued the voucher, used to select the correct static attachments.
-type VoucherBroker string
-
 const (
-	VoucherBrokerFlex   VoucherBroker = "flex"
-	VoucherBrokerHertz  VoucherBroker = "hertz"
-	VoucherBrokerAvance VoucherBroker = "avance"
-
 	TermsFileName = "תנאים-כלליים.pdf"
 	ERPFileName   = "תנאי-כיסוי-מלא.pdf"
 )
@@ -31,7 +24,8 @@ type SendVoucherParams struct {
 	DriverFullName     string
 	VoucherNumber      string
 	VoucherHTML        string
-	Broker             VoucherBroker
+	// IncludeERP attaches our full coverage (ERP) terms, which only apply when it was purchased.
+	IncludeERP bool
 }
 
 // encore:api private
@@ -49,10 +43,10 @@ func (s *Service) SendVoucher(ctx context.Context, p SendVoucherParams) error {
 		},
 	}
 
-	staticAttachments, err := brokerAttachments(p.Broker)
+	staticAttachments, err := voucherAttachments(p.IncludeERP)
 	if err != nil {
-		rlog.Error("loading broker attachments", "error", err, "broker", p.Broker)
-		return fmt.Errorf("loading broker attachments: %w", err)
+		rlog.Error("loading voucher attachments", "error", err, "voucher", p.VoucherNumber)
+		return fmt.Errorf("loading voucher attachments: %w", err)
 	}
 	attachments = append(attachments, staticAttachments...)
 
@@ -67,28 +61,22 @@ func (s *Service) SendVoucher(ctx context.Context, p SendVoucherParams) error {
 	)
 }
 
-func brokerAttachments(b VoucherBroker) ([]email.Attachment, error) {
-	switch b {
-	case VoucherBrokerFlex:
-		terms, err := assetsFS.ReadFile("assets/flex-terms.pdf")
-		if err != nil {
-			return nil, fmt.Errorf("reading flex-terms.pdf: %w", err)
-		}
-		erp, err := assetsFS.ReadFile("assets/flex-erp-letter.pdf")
-		if err != nil {
-			return nil, fmt.Errorf("reading flex-erp-letter.pdf: %w", err)
-		}
-		return []email.Attachment{
-			{Filename: TermsFileName, Reader: bytes.NewReader(terms)},
-			{Filename: ERPFileName, Reader: bytes.NewReader(erp)},
-		}, nil
-	case VoucherBrokerHertz:
-		// No static attachments for Hertz yet.
-		return nil, nil
-	case VoucherBrokerAvance:
-		// No static attachments for Avance yet.
-		return nil, nil
-	default:
-		return nil, fmt.Errorf("unknown broker: %s", b)
+// voucherAttachments returns the static documents sent with every voucher, whatever the broker:
+// our terms always, and the full coverage terms when the reservation includes it.
+func voucherAttachments(includeERP bool) ([]email.Attachment, error) {
+	terms, err := assetsFS.ReadFile("assets/terms.pdf")
+	if err != nil {
+		return nil, fmt.Errorf("reading terms.pdf: %w", err)
 	}
+	attachments := []email.Attachment{{Filename: TermsFileName, Reader: bytes.NewReader(terms)}}
+
+	if includeERP {
+		erp, err := assetsFS.ReadFile("assets/full-coverage.pdf")
+		if err != nil {
+			return nil, fmt.Errorf("reading full-coverage.pdf: %w", err)
+		}
+		attachments = append(attachments, email.Attachment{Filename: ERPFileName, Reader: bytes.NewReader(erp)})
+	}
+
+	return attachments, nil
 }

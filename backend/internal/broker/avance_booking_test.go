@@ -152,6 +152,7 @@ func TestAvanceBook(t *testing.T) {
 		for name, p := range map[string]BookingParams{
 			"rate qualifier": func() BookingParams { p := avanceTestBooking; p.RateQualifier = "no-group"; return p }(),
 			"plan id":        func() BookingParams { p := avanceTestBooking; p.PlanID = "7"; return p }(),
+			"driver over 75": func() BookingParams { p := avanceTestBooking; p.DriverAge = "76"; return p }(),
 			"add-on id": func() BookingParams {
 				p := avanceTestBooking
 				p.SelectedAddOns = []SelectAddOn{{ID: 1, Quantity: 1}}
@@ -201,10 +202,11 @@ func TestAvanceCancel(t *testing.T) {
 	}
 }
 
-func TestAvanceGenerateVoucher(t *testing.T) {
+func TestGenerateVoucher(t *testing.T) {
 	d := &VoucherData{
 		BookingReferenceID:  "5RLDDC",
 		CustomerName:        "Mr ISRAEL ISRAELI",
+		Supplier:            "Avance",
 		FlightNumber:        "LY541",
 		PickupLoc:           "Athens International Airport",
 		PickupBranch:        "Athens International Airport, Arrivals",
@@ -238,11 +240,15 @@ func TestAvanceGenerateVoucher(t *testing.T) {
 
 	for _, want := range []string{
 		"5RLDDC", "LY541", "Meet our representative", "210 3538700", "Baby Seat × 1",
-		"Young driver fee: 70 EUR", "Leave the car at the P4 parking", "186 EUR", "744 EUR", "wheels", "Toyota Yaris",
+		"Young driver fee: 70 EUR", "Leave the car at the P4 parking", "186 EUR", "744 EUR", "wheels", "Toyota Yaris", "03-5555999", "Avance",
 	} {
 		if !strings.Contains(html, want) {
 			t.Errorf("voucher is missing %q", want)
 		}
+	}
+
+	if hertzHTML, err := NewHertz().GenerateVoucher(d); err != nil || hertzHTML != html {
+		t.Errorf("Hertz voucher differs from the Avance one (err %v), want the one shared template", err)
 	}
 
 	d.Excess = 1240
@@ -252,5 +258,33 @@ func TestAvanceGenerateVoucher(t *testing.T) {
 	}
 	if strings.Contains(html, "wheels") {
 		t.Error("voucher carries the zero-excess exclusions on a plan with an excess")
+	}
+}
+
+func TestAvanceSearchAvailabilityDriverOver75(t *testing.T) {
+	// No pages are served, so any call to Wheelsys fails the test.
+	a, calls := avanceTestServer(t, map[string]string{})
+
+	p := avanceTestParams
+	p.DriverAge = 76
+	resp, err := a.SearchAvailability(p)
+	if err != nil {
+		t.Fatalf("SearchAvailability: %v", err)
+	}
+	if len(resp.AvailableVehicles) != 0 || len(*calls) != 0 {
+		t.Errorf("vehicles = %d, calls = %d, want no results and no Wheelsys call", len(resp.AvailableVehicles), len(*calls))
+	}
+}
+
+func TestGenerateVoucherWithoutExcess(t *testing.T) {
+	// Hertz stores no excess or deposit, so its voucher must not claim a zero excess.
+	html, err := NewHertz().GenerateVoucher(&VoucherData{BookingReferenceID: "H123", Supplier: "Hertz"})
+	if err != nil {
+		t.Fatalf("GenerateVoucher: %v", err)
+	}
+	for _, unwanted := range []string{"Excess & Deposit", "Damage Excess", "wheels"} {
+		if strings.Contains(html, unwanted) {
+			t.Errorf("voucher without an excess shows %q", unwanted)
+		}
 	}
 }

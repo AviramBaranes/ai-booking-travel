@@ -176,7 +176,7 @@ func sendVoucher(ctx context.Context, b broker.VoucherProvider, reservation db.R
 		DriverFullName:     fmt.Sprintf("%s %s %s", reservation.DriverTitle, reservation.DriverFirstName, reservation.DriverLastName),
 		VoucherNumber:      reservation.BrokerReservationID,
 		VoucherHTML:        htmlVoucher,
-		Broker:             notifications.VoucherBroker(reservation.Broker),
+		IncludeERP:         isErpIncluded(reservation),
 	}); err != nil {
 		return fmt.Errorf("sending voucher email: %w", err)
 	}
@@ -206,18 +206,12 @@ func toVoucherData(reservation db.Reservation) (*broker.VoucherData, error) {
 		flightNumber = *reservation.FlightNumber
 	}
 
-	fees := payAtPickup.Fees
-	var dropoffFee string
-	if fees.DropCharge > 0 {
-		dropoffFee = fmt.Sprintf("%d %s", fees.DropCharge, fees.DropChargeCurrency)
-	}
-
 	return &broker.VoucherData{
 		ReservationNum:      reservation.BrokerReservationID,
 		BookingReferenceID:  reservation.BrokerReservationID,
 		CustomerName:        strings.TrimSpace(reservation.DriverTitle + " " + reservation.DriverFirstName + " " + reservation.DriverLastName),
 		FlightNumber:        flightNumber,
-		Supplier:            reservation.SupplierCode,
+		Supplier:            voucherSupplier(reservation, carDetails),
 		PickupLoc:           reservation.PickupLocationName,
 		PickupBranch:        pickup.Address,
 		PickupPhone:         pickup.PhoneNumber,
@@ -230,14 +224,13 @@ func toVoucherData(reservation db.Reservation) (*broker.VoucherData, error) {
 		DropoffInstructions: dropoff.LocationInfo,
 		DropoffDate:         dbadapters.DateToString(reservation.DropoffDate),
 		DropoffTime:         reservation.DropoffTime,
-		DropoffFee:          dropoffFee,
 		CarGroupDesc:        carDetails.CarGroup,
 		LeadModel:           carDetails.Model,
 		Passengers:          carDetails.Seats,
 		Suitcases:           carDetails.Bags,
 		PrepaidIncludes:     reservation.PlanInclusions,
 		OptionalServices:    voucherOptionalServices(payAtPickup.SelectedAddons),
-		PayAtPickup:         voucherStationFees(fees),
+		PayAtPickup:         voucherStationFees(payAtPickup.Fees),
 		Deposit:             payAtPickup.Deposit,
 		DepositCurrency:     payAtPickup.DepositCurrency,
 		Excess:              int(reservation.Excess),
@@ -245,6 +238,20 @@ func toVoucherData(reservation db.Reservation) (*broker.VoucherData, error) {
 		TheftExcess:         int(reservation.TheftExcess),
 		TheftExcessCurrency: reservation.TheftExcessCurrency,
 	}, nil
+}
+
+// voucherSupplier names the supplier on the voucher, falling back to its code for a car stored
+// without a name.
+func voucherSupplier(reservation db.Reservation, carDetails broker.CarDetails) string {
+	if carDetails.SupplierName != "" {
+		return carDetails.SupplierName
+	}
+	return reservation.SupplierCode
+}
+
+// isErpIncluded reports whether the reservation was booked with our full coverage (ERP).
+func isErpIncluded(reservation db.Reservation) bool {
+	return dbadapters.NumericToFloat64(reservation.BtErpPrice) != 0 || dbadapters.NumericToFloat64(reservation.BrokerErpPrice) != 0
 }
 
 // unmarshalVoucherStation reads a station detail blob, which older reservations may lack entirely.

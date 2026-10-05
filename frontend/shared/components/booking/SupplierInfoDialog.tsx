@@ -128,7 +128,7 @@ export function SupplierInfoDialog({
                 <div key={title + i} className="flex flex-col gap-3">
                   <h6 className="type-h6 text-navy">{title}</h6>
                   <div
-                    className="type-paragraph text-navy"
+                    className="type-paragraph text-navy [&_p+p]:mt-2 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:ps-5 [&_table]:my-2 [&_table]:w-full [&_th]:border [&_th]:border-cars-border [&_th]:p-2 [&_th]:text-start [&_td]:border [&_td]:border-cars-border [&_td]:p-2 [&_td]:align-top"
                     dangerouslySetInnerHTML={{
                       __html: DOMPurify.sanitize(htmlContent),
                     }}

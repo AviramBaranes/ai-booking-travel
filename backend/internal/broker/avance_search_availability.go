@@ -22,6 +22,10 @@ const (
 	// Avance, which a booking flow that takes the customer's card up front cannot offer.
 	avanceAvailable = "AVAILABLE"
 
+	// avanceMaxDriverAge is the oldest driver Avance rents to, per its terms. We enforce it
+	// ourselves rather than rely on the quote to reject older drivers.
+	avanceMaxDriverAge = 75
+
 	// avanceMaxQuantity caps the extras Avance lets us book in quantity. Their terms allow at most
 	// three additional drivers.
 	avanceMaxQuantity = 3
@@ -66,6 +70,10 @@ var avanceFuelPolicies = map[string]string{
 // SearchAvailability quotes both products concurrently and merges them into one vehicle per car
 // group, each carrying a Standard and a Gold plan.
 func (a *Avance) SearchAvailability(p SearchAvailabilityParams) (*AvailabilityResponse, error) {
+	if p.DriverAge > avanceMaxDriverAge {
+		return &AvailabilityResponse{}, nil
+	}
+
 	days, err := CalculateDaysCount(p.PickupDate, p.PickupTime, p.DropoffDate, p.DropoffTime)
 	if err != nil {
 		return nil, fmt.Errorf("failed to calculate rental days count: %w", err)
@@ -214,7 +222,7 @@ func buildAvanceAvailability(p SearchAvailabilityParams, days int, erpDayCharges
 			Name:               avanceSupplierName,
 			AddOns:             addOns,
 			Inclusions:         inclusions,
-			TermsAndConditions: []TermsAndConditionsItem{},
+			TermsAndConditions: avanceTerms,
 			PickupDetails:      pickup.info,
 			DropoffDetails:     ref.stations[p.DropoffLocation].info,
 		}},

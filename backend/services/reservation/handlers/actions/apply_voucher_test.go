@@ -9,7 +9,8 @@ import (
 func TestToVoucherDataBlanksUnreadableDetails(t *testing.T) {
 	d, err := toVoucherData(db.Reservation{
 		BrokerReservationID: "5RLDDC",
-		CarDetails:          []byte(`{"model":"Toyota Yaris"}`),
+		SupplierCode:        "AVANCE",
+		CarDetails:          []byte(`{"model":"Toyota Yaris","supplierName":"Avance"}`),
 		PayAtPickup:         []byte(`not json`),
 		PickupDetails:       []byte(`{"address":`),
 		DropoffDetails:      []byte(`{"address":"Athens International Airport","phoneNumber":"210 3538700"}`),
@@ -28,6 +29,9 @@ func TestToVoucherDataBlanksUnreadableDetails(t *testing.T) {
 	}
 	if d.DropoffBranch != "Athens International Airport" || d.DropoffPhone != "210 3538700" {
 		t.Errorf("dropoff = %q %q, want the readable details kept", d.DropoffBranch, d.DropoffPhone)
+	}
+	if d.Supplier != "Avance" {
+		t.Errorf("Supplier = %q, want the supplier name rather than its code", d.Supplier)
 	}
 	if d.LeadModel != "Toyota Yaris" || d.Excess != 1240 {
 		t.Errorf("voucher = %+v, want the rest filled", d)

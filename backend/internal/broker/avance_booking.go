@@ -100,6 +100,9 @@ func avanceBookingQuery(p BookingParams) (url.Values, error) {
 		q.Set("PICKUP_INFO", truncateRunes(p.FlightNumber, 50))
 	}
 	if age, err := strconv.Atoi(p.DriverAge); err == nil && age > 0 {
+		if age > avanceMaxDriverAge {
+			return nil, fmt.Errorf("avance book: driver age %d is over the maximum of %d", age, avanceMaxDriverAge)
+		}
 		q.Set("DRIVERAGE", p.DriverAge)
 	}
 

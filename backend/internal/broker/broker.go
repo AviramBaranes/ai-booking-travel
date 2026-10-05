@@ -95,10 +95,7 @@ type VoucherProvider interface {
 type VoucherData struct {
 	ReservationNum     string
 	CustomerName       string
-	Telephone          string
 	FlightNumber       string
-	Issuer             string
-	BillingAcc         string
 	BookingReferenceID string
 	Supplier           string
 	PickupLoc          string
@@ -111,11 +108,8 @@ type VoucherData struct {
 	DropoffPhone       string
 	DropoffDate        string
 	DropoffTime        string
-	DropoffFee         string
 	CarGroupDesc       string
 	LeadModel          string
-	RateCode           string
-	ITCode             string
 	Passengers         int
 	Suitcases          int
 	PrepaidIncludes    []string

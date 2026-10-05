@@ -294,66 +294,57 @@
             </div>
           </div>
           <div>
-            <div class="field-label">Avance Reservation Number</div>
+            <div class="field-label">Reservation Number</div>
             <div class="field-value">{{.BookingReferenceID}}</div>
           </div>
         </div>
         <hr />
         <div class="section-title">Rental Information</div>
+        <!-- One grid row per pickup/drop-off pair, so the two columns stay aligned whatever is missing. -->
         <div class="grid-2">
           <div>
             <div class="field-label">PickUp Rental Location</div>
-            <div class="field-value" style="margin-bottom: 12px">
-              {{.PickupLoc}}
-            </div>
-            {{if .PickupBranch}}
-            <div class="field-label">PickUp Branch Address</div>
-            <div class="field-value" style="margin-bottom: 12px">
-              {{.PickupBranch}}
-            </div>
-            {{end}} {{if .PickupPhone}}
-            <div class="field-label">PickUp Telephone</div>
-            <div class="field-value" style="margin-bottom: 12px">
-              {{.PickupPhone}}
-            </div>
-            {{end}}
+            <div class="field-value">{{.PickupLoc}}</div>
+          </div>
+          <div>
+            <div class="field-label">DropOff Rental Location</div>
+            <div class="field-value">{{.DropoffLoc}}</div>
+          </div>
+          <div>
             <div class="field-label">PickUp Date & Time</div>
-            <div class="field-value" style="margin-bottom: 12px">
-              {{.PickupDate}} {{.PickupTime}}
-            </div>
-            {{if .PickupInstructions}}
-            <div class="field-label">PickUp Instructions</div>
-            <div class="field-value">{{.PickupInstructions}}</div>
-            {{end}}
+            <div class="field-value">{{.PickupDate}} {{.PickupTime}}</div>
+          </div>
+          <div>
+            <div class="field-label">DropOff Date & Time</div>
+            <div class="field-value">{{.DropoffDate}} {{.DropoffTime}}</div>
+          </div>
+          <div>
+            <div class="field-label">PickUp Branch Address</div>
+            <div class="field-value">{{if .PickupBranch}}{{.PickupBranch}}{{else}}—{{end}}</div>
+          </div>
+          <div>
+            <div class="field-label">DropOff Branch Address</div>
+            <div class="field-value">{{if .DropoffBranch}}{{.DropoffBranch}}{{else}}—{{end}}</div>
+          </div>
+          <div>
+            <div class="field-label">PickUp Telephone</div>
+            <div class="field-value">{{if .PickupPhone}}{{.PickupPhone}}{{else}}—{{end}}</div>
+          </div>
+          <div>
+            <div class="field-label">DropOff Telephone</div>
+            <div class="field-value">{{if .DropoffPhone}}{{.DropoffPhone}}{{else}}—{{end}}</div>
+          </div>
+          <div>
+            <div class="field-label">PickUp Location Info</div>
+            <div class="field-value">{{if .PickupInstructions}}{{.PickupInstructions}}{{else}}—{{end}}</div>
+          </div>
+          <div>
+            <div class="field-label">DropOff Location Info</div>
+            <div class="field-value">{{if .DropoffInstructions}}{{.DropoffInstructions}}{{else}}—{{end}}</div>
           </div>
           <div>
             <div class="field-label">Local Car Rental Supplier</div>
-            <div class="supplier-value" style="margin-bottom: 12px">
-              Avance
-            </div>
-            <div class="field-label">DropOff Rental Location</div>
-            <div class="field-value" style="margin-bottom: 12px">
-              {{.DropoffLoc}}
-            </div>
-            {{if .DropoffBranch}}
-            <div class="field-label">DropOff Branch Address</div>
-            <div class="field-value" style="margin-bottom: 12px">
-              {{.DropoffBranch}}
-            </div>
-            {{end}} {{if .DropoffPhone}}
-            <div class="field-label">DropOff Telephone</div>
-            <div class="field-value" style="margin-bottom: 12px">
-              {{.DropoffPhone}}
-            </div>
-            {{end}}
-            <div class="field-label">DropOff Date & Time</div>
-            <div class="field-value" style="margin-bottom: 12px">
-              {{.DropoffDate}} {{.DropoffTime}}
-            </div>
-            {{if .DropoffInstructions}}
-            <div class="field-label">DropOff Instructions</div>
-            <div class="field-value">{{.DropoffInstructions}}</div>
-            {{end}}
+            <div class="supplier-value">{{.Supplier}}</div>
           </div>
         </div>
         <hr />
@@ -376,17 +367,22 @@
             <div class="field-value">{{.Suitcases}}</div>
           </div>
         </div>
+        <!-- A currency marks a figure the supplier gave us: a stored 0 without one (Hertz) is unknown,
+             not zero, so the section is left out rather than printing 0 EUR. -->
+        {{if or .ExcessCurrency .TheftExcessCurrency .Deposit}}
         <hr />
         <div class="section-title">Excess & Deposit</div>
         <div class="grid-3">
           <div>
             <div class="field-label">Damage Excess</div>
-            <div class="field-value">{{.Excess}} {{.ExcessCurrency}}</div>
+            <div class="field-value">
+              {{if .ExcessCurrency}}{{.Excess}} {{.ExcessCurrency}}{{else}}—{{end}}
+            </div>
           </div>
           <div>
             <div class="field-label">Theft Excess</div>
             <div class="field-value">
-              {{.TheftExcess}} {{.TheftExcessCurrency}}
+              {{if .TheftExcessCurrency}}{{.TheftExcess}} {{.TheftExcessCurrency}}{{else}}—{{end}}
             </div>
           </div>
           <div>
@@ -397,12 +393,12 @@
             </div>
           </div>
         </div>
-        {{if eq .Excess 0}}
+        {{if and .ExcessCurrency (eq .Excess 0)}}
         <div class="empty-text">
           Zero excess does not cover damage to the underside, interior, wheels
           and glass.
         </div>
-        {{end}}
+        {{end}} {{end}}
         <div class="boxes-container">
           <div class="box">
             <div class="box-title">Prepaid Rate Includes:</div>
@@ -428,7 +424,7 @@
           </div>
         </div>
         <div class="urgent-footer">
-          In urgent cases, we are available 24/7 at 03-5222222
+          In urgent cases, we are available 24/7 at 03-5555999
         </div>
       </div>
       <div class="page-footer">
@@ -650,7 +646,7 @@
         </div>
 
         <div class="urgent-footer">
-          In urgent cases, we are available 24/7 at 03-5222222
+          In urgent cases, we are available 24/7 at 03-5555999
         </div>
       </div>
 

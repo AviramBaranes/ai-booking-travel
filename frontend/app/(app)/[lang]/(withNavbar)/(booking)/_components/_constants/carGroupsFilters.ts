@@ -487,6 +487,7 @@ export const CAR_GROUPS_FILTERS: CarGroupFilter[] = [
       "SVAE",
       "SVAC",
       "SVAV",
+      "SVMD",
 
       "RVMR",
       "RVAR",
@@ -527,6 +528,7 @@ export const CAR_GROUPS_FILTERS: CarGroupFilter[] = [
       "LVAE",
       "LVAC",
       "LVAV",
+      "LVAD",
 
       "WVMR",
       "WVAR",
@@ -539,6 +541,7 @@ export const CAR_GROUPS_FILTERS: CarGroupFilter[] = [
       "XVAH",
       "XVAE",
       "XVAC",
+      "XVAD",
 
       "OVMR",
       "OVAR",

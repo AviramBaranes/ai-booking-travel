@@ -325,3 +325,17 @@ func TestAvanceAdditionalDriverNotFirstFree(t *testing.T) {
 		t.Error("Inclusions has a free additional driver the quote doesn't give")
 	}
 }
+
+func TestAvanceTermsReturned(t *testing.T) {
+	resp := buildAvanceAvailability(avanceTestParams, 7, avanceTestErpDayCharges, []*avanceQuoteXML{avanceTestQuote(t, avanceFixtureQuoteVCH), nil}, avanceTestReference(t))
+
+	terms := resp.SuppliersInfo[0].TermsAndConditions
+	if len(terms) != len(avanceTerms) {
+		t.Fatalf("terms = %d, want all %d from the Terms sheet", len(terms), len(avanceTerms))
+	}
+	for _, term := range terms {
+		if term.Title == "" || term.HtmlContent == "" {
+			t.Errorf("term %+v has an empty title or content", term)
+		}
+	}
+}
