@@ -209,7 +209,7 @@ func TestAvanceBuildAvailability(t *testing.T) {
 
 	t.Run("offers only seats, snow chains and additional drivers", func(t *testing.T) {
 		want := []AddOn{
-			{ID: 9001, Name: "Baby Seat", Price: 49, Currency: "EUR", AllowedQuantity: 3, Period: "Per Rental"},
+			{ID: 9001, Name: "Child Seat", Price: 49, Currency: "EUR", AllowedQuantity: 3, Period: "Per Rental"},
 			{ID: 9002, Name: "Booster Seat", Price: 49, Currency: "EUR", AllowedQuantity: 3, Period: "Per Rental"},
 			{ID: 9003, Name: "Snow Chains", Price: 50, Currency: "EUR", AllowedQuantity: 1, Period: "Per Rental"},
 			{ID: 9004, Name: "Additional Driver", Price: 28, Currency: "EUR", AllowedQuantity: 2, Period: "Per Rental"},
@@ -336,6 +336,19 @@ func TestAvanceTermsReturned(t *testing.T) {
 	for _, term := range terms {
 		if term.Title == "" || term.HtmlContent == "" {
 			t.Errorf("term %+v has an empty title or content", term)
+		}
+	}
+}
+
+func TestAvanceAddOnNamesWithoutOptionsList(t *testing.T) {
+	// The options list failed to load: add-ons keep our names rather than falling back to codes.
+	ref := avanceTestReference(t)
+	ref.options = nil
+	resp := buildAvanceAvailability(avanceTestParams, 7, avanceTestErpDayCharges, []*avanceQuoteXML{avanceTestQuote(t, avanceFixtureQuoteVCH), nil}, ref)
+
+	for _, ao := range resp.SuppliersInfo[0].AddOns {
+		if ao.Name == "" || ao.Name == "CS" || ao.Name == "BS" || ao.Name == "SNC" || ao.Name == "ADD" {
+			t.Errorf("add-on %d is named %q, want its English name", ao.ID, ao.Name)
 		}
 	}
 }

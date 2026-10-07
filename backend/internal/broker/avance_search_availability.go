@@ -60,6 +60,15 @@ var avanceAddOnIDs = map[string]int{"CS": 9001, "BS": 9002, "SNC": 9003, "ADD": 
 // avanceAddOnCodes fixes the order add-ons are listed in.
 var avanceAddOnCodes = []string{"CS", "BS", "SNC", "ADD"}
 
+// avanceAddOnNames are our names for the extras we sell. They don't depend on the options list,
+// which can fail to load, and they read better than Avance's own ("Baby Seat" for a child seat).
+var avanceAddOnNames = map[string]string{
+	"CS":  "Child Seat",
+	"BS":  "Booster Seat",
+	"SNC": "Snow Chains",
+	"ADD": "Additional Driver",
+}
+
 var avanceFuelPolicies = map[string]string{
 	"SL": "Fuel policy: return with the same level",
 	"FF": "Fuel policy: full to full",
@@ -414,7 +423,7 @@ func avanceAddOns(q *avanceQuoteXML, c *avanceCategoryXML, ref avanceReference) 
 
 		addOns = append(addOns, AddOn{
 			ID:              avanceAddOnIDs[code],
-			Name:            avanceOptionName(code, ref),
+			Name:            avanceAddOnNames[code],
 			Price:           pricing.RoundToInt(avanceMinorToUnits(o.Rate)),
 			Currency:        q.Currency,
 			AllowedQuantity: qty,
