@@ -777,6 +777,10 @@ The chain, which is the definition the whole app agrees on:
 - **A written reservation prices off its `total_price` column, never off the recomputation.** The column is `NUMERIC(12,2)`, so Postgres settles it to the agora on write: a reservation that computes to `170.07499999999999` is stored, billed and invoiced as `170.08`. Rounding the recomputed total in Go gets back to `170.08`, but what is *derived* from it does not survive the trip — profit off the computed total settles to `55.07` where profit off the column is `55.08`, because Go rounds the binary float and Postgres rounded the exact decimal. That cent is VAT on an invoice a receipt has to balance. Pass the column through `StoredTotalPrice` (`NewWithReservation` and `NewWithNumerics` do it for you); only a reservation that has not been inserted yet recomputes.
 </reservation_pricing>
 
+<location_imports>
+**Existing locations are the source of truth.** A supplier's location import (`InsertLocations`) never renames or relocates a canonical location: a station whose IATA matches an existing location only attaches its code there and fills fields the location is missing. A station without a match creates a location, marked `is_airport` when it carries an IATA. A station code already attached somewhere stays where it is, so a station imported to the wrong location has to be detached before re-importing. A location holds at most one station per broker.
+</location_imports>
+
 <localization>
 The application supports Hebrew and English, implemented via the Next.js App Router `[lang]` segment using the `next-intl` library.
 </localization>

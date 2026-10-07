@@ -30,6 +30,9 @@ type Querier interface {
 	DeleteMarkupRate(ctx context.Context, id int64) (int64, error)
 	DeleteOldAvailablePlansSnapshots(ctx context.Context, createdAt pgtype.Timestamptz) error
 	DeleteSnapshotByID(ctx context.Context, id int64) error
+	// Imports treat existing locations as the source of truth: a supplier's import only fills in
+	// what a location is missing, and never renames or relocates it.
+	FillLocationByIATA(ctx context.Context, arg FillLocationByIATAParams) (int64, error)
 	FindCouponByCode(ctx context.Context, code string) (Coupon, error)
 	FindCurrencyByISOName(ctx context.Context, currencyIsoName string) (Currency, error)
 	GetAllLocationBrokerCodesByLocationIDs(ctx context.Context, locationIds []int64) ([]GetAllLocationBrokerCodesByLocationIDsRow, error)
@@ -75,8 +78,9 @@ type Querier interface {
 	UpdateMarkupRate(ctx context.Context, arg UpdateMarkupRateParams) (MarkupRate, error)
 	UpdatePriceOffer(ctx context.Context, arg UpdatePriceOfferParams) error
 	UpsertCurrencies(ctx context.Context, arg UpsertCurrenciesParams) error
+	// iata is set only when no location already has it (see FillLocationByIATA), and then only on a
+	// new location, which is created as an airport.
 	UpsertLocationByCountryCodeName(ctx context.Context, arg UpsertLocationByCountryCodeNameParams) (int64, error)
-	UpsertLocationByIATA(ctx context.Context, arg UpsertLocationByIATAParams) (int64, error)
 	VerifyBrokerTranslation(ctx context.Context, id int64) error
 }
 

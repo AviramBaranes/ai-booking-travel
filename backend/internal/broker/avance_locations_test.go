@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/xuri/excelize/v2"
 )
 
 func avanceTestPage(t *testing.T) LocationPage {
@@ -37,8 +39,9 @@ func TestAvanceGetLocationsPage(t *testing.T) {
 		if page.NextPage != "" {
 			t.Errorf("NextPage = %q, want empty", page.NextPage)
 		}
-		// The sheet holds 90 stations; 4 delivery-service rows carry no country and are skipped.
-		if got, want := len(page.Locations), 86; got != want {
+		// The prepared sheet holds 88 stations; 4 delivery-service rows carry no country and are
+		// skipped.
+		if got, want := len(page.Locations), 84; got != want {
 			t.Errorf("len(Locations) = %d, want %d", got, want)
 		}
 	})
@@ -52,12 +55,12 @@ func TestAvanceGetLocationsPage(t *testing.T) {
 	})
 
 	t.Run("maps station fields onto the canonical location", func(t *testing.T) {
-		got, ok := byCode["ATHAP"]
+		got, ok := byCode["022"]
 		if !ok {
-			t.Fatal("ATHAP missing")
+			t.Fatal("022 missing")
 		}
 		want := Location{
-			ID:          "ATHAP",
+			ID:          "022",
 			Name:        "Athens International Airport",
 			City:        "Spata1",
 			CountryCode: "GR",
@@ -65,36 +68,32 @@ func TestAvanceGetLocationsPage(t *testing.T) {
 			Iata:        "ATH",
 		}
 		if got != want {
-			t.Errorf("ATHAP = %+v, want %+v", got, want)
+			t.Errorf("022 = %+v, want %+v", got, want)
 		}
 	})
 
-	t.Run("gives an IATA to airport desks only", func(t *testing.T) {
-		withIata := make([]string, 0)
+	t.Run("takes the IATA from its column, whatever the code or station type", func(t *testing.T) {
+		withIata := 0
 		for _, l := range page.Locations {
 			if l.Iata != "" {
-				withIata = append(withIata, l.ID)
+				withIata++
 			}
 		}
-		if got, want := len(withIata), 15; got != want {
-			t.Errorf("stations with IATA = %d (%v), want %d", got, withIata, want)
+		if got, want := withIata, 26; got != want {
+			t.Errorf("stations with IATA = %d, want %d", got, want)
 		}
 
 		for code, want := range map[string]string{
-			"ATHAP": "ATH", // Airport
-			"RHOAP": "RHO", // Airport 1
-			"JMKAP": "JMK",
-			"ZTHAP": "ZTH",
+			"022":   "ATH", // numeric live code
+			"005":   "JTR", // typed Office
+			"CFU1":  "CFU", // Airport Shuttle
+			"AOKAP": "AOK", // Meet and Greet
+			"RHOAP": "RHO",
+			"010":   "", // Mykonos Main Station, 400m from the airport
+			"001":   "", // Athens Downtown
 		} {
 			if got := byCode[code].Iata; got != want {
 				t.Errorf("%s Iata = %q, want %q", code, got, want)
-			}
-		}
-
-		// Shuttle, meet-and-greet and office pickups at an airport are a different arrangement.
-		for _, code := range []string{"CFUAP", "PASAP", "AOKAP", "KLXAP", "JTRAP", "SKGAP", "ATHDT"} {
-			if got := byCode[code].Iata; got != "" {
-				t.Errorf("%s Iata = %q, want empty (%q)", code, got, byCode[code].Name)
 			}
 		}
 	})
@@ -114,37 +113,38 @@ func TestAvanceGetLocationsPageErrors(t *testing.T) {
 		}
 	})
 
+	t.Run("sheet without the IATA column", func(t *testing.T) {
+		// Avance's sheet as sent, before the Apps Script adds the column.
+		f := excelize.NewFile()
+		defer f.Close()
+		if err := f.SetSheetName("Sheet1", avanceStationsSheet); err != nil {
+			t.Fatal(err)
+		}
+		for i, v := range []string{"Code", "Description", "Charge", "Station type", "Street", "City", "Post code", "Country"} {
+			cell, _ := excelize.CoordinatesToCellName(i+1, 1)
+			f.SetCellStr(avanceStationsSheet, cell, v)
+		}
+		for i, v := range []string{"ATHAP", "Athens International Airport", "", "Airport", "Desk", "Spata", "19019", "GR"} {
+			cell, _ := excelize.CoordinatesToCellName(i+1, 2)
+			f.SetCellStr(avanceStationsSheet, cell, v)
+		}
+		var buf bytes.Buffer
+		if err := f.Write(&buf); err != nil {
+			t.Fatal(err)
+		}
+
+		_, err := NewAvanceWithReader(&buf).GetLocationsPage("")
+		if !errors.Is(err, ErrAvanceInvalidWorkbook) {
+			t.Errorf("err = %v, want ErrAvanceInvalidWorkbook", err)
+		}
+	})
+
 	t.Run("empty reader", func(t *testing.T) {
 		_, err := NewAvanceWithReader(bytes.NewReader(nil)).GetLocationsPage("")
 		if err == nil {
 			t.Fatal("want an error")
 		}
 	})
-}
-
-func TestAvanceStationIata(t *testing.T) {
-	tests := []struct {
-		code, stationType, want string
-	}{
-		{"ATHAP", "Airport", "ATH"},
-		{"RHOAP", "Airport 1", "RHO"},
-		{"RHOAP", " Airport 1 ", "RHO"},
-		{"athap", "Airport", "ATH"},
-		{"ATHDT", "Office", ""},
-		{"CFUAP", "Airport Shuttle", ""},
-		{"AOKAP", "Meet and Greet", ""},
-		{"RHOPR", "Port", ""},
-		{"ALD", "Hotel", ""},
-		{"AB", "Airport", ""},
-		{"022", "Airport", ""},   // Athens: live codes can be numeric
-		{"114", "Airport 1", ""}, // Milos
-	}
-
-	for _, tt := range tests {
-		if got := avanceStationIata(tt.code, tt.stationType); got != tt.want {
-			t.Errorf("avanceStationIata(%q, %q) = %q, want %q", tt.code, tt.stationType, got, tt.want)
-		}
-	}
 }
 
 func TestParseAvanceCredentials(t *testing.T) {

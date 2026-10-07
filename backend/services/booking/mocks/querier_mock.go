@@ -306,6 +306,21 @@ func (mr *MockQuerierMockRecorder) DeleteSnapshotByID(ctx, id any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSnapshotByID", reflect.TypeOf((*MockQuerier)(nil).DeleteSnapshotByID), ctx, id)
 }
 
+// FillLocationByIATA mocks base method.
+func (m *MockQuerier) FillLocationByIATA(ctx context.Context, arg db.FillLocationByIATAParams) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FillLocationByIATA", ctx, arg)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FillLocationByIATA indicates an expected call of FillLocationByIATA.
+func (mr *MockQuerierMockRecorder) FillLocationByIATA(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FillLocationByIATA", reflect.TypeOf((*MockQuerier)(nil).FillLocationByIATA), ctx, arg)
+}
+
 // FindCouponByCode mocks base method.
 func (m *MockQuerier) FindCouponByCode(ctx context.Context, code string) (db.Coupon, error) {
 	m.ctrl.T.Helper()
@@ -954,21 +969,6 @@ func (m *MockQuerier) UpsertLocationByCountryCodeName(ctx context.Context, arg d
 func (mr *MockQuerierMockRecorder) UpsertLocationByCountryCodeName(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertLocationByCountryCodeName", reflect.TypeOf((*MockQuerier)(nil).UpsertLocationByCountryCodeName), ctx, arg)
-}
-
-// UpsertLocationByIATA mocks base method.
-func (m *MockQuerier) UpsertLocationByIATA(ctx context.Context, arg db.UpsertLocationByIATAParams) (int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpsertLocationByIATA", ctx, arg)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpsertLocationByIATA indicates an expected call of UpsertLocationByIATA.
-func (mr *MockQuerierMockRecorder) UpsertLocationByIATA(ctx, arg any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertLocationByIATA", reflect.TypeOf((*MockQuerier)(nil).UpsertLocationByIATA), ctx, arg)
 }
 
 // VerifyBrokerTranslation mocks base method.

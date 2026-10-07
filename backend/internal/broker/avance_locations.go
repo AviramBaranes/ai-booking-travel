@@ -25,6 +25,11 @@ const (
 
 	avanceStationCodeHeader = "Code"
 	avanceStationTypeHeader = "Station type"
+
+	// avanceStationIataHeader names the column our Apps Script adds to Avance's sheet. Avance's own
+	// sheet has no IATA codes, and neither the station code nor its type reliably gives one: Athens
+	// Airport is 022, and Santorini Airport is typed "Office".
+	avanceStationIataHeader = "IATA"
 )
 
 var (
@@ -32,8 +37,8 @@ var (
 	ErrAvanceInvalidWorkbook      = errors.New("invalid workbook format for Avance locations")
 )
 
-// avanceAirportStationTypes are the types Avance uses for a desk at the airport itself, the only
-// stations that carry an IATA code. Shuttle and meet-and-greet pickups at an airport are a
+// avanceAirportStationTypes are the types Avance uses for a desk at the airport itself, which the
+// results page badges as an airport pickup. Shuttle and meet-and-greet pickups at an airport are a
 // different arrangement and Avance classifies them separately.
 var avanceAirportStationTypes = map[string]struct{}{
 	"Airport":   {},
@@ -62,7 +67,8 @@ func (a *Avance) GetLocationsPage(cursor string) (LocationPage, error) {
 		return LocationPage{}, fmt.Errorf("avance locations: read sheet %q: %w", avanceStationsSheet, err)
 	}
 
-	if err := validateAvanceHeader(rows); err != nil {
+	iataCol, err := validateAvanceHeader(rows)
+	if err != nil {
 		return LocationPage{}, err
 	}
 
@@ -91,7 +97,7 @@ func (a *Avance) GetLocationsPage(cursor string) (LocationPage, error) {
 			City:        avanceCell(row, avanceStationCityCol),
 			CountryCode: countryCode,
 			Country:     avanceCountryName(countryCode),
-			Iata:        avanceStationIata(code, avanceCell(row, avanceStationTypeCol)),
+			Iata:        strings.ToUpper(avanceCell(row, iataCol)),
 		})
 	}
 
@@ -103,41 +109,27 @@ func (a *Avance) GetLocationsPage(cursor string) (LocationPage, error) {
 }
 
 // validateAvanceHeader checks the layout before any data is read, so a reordered workbook fails
-// loudly instead of importing every station under the wrong name.
-func validateAvanceHeader(rows [][]string) error {
+// loudly instead of importing every station under the wrong name. It returns the IATA column, which
+// is found by its header since it is appended to Avance's own columns.
+func validateAvanceHeader(rows [][]string) (int, error) {
 	if len(rows) < avanceStationsFirstRow {
-		return ErrAvanceInvalidWorkbook
+		return 0, ErrAvanceInvalidWorkbook
 	}
 
 	header := rows[0]
 	if avanceCell(header, avanceStationCodeCol) != avanceStationCodeHeader ||
 		avanceCell(header, avanceStationTypeCol) != avanceStationTypeHeader {
-		return ErrAvanceInvalidWorkbook
+		return 0, ErrAvanceInvalidWorkbook
 	}
 
-	return nil
-}
-
-// avanceStationIata returns the IATA code an airport station serves, taken from the first three
-// characters of its code (ATHAP -> ATH), or an empty string for any other station type.
-func avanceStationIata(code, stationType string) string {
-	if _, ok := avanceAirportStationTypes[strings.TrimSpace(stationType)]; !ok {
-		return ""
-	}
-
-	if len(code) < 3 {
-		return ""
-	}
-
-	// Some airports have numeric live codes (Athens is 022), whose prefix is not an IATA code.
-	prefix := strings.ToUpper(code[:3])
-	for _, r := range prefix {
-		if r < 'A' || r > 'Z' {
-			return ""
+	for i := range header {
+		if strings.EqualFold(avanceCell(header, i), avanceStationIataHeader) {
+			return i, nil
 		}
 	}
 
-	return prefix
+	// Without it every airport would import as a new location beside the existing one.
+	return 0, fmt.Errorf("%w: no %q column, run the stations Apps Script first", ErrAvanceInvalidWorkbook, avanceStationIataHeader)
 }
 
 // avanceCountryName maps the sheet's ISO code to the display name held in locations.country. The

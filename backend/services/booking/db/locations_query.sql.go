@@ -21,6 +21,38 @@ func (q *Queries) DeleteLocationByID(ctx context.Context, id int64) error {
 	return err
 }
 
+const fillLocationByIATA = `-- name: FillLocationByIATA :one
+
+UPDATE locations SET
+  country      = COALESCE(country, NULLIF($1, '')::text),
+  country_code = COALESCE(country_code, NULLIF($2, '')::text),
+  city         = COALESCE(city, NULLIF($3, '')::text),
+  updated_at   = now()
+WHERE iata = upper($4::text)
+RETURNING id
+`
+
+type FillLocationByIATAParams struct {
+	Country     interface{}
+	CountryCode interface{}
+	City        interface{}
+	Iata        string
+}
+
+// Imports treat existing locations as the source of truth: a supplier's import only fills in
+// what a location is missing, and never renames or relocates it.
+func (q *Queries) FillLocationByIATA(ctx context.Context, arg FillLocationByIATAParams) (int64, error) {
+	row := q.db.QueryRow(ctx, fillLocationByIATA,
+		arg.Country,
+		arg.CountryCode,
+		arg.City,
+		arg.Iata,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const getLocationByBrokerLocationID = `-- name: GetLocationByBrokerLocationID :one
 SELECT l.id, l.country, l.country_code, l.city, l.name, l.iata, l.created_at, l.updated_at, l.is_airport
 FROM locations l
@@ -372,20 +404,19 @@ func (q *Queries) ToggleIsAirport(ctx context.Context, arg ToggleIsAirportParams
 }
 
 const upsertLocationByCountryCodeName = `-- name: UpsertLocationByCountryCodeName :one
-INSERT INTO locations (country, country_code, city, name, iata)
+INSERT INTO locations (country, country_code, city, name, iata, is_airport)
 VALUES (
   NULLIF($1, '')::text,
   NULLIF($2, '')::text,
   NULLIF($3, '')::text,
   $4::text,
-  NULL
+  NULLIF(upper($5::text), '')::char(3),
+  $5::text <> ''
 )
 ON CONFLICT (country_code, lower(name))
 DO UPDATE SET
-  country      = EXCLUDED.country,
-  country_code = EXCLUDED.country_code,
-  city         = EXCLUDED.city,
-  name         = EXCLUDED.name,
+  country      = COALESCE(locations.country, EXCLUDED.country),
+  city         = COALESCE(locations.city, EXCLUDED.city),
   updated_at   = now()
 RETURNING id
 `
@@ -395,49 +426,13 @@ type UpsertLocationByCountryCodeNameParams struct {
 	CountryCode interface{}
 	City        interface{}
 	Name        string
+	Iata        string
 }
 
+// iata is set only when no location already has it (see FillLocationByIATA), and then only on a
+// new location, which is created as an airport.
 func (q *Queries) UpsertLocationByCountryCodeName(ctx context.Context, arg UpsertLocationByCountryCodeNameParams) (int64, error) {
 	row := q.db.QueryRow(ctx, upsertLocationByCountryCodeName,
-		arg.Country,
-		arg.CountryCode,
-		arg.City,
-		arg.Name,
-	)
-	var id int64
-	err := row.Scan(&id)
-	return id, err
-}
-
-const upsertLocationByIATA = `-- name: UpsertLocationByIATA :one
-INSERT INTO locations (country, country_code, city, name, iata)
-VALUES (
-  NULLIF($1, '')::text,
-  NULLIF($2, '')::text,
-  NULLIF($3, '')::text,
-  $4::text,
-  NULLIF(upper($5), '')::char(3)
-)
-ON CONFLICT (iata) WHERE iata IS NOT NULL
-DO UPDATE SET
-  country      = EXCLUDED.country,
-  country_code = EXCLUDED.country_code,
-  city         = EXCLUDED.city,
-  name         = EXCLUDED.name,
-  updated_at   = now()
-RETURNING id
-`
-
-type UpsertLocationByIATAParams struct {
-	Country     interface{}
-	CountryCode interface{}
-	City        interface{}
-	Name        string
-	Iata        interface{}
-}
-
-func (q *Queries) UpsertLocationByIATA(ctx context.Context, arg UpsertLocationByIATAParams) (int64, error) {
-	row := q.db.QueryRow(ctx, upsertLocationByIATA,
 		arg.Country,
 		arg.CountryCode,
 		arg.City,

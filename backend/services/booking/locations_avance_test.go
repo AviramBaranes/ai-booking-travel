@@ -80,3 +80,72 @@ func TestInsertAvanceLocationsMergesAirports(t *testing.T) {
 		}
 	})
 }
+
+// TestInsertLocationsKeepsExistingLocations covers the import rules production depends on: an
+// existing location is the source of truth, and a new airport is marked as one.
+func TestInsertLocationsKeepsExistingLocations(t *testing.T) {
+	ctx := context.Background()
+	q := testQuerier()
+	ls := location.NewLocationService(q)
+
+	importStations := func(t *testing.T, locs ...broker.Location) {
+		t.Helper()
+		b := &mockBroker{name: broker.BrokerAvance, pages: []broker.LocationPage{{Locations: locs}}}
+		if err := ls.InsertLocations(ctx, b, ""); err != nil {
+			t.Fatalf("InsertLocations: %v", err)
+		}
+	}
+	locationOf := func(t *testing.T, code string) db.Location {
+		t.Helper()
+		loc, err := q.GetLocationByBrokerLocationID(ctx, code)
+		if err != nil {
+			t.Fatalf("GetLocationByBrokerLocationID(%s): %v", code, err)
+		}
+		return loc
+	}
+	deleteStation := func(code string) {
+		if c, err := q.GetLocationBrokerCode(ctx, db.GetLocationBrokerCodeParams{Broker: db.BrokerAvance, BrokerLocationID: code}); err == nil {
+			_, _ = q.DeleteLocationBrokerCode(ctx, c.ID)
+		}
+	}
+	cleanup := func(code string) {
+		t.Cleanup(func() {
+			loc, err := q.GetLocationByBrokerLocationID(ctx, code)
+			if err != nil {
+				return
+			}
+			deleteStation(code)
+			_ = q.DeleteLocationByID(ctx, loc.ID)
+		})
+	}
+
+	t.Run("an IATA match keeps the existing name and only fills blanks", func(t *testing.T) {
+		existing, _ := seedLocationWithBrokerCode(t, q,
+			db.InsertLocationParams{Country: "Greece", CountryCode: "GR", Name: "Keep Test Airport (YYA)", Iata: strPtr("YYA")},
+			db.BrokerFlex, "flex-keep-test",
+		)
+		importStations(t, broker.Location{ID: "KEEPAP", Name: "Supplier Name For YYA", Country: "Greece", CountryCode: "GR", City: "Keep City", Iata: "YYA"})
+		t.Cleanup(func() { deleteStation("KEEPAP") })
+
+		loc := locationOf(t, "KEEPAP")
+		if loc.ID != existing.ID {
+			t.Fatalf("station went to location %d, want the existing %d", loc.ID, existing.ID)
+		}
+		if loc.Name != "Keep Test Airport (YYA)" {
+			t.Errorf("Name = %q, want the existing name kept", loc.Name)
+		}
+		if loc.City == nil || *loc.City != "Keep City" {
+			t.Errorf("City = %v, want the empty city filled in", loc.City)
+		}
+	})
+
+	t.Run("a new IATA location is an airport", func(t *testing.T) {
+		cleanup("NEWAP")
+		importStations(t, broker.Location{ID: "NEWAP", Name: "New Test Airport", Country: "Greece", CountryCode: "GR", Iata: "YYB"})
+
+		loc := locationOf(t, "NEWAP")
+		if loc.Iata == nil || *loc.Iata != "YYB" || !loc.IsAirport {
+			t.Errorf("location = iata %v, airport %v, want YYB and an airport", loc.Iata, loc.IsAirport)
+		}
+	})
+}

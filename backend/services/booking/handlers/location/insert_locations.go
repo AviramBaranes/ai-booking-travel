@@ -157,26 +157,7 @@ func insertBatch(ctx context.Context, q db.Querier, locs []broker.Location, brok
 	}
 
 	for _, loc := range locs {
-		iata := normalizeIata(loc.Iata)
-
-		var locationID int64
-
-		if iata != "" {
-			locationID, err = q.UpsertLocationByIATA(ctx, db.UpsertLocationByIATAParams{
-				Country:     loc.Country,
-				CountryCode: loc.CountryCode,
-				City:        loc.City,
-				Name:        loc.Name,
-				Iata:        iata,
-			})
-		} else {
-			locationID, err = q.UpsertLocationByCountryCodeName(ctx, db.UpsertLocationByCountryCodeNameParams{
-				Country:     loc.Country,
-				CountryCode: loc.CountryCode,
-				City:        loc.City,
-				Name:        loc.Name,
-			})
-		}
+		locationID, err := resolveLocation(ctx, q, loc)
 		if err != nil {
 			return fmt.Errorf("failed to insert for supplier %s, locationId %s: %w", brokerName, loc.ID, err)
 		}
@@ -202,6 +183,36 @@ func insertBatch(ctx context.Context, q db.Querier, locs []broker.Location, brok
 	}
 
 	return nil
+}
+
+// resolveLocation finds or creates the canonical location a supplier's station belongs to. Existing
+// locations are the source of truth, so a match by IATA keeps its name and only has missing fields
+// filled in; a station without one is matched by country and name.
+func resolveLocation(ctx context.Context, q db.Querier, loc broker.Location) (int64, error) {
+	iata := normalizeIata(loc.Iata)
+
+	if iata != "" {
+		id, err := q.FillLocationByIATA(ctx, db.FillLocationByIATAParams{
+			Country:     loc.Country,
+			CountryCode: loc.CountryCode,
+			City:        loc.City,
+			Iata:        iata,
+		})
+		if err == nil {
+			return id, nil
+		}
+		if !errors.Is(err, db.ErrNoRows) {
+			return 0, err
+		}
+	}
+
+	return q.UpsertLocationByCountryCodeName(ctx, db.UpsertLocationByCountryCodeNameParams{
+		Country:     loc.Country,
+		CountryCode: loc.CountryCode,
+		City:        loc.City,
+		Name:        loc.Name,
+		Iata:        iata,
+	})
 }
 
 func toDbBroker(sn broker.Name) (db.Broker, error) {

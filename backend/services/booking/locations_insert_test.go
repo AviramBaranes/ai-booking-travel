@@ -61,9 +61,9 @@ func TestInsertLocations(t *testing.T) {
 		}
 
 		// Verify location was inserted
-		locID, err := q.UpsertLocationByIATA(ctx, db.UpsertLocationByIATAParams{
+		locID, err := q.FillLocationByIATA(ctx, db.FillLocationByIATAParams{
 			Country: "US Country", CountryCode: "US", City: "New York",
-			Name: "Airport", Iata: "JFK",
+			Iata: "JFK",
 		})
 		if err != nil {
 			t.Fatalf("failed to query location: %v", err)
@@ -142,15 +142,15 @@ func TestInsertLocations(t *testing.T) {
 		}
 
 		// Verify both locations exist
-		id1, err := q.UpsertLocationByIATA(ctx, db.UpsertLocationByIATAParams{
-			Country: "Country", CountryCode: "US", City: "CityA", Name: "Location A", Iata: "AAA",
+		id1, err := q.FillLocationByIATA(ctx, db.FillLocationByIATAParams{
+			Country: "Country", CountryCode: "US", City: "CityA", Iata: "AAA",
 		})
 		if err != nil || id1 == 0 {
 			t.Fatalf("location A not found: %v", err)
 		}
 
-		id2, err := q.UpsertLocationByIATA(ctx, db.UpsertLocationByIATAParams{
-			Country: "Country", CountryCode: "US", City: "CityB", Name: "Location B", Iata: "BBB",
+		id2, err := q.FillLocationByIATA(ctx, db.FillLocationByIATAParams{
+			Country: "Country", CountryCode: "US", City: "CityB", Iata: "BBB",
 		})
 		if err != nil || id2 == 0 {
 			t.Fatalf("location B not found: %v", err)
@@ -216,8 +216,8 @@ func TestInsertLocations(t *testing.T) {
 		}
 
 		// Verify the second page's location was inserted
-		locID, err := q.UpsertLocationByIATA(ctx, db.UpsertLocationByIATAParams{
-			Country: "Country", CountryCode: "US", City: "CityY", Name: "Skip B", Iata: "SKP",
+		locID, err := q.FillLocationByIATA(ctx, db.FillLocationByIATAParams{
+			Country: "Country", CountryCode: "US", City: "CityY", Iata: "SKP",
 		})
 		if err != nil || locID == 0 {
 			t.Fatalf("skipped location not found: %v", err)
@@ -272,8 +272,8 @@ func TestInsertLocations(t *testing.T) {
 		}
 
 		// Verify IATA was normalized to "JFK"
-		locID, err := q.UpsertLocationByIATA(ctx, db.UpsertLocationByIATAParams{
-			Country: "C", CountryCode: "US", City: "X", Name: "Normalized", Iata: "JFK",
+		locID, err := q.FillLocationByIATA(ctx, db.FillLocationByIATAParams{
+			Country: "C", CountryCode: "US", City: "X", Iata: "JFK",
 		})
 		if err != nil || locID == 0 {
 			t.Fatalf("normalized location not found: %v", err)
@@ -319,8 +319,8 @@ func TestInsertLocations(t *testing.T) {
 			t.Fatalf("expected no error, got %v", err)
 		}
 
-		locID, err := q.UpsertLocationByIATA(ctx, db.UpsertLocationByIATAParams{
-			Country: "Germany", CountryCode: "DE", City: "Berlin", Name: "Hertz Office", Iata: "BER",
+		locID, err := q.FillLocationByIATA(ctx, db.FillLocationByIATAParams{
+			Country: "Germany", CountryCode: "DE", City: "Berlin", Iata: "BER",
 		})
 		if err != nil || locID == 0 {
 			t.Fatalf("hertz location not found: %v", err)
@@ -479,9 +479,8 @@ func TestInsertLocation(t *testing.T) {
 		}
 
 		// Verify using the database
-		locID, err := query.UpsertLocationByIATA(ctx, db.UpsertLocationByIATAParams{
+		locID, err := query.FillLocationByIATA(ctx, db.FillLocationByIATAParams{
 			Iata:        params.Iata,
-			Name:        params.Name,
 			Country:     params.Country,
 			CountryCode: params.CountryCode,
 			City:        params.City,
