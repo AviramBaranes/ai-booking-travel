@@ -791,7 +791,29 @@ The app uses Payload CMS for managing content. It is located strictly inside the
 **Schema changes.** There are no Payload migrations: `pnpm dev` pushes the schema (drizzle-kit) straight into whatever `DATABASE_URL` points at, and production never pushes. So:
 - **A new `required` field on a collection or global that already has rows needs a static `defaultValue` (e.g. `""`).** `required` makes the column `NOT NULL`, and drizzle-kit can only add a `NOT NULL` column without a default by truncating the table — which wipes the content. A static default becomes a column `DEFAULT`, so the column is added in place. Never remove such a default later: dropping a default from a `NOT NULL` column with rows also truncates.
 - **Never accept a "DATA LOSS WARNING" prompt** in the `pnpm dev` terminal. Answer No and find out what caused it. Renaming a field is a drop plus an add.
-- **Push to the database before deploying the frontend** that reads the new fields; code that selects a missing column crashes every page reading that collection or global. Rehearse on a Neon branch first.
+- **Push to the database before deploying the frontend** that reads the new fields; code that selects a missing column crashes every page reading that collection or global. Rehearse on a Neon branch first. For production, prefer adding the columns by hand with the `ALTER TABLE` below over running `pnpm dev` against it: production has drifted from the config (see below), and a push would then offer to truncate.
+
+**Runbook: the CMS breaks after a deploy.** Symptom: the admin shows "לא נמצא כלום" for a global or collection, and every site page reading it fails. Cause: the deployed code has a field whose column doesn't exist in Neon, because production never pushes the schema. Fix it in the Neon SQL Editor, on the production branch:
+1. **Look (read-only).** Payload names tables after the slug in snake_case (`booking-settings` → `booking_settings`); localized fields live in `<table>_locales`, with field names in snake_case (`theftExcessTitle` → `theft_excess_title`). `text` and `textarea` are `varchar`.
+   ```sql
+   SELECT column_name, data_type, is_nullable, column_default
+   FROM information_schema.columns WHERE table_name = 'booking_settings_locales'
+   ORDER BY ordinal_position;
+
+   SELECT _locale, count(*) FROM booking_settings_locales GROUP BY _locale;
+   ```
+2. **If the rows are there and columns are missing, add exactly what the push would have created.** A `required` field with `defaultValue: ""` is `NOT NULL DEFAULT ''`; an optional field is plain `varchar`. This only adds columns, and is safe to run twice:
+   ```sql
+   ALTER TABLE booking_settings_locales
+     ADD COLUMN IF NOT EXISTS theft_excess_title   varchar NOT NULL DEFAULT '',
+     ADD COLUMN IF NOT EXISTS theft_excess_content varchar NOT NULL DEFAULT '';
+   ```
+   Refresh the admin: the content is back. Fill the new fields in every language (a required field blocks saving until filled).
+3. **If the row count is 0, the content was wiped.** Save nothing in the admin, and restore from a Neon point-in-time branch taken before the deploy.
+
+This happened on 2026-10-07: the theft excess fields of Booking Settings were deployed before their columns existed, the booking settings went down, and step 2 fixed it.
+
+**Known drift in production:** `booking_settings_locales.senior_driver_title` and `senior_driver_content` are nullable although the config makes them required. A push against production would try to make them `NOT NULL` and offer to truncate the table. Make them `NOT NULL` by hand (after checking they hold no NULLs) before ever pushing there.
 </payload_cms>
 </project_specific_context>
 

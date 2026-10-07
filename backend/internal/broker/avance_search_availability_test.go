@@ -225,7 +225,7 @@ func TestAvanceBuildAvailability(t *testing.T) {
 			t.Fatalf("Inclusions = %+v, want Standard then Gold", incs)
 		}
 		for _, inc := range incs {
-			for _, want := range []string{"Collision Damage Waiver", "Theft Waiver with Excess", "Unlimited mileage", "First additional driver free"} {
+			for _, want := range []string{"Theft Waiver with Excess", "Unlimited mileage", "First additional driver free"} {
 				if !slices.Contains(inc.ProductInclusions, want) {
 					t.Errorf("%s inclusions = %q, missing %q", inc.ProductName, inc.ProductInclusions, want)
 				}
@@ -233,6 +233,10 @@ func TestAvanceBuildAvailability(t *testing.T) {
 		}
 		if slices.Contains(incs[0].ProductInclusions, "Full Damage Waiver") || !slices.Contains(incs[1].ProductInclusions, "Full Damage Waiver") {
 			t.Errorf("want Full Damage Waiver in Gold only: %+v", incs)
+		}
+		// Gold's full damage waiver replaces the collision damage waiver Standard includes.
+		if !slices.Contains(incs[0].ProductInclusions, "Collision Damage Waiver") || slices.Contains(incs[1].ProductInclusions, "Collision Damage Waiver") {
+			t.Errorf("want Collision Damage Waiver in Standard only: %+v", incs)
 		}
 	})
 }

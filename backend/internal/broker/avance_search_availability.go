@@ -377,10 +377,19 @@ func avanceInfo(q *avanceQuoteXML, c *avanceCategoryXML, excess, theftExcess int
 func avanceInclusions(c *avanceCategoryXML, ref avanceReference) []string {
 	incs := make([]string, 0, 6)
 
+	// The full damage waiver of the zero-excess product replaces the collision damage waiver, which
+	// Avance still lists as included alongside it.
+	fdw := c.option("FDW")
+	fullDamage := fdw != nil && fdw.Inclusive
+
 	for _, o := range c.Options {
-		if o.Inclusive && o.ChargeType == "I" {
-			incs = append(incs, avanceOptionName(o.Code, ref))
+		if !o.Inclusive || o.ChargeType != "I" {
+			continue
 		}
+		if fullDamage && o.Code == "CDW" {
+			continue
+		}
+		incs = append(incs, avanceOptionName(o.Code, ref))
 	}
 
 	if c.Unlimited {
