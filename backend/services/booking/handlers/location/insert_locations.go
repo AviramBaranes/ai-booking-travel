@@ -157,6 +157,19 @@ func insertBatch(ctx context.Context, q db.Querier, locs []broker.Location, brok
 	}
 
 	for _, loc := range locs {
+		// A known code keeps the location it points to, so a re-import cannot undo an admin merge
+		// by recreating the station under its supplier name.
+		_, err := q.GetLocationIDByAnyBrokerCode(ctx, db.GetLocationIDByAnyBrokerCodeParams{
+			Broker:           dbBroker,
+			BrokerLocationID: loc.ID,
+		})
+		if err == nil {
+			continue
+		}
+		if !errors.Is(err, db.ErrNoRows) {
+			return fmt.Errorf("get location by broker code: %w", err)
+		}
+
 		locationID, err := resolveLocation(ctx, q, loc)
 		if err != nil {
 			return fmt.Errorf("failed to insert for supplier %s, locationId %s: %w", brokerName, loc.ID, err)
