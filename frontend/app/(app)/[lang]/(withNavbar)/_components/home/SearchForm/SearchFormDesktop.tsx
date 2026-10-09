@@ -122,8 +122,9 @@ export function SearchFormDesktop({
               <LocationCombobox
                 placeholder={t("pickupLocationPlaceholder")}
                 emptyMessage={t("noLocationsFound")}
-                onSelect={(id) => {
+                onSelect={(id, name) => {
                   field.onChange(id);
+                  setValue("pickupLocationName", name);
                   if (isDropoffDifferentLoc) {
                     dropoffLocationRef.current?.focus();
                   } else {
@@ -146,8 +147,9 @@ export function SearchFormDesktop({
                 <LocationCombobox
                   placeholder={t("dropoffLocationPlaceholder")}
                   emptyMessage={t("noLocationsFound")}
-                  onSelect={(id) => {
+                  onSelect={(id, name) => {
                     field.onChange(id);
+                    setValue("dropoffLocationName", name);
                     pickupDateRef.current?.focus();
                   }}
                   error={fieldState.error}

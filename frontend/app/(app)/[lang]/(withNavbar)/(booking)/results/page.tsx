@@ -44,7 +44,7 @@ export default async function ResultsPage({
       }),
     ]);
   } catch {
-    return <ErrorResultPageContent />;
+    return <ErrorResultPageContent query={query} />;
   }
 
   return (

@@ -17,7 +17,7 @@ interface LocationComboboxSheetProps {
   placeholder: string;
   emptyMessage: string;
   error?: FieldError;
-  onSelect: (locationId: number) => void;
+  onSelect: (locationId: number, name: string) => void;
   initializedLocations?: { id: number; name: string }[];
   value?: string;
 }
@@ -92,7 +92,7 @@ export function LocationComboboxSheet({
             emptyMessage={emptyMessage}
             error={error}
             onSelect={(locationId, name) => {
-              onSelect(locationId);
+              onSelect(locationId, name);
               setSelectedName(name);
               close();
             }}

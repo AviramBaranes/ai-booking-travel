@@ -85,8 +85,9 @@ export function SearchFormMobile({
             <LocationComboboxSheet
               placeholder={t("pickupLocationPlaceholder")}
               emptyMessage={t("noLocationsFound")}
-              onSelect={(id) => {
+              onSelect={(id, name) => {
                 field.onChange(id);
+                setValue("pickupLocationName", name);
                 if (isDropoffDifferentLoc) {
                   dropoffLocationRef.current?.focus();
                 } else {
@@ -121,8 +122,9 @@ export function SearchFormMobile({
               <LocationComboboxSheet
                 placeholder={t("dropoffLocationPlaceholder")}
                 emptyMessage={t("noLocationsFound")}
-                onSelect={(id) => {
+                onSelect={(id, name) => {
                   field.onChange(id);
+                  setValue("dropoffLocationName", name);
                   setCalendarOpen(true);
                 }}
                 error={fieldState.error}

@@ -10,7 +10,9 @@ export function searchSchema(t: (key: string) => string) {
   const baseSchema = z.object({
     isDropoffDifferentLoc: z.boolean().optional(),
     pickupLocation: z.int({ error: t("validation.required") }),
+    pickupLocationName: z.string().optional(),
     dropoffLocation: z.int({ error: t("validation.required") }).optional(),
+    dropoffLocationName: z.string().optional(),
     pickupDate: z.date({ error: t("validation.required") }),
     pickupTime: z
       .string({ error: t("validation.required") })

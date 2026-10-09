@@ -20,7 +20,7 @@ export function ResultsPageContent({ query }: { query: SearchQuery }) {
   }
 
   if (error || (data && !data.availableVehicles.length)) {
-    return <ErrorResultPageContent />;
+    return <ErrorResultPageContent query={query} />;
   }
 
   return (
