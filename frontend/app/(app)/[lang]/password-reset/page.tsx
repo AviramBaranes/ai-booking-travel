@@ -23,7 +23,7 @@ export default async function PasswordResetPage({
   params: Promise<{ lang: string }>;
 }) {
   const { lang } = await params;
-  const messages = await getMessages();
+  const messages = await getMessages({ locale: lang });
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-background p-4">

@@ -19,7 +19,7 @@ export async function ClientOfferSummary({
   lang: string;
   addonsGallery: AddonsGallery
 }) {
-  const t = await getTranslations("MyAccount");
+  const t = await getTranslations({ locale: lang, namespace: "MyAccount" });
   
   return (
     <div className="flex flex-col gap-2 shadow-card rounded-xl p-6 bg-white border border-cars-border">

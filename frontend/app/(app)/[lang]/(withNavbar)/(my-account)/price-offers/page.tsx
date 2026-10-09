@@ -6,8 +6,16 @@ import { ClearFilterRow } from "./_components/filters/ClearFilterRow";
 import { FilterForm } from "./_components/filters/FilterForm";
 import { PriceOfferPaginationButtons } from "./_components/filters/PriceOfferPaginationButtons";
 
-export default async function PriceOffersPage() {
-  const t = await getTranslations("MyAccount.priceOffers");
+export default async function PriceOffersPage({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  const t = await getTranslations({
+    locale: lang,
+    namespace: "MyAccount.priceOffers",
+  });
 
   return (
     <main className="lg:w-2/3 mx-5 lg:mx-auto lg:pt-15 pb-6">

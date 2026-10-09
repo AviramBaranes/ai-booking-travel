@@ -9,12 +9,15 @@ import { ReservationsGrid } from "./_components/ReservationsGrid";
 import { ReservationPaginationButtons } from "./_components/filters/ReservationPaginationButtons";
 
 export default async function ReservationDetailsPage({
-  searchParams,
+  params,
 }: {
-  searchParams: Promise<Record<string, string>>;
+  params: Promise<{ lang: string }>;
 }) {
-  const t = await getTranslations("MyAccount.reservations");
-  const resolvedParams = await searchParams;
+  const { lang } = await params;
+  const t = await getTranslations({
+    locale: lang,
+    namespace: "MyAccount.reservations",
+  });
   return (
     <main className="lg:w-2/3 mx-5 lg:mx-auto lg:pt-15 pb-6">
       <NewOrderButton btnText={t("newOrder")} />

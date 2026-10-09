@@ -92,7 +92,7 @@ export default async function OfferPage({ params }: Props) {
             />
           </div>
           <div className="lg:w-1/4">
-            <ClientOfferCarCard offer={offer} />
+            <ClientOfferCarCard offer={offer} lang={lang} />
           </div>
         </div>
       </HydrationBoundary>

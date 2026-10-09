@@ -10,7 +10,10 @@ export async function HeaderSection({
   offer: price_offer.GetPriceOfferResponse;
   lang: string;
 }) {
-  const t = await getTranslations("MyAccount.priceOffer.summary");
+  const t = await getTranslations({
+    locale: lang,
+    namespace: "MyAccount.priceOffer.summary",
+  });
 
   return (
     <>

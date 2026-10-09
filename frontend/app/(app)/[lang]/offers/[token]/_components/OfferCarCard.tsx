@@ -7,10 +7,12 @@ import { ApproveButton } from "./ApproveButton";
 
 export async function ClientOfferCarCard({
   offer,
+  lang,
 }: {
   offer: price_offer.GetPriceOfferResponse;
+  lang: string;
 }) {
-  const t = await getTranslations("MyAccount");
+  const t = await getTranslations({ locale: lang, namespace: "MyAccount" });
 
   return (
     <div className="sticky top-4">

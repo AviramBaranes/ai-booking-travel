@@ -1,5 +1,8 @@
+"use client";
+
 import { useTranslations } from "next-intl";
 import Image from "next/image";
+import { Fragment, useEffect, useState } from "react";
 
 const brands = [
   "Hertz.png",
@@ -63,12 +66,52 @@ export function ResultsLoading() {
   );
 }
 
+const WORD_ANIMATION_MS = 600;
+const WORD_STAGGER_MS = 80;
+const TITLE_HOLD_MS = 2800;
+
 function LoadingPageTitle() {
   const t = useTranslations("ResultsPage");
+  const titles = t.raw("loadingTitles") as string[];
+  const [index, setIndex] = useState(0);
+  const [leaving, setLeaving] = useState(false);
+
+  const title = titles[index];
+  const words = title.split(" ");
+  // Time until the last word has finished entering (or leaving).
+  const sequenceMs = WORD_ANIMATION_MS + (words.length - 1) * WORD_STAGGER_MS;
+
+  // Words rise in one by one, the title holds, then the words lift out one by
+  // one and the next title takes over.
+  useEffect(() => {
+    const id = leaving
+      ? setTimeout(() => {
+          setIndex((i) => (i + 1) % titles.length);
+          setLeaving(false);
+        }, sequenceMs)
+      : setTimeout(() => setLeaving(true), sequenceMs + TITLE_HOLD_MS);
+    return () => clearTimeout(id);
+  }, [leaving, sequenceMs, titles.length]);
 
   return (
-    <div className="mt-5 self-stretch text-center justify-start text-indigo-950 text-3xl mx-5 lg:text-5xl font-black leading-12">
-      {t("loadingTitle")}
+    <div className="mt-5 self-stretch text-center justify-start text-indigo-950 text-3xl mx-5 lg:text-5xl font-black leading-12 min-h-24 lg:min-h-12">
+      <span className="sr-only">{title}</span>
+      <span key={index} aria-hidden>
+        {words.map((word, i) => (
+          <Fragment key={i}>
+            {i > 0 && " "}
+            <span
+              className={leaving ? "animate-word-out" : "animate-word-in"}
+              style={{
+                animationDuration: `${WORD_ANIMATION_MS}ms`,
+                animationDelay: `${i * WORD_STAGGER_MS}ms`,
+              }}
+            >
+              {word}
+            </span>
+          </Fragment>
+        ))}
+      </span>
     </div>
   );
 }

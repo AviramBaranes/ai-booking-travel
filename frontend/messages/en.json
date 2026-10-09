@@ -126,7 +126,13 @@
     "adminBtn": "Back to Admin Panel"
   },
   "ResultsPage": {
-    "loadingTitle": "Searching for the best deal for you",
+    "loadingTitles": [
+      "Searching for the best deal for you",
+      "Checking availability with leading suppliers",
+      "Comparing prices across rental companies",
+      "Finding the right car for your trip",
+      "Hang tight, great deals are on the way"
+    ],
     "loadingMessage": "Cancellation fee 5% or 100 ILS, whichever is lower, up to 48 hours before car pickup"
   },
   "SearchForm": {
