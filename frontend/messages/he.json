@@ -32,6 +32,7 @@
     "otp_validate_rate_limit": "יותר מדי ניסיונות שגויים. נא בקש קוד חדש.",
     "invalid_refresh_token": "ההפעלה אינה תקינה, יש להתחבר מחדש",
     "expired_refresh_token": "ההפעלה פגה, יש להתחבר מחדש",
+    "invalid_reset_token": "קישור איפוס הסיסמה אינו תקין או שפג תוקפו",
     "cancellation_window_exceeded": "לא ניתן לבטל הזמנה זו, חלון הביטול חרג",
     "flight_number_required": "מספר טיסה נדרש עבור תחנה זו",
     "organization_organic_requires_icount_client_id": "ארגון אורגני חייב להכיל מזהה לקוח iCount",

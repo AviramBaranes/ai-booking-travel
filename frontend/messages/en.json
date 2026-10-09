@@ -389,9 +389,11 @@
     },
     "reservation": {
       "freeCancellation": "Free cancellation up to 48 hours before pickup",
-      "enterVoucherCode": "Enter voucher code",
+      "payNow": "Pay by credit card",
+      "paymentIframeTitle": "Payment for reservation no. {bookingId}",
       "voucher": {
         "apply": "Apply voucher",
+        "enterVoucherCode": "Enter voucher number",
         "successMessage": "The voucher has been successfully applied!"
       },
       "requiredField": "Required field",

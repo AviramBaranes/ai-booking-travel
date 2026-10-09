@@ -2,9 +2,11 @@ package reservation
 
 import (
 	"context"
+	"slices"
 	"testing"
 
 	"encore.app/internal/api_errors"
+	"encore.app/internal/lang"
 )
 
 func TestGetReservation(t *testing.T) {
@@ -172,4 +174,28 @@ func TestGetReservation(t *testing.T) {
 			})
 		}
 	})
+}
+
+func TestGetReservationInclusionsLanguage(t *testing.T) {
+	hebrew := []string{"קילומטראז' בלתי מוגבל"}
+	english := []string{"Unlimited mileage"}
+
+	p := validCreateReservationParams()
+	p.PlanInclusions = hebrew
+	p.PlanInclusionsEn = english
+	res, err := CreateReservation(context.Background(), *p)
+	if err != nil {
+		t.Fatalf("failed to create reservation: %v", err)
+	}
+
+	for language, want := range map[string][]string{"en": english, "he": hebrew} {
+		ctx := context.WithValue(authContext(p.UserID), lang.ContextKey, language)
+		got, err := GetReservation(ctx, res.ID)
+		if err != nil {
+			t.Fatalf("GetReservation(%s): %v", language, err)
+		}
+		if !slices.Equal(got.PlanInclusions, want) {
+			t.Errorf("%s request: PlanInclusions = %v, want %v", language, got.PlanInclusions, want)
+		}
+	}
 }

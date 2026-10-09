@@ -8,6 +8,7 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	dbadapters "encore.app/internal/db_adapters"
+	"encore.app/internal/lang"
 	"encore.app/internal/pricing"
 	"encore.app/services/accounts"
 	"encore.app/services/reservation/db"
@@ -84,7 +85,7 @@ func (s *QueryService) GetReservation(ctx context.Context, id int64) (*GetReserv
 		ReservationStatus:   string(row.ReservationStatus),
 		PaymentStatus:       string(row.PaymentStatus),
 		CarDetails:          carDetails,
-		PlanInclusions:      row.PlanInclusions,
+		PlanInclusions:      planInclusionsFor(ctx, row.PlanInclusions, row.PlanInclusionsEn),
 		CurrencyCode:        price.CurrencyCode,
 		CurrencyRate:        price.CurrencyRate,
 		CarFullPrice:        pricing.RoundToInt(price.CarWithMarkup.Value),
@@ -172,4 +173,13 @@ func unmarshalJsons(carDetailsJson, payAtPickupJson []byte) (broker.CarDetails, 
 	}
 
 	return carDetails, payAtPickup, nil
+}
+
+// planInclusionsFor returns the inclusions in the request's language. A reservation searched in
+// Hebrew stores them translated, plus the English source, so an English request gets the source.
+func planInclusionsFor(ctx context.Context, shown, english []string) []string {
+	if len(english) > 0 && lang.FromContext(ctx, "en") == "en" {
+		return english
+	}
+	return shown
 }
