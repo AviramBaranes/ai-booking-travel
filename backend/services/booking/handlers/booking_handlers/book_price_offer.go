@@ -192,6 +192,7 @@ func buildPriceOfferReservationRequest(
 		SupplierCode:          offer.SupplierCode,
 		CarDetails:            &offerCarDetails,
 		PlanInclusions:        offer.PlanInclusions,
+		PlanInclusionsEn:      offer.PlanInclusionsEn,
 		PickupDate:            dbadapters.DateToString(offer.PickupDate),
 		DropoffDate:           dbadapters.DateToString(offer.DropoffDate),
 		RentalDays:            int(offer.RentalDays),

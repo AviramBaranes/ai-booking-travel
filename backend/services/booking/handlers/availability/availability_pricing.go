@@ -3,6 +3,7 @@ package availability
 import (
 	"context"
 	"math/rand/v2"
+	"slices"
 	"sort"
 
 	"encore.app/internal/api_errors"
@@ -52,6 +53,9 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 
 	spMap := make(map[string]*broker.SupplierInfo)
 	translatedSuppliers := make(map[string]bool)
+	// originalInclusions keeps each supplier's inclusions as the broker sent them, before a Hebrew
+	// search translates them in place: vouchers are always in English.
+	originalInclusions := make(map[string][]broker.Inclusions)
 	for i, sp := range avResp.SuppliersInfo {
 		spMap[sp.Name] = &avResp.SuppliersInfo[i]
 		translatedSuppliers[sp.Name] = false
@@ -106,6 +110,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 
 			if lang.FromContext(ctx, "en") == "he" {
 				if !translatedSuppliers[sp.Name] {
+					originalInclusions[sp.Name] = slices.Clone(sp.Inclusions)
 					for i, inc := range sp.Inclusions {
 						sp.Inclusions[i].ProductInclusions = s.translatePlanDetails(ctx, inc.ProductInclusions)
 					}
@@ -114,13 +119,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 				p.Info = s.translatePlanDetails(ctx, p.Info)
 			}
 
-			var incs []string
-			for _, prd := range sp.Inclusions {
-				if prd.ProductName == p.PlanName {
-					incs = prd.ProductInclusions
-					break
-				}
-			}
+			incs := productInclusions(sp.Inclusions, p.PlanName)
 			brokerErp, btErp := s.erpPrices(p, markupPercentage)
 			pd := PlanPriceDetails{
 				PlanID:                 p.PlanID,
@@ -140,6 +139,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 				ChargedERPPriceWithVat: btErp,
 				CarDetails:             v.CarDetails,
 				Inclusions:             incs,
+				InclusionsEn:           englishIfTranslated(productInclusions(originalInclusions[sp.Name], p.PlanName), incs),
 				AvailableAddOns:        sp.AddOns,
 				Fees:                   v.PriceDetails.Fees,
 				Deposit:                p.Deposit,
@@ -306,6 +306,25 @@ func sortAvailableVehiclesByCheapestPlan(vs []AvailableVehicle) {
 	sort.Slice(vs, func(i, j int) bool {
 		return vs[i].Plans[0].Price < vs[j].Plans[0].Price
 	})
+}
+
+// productInclusions returns what the named plan includes.
+func productInclusions(inclusions []broker.Inclusions, planName string) []string {
+	for _, prd := range inclusions {
+		if prd.ProductName == planName {
+			return prd.ProductInclusions
+		}
+	}
+	return nil
+}
+
+// englishIfTranslated returns the English inclusions only when translation changed what the user
+// saw, so an English search, or one with nothing translated, doesn't store them twice.
+func englishIfTranslated(english, shown []string) []string {
+	if english == nil || slices.Equal(english, shown) {
+		return nil
+	}
+	return english
 }
 
 // translatePlanDetails translates the plan details using the service's translator, returning the original detail if no translation is found after inserting it to db.

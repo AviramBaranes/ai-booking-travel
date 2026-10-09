@@ -37,3 +37,16 @@ func TestToVoucherDataBlanksUnreadableDetails(t *testing.T) {
 		t.Errorf("voucher = %+v, want the rest filled", d)
 	}
 }
+
+func TestVoucherInclusions(t *testing.T) {
+	hebrew := []string{"קילומטראז' בלתי מוגבל"}
+	english := []string{"Unlimited mileage"}
+
+	if got := voucherInclusions(db.Reservation{PlanInclusions: hebrew, PlanInclusionsEn: english}); got[0] != english[0] {
+		t.Errorf("translated: inclusions = %v, want the English source", got)
+	}
+	// Not translated, or booked before the English source was stored.
+	if got := voucherInclusions(db.Reservation{PlanInclusions: english}); got[0] != english[0] {
+		t.Errorf("not translated: inclusions = %v, want the stored inclusions", got)
+	}
+}

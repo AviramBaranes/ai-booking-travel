@@ -16,6 +16,7 @@ INSERT INTO price_offers (
     supplier_code,
     car_details,
     plan_inclusions,
+    plan_inclusions_en,
     currency_code,
     currency_rate,
     purchase_price,
@@ -50,6 +51,7 @@ INSERT INTO price_offers (
     sqlc.arg(supplier_code),
     sqlc.arg(car_details),
     sqlc.arg(plan_inclusions),
+    sqlc.narg(plan_inclusions_en),
     sqlc.arg(currency_code),
     sqlc.arg(currency_rate),
     sqlc.arg(purchase_price),
@@ -106,6 +108,7 @@ WHERE id = sqlc.arg(id) AND agent_id = sqlc.arg(agent_id) AND status != 'unavail
 UPDATE price_offers SET
     car_details = sqlc.arg(car_details),
     plan_inclusions = sqlc.arg(plan_inclusions),
+    plan_inclusions_en = sqlc.narg(plan_inclusions_en),
     currency_code = sqlc.arg(currency_code),
     purchase_price = sqlc.arg(purchase_price),
     markup_percentage = sqlc.arg(markup_percentage),

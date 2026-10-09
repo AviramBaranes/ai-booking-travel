@@ -38,6 +38,7 @@ type PlanPriceDetails struct {
 	TheftExcessCurrency    string            `json:"theftExcessCurrency"`
 	Fees                   broker.Fees       `json:"fees"`
 	Inclusions             []string          `json:"inclusions"`
+	InclusionsEn           []string          `json:"inclusionsEn,omitempty"` //the English source of Inclusions, set only when they were translated
 }
 
 // storePlansDetails stores the given plan details in the database and returns the ID of the inserted snapshot.

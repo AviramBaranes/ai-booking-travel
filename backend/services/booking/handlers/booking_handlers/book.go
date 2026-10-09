@@ -116,6 +116,7 @@ func (s *BookingService) buildCreateReservationParams(
 		SupplierCode:          plan.SupplierCode,
 		CarDetails:            &plan.CarDetails,
 		PlanInclusions:        plan.Inclusions,
+		PlanInclusionsEn:      plan.InclusionsEn,
 		PickupDate:            dbadapters.DateToString(snapshot.PickupDate),
 		DropoffDate:           dbadapters.DateToString(snapshot.DropoffDate),
 		RentalDays:            rentalDays,

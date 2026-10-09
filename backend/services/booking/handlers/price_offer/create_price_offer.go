@@ -123,6 +123,7 @@ func (s *PriceOfferService) CreatePriceOffer(ctx context.Context, p CreatePriceO
 		SupplierCode:        p.SupplierCode,
 		CarDetails:          carDetailsJSON,
 		PlanInclusions:      plan.Inclusions,
+		PlanInclusionsEn:    plan.InclusionsEn,
 		CurrencyCode:        plan.CurrencyCode,
 		CurrencyRate:        dbadapters.NumericFromFloat64(plan.CurrencyRate),
 		PurchasePrice:       dbadapters.NumericFromFloat64(plan.CarPurchasePrice),

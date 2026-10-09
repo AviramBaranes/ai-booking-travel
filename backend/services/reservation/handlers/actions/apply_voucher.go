@@ -228,7 +228,7 @@ func toVoucherData(reservation db.Reservation) (*broker.VoucherData, error) {
 		LeadModel:           carDetails.Model,
 		Passengers:          carDetails.Seats,
 		Suitcases:           carDetails.Bags,
-		PrepaidIncludes:     reservation.PlanInclusions,
+		PrepaidIncludes:     voucherInclusions(reservation),
 		OptionalServices:    voucherOptionalServices(payAtPickup.SelectedAddons),
 		PayAtPickup:         voucherStationFees(payAtPickup.Fees),
 		Deposit:             payAtPickup.Deposit,
@@ -238,6 +238,15 @@ func toVoucherData(reservation db.Reservation) (*broker.VoucherData, error) {
 		TheftExcess:         int(reservation.TheftExcess),
 		TheftExcessCurrency: reservation.TheftExcessCurrency,
 	}, nil
+}
+
+// voucherInclusions returns the inclusions in English, as vouchers always are. The English source is
+// stored only when the user saw them translated.
+func voucherInclusions(reservation db.Reservation) []string {
+	if len(reservation.PlanInclusionsEn) > 0 {
+		return reservation.PlanInclusionsEn
+	}
+	return reservation.PlanInclusions
 }
 
 // voucherSupplier names the supplier on the voucher, falling back to its code for a car stored

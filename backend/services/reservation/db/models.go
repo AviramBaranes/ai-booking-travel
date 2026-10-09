@@ -247,6 +247,7 @@ type Reservation struct {
 	CouponName              string
 	TheftExcess             int32
 	TheftExcessCurrency     string
+	PlanInclusionsEn        []string
 }
 
 type ReservationPenalty struct {

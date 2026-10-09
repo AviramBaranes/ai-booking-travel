@@ -265,4 +265,5 @@ type PriceOffer struct {
 	DropoffDetails      []byte
 	TheftExcess         int32
 	TheftExcessCurrency string
+	PlanInclusionsEn    []string
 }

@@ -42,6 +42,7 @@ type CreateReservationParams struct {
 	SupplierCode          string                          `json:"supplierCode" validate:"required,notblank"`
 	CarDetails            *broker.CarDetails              `json:"carDetails" validate:"required"`
 	PlanInclusions        []string                        `json:"planInclusions" validate:"required"`
+	PlanInclusionsEn      []string                        `json:"planInclusionsEn" encore:"optional"` //the English source of PlanInclusions for the voucher, only when they were translated
 	CountryCode           string                          `json:"countryCode" validate:"required,notblank"`
 	CurrencyCode          string                          `json:"currencyCode" validate:"required,notblank"`
 	CurrencyRate          float64                         `json:"currencyRate" validate:"required,gt=0"`
@@ -133,6 +134,7 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 		SupplierCode:          p.SupplierCode,
 		CarDetails:            carDetailsJSON,
 		PlanInclusions:        p.PlanInclusions,
+		PlanInclusionsEn:      p.PlanInclusionsEn,
 		CountryCode:           p.CountryCode,
 		CurrencyCode:          p.CurrencyCode,
 		CurrencyRate:          dbadapters.NumericFromFloat64(p.CurrencyRate),

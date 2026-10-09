@@ -151,6 +151,7 @@ func (s *PriceOfferService) renewPriceOfferDetails(ctx context.Context, offer db
 		AgentID:          offer.AgentID,
 		CarDetails:       carDetailsJSON,
 		PlanInclusions:   plan.Inclusions,
+		PlanInclusionsEn: plan.InclusionsEn,
 		CurrencyCode:     plan.CurrencyCode,
 		PurchasePrice:    dbadapters.NumericFromFloat64(plan.CarPurchasePrice),
 		MarkupPercentage: dbadapters.NumericFromFloat64(plan.MarkupPercentage),
