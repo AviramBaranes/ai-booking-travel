@@ -1,7 +1,18 @@
 package db
 
-import "github.com/jackc/pgx/v5"
+import (
+	"errors"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+)
 
 var (
 	ErrNoRows = pgx.ErrNoRows
 )
+
+// IsUniqueViolation checks if the error is a PostgreSQL unique constraint violation (23505).
+func IsUniqueViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
+}

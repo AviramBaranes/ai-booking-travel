@@ -13,4 +13,6 @@ const (
 	CodeOldOffer                       = "old_offer"
 	CodeCurrencyRatesUnavailable       = "currency_rates_unavailable"
 	CodeAvailabilityPricingFailed      = "availability_pricing_failed"
+	CodeLocationsShareBroker           = "locations_share_broker"
+	CodeLocationMergeConflict          = "location_merge_conflict"
 )

@@ -15,6 +15,7 @@ import (
 // encore:service
 type Service struct {
 	query db.Querier
+	inTx  db.TxRunner
 	t     *TranslationCache
 	c     *currency.CurrenciesCache
 }
@@ -38,6 +39,7 @@ func initService() (*Service, error) {
 
 	svc := &Service{
 		query: query,
+		inTx:  db.NewTxRunner(pgxdb),
 		t: &TranslationCache{
 			translations: make(map[string]string),
 			known:        make(map[string]struct{}),
