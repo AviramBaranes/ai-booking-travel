@@ -5,6 +5,7 @@ HertzErpDayChargeCA: 7.0
 FlexErpDayCharge: 3.0
 AvanceErpDayChargeStandard: 9.0
 AvanceErpDayChargeZeroExcess: 3.0
+SellBrokerErpAsOwn: true
 MarkUpGross: 35.0
 MarkUpNet:   16.0
 

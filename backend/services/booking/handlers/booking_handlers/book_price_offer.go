@@ -124,8 +124,10 @@ func unmarshalPriceOfferCarDetails(offer db.GetPriceOfferByIdRow) (broker.CarDet
 	return offerCarDetails, nil
 }
 
-func isPriceOfferErpIncluded(offer db.GetPriceOfferByIdRow) bool {
-	return dbadapters.NumericToFloat64(offer.BtErpPrice) != 0 || dbadapters.NumericToFloat64(offer.BrokerErpPrice) != 0
+// isPriceOfferBrokerErpIncluded reports whether the offer buys the ERP from the broker. ERP we sell as
+// our own leaves the broker's ERP at 0, so it is not bought from the broker.
+func isPriceOfferBrokerErpIncluded(offer db.GetPriceOfferByIdRow) bool {
+	return dbadapters.NumericToFloat64(offer.BrokerErpPrice) > 0
 }
 
 func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, p BookPriceOfferParams, offerCarDetails broker.CarDetails) broker.BookingParams {
@@ -141,7 +143,7 @@ func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, p BookPriceOffe
 		PlanID:          offer.PlanID,
 		PickupLocation:  offer.PickupBrokerLocationID,
 		DropoffLocation: offer.DropoffBrokerLocationID,
-		IncludeERP:      isPriceOfferErpIncluded(offer),
+		IncludeERP:      isPriceOfferBrokerErpIncluded(offer),
 		SelectedAddOns:  getSelectedAddOns(offer.PayAtPickup),
 		DriverTitle:     p.DriverTitle,
 		DriverFirstName: p.DriverFirstName,

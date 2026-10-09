@@ -121,6 +121,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 					break
 				}
 			}
+			brokerErp, btErp := s.erpPrices(p, markupPercentage)
 			pd := PlanPriceDetails{
 				PlanID:                 p.PlanID,
 				RateQualifier:          p.RateQualifier,
@@ -135,8 +136,8 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 				CouponName:             couponName,
 				CarPurchasePrice:       p.Price,
 				MarkupPercentage:       markupPercentage,
-				SupplierErpPrice:       p.BrokerErpPrice,
-				ChargedERPPriceWithVat: p.ChargedErpPriceWithVat,
+				SupplierErpPrice:       brokerErp,
+				ChargedERPPriceWithVat: btErp,
 				CarDetails:             v.CarDetails,
 				Inclusions:             incs,
 				AvailableAddOns:        sp.AddOns,
@@ -152,7 +153,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 			artifacts.plansDetails = append(artifacts.plansDetails, pd)
 
 			carPriceWithMarkup := pricing.ApplyMarkup(p.Price, markupPercentage)
-			erpWithMarkup := pricing.ApplyMarkup(p.BrokerErpPrice, markupPercentage)
+			erpWithMarkup := pricing.ApplyMarkup(brokerErp, markupPercentage)
 			discountedErp := pricing.CalculateDiscountedPrice(erpWithMarkup, couponDiscount)
 			discountedCarPrice := pricing.CalculateDiscountedPrice(carPriceWithMarkup, couponDiscount) // no discount on charged erp
 
@@ -160,7 +161,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 			carPriceWithMarkup = pricing.ApplyMarkup(carPriceWithMarkup, grossMarkup)
 			discountedCarPrice = pricing.ApplyMarkup(discountedCarPrice, grossMarkup)
 			discountedErp = pricing.ApplyMarkup(discountedErp, grossMarkup)
-			chargedErpPriceWithVat := pricing.ApplyMarkup(p.ChargedErpPriceWithVat, grossMarkup)
+			chargedErpPriceWithVat := pricing.ApplyMarkup(btErp, grossMarkup)
 
 			avPlan := Plan{
 				PlanID:              p.PlanID,
@@ -194,6 +195,15 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 	assignRandomBookingSignals(artifacts.availableCars)
 
 	return artifacts, nil
+}
+
+// erpPrices returns the plan's broker ERP and BT ERP. When we sell the broker's ERP as our own, its
+// price with markup moves into the BT ERP, so the price is unchanged but the broker's ERP is 0.
+func (s *AvailabilityService) erpPrices(p broker.Plan, markupPercentage float64) (brokerErp, btErp float64) {
+	if !s.cfg.SellBrokerErpAsOwn() {
+		return p.BrokerErpPrice, p.ChargedErpPriceWithVat
+	}
+	return 0, pricing.ApplyMarkup(p.BrokerErpPrice, markupPercentage) + p.ChargedErpPriceWithVat
 }
 
 func assignRandomBookingSignals(vs []AvailableVehicle) {

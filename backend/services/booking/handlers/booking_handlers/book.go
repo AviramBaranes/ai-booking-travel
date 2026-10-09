@@ -203,7 +203,7 @@ func (s *BookingService) bookCarAtBroker(ctx context.Context, snapshot db.Availa
 		PlanID:          p.PlanID,
 		PickupLocation:  plan.PickupLocationCode,
 		DropoffLocation: plan.DropoffLocationCode,
-		IncludeERP:      p.IncludeERP,
+		IncludeERP:      p.IncludeERP && plan.SupplierErpPrice > 0, // ERP we sell as our own is not bought from the broker
 		SelectedAddOns:  p.SelectedAddOns,
 		DriverTitle:     p.DriverTitle,
 		DriverFirstName: p.DriverFirstName,
