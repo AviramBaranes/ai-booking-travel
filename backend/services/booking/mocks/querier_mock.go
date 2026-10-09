@@ -456,6 +456,21 @@ func (mr *MockQuerierMockRecorder) GetLocationById(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLocationById", reflect.TypeOf((*MockQuerier)(nil).GetLocationById), ctx, id)
 }
 
+// GetLocationIDByAnyBrokerCode mocks base method.
+func (m *MockQuerier) GetLocationIDByAnyBrokerCode(ctx context.Context, arg db.GetLocationIDByAnyBrokerCodeParams) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLocationIDByAnyBrokerCode", ctx, arg)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLocationIDByAnyBrokerCode indicates an expected call of GetLocationIDByAnyBrokerCode.
+func (mr *MockQuerierMockRecorder) GetLocationIDByAnyBrokerCode(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLocationIDByAnyBrokerCode", reflect.TypeOf((*MockQuerier)(nil).GetLocationIDByAnyBrokerCode), ctx, arg)
+}
+
 // GetLocationIDByBrokerCode mocks base method.
 func (m *MockQuerier) GetLocationIDByBrokerCode(ctx context.Context, arg db.GetLocationIDByBrokerCodeParams) (int64, error) {
 	m.ctrl.T.Helper()
@@ -484,6 +499,21 @@ func (m *MockQuerier) GetLocationIDByLocationBrokerCodeID(ctx context.Context, i
 func (mr *MockQuerierMockRecorder) GetLocationIDByLocationBrokerCodeID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLocationIDByLocationBrokerCodeID", reflect.TypeOf((*MockQuerier)(nil).GetLocationIDByLocationBrokerCodeID), ctx, id)
+}
+
+// GetLocationsByIDs mocks base method.
+func (m *MockQuerier) GetLocationsByIDs(ctx context.Context, ids []int64) ([]db.Location, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLocationsByIDs", ctx, ids)
+	ret0, _ := ret[0].([]db.Location)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLocationsByIDs indicates an expected call of GetLocationsByIDs.
+func (mr *MockQuerierMockRecorder) GetLocationsByIDs(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLocationsByIDs", reflect.TypeOf((*MockQuerier)(nil).GetLocationsByIDs), ctx, ids)
 }
 
 // GetPriceOfferById mocks base method.
@@ -695,6 +725,21 @@ func (mr *MockQuerierMockRecorder) ListCurrencies(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCurrencies", reflect.TypeOf((*MockQuerier)(nil).ListCurrencies), ctx)
 }
 
+// ListLocationAliasesByLocationIDs mocks base method.
+func (m *MockQuerier) ListLocationAliasesByLocationIDs(ctx context.Context, locationIds []int64) ([]db.ListLocationAliasesByLocationIDsRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListLocationAliasesByLocationIDs", ctx, locationIds)
+	ret0, _ := ret[0].([]db.ListLocationAliasesByLocationIDsRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListLocationAliasesByLocationIDs indicates an expected call of ListLocationAliasesByLocationIDs.
+func (mr *MockQuerierMockRecorder) ListLocationAliasesByLocationIDs(ctx, locationIds any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListLocationAliasesByLocationIDs", reflect.TypeOf((*MockQuerier)(nil).ListLocationAliasesByLocationIDs), ctx, locationIds)
+}
+
 // ListLocationBrokerCodesWithLocation mocks base method.
 func (m *MockQuerier) ListLocationBrokerCodesWithLocation(ctx context.Context, arg db.ListLocationBrokerCodesWithLocationParams) ([]db.ListLocationBrokerCodesWithLocationRow, error) {
 	m.ctrl.T.Helper()
@@ -708,6 +753,21 @@ func (m *MockQuerier) ListLocationBrokerCodesWithLocation(ctx context.Context, a
 func (mr *MockQuerierMockRecorder) ListLocationBrokerCodesWithLocation(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListLocationBrokerCodesWithLocation", reflect.TypeOf((*MockQuerier)(nil).ListLocationBrokerCodesWithLocation), ctx, arg)
+}
+
+// ListLocationMergeSuggestions mocks base method.
+func (m *MockQuerier) ListLocationMergeSuggestions(ctx context.Context) ([]db.ListLocationMergeSuggestionsRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListLocationMergeSuggestions", ctx)
+	ret0, _ := ret[0].([]db.ListLocationMergeSuggestionsRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListLocationMergeSuggestions indicates an expected call of ListLocationMergeSuggestions.
+func (mr *MockQuerierMockRecorder) ListLocationMergeSuggestions(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListLocationMergeSuggestions", reflect.TypeOf((*MockQuerier)(nil).ListLocationMergeSuggestions), ctx)
 }
 
 // ListLocationsWithoutAliases mocks base method.
@@ -770,6 +830,63 @@ func (mr *MockQuerierMockRecorder) ListPriceOffersByAgent(ctx, arg any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPriceOffersByAgent", reflect.TypeOf((*MockQuerier)(nil).ListPriceOffersByAgent), ctx, arg)
 }
 
+// LockLocationsForMerge mocks base method.
+func (m *MockQuerier) LockLocationsForMerge(ctx context.Context, ids []int64) ([]db.Location, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LockLocationsForMerge", ctx, ids)
+	ret0, _ := ret[0].([]db.Location)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LockLocationsForMerge indicates an expected call of LockLocationsForMerge.
+func (mr *MockQuerierMockRecorder) LockLocationsForMerge(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LockLocationsForMerge", reflect.TypeOf((*MockQuerier)(nil).LockLocationsForMerge), ctx, ids)
+}
+
+// MoveLocationAliases mocks base method.
+func (m *MockQuerier) MoveLocationAliases(ctx context.Context, arg db.MoveLocationAliasesParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MoveLocationAliases", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MoveLocationAliases indicates an expected call of MoveLocationAliases.
+func (mr *MockQuerierMockRecorder) MoveLocationAliases(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MoveLocationAliases", reflect.TypeOf((*MockQuerier)(nil).MoveLocationAliases), ctx, arg)
+}
+
+// MoveLocationBrokerCodes mocks base method.
+func (m *MockQuerier) MoveLocationBrokerCodes(ctx context.Context, arg db.MoveLocationBrokerCodesParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MoveLocationBrokerCodes", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MoveLocationBrokerCodes indicates an expected call of MoveLocationBrokerCodes.
+func (mr *MockQuerierMockRecorder) MoveLocationBrokerCodes(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MoveLocationBrokerCodes", reflect.TypeOf((*MockQuerier)(nil).MoveLocationBrokerCodes), ctx, arg)
+}
+
+// MovePriceOfferLocations mocks base method.
+func (m *MockQuerier) MovePriceOfferLocations(ctx context.Context, arg db.MovePriceOfferLocationsParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MovePriceOfferLocations", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MovePriceOfferLocations indicates an expected call of MovePriceOfferLocations.
+func (mr *MockQuerierMockRecorder) MovePriceOfferLocations(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MovePriceOfferLocations", reflect.TypeOf((*MockQuerier)(nil).MovePriceOfferLocations), ctx, arg)
+}
+
 // RenewPriceOfferDetails mocks base method.
 func (m *MockQuerier) RenewPriceOfferDetails(ctx context.Context, arg db.RenewPriceOfferDetailsParams) error {
 	m.ctrl.T.Helper()
@@ -811,6 +928,21 @@ func (m *MockQuerier) SearchLocations(ctx context.Context, search string) ([]db.
 func (mr *MockQuerierMockRecorder) SearchLocations(ctx, search any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchLocations", reflect.TypeOf((*MockQuerier)(nil).SearchLocations), ctx, search)
+}
+
+// SearchLocationsForMerge mocks base method.
+func (m *MockQuerier) SearchLocationsForMerge(ctx context.Context, search string) ([]db.Location, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchLocationsForMerge", ctx, search)
+	ret0, _ := ret[0].([]db.Location)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchLocationsForMerge indicates an expected call of SearchLocationsForMerge.
+func (mr *MockQuerierMockRecorder) SearchLocationsForMerge(ctx, search any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchLocationsForMerge", reflect.TypeOf((*MockQuerier)(nil).SearchLocationsForMerge), ctx, search)
 }
 
 // SetPriceOfferRenewedAt mocks base method.
@@ -911,6 +1043,21 @@ func (m *MockQuerier) UpdateCurrency(ctx context.Context, arg db.UpdateCurrencyP
 func (mr *MockQuerierMockRecorder) UpdateCurrency(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCurrency", reflect.TypeOf((*MockQuerier)(nil).UpdateCurrency), ctx, arg)
+}
+
+// UpdateLocationFields mocks base method.
+func (m *MockQuerier) UpdateLocationFields(ctx context.Context, arg db.UpdateLocationFieldsParams) (db.Location, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateLocationFields", ctx, arg)
+	ret0, _ := ret[0].(db.Location)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateLocationFields indicates an expected call of UpdateLocationFields.
+func (mr *MockQuerierMockRecorder) UpdateLocationFields(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLocationFields", reflect.TypeOf((*MockQuerier)(nil).UpdateLocationFields), ctx, arg)
 }
 
 // UpdateMarkupRate mocks base method.

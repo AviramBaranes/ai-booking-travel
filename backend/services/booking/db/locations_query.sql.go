@@ -122,6 +122,43 @@ func (q *Queries) GetLocationIDByBrokerCode(ctx context.Context, arg GetLocation
 	return location_id, err
 }
 
+const getLocationsByIDs = `-- name: GetLocationsByIDs :many
+SELECT id, country, country_code, city, name, iata, created_at, updated_at, is_airport
+FROM locations
+WHERE id = ANY ($1::bigint[])
+ORDER BY id
+`
+
+func (q *Queries) GetLocationsByIDs(ctx context.Context, ids []int64) ([]Location, error) {
+	rows, err := q.db.Query(ctx, getLocationsByIDs, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Location
+	for rows.Next() {
+		var i Location
+		if err := rows.Scan(
+			&i.ID,
+			&i.Country,
+			&i.CountryCode,
+			&i.City,
+			&i.Name,
+			&i.Iata,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.IsAirport,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const insertLocation = `-- name: InsertLocation :one
 INSERT INTO locations (country, country_code, city, name, iata)
 VALUES ($1, $2, $3, $4, $5)
@@ -204,6 +241,59 @@ func (q *Queries) InsertManyLocation(ctx context.Context, arg InsertManyLocation
 	return items, nil
 }
 
+const listLocationMergeSuggestions = `-- name: ListLocationMergeSuggestions :many
+WITH normalized AS (
+    SELECT
+        l.id,
+        l.country_code,
+        lower(regexp_replace(l.name, '[^[:alnum:]]', '', 'g')) AS normalized_name
+    FROM locations l
+    WHERE EXISTS (
+        SELECT 1
+        FROM location_broker_codes lbc
+        WHERE lbc.location_id = l.id
+    )
+)
+SELECT
+    n.country_code,
+    n.normalized_name::text AS normalized_name,
+    array_agg(n.id ORDER BY n.id)::bigint[] AS location_ids
+FROM normalized n
+WHERE n.normalized_name <> ''
+GROUP BY n.country_code, n.normalized_name
+HAVING count(*) > 1
+ORDER BY n.country_code, n.normalized_name
+LIMIT 200
+`
+
+type ListLocationMergeSuggestionsRow struct {
+	CountryCode    string
+	NormalizedName string
+	LocationIds    []int64
+}
+
+// Groups locations of the same country whose names match once everything but letters and digits
+// is stripped and case is ignored ("Athens - downtown" and "Athens Downtown").
+func (q *Queries) ListLocationMergeSuggestions(ctx context.Context) ([]ListLocationMergeSuggestionsRow, error) {
+	rows, err := q.db.Query(ctx, listLocationMergeSuggestions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListLocationMergeSuggestionsRow
+	for rows.Next() {
+		var i ListLocationMergeSuggestionsRow
+		if err := rows.Scan(&i.CountryCode, &i.NormalizedName, &i.LocationIds); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listLocationsWithoutAliases = `-- name: ListLocationsWithoutAliases :many
 SELECT l.id, l.name, l.iata
 FROM locations l
@@ -240,6 +330,44 @@ func (q *Queries) ListLocationsWithoutAliases(ctx context.Context, fromEnd bool)
 	for rows.Next() {
 		var i ListLocationsWithoutAliasesRow
 		if err := rows.Scan(&i.ID, &i.Name, &i.Iata); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const lockLocationsForMerge = `-- name: LockLocationsForMerge :many
+SELECT id, country, country_code, city, name, iata, created_at, updated_at, is_airport
+FROM locations
+WHERE id = ANY ($1::bigint[])
+ORDER BY id
+FOR UPDATE
+`
+
+func (q *Queries) LockLocationsForMerge(ctx context.Context, ids []int64) ([]Location, error) {
+	rows, err := q.db.Query(ctx, lockLocationsForMerge, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Location
+	for rows.Next() {
+		var i Location
+		if err := rows.Scan(
+			&i.ID,
+			&i.Country,
+			&i.CountryCode,
+			&i.City,
+			&i.Name,
+			&i.Iata,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.IsAirport,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -386,6 +514,56 @@ func (q *Queries) SearchLocations(ctx context.Context, search string) ([]SearchL
 	return items, nil
 }
 
+const searchLocationsForMerge = `-- name: SearchLocationsForMerge :many
+SELECT l.id, l.country, l.country_code, l.city, l.name, l.iata, l.created_at, l.updated_at, l.is_airport
+FROM locations l
+WHERE EXISTS (
+    SELECT 1
+    FROM location_broker_codes lbc
+    WHERE lbc.location_id = l.id
+)
+AND (
+    l.id::text = $1::text
+    OR l.name ILIKE '%' || $1::text || '%'
+    OR l.city ILIKE '%' || $1::text || '%'
+    OR l.iata ILIKE '%' || $1::text || '%'
+)
+ORDER BY
+    CASE WHEN l.id::text = $1::text THEN 0 ELSE 1 END,
+    lower(l.name)
+LIMIT 20
+`
+
+func (q *Queries) SearchLocationsForMerge(ctx context.Context, search string) ([]Location, error) {
+	rows, err := q.db.Query(ctx, searchLocationsForMerge, search)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Location
+	for rows.Next() {
+		var i Location
+		if err := rows.Scan(
+			&i.ID,
+			&i.Country,
+			&i.CountryCode,
+			&i.City,
+			&i.Name,
+			&i.Iata,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.IsAirport,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const toggleIsAirport = `-- name: ToggleIsAirport :exec
 UPDATE locations
 SET is_airport = $1,
@@ -401,6 +579,54 @@ type ToggleIsAirportParams struct {
 func (q *Queries) ToggleIsAirport(ctx context.Context, arg ToggleIsAirportParams) error {
 	_, err := q.db.Exec(ctx, toggleIsAirport, arg.IsAirport, arg.ID)
 	return err
+}
+
+const updateLocationFields = `-- name: UpdateLocationFields :one
+UPDATE locations
+SET name         = $1::text,
+    country      = $2::text,
+    country_code = $3::text,
+    city         = $4::text,
+    iata         = $5::char(3),
+    is_airport   = $6::boolean,
+    updated_at   = now()
+WHERE id = $7
+RETURNING id, country, country_code, city, name, iata, created_at, updated_at, is_airport
+`
+
+type UpdateLocationFieldsParams struct {
+	Name        string
+	Country     string
+	CountryCode string
+	City        *string
+	Iata        *string
+	IsAirport   bool
+	ID          int64
+}
+
+func (q *Queries) UpdateLocationFields(ctx context.Context, arg UpdateLocationFieldsParams) (Location, error) {
+	row := q.db.QueryRow(ctx, updateLocationFields,
+		arg.Name,
+		arg.Country,
+		arg.CountryCode,
+		arg.City,
+		arg.Iata,
+		arg.IsAirport,
+		arg.ID,
+	)
+	var i Location
+	err := row.Scan(
+		&i.ID,
+		&i.Country,
+		&i.CountryCode,
+		&i.City,
+		&i.Name,
+		&i.Iata,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsAirport,
+	)
+	return i, err
 }
 
 const upsertLocationByCountryCodeName = `-- name: UpsertLocationByCountryCodeName :one

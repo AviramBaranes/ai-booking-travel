@@ -166,3 +166,11 @@ UPDATE price_offers SET
     updated_at = now()
 WHERE id = sqlc.arg(id) AND status = 'open'
 RETURNING *;
+
+-- name: MovePriceOfferLocations :exec
+UPDATE price_offers
+SET pickup_location_id  = CASE WHEN pickup_location_id = sqlc.arg(from_id) THEN sqlc.arg(to_id) ELSE pickup_location_id END,
+    dropoff_location_id = CASE WHEN dropoff_location_id = sqlc.arg(from_id) THEN sqlc.arg(to_id) ELSE dropoff_location_id END,
+    updated_at          = now()
+WHERE pickup_location_id = sqlc.arg(from_id)
+   OR dropoff_location_id = sqlc.arg(from_id);

@@ -597,6 +597,25 @@ func (q *Queries) ListPriceOffersByAgent(ctx context.Context, arg ListPriceOffer
 	return items, nil
 }
 
+const movePriceOfferLocations = `-- name: MovePriceOfferLocations :exec
+UPDATE price_offers
+SET pickup_location_id  = CASE WHEN pickup_location_id = $1 THEN $2 ELSE pickup_location_id END,
+    dropoff_location_id = CASE WHEN dropoff_location_id = $1 THEN $2 ELSE dropoff_location_id END,
+    updated_at          = now()
+WHERE pickup_location_id = $1
+   OR dropoff_location_id = $1
+`
+
+type MovePriceOfferLocationsParams struct {
+	FromID int64
+	ToID   int64
+}
+
+func (q *Queries) MovePriceOfferLocations(ctx context.Context, arg MovePriceOfferLocationsParams) error {
+	_, err := q.db.Exec(ctx, movePriceOfferLocations, arg.FromID, arg.ToID)
+	return err
+}
+
 const renewPriceOfferDetails = `-- name: RenewPriceOfferDetails :exec
 UPDATE price_offers SET
     car_details = $1,

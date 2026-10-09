@@ -186,3 +186,73 @@ UPDATE locations
 SET is_airport = sqlc.arg(is_airport),
     updated_at = now()
 WHERE id = sqlc.arg(id);
+
+-- name: ListLocationMergeSuggestions :many
+-- Groups locations of the same country whose names match once everything but letters and digits
+-- is stripped and case is ignored ("Athens - downtown" and "Athens Downtown").
+WITH normalized AS (
+    SELECT
+        l.id,
+        l.country_code,
+        lower(regexp_replace(l.name, '[^[:alnum:]]', '', 'g')) AS normalized_name
+    FROM locations l
+    WHERE EXISTS (
+        SELECT 1
+        FROM location_broker_codes lbc
+        WHERE lbc.location_id = l.id
+    )
+)
+SELECT
+    n.country_code,
+    n.normalized_name::text AS normalized_name,
+    array_agg(n.id ORDER BY n.id)::bigint[] AS location_ids
+FROM normalized n
+WHERE n.normalized_name <> ''
+GROUP BY n.country_code, n.normalized_name
+HAVING count(*) > 1
+ORDER BY n.country_code, n.normalized_name
+LIMIT 200;
+
+-- name: SearchLocationsForMerge :many
+SELECT l.*
+FROM locations l
+WHERE EXISTS (
+    SELECT 1
+    FROM location_broker_codes lbc
+    WHERE lbc.location_id = l.id
+)
+AND (
+    l.id::text = sqlc.arg(search)::text
+    OR l.name ILIKE '%' || sqlc.arg(search)::text || '%'
+    OR l.city ILIKE '%' || sqlc.arg(search)::text || '%'
+    OR l.iata ILIKE '%' || sqlc.arg(search)::text || '%'
+)
+ORDER BY
+    CASE WHEN l.id::text = sqlc.arg(search)::text THEN 0 ELSE 1 END,
+    lower(l.name)
+LIMIT 20;
+
+-- name: GetLocationsByIDs :many
+SELECT *
+FROM locations
+WHERE id = ANY (sqlc.arg(ids)::bigint[])
+ORDER BY id;
+
+-- name: LockLocationsForMerge :many
+SELECT *
+FROM locations
+WHERE id = ANY (sqlc.arg(ids)::bigint[])
+ORDER BY id
+FOR UPDATE;
+
+-- name: UpdateLocationFields :one
+UPDATE locations
+SET name         = sqlc.arg(name)::text,
+    country      = sqlc.arg(country)::text,
+    country_code = sqlc.arg(country_code)::text,
+    city         = sqlc.narg(city)::text,
+    iata         = sqlc.narg(iata)::char(3),
+    is_airport   = sqlc.arg(is_airport)::boolean,
+    updated_at   = now()
+WHERE id = sqlc.arg(id)
+RETURNING *;

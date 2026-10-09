@@ -33,3 +33,54 @@ func (q *Queries) InsertManyLocationAliases(ctx context.Context, arg InsertManyL
 	_, err := q.db.Exec(ctx, insertManyLocationAliases, arg.LocationIds, arg.Aliases)
 	return err
 }
+
+const listLocationAliasesByLocationIDs = `-- name: ListLocationAliasesByLocationIDs :many
+SELECT location_id, alias
+FROM location_aliases
+WHERE location_id = ANY ($1::bigint[])
+ORDER BY location_id, lower(alias)
+`
+
+type ListLocationAliasesByLocationIDsRow struct {
+	LocationID int64
+	Alias      string
+}
+
+func (q *Queries) ListLocationAliasesByLocationIDs(ctx context.Context, locationIds []int64) ([]ListLocationAliasesByLocationIDsRow, error) {
+	rows, err := q.db.Query(ctx, listLocationAliasesByLocationIDs, locationIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListLocationAliasesByLocationIDsRow
+	for rows.Next() {
+		var i ListLocationAliasesByLocationIDsRow
+		if err := rows.Scan(&i.LocationID, &i.Alias); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const moveLocationAliases = `-- name: MoveLocationAliases :exec
+INSERT INTO location_aliases (location_id, alias)
+SELECT $1::bigint, alias
+FROM location_aliases
+WHERE location_id = $2::bigint
+ON CONFLICT (location_id, lower(alias))
+DO NOTHING
+`
+
+type MoveLocationAliasesParams struct {
+	ToID   int64
+	FromID int64
+}
+
+func (q *Queries) MoveLocationAliases(ctx context.Context, arg MoveLocationAliasesParams) error {
+	_, err := q.db.Exec(ctx, moveLocationAliases, arg.ToID, arg.FromID)
+	return err
+}

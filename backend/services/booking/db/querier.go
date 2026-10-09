@@ -43,8 +43,11 @@ type Querier interface {
 	GetLocationBrokerCode(ctx context.Context, arg GetLocationBrokerCodeParams) (LocationBrokerCode, error)
 	GetLocationByBrokerLocationID(ctx context.Context, brokerLocationID string) (Location, error)
 	GetLocationById(ctx context.Context, id int64) (Location, error)
+	// Unlike GetLocationIDByBrokerCode, this also finds disabled codes.
+	GetLocationIDByAnyBrokerCode(ctx context.Context, arg GetLocationIDByAnyBrokerCodeParams) (int64, error)
 	GetLocationIDByBrokerCode(ctx context.Context, arg GetLocationIDByBrokerCodeParams) (int64, error)
 	GetLocationIDByLocationBrokerCodeID(ctx context.Context, id int64) (int64, error)
+	GetLocationsByIDs(ctx context.Context, ids []int64) ([]Location, error)
 	GetPriceOfferById(ctx context.Context, arg GetPriceOfferByIdParams) (GetPriceOfferByIdRow, error)
 	GetPriceOfferByToken(ctx context.Context, token pgtype.UUID) (GetPriceOfferByTokenRow, error)
 	GetSnapshotByID(ctx context.Context, id int64) (AvailablePlansSnapshot, error)
@@ -59,15 +62,24 @@ type Querier interface {
 	ListAllTranslations(ctx context.Context, arg ListAllTranslationsParams) ([]BrokerTranslation, error)
 	ListCoupons(ctx context.Context) ([]Coupon, error)
 	ListCurrencies(ctx context.Context) ([]Currency, error)
+	ListLocationAliasesByLocationIDs(ctx context.Context, locationIds []int64) ([]ListLocationAliasesByLocationIDsRow, error)
 	ListLocationBrokerCodesWithLocation(ctx context.Context, arg ListLocationBrokerCodesWithLocationParams) ([]ListLocationBrokerCodesWithLocationRow, error)
+	// Groups locations of the same country whose names match once everything but letters and digits
+	// is stripped and case is ignored ("Athens - downtown" and "Athens Downtown").
+	ListLocationMergeSuggestions(ctx context.Context) ([]ListLocationMergeSuggestionsRow, error)
 	ListLocationsWithoutAliases(ctx context.Context, fromEnd bool) ([]ListLocationsWithoutAliasesRow, error)
 	// Admin listing with pagination, optional filtering, and sorting.
 	ListMarkupRates(ctx context.Context, arg ListMarkupRatesParams) ([]MarkupRate, error)
 	ListPendingTranslations(ctx context.Context) ([]BrokerTranslation, error)
 	ListPriceOffersByAgent(ctx context.Context, arg ListPriceOffersByAgentParams) ([]ListPriceOffersByAgentRow, error)
+	LockLocationsForMerge(ctx context.Context, ids []int64) ([]Location, error)
+	MoveLocationAliases(ctx context.Context, arg MoveLocationAliasesParams) error
+	MoveLocationBrokerCodes(ctx context.Context, arg MoveLocationBrokerCodesParams) error
+	MovePriceOfferLocations(ctx context.Context, arg MovePriceOfferLocationsParams) error
 	RenewPriceOfferDetails(ctx context.Context, arg RenewPriceOfferDetailsParams) error
 	RenewPriceOfferUnavailable(ctx context.Context, arg RenewPriceOfferUnavailableParams) error
 	SearchLocations(ctx context.Context, search string) ([]SearchLocationsRow, error)
+	SearchLocationsForMerge(ctx context.Context, search string) ([]Location, error)
 	SetPriceOfferRenewedAt(ctx context.Context, arg SetPriceOfferRenewedAtParams) error
 	ToggleIsAirport(ctx context.Context, arg ToggleIsAirportParams) error
 	ToggleLocationBrokerCode(ctx context.Context, arg ToggleLocationBrokerCodeParams) error
@@ -75,6 +87,7 @@ type Querier interface {
 	UpdateBrokerTranslation(ctx context.Context, arg UpdateBrokerTranslationParams) error
 	UpdateCoupon(ctx context.Context, arg UpdateCouponParams) (Coupon, error)
 	UpdateCurrency(ctx context.Context, arg UpdateCurrencyParams) (Currency, error)
+	UpdateLocationFields(ctx context.Context, arg UpdateLocationFieldsParams) (Location, error)
 	UpdateMarkupRate(ctx context.Context, arg UpdateMarkupRateParams) (MarkupRate, error)
 	UpdatePriceOffer(ctx context.Context, arg UpdatePriceOfferParams) error
 	UpsertCurrencies(ctx context.Context, arg UpsertCurrenciesParams) error

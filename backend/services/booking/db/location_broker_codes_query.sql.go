@@ -172,6 +172,25 @@ func (q *Queries) GetLocationBrokerCode(ctx context.Context, arg GetLocationBrok
 	return i, err
 }
 
+const getLocationIDByAnyBrokerCode = `-- name: GetLocationIDByAnyBrokerCode :one
+SELECT location_id FROM location_broker_codes
+WHERE broker = $1::broker
+  AND broker_location_id = $2
+`
+
+type GetLocationIDByAnyBrokerCodeParams struct {
+	Broker           Broker
+	BrokerLocationID string
+}
+
+// Unlike GetLocationIDByBrokerCode, this also finds disabled codes.
+func (q *Queries) GetLocationIDByAnyBrokerCode(ctx context.Context, arg GetLocationIDByAnyBrokerCodeParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getLocationIDByAnyBrokerCode, arg.Broker, arg.BrokerLocationID)
+	var location_id int64
+	err := row.Scan(&location_id)
+	return location_id, err
+}
+
 const getLocationIDByLocationBrokerCodeID = `-- name: GetLocationIDByLocationBrokerCodeID :one
 SELECT location_id FROM location_broker_codes
 WHERE id = $1
@@ -321,6 +340,23 @@ func (q *Queries) ListLocationBrokerCodesWithLocation(ctx context.Context, arg L
 		return nil, err
 	}
 	return items, nil
+}
+
+const moveLocationBrokerCodes = `-- name: MoveLocationBrokerCodes :exec
+UPDATE location_broker_codes
+SET location_id = $1,
+    updated_at = now()
+WHERE location_id = $2
+`
+
+type MoveLocationBrokerCodesParams struct {
+	ToID   int64
+	FromID int64
+}
+
+func (q *Queries) MoveLocationBrokerCodes(ctx context.Context, arg MoveLocationBrokerCodesParams) error {
+	_, err := q.db.Exec(ctx, moveLocationBrokerCodes, arg.ToID, arg.FromID)
+	return err
 }
 
 const toggleLocationBrokerCode = `-- name: ToggleLocationBrokerCode :exec

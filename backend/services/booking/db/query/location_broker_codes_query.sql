@@ -111,3 +111,15 @@ WHERE location_id = sqlc.arg(location_id);
 -- name: GetLocationIDByLocationBrokerCodeID :one
 SELECT location_id FROM location_broker_codes
 WHERE id = sqlc.arg(id); 
+
+-- name: GetLocationIDByAnyBrokerCode :one
+-- Unlike GetLocationIDByBrokerCode, this also finds disabled codes.
+SELECT location_id FROM location_broker_codes
+WHERE broker = sqlc.arg(broker)::broker
+  AND broker_location_id = sqlc.arg(broker_location_id);
+
+-- name: MoveLocationBrokerCodes :exec
+UPDATE location_broker_codes
+SET location_id = sqlc.arg(to_id),
+    updated_at = now()
+WHERE location_id = sqlc.arg(from_id);
