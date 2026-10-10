@@ -13,6 +13,7 @@ import {
   Receipt,
   Ticket,
   MapPin,
+  Merge,
   CalendarCheck,
   TrendingUp,
   Banknote,
@@ -47,6 +48,7 @@ const navItems = [
   { label: "קופונים", href: "/admin/coupons", icon: Ticket },
   // { label: "מטבעות", href: "/admin/currencies", icon: Coins },
   { label: "מיקומים", href: "/admin/locations", icon: MapPin },
+  { label: "מיזוג מיקומים", href: "/admin/locations/merge", icon: Merge },
   { label: "תשלומים לספקים", href: "/admin/payments", icon: Wallet },
   { label: "תרגומים", href: "/admin/translations", icon: Languages },
   {
@@ -90,10 +92,15 @@ export default function AdminShell({
     }
   }, [isAuthorized, router, isLoading]);
 
-  const isAsideActive = (href: string) => {
-    if (href === "/admin") return pathname === "/admin";
-    return pathname.startsWith(href);
-  };
+  // The longest matching href wins, so a nested item (/admin/locations/merge) does not also
+  // light up its parent (/admin/locations).
+  const activeHref = navItems
+    .map((item) => item.href)
+    .filter((href) =>
+      href === "/admin" ? pathname === "/admin" : pathname.startsWith(href),
+    )
+    .sort((a, b) => b.length - a.length)[0];
+  const isAsideActive = (href: string) => href === activeHref;
 
   if (isLoading || !isAuthorized) {
     return null;
