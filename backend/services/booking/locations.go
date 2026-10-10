@@ -107,3 +107,28 @@ func (s *Service) InsertLocationAlias(ctx context.Context, p location.InsertLoca
 	ls := location.NewLocationService(s.query)
 	return ls.InsertLocationAliases(ctx, p)
 }
+
+// ListLocationMergeSuggestions lists groups of locations whose names differ only in punctuation,
+// spacing or case, as candidates for a merge.
+//
+//encore:api auth method=GET path=/locations/merge/suggestions tag:admin
+func (s *Service) ListLocationMergeSuggestions(ctx context.Context) (*location.ListMergeSuggestionsResponse, error) {
+	ls := location.NewLocationService(s.query)
+	return ls.ListMergeSuggestions(ctx)
+}
+
+// SearchLocationsForMerge searches locations by id, name, city or IATA, with their broker codes and aliases.
+//
+//encore:api auth method=GET path=/locations/merge/search tag:admin
+func (s *Service) SearchLocationsForMerge(ctx context.Context, p location.SearchMergeLocationsParams) (*location.SearchMergeLocationsResponse, error) {
+	ls := location.NewLocationService(s.query)
+	return ls.SearchMergeLocations(ctx, p)
+}
+
+// MergeLocations merges one location into another, keeping the broker codes and aliases of both.
+//
+//encore:api auth method=POST path=/locations/merge tag:admin
+func (s *Service) MergeLocations(ctx context.Context, p location.MergeLocationsParams) (*location.MergeLocationsResponse, error) {
+	ls := location.NewLocationService(s.query)
+	return ls.MergeLocations(ctx, s.inTx, p)
+}
