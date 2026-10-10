@@ -44,3 +44,19 @@ export function insertLocationAlias(data: location.InsertLocationAliasesParams) 
     client.booking.InsertLocationAlias(data),
   );
 }
+
+export function listLocationMergeSuggestions() {
+  return withErrorHandler((client) =>
+    client.booking.ListLocationMergeSuggestions(),
+  );
+}
+
+export function searchLocationsForMerge(search: string) {
+  return withErrorHandler((client) =>
+    client.booking.SearchLocationsForMerge({ Search: search }),
+  );
+}
+
+export function mergeLocations(data: location.MergeLocationsParams) {
+  return withErrorHandler((client) => client.booking.MergeLocations(data));
+}

@@ -687,13 +687,16 @@ export namespace booking {
             this.ListBrokerTranslations = this.ListBrokerTranslations.bind(this)
             this.ListCoupons = this.ListCoupons.bind(this)
             this.ListCurrencies = this.ListCurrencies.bind(this)
+            this.ListLocationMergeSuggestions = this.ListLocationMergeSuggestions.bind(this)
             this.ListLocations = this.ListLocations.bind(this)
             this.ListLocationsWithoutAlias = this.ListLocationsWithoutAlias.bind(this)
             this.ListMarkupRates = this.ListMarkupRates.bind(this)
             this.ListPriceOffers = this.ListPriceOffers.bind(this)
+            this.MergeLocations = this.MergeLocations.bind(this)
             this.RenewPriceOffer = this.RenewPriceOffer.bind(this)
             this.SearchAvailability = this.SearchAvailability.bind(this)
             this.SearchLocations = this.SearchLocations.bind(this)
+            this.SearchLocationsForMerge = this.SearchLocationsForMerge.bind(this)
             this.ToggleLocation = this.ToggleLocation.bind(this)
             this.ToggleLocationIsAirport = this.ToggleLocationIsAirport.bind(this)
             this.TranslateTranslation = this.TranslateTranslation.bind(this)
@@ -893,6 +896,16 @@ export namespace booking {
         }
 
         /**
+         * ListLocationMergeSuggestions lists groups of locations whose names differ only in punctuation,
+         * spacing or case, as candidates for a merge.
+         */
+        public async ListLocationMergeSuggestions(): Promise<location.ListMergeSuggestionsResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/locations/merge/suggestions`)
+            return await resp.json() as location.ListMergeSuggestionsResponse
+        }
+
+        /**
          * ListLocations lists location broker codes with optional filters.
          */
         public async ListLocations(params: location.ListLocationsParams): Promise<location.ListLocationsResponse> {
@@ -958,6 +971,15 @@ export namespace booking {
         }
 
         /**
+         * MergeLocations merges one location into another, keeping the broker codes and aliases of both.
+         */
+        public async MergeLocations(params: location.MergeLocationsParams): Promise<location.MergeLocationsResponse> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("POST", `/locations/merge`, JSON.stringify(params))
+            return await resp.json() as location.MergeLocationsResponse
+        }
+
+        /**
          * RenewPriceOffer refreshes the stored pricing details for a price offer if the original plan is still available.
          */
         public async RenewPriceOffer(id: number): Promise<price_offer.RenewPriceOfferResponse> {
@@ -999,6 +1021,20 @@ export namespace booking {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI("GET", `/locations/search`, undefined, {query})
             return await resp.json() as location.SearchLocationResponse
+        }
+
+        /**
+         * SearchLocationsForMerge searches locations by id, name, city or IATA, with their broker codes and aliases.
+         */
+        public async SearchLocationsForMerge(params: location.SearchMergeLocationsParams): Promise<location.SearchMergeLocationsResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                search: params.Search,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/locations/merge/search`, undefined, {query})
+            return await resp.json() as location.SearchMergeLocationsResponse
         }
 
         /**
@@ -1846,6 +1882,10 @@ export namespace location {
         total: number
     }
 
+    export interface ListMergeSuggestionsResponse {
+        groups: MergeSuggestionGroup[]
+    }
+
     export interface LocationResult {
         id: number
         name: string
@@ -1869,6 +1909,50 @@ export namespace location {
         isAirport: boolean
     }
 
+    /**
+     * MergeLocation is a location with everything a merge carries over: its broker codes and aliases.
+     */
+    export interface MergeLocation {
+        id: number
+        name: string
+        country: string
+        "country_code": string
+        city: string
+        iata: string
+        "is_airport": boolean
+        "broker_codes": MergeLocationBroker[]
+        aliases: string[]
+    }
+
+    export interface MergeLocationBroker {
+        id: number
+        broker: string
+        "broker_location_id": string
+        enabled: boolean
+    }
+
+    export interface MergeLocationsParams {
+        "keep_id": number
+        "remove_id": number
+        name: string
+        country: string
+        "country_code": string
+        city: string
+        iata: string
+        "is_airport": boolean
+    }
+
+    export interface MergeLocationsResponse {
+        location: MergeLocation
+    }
+
+    export interface MergeSuggestionGroup {
+        "country_code": string
+        "normalized_name": string
+        "shared_broker": boolean
+        locations: MergeLocation[]
+    }
+
     export interface MissingAliasLocation {
         id: number
         iata: string
@@ -1881,6 +1965,14 @@ export namespace location {
 
     export interface SearchLocationResponse {
         locations: LocationResult[]
+    }
+
+    export interface SearchMergeLocationsParams {
+        Search: string
+    }
+
+    export interface SearchMergeLocationsResponse {
+        locations: MergeLocation[]
     }
 
     export interface ToggleLocationIsAirportParams {

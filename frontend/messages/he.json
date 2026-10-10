@@ -18,6 +18,8 @@
     "no_broker_code_for_pickup_location": "מיקום האיסוף אינו נתמך",
     "no_broker_code_for_dropoff_location": "מיקום ההחזרה אינו נתמך",
     "no_common_broker_for_locations": "אין ספק זמין עבור שילוב מיקומי האיסוף וההחזרה",
+    "locations_share_broker": "לשני המיקומים יש קוד של אותו ספק, ולכן אי אפשר למזג אותם",
+    "location_merge_conflict": "למיקום אחר כבר יש את השם או קוד ה-IATA האלה",
     "snapshot_not_found": "תוקף החיפוש פג. אנא בצעו חיפוש מחדש.",
     "plan_not_found": "ההצעה הזו כבר לא זמינה. חזרו לתוצאות ובחרו אפשרות אחרת.",
     "booking_failed": "לא הצלחנו להשלים את ההזמנה. ייתכן שהרכב כבר אינו זמין. נסו אפשרות אחרת.",

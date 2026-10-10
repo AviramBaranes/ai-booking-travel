@@ -18,6 +18,8 @@
     "no_broker_code_for_pickup_location": "Pickup location is not supported",
     "no_broker_code_for_dropoff_location": "Drop-off location is not supported",
     "no_common_broker_for_locations": "No provider available for this pickup and drop-off combination",
+    "locations_share_broker": "Both locations have a code from the same supplier, so they cannot be merged",
+    "location_merge_conflict": "Another location already has this name or IATA code",
     "snapshot_not_found": "Your search has expired. Please run a new search.",
     "plan_not_found": "This offer is no longer available. Please return to the results and choose another option.",
     "booking_failed": "We couldn't complete the booking. The car may no longer be available. Please try another option.",
