@@ -18,6 +18,7 @@ import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { SearchFieldHandle } from "./SearchForm";
 import { Ref, useImperativeHandle, useRef, useState } from "react";
 import { DateRange } from "react-day-picker";
+import { getEarliestSelectableDate } from "./searchFormSchema";
 
 interface CalendarInputRangeProps {
   placeholder: string;
@@ -98,7 +99,7 @@ export function CalendarInputRange({
                 "text-navy data-[selected-single=true]:bg-brand data-[selected-single=true]:text-white",
             }}
             disabled={(date) =>
-              date < new Date() ||
+              date < getEarliestSelectableDate() ||
               date > new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) ||
               !value?.from ||
               date < value.from

@@ -6,6 +6,14 @@ function getEarliestTimezoneNow() {
   );
 }
 
+// Start of "today" in the earliest timezone on the planet, so a date that has
+// not yet passed somewhere in the world (e.g. yesterday) is still selectable.
+export function getEarliestSelectableDate() {
+  const date = getEarliestTimezoneNow();
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
 export function searchSchema(t: (key: string) => string) {
   const baseSchema = z.object({
     isDropoffDifferentLoc: z.boolean().optional(),
@@ -44,8 +52,7 @@ export function searchSchema(t: (key: string) => string) {
       }
 
       const now = getEarliestTimezoneNow();
-      const startOfToday = new Date(now);
-      startOfToday.setHours(0, 0, 0, 0);
+      const startOfToday = getEarliestSelectableDate();
 
       if (data.pickupDate instanceof Date && data.pickupDate < startOfToday) {
         ctx.addIssue({

@@ -3,6 +3,7 @@
 import { DayPickerLocale, he } from "react-day-picker/locale";
 import { useEffect, useState } from "react";
 import { DateRange } from "react-day-picker";
+import { getEarliestSelectableDate } from "./searchFormSchema";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { X, Calendar as CalendarIcon } from "lucide-react";
@@ -89,8 +90,7 @@ export function CalendarSheet({
     if (open) setRange(value);
   }, [open, value]);
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const earliestDate = getEarliestSelectableDate();
   const maxDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
   return (
@@ -127,7 +127,7 @@ export function CalendarSheet({
               day_button:
                 "text-navy data-[selected-single=true]:bg-brand data-[selected-single=true]:text-white",
             }}
-            disabled={(date) => date < today || date > maxDate}
+            disabled={(date) => date < earliestDate || date > maxDate}
           />
         </div>
 

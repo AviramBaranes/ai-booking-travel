@@ -8,7 +8,10 @@ import { Controller, useWatch, useFormContext } from "react-hook-form";
 import { DifferentLocCheckbox } from "./DifferentLocCheckbox";
 import { AgePopover } from "./AgePopover";
 import { CouponPopover } from "./CouponPopover";
-import { SearchFormValues } from "./searchFormSchema";
+import {
+  getEarliestSelectableDate,
+  SearchFormValues,
+} from "./searchFormSchema";
 import { useRef } from "react";
 import clsx from "clsx";
 import { CalendarInputRange } from "./CalendarInputRange";
@@ -187,14 +190,10 @@ export function SearchFormDesktop({
                   }}
                   error={fieldState.error}
                   ref={pickupDateRef}
-                  disabledFn={(date) => {
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    return (
-                      date < yesterday ||
-                      date > new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-                    );
-                  }}
+                  disabledFn={(date) =>
+                    date < getEarliestSelectableDate() ||
+                    date > new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+                  }
                 />
               )}
             />
