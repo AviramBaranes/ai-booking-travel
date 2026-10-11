@@ -128,18 +128,13 @@ func buildReservationResponse(reservation db.Reservation) *GetFullReservationRes
 		selectedAddons = []SelectedAddon{}
 	}
 
-	currencyRate := dbadapters.NumericToFloat64(reservation.CurrencyRate)
-	purchasePrice := dbadapters.NumericToFloat64(reservation.PurchasePrice)
-	markupPercentage := dbadapters.NumericToFloat64(reservation.MarkupPercentage)
-	brokerErpPrice := dbadapters.NumericToFloat64(reservation.BrokerErpPrice)
-	btErpPrice := dbadapters.NumericToFloat64(reservation.BtErpPrice)
-	totalPrice := dbadapters.NumericToFloat64(reservation.TotalPrice)
-	carSellPrice := pricing.ApplyMarkup(purchasePrice, markupPercentage) + pricing.ApplyMarkup(brokerErpPrice, markupPercentage)
-	carPurchasePrice := purchasePrice + brokerErpPrice
-	profit := carSellPrice - carPurchasePrice + btErpPrice
+	price := pricing.NewWithReservation(reservation).Details()
+
+	// Profit is net of the discount and taken as a share of what the customer actually paid, the
+	// same measure the profit report states.
 	var profitPercentage float64
-	if carSellPrice != 0 {
-		profitPercentage = (profit / carSellPrice) * 100
+	if price.TotalPrice.Value > 0 {
+		profitPercentage = price.TotalProfit.Value / price.TotalPrice.Value * 100
 	}
 
 	return &GetFullReservationResponse{
@@ -170,21 +165,21 @@ func buildReservationResponse(reservation db.Reservation) *GetFullReservationRes
 		Fees:                           payAtPickup.Fees,
 		SelectedAddons:                 selectedAddons,
 		CurrencyCode:                   reservation.CurrencyCode,
-		CurrencyRate:                   currencyRate,
+		CurrencyRate:                   price.CurrencyRate,
 		VatPercentage:                  dbadapters.NumericToFloat64(reservation.VatPercentage),
-		PurchasePrice:                  purchasePrice,
-		PurchasePriceInILS:             purchasePrice * currencyRate,
-		MarkupPercentage:               markupPercentage,
-		CarSellPriceWithBrokerERP:      carSellPrice,
-		CarSellPriceWithBrokerERPInILS: carSellPrice * currencyRate,
-		BrokerErpPrice:                 brokerErpPrice,
-		BtErpPrice:                     btErpPrice,
-		BtErpPriceInILS:                btErpPrice * currencyRate,
-		DiscountPercentage:             dbadapters.NumericToFloat64(reservation.DiscountPercentage),
-		TotalPrice:                     totalPrice,
-		TotalPriceInILS:                totalPrice * currencyRate,
-		Profit:                         profit,
-		ProfitInILS:                    profit * currencyRate,
+		PurchasePrice:                  price.CarCost.Value,
+		PurchasePriceInILS:             price.CarCost.ILS,
+		MarkupPercentage:               price.MarkupPercentage,
+		CarSellPriceWithBrokerERP:      price.CarWithBrokerErpWithMarkup.Value,
+		CarSellPriceWithBrokerERPInILS: price.CarWithBrokerErpWithMarkup.ILS,
+		BrokerErpPrice:                 price.BrokerErpCost.Value,
+		BtErpPrice:                     price.BtErpPrice.Value,
+		BtErpPriceInILS:                price.BtErpPrice.ILS,
+		DiscountPercentage:             price.DiscountPercentage,
+		TotalPrice:                     price.TotalPrice.Value,
+		TotalPriceInILS:                price.TotalPrice.ILS,
+		Profit:                         price.TotalProfit.Value,
+		ProfitInILS:                    price.TotalProfit.ILS,
 		ProfitPercentage:               profitPercentage,
 		FlightNumber:                   reservation.FlightNumber,
 		CountryCode:                    reservation.CountryCode,
