@@ -97,6 +97,10 @@ func (s *Service) Bill(ctx context.Context, p BillParams) (*BillResponse, error)
 	reservationSet := createReservationSet(openReservations.CurrencyGroups)
 	penaltySet := createPenaltySet(openReservations.CurrencyGroups)
 
+	if err := addCanceledUnpaidReservations(ctx, p, reservationSet); err != nil {
+		return nil, err
+	}
+
 	if err := validateIDsBelongToBillingEntity(p.IDs, reservationSet); err != nil {
 		rlog.Error("validation failed for billing request", "error", err, "invalid_ids", p.IDs)
 		return nil, err
@@ -315,6 +319,39 @@ func createReservationSet(currencyGroups []reservation.CurrencyGroup) map[int64]
 	return reservationSet
 }
 
+// addCanceledUnpaidReservations adds to the set the selected reservations that are not open because
+// they were canceled before they were paid for. An entity sometimes pays for such a reservation
+// anyway, so the accountant brings it into the bill by hand; once billed it is owed back as a refund.
+// Ids that are neither open nor canceled and unpaid are left out, for the caller's validation to reject.
+func addCanceledUnpaidReservations(ctx context.Context, p BillParams, set reservationSet) error {
+	missingIDs := make([]int64, 0)
+	for _, id := range p.IDs {
+		if _, exists := set[id]; !exists {
+			missingIDs = append(missingIDs, id)
+		}
+	}
+
+	if len(missingIDs) == 0 {
+		return nil
+	}
+
+	res, err := reservation.ListCanceledUnpaidReservationsByIDs(ctx, &reservation.ListCanceledUnpaidReservationsByIDsParams{
+		OfficeID: derefInt64(p.OfficeID),
+		OrgID:    derefInt64(p.OrganizationID),
+		IDs:      missingIDs,
+	})
+	if err != nil {
+		rlog.Error("failed to list canceled unpaid reservations for billing entity", "error", err, "office_id", p.OfficeID, "org_id", p.OrganizationID, "ids", missingIDs)
+		return err
+	}
+
+	for _, r := range res.Reservations {
+		set[r.ID] = r
+	}
+
+	return nil
+}
+
 // createPenaltySet creates a set of penalties indexed by their ID for efficient lookup.
 func createPenaltySet(currencyGroups []reservation.CurrencyGroup) map[int64]reservation.BillingPenalty {
 	penaltySet := make(map[int64]reservation.BillingPenalty)
@@ -454,12 +491,16 @@ func derefInt64(ptr *int64) int64 {
 	return *ptr
 }
 
-// calculateTotalAmount computes the total amount for the selected reservations and penalties by summing each one's price multiplied by its currency rate. It returns the computed total as a float64.
+// calculateTotalAmount computes the total amount for the selected reservations and penalties by summing each one's price multiplied by its currency rate. A refund-pending reservation is owed back, so it is subtracted. It returns the computed total as a float64.
 func calculateTotalAmount(reservationSet reservationSet, penaltySet penaltySet, ids, penaltyIDs []int64) float64 {
 	var total float64
 	for _, id := range ids {
 		r := reservationSet[id]
-		total += (r.TotalPrice * r.CurrencyRate)
+		m := 1.0
+		if r.PaymentStatus == "refund_pending" {
+			m = -1.0
+		}
+		total += (r.TotalPrice * r.CurrencyRate * m)
 	}
 
 	for _, id := range penaltyIDs {

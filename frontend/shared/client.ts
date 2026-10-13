@@ -1142,6 +1142,7 @@ export namespace reservation {
             this.CancelReservationByAdmin = this.CancelReservationByAdmin.bind(this)
             this.CreatePenalty = this.CreatePenalty.bind(this)
             this.DownloadVoucher = this.DownloadVoucher.bind(this)
+            this.FindCanceledUnpaidReservation = this.FindCanceledUnpaidReservation.bind(this)
             this.GetBusinessReport = this.GetBusinessReport.bind(this)
             this.GetBusinessesBalancesReport = this.GetBusinessesBalancesReport.bind(this)
             this.GetDashboardReport = this.GetDashboardReport.bind(this)
@@ -1188,6 +1189,19 @@ export namespace reservation {
          */
         public async DownloadVoucher(method: "GET", id: string, body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
             return this.baseClient.callAPI(method, `/reservations/${encodeURIComponent(id)}/voucher/download`, body, options)
+        }
+
+        public async FindCanceledUnpaidReservation(params: queries.FindCanceledUnpaidReservationParams): Promise<queries.FindCanceledUnpaidReservationResponse> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                "broker_reservation_id": params.BrokerReservationID,
+                "office_id":             params.OfficeID === undefined ? undefined : String(params.OfficeID),
+                "org_id":                params.OrgID === undefined ? undefined : String(params.OrgID),
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI("GET", `/reservations-for-billing/canceled`, undefined, {query})
+            return await resp.json() as queries.FindCanceledUnpaidReservationResponse
         }
 
         public async GetBusinessReport(params: reports.ReportParams): Promise<reports.BusinessReportResponse> {
@@ -2331,6 +2345,20 @@ export namespace queries {
         currencyCode: string
         reservations: reservation_pricing.BillingReservation[]
         penalties: reservation_pricing.BillingPenalty[]
+    }
+
+    /**
+     * FindCanceledUnpaidReservationParams looks up a canceled, unpaid reservation of a billing unit by
+     * its supplier reservation id. Exactly one of OfficeID or OrgID must be provided.
+     */
+    export interface FindCanceledUnpaidReservationParams {
+        OfficeID?: number
+        OrgID?: number
+        BrokerReservationID: string
+    }
+
+    export interface FindCanceledUnpaidReservationResponse {
+        reservation: reservation_pricing.BillingReservation
     }
 
     export interface GetFullReservationResponse {

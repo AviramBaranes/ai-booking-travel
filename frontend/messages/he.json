@@ -45,7 +45,8 @@
     "no_obligo": "לא מוגדרת לך מסגרת אשראי במערכת, ולכן יש לשלם על ההזמנה באשראי.",
     "reservation_not_canceled": "ניתן לחייב בדמי ביטול או אי-הגעה רק הזמנה שבוטלה",
     "reservation_not_vouchered": "להזמנה זו אין שובר להורדה",
-    "penalty_already_exists": "להזמנה זו כבר קיימים דמי ביטול או אי-הגעה"
+    "penalty_already_exists": "להזמנה זו כבר קיימים דמי ביטול או אי-הגעה",
+    "canceled_reservation_not_found": "לא נמצאה הזמנה מבוטלת שלא שולמה עם מספר ספק זה עבור הישות שנבחרה"
   },
   "TranslationStatus": {
     "pending": "ממתין",

@@ -225,6 +225,113 @@ func (q *Queries) GetBillingReservation(ctx context.Context, id int64) (GetBilli
 	return i, err
 }
 
+const getCanceledUnpaidReservationsByBillingEntity = `-- name: GetCanceledUnpaidReservationsByBillingEntity :many
+SELECT
+    id,
+    broker_reservation_id,
+    payment_status,
+    reservation_status,
+    purchase_price,
+    markup_percentage,
+    discount_percentage,
+    bt_erp_price,
+    broker_erp_price,
+    total_price,
+    currency_code,
+    currency_rate,
+    created_at,
+    vouchered_at,
+    pickup_date
+FROM reservations
+WHERE
+    (
+        (
+            $1::BIGINT IS NULL
+            AND  ($2::BIGINT) IS NOT NULL
+            AND organization_id = $2::BIGINT
+            AND is_organization_organic = TRUE
+        )
+    OR
+        (
+            $2::BIGINT IS NULL
+            AND  ($1::BIGINT) IS NOT NULL
+            AND office_id = $1::BIGINT
+            AND is_organization_organic = FALSE
+        )
+    )
+AND reservation_status = 'canceled'
+AND payment_status = 'unpaid'
+AND ($3::VARCHAR IS NULL OR broker_reservation_id = $3::VARCHAR)
+AND ($4::BIGINT[] IS NULL OR id = ANY($4::BIGINT[]))
+ORDER BY id
+`
+
+type GetCanceledUnpaidReservationsByBillingEntityParams struct {
+	OfficeID            *int64
+	OrganizationID      *int64
+	BrokerReservationID *string
+	Ids                 []int64
+}
+
+type GetCanceledUnpaidReservationsByBillingEntityRow struct {
+	ID                  int64
+	BrokerReservationID string
+	PaymentStatus       PaymentStatus
+	ReservationStatus   ReservationStatus
+	PurchasePrice       pgtype.Numeric
+	MarkupPercentage    pgtype.Numeric
+	DiscountPercentage  pgtype.Numeric
+	BtErpPrice          pgtype.Numeric
+	BrokerErpPrice      pgtype.Numeric
+	TotalPrice          pgtype.Numeric
+	CurrencyCode        string
+	CurrencyRate        pgtype.Numeric
+	CreatedAt           pgtype.Timestamptz
+	VoucheredAt         pgtype.Timestamptz
+	PickupDate          pgtype.Date
+}
+
+func (q *Queries) GetCanceledUnpaidReservationsByBillingEntity(ctx context.Context, arg GetCanceledUnpaidReservationsByBillingEntityParams) ([]GetCanceledUnpaidReservationsByBillingEntityRow, error) {
+	rows, err := q.db.Query(ctx, getCanceledUnpaidReservationsByBillingEntity,
+		arg.OfficeID,
+		arg.OrganizationID,
+		arg.BrokerReservationID,
+		arg.Ids,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCanceledUnpaidReservationsByBillingEntityRow
+	for rows.Next() {
+		var i GetCanceledUnpaidReservationsByBillingEntityRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.BrokerReservationID,
+			&i.PaymentStatus,
+			&i.ReservationStatus,
+			&i.PurchasePrice,
+			&i.MarkupPercentage,
+			&i.DiscountPercentage,
+			&i.BtErpPrice,
+			&i.BrokerErpPrice,
+			&i.TotalPrice,
+			&i.CurrencyCode,
+			&i.CurrencyRate,
+			&i.CreatedAt,
+			&i.VoucheredAt,
+			&i.PickupDate,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getOpenReservationsPickingUpWithinWeek = `-- name: GetOpenReservationsPickingUpWithinWeek :many
 SELECT
     id,
@@ -1385,9 +1492,11 @@ func (q *Queries) MarkReservationsPaidToSupplier(ctx context.Context, arg MarkRe
 
 const resolveReservationsPayment = `-- name: ResolveReservationsPayment :exec
 UPDATE reservations
-SET payment_status = CASE payment_status
-    WHEN 'unpaid' THEN 'paid'
-    WHEN 'refund_pending' THEN 'refunded'
+SET payment_status = CASE
+    -- A canceled reservation the entity paid for anyway is owed back, so it stays open as a refund.
+    WHEN payment_status = 'unpaid' AND reservation_status = 'canceled' THEN 'refund_pending'::payment_status
+    WHEN payment_status = 'unpaid' THEN 'paid'::payment_status
+    WHEN payment_status = 'refund_pending' THEN 'refunded'::payment_status
     ELSE payment_status
 END,
 updated_at = CURRENT_TIMESTAMP

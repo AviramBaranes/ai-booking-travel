@@ -225,6 +225,46 @@ OR
     (reservation_status = 'canceled' AND payment_status = 'refund_pending'))
 ORDER BY vouchered_at;
 
+-- name: GetCanceledUnpaidReservationsByBillingEntity :many
+SELECT
+    id,
+    broker_reservation_id,
+    payment_status,
+    reservation_status,
+    purchase_price,
+    markup_percentage,
+    discount_percentage,
+    bt_erp_price,
+    broker_erp_price,
+    total_price,
+    currency_code,
+    currency_rate,
+    created_at,
+    vouchered_at,
+    pickup_date
+FROM reservations
+WHERE
+    (
+        (
+            sqlc.narg(office_id)::BIGINT IS NULL
+            AND  (sqlc.narg(organization_id)::BIGINT) IS NOT NULL
+            AND organization_id = sqlc.narg(organization_id)::BIGINT
+            AND is_organization_organic = TRUE
+        )
+    OR
+        (
+            sqlc.narg(organization_id)::BIGINT IS NULL
+            AND  (sqlc.narg(office_id)::BIGINT) IS NOT NULL
+            AND office_id = sqlc.narg(office_id)::BIGINT
+            AND is_organization_organic = FALSE
+        )
+    )
+AND reservation_status = 'canceled'
+AND payment_status = 'unpaid'
+AND (sqlc.narg(broker_reservation_id)::VARCHAR IS NULL OR broker_reservation_id = sqlc.narg(broker_reservation_id)::VARCHAR)
+AND (sqlc.narg(ids)::BIGINT[] IS NULL OR id = ANY(sqlc.narg(ids)::BIGINT[]))
+ORDER BY id;
+
 -- name: ListBusinessesBalancesReport :many
 WITH billing_reservations AS (
     SELECT
@@ -267,9 +307,11 @@ ORDER BY billing_entity_type, billing_entity_id;
 
 -- name: ResolveReservationsPayment :exec
 UPDATE reservations
-SET payment_status = CASE payment_status
-    WHEN 'unpaid' THEN 'paid'
-    WHEN 'refund_pending' THEN 'refunded'
+SET payment_status = CASE
+    -- A canceled reservation the entity paid for anyway is owed back, so it stays open as a refund.
+    WHEN payment_status = 'unpaid' AND reservation_status = 'canceled' THEN 'refund_pending'::payment_status
+    WHEN payment_status = 'unpaid' THEN 'paid'::payment_status
+    WHEN payment_status = 'refund_pending' THEN 'refunded'::payment_status
     ELSE payment_status
 END,
 updated_at = CURRENT_TIMESTAMP

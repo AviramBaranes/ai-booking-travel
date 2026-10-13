@@ -26,6 +26,16 @@ func (s *Service) ListOpenReservationsByBillingEntity(ctx context.Context, p *qu
 	return queries.NewQueryService(s.query).ListOpenReservationsByBillingEntity(ctx, p)
 }
 
+//encore:api auth method=GET path=/reservations-for-billing/canceled tag:accountant
+func (s *Service) FindCanceledUnpaidReservation(ctx context.Context, p *queries.FindCanceledUnpaidReservationParams) (*queries.FindCanceledUnpaidReservationResponse, error) {
+	return queries.NewQueryService(s.query).FindCanceledUnpaidReservation(ctx, p)
+}
+
+// encore:api private
+func (s *Service) ListCanceledUnpaidReservationsByIDs(ctx context.Context, p *queries.ListCanceledUnpaidReservationsByIDsParams) (*queries.ListCanceledUnpaidReservationsByIDsResponse, error) {
+	return queries.NewQueryService(s.query).ListCanceledUnpaidReservationsByIDs(ctx, p)
+}
+
 // encore:api auth method=GET path=/full-reservations/:id tag:admin
 func (s *Service) GetFullReservation(ctx context.Context, id int64) (*queries.GetFullReservationResponse, error) {
 	return queries.NewQueryService(s.query).GetFullReservation(ctx, id)

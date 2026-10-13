@@ -7,7 +7,7 @@ import { collectionsReport } from "@/shared/api/reservations-api";
 import { reports } from "@/shared/client";
 import { formatPrice } from "@/shared/utils/formatPrice";
 
-import { MoneyCell, ReportColumn } from "../_components/reportTableUtils";
+import { ReportColumn } from "../_components/reportTableUtils";
 import { CollectionsDetailDialog } from "../_components/CollectionsDetailDialog";
 import { BillingEntity } from "@/app/(app)/accounting/billing/_components/BillingEntityCombobox";
 import { useMemo, useState } from "react";

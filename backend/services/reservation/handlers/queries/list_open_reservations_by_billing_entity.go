@@ -115,35 +115,7 @@ func toCurrencyGroups(
 
 	for _, r := range rows {
 		groupIndex := groupIndexFor(r.CurrencyCode)
-
-		price := pricing.NewWithNumerics(pricing.NumericParams{
-			PurchasePrice:      r.PurchasePrice,
-			BrokerErpPrice:     r.BrokerErpPrice,
-			BtErpPrice:         r.BtErpPrice,
-			MarkupPercentage:   r.MarkupPercentage,
-			DiscountPercentage: r.DiscountPercentage,
-			CurrencyCode:       r.CurrencyCode,
-			CurrencyRate:       r.CurrencyRate,
-			TotalPrice:         r.TotalPrice,
-		}).Details()
-
-		groups[groupIndex].Reservations = append(groups[groupIndex].Reservations, reservation_pricing.BillingReservation{
-			ID:                  r.ID,
-			BrokerReservationID: r.BrokerReservationID,
-			PaymentStatus:       string(r.PaymentStatus),
-			ReservationStatus:   string(r.ReservationStatus),
-			// The invoice is settled to the agora, so the rounded faces go on it.
-			CarPurchasePrice: price.TotalCost.ValueRounded,
-			CarSellingPrice:  price.CarWithBrokerErpWithMarkup.ValueRounded,
-			ERPSellingPrice:  price.BtErpPrice.Value,
-			TotalProfit:      price.TotalProfit.ValueRounded,
-			TotalPrice:       price.TotalPrice.Value,
-			CurrencyCode:     price.CurrencyCode,
-			CurrencyRate:     dbadapters.NumericToFloat64(r.CurrencyRate),
-			CreatedAt:        dbadapters.TimestamptzToString(r.CreatedAt),
-			PickupDate:       dbadapters.DateToString(r.PickupDate),
-			VoucheredAt:      dbadapters.TimestamptzToString(r.VoucheredAt),
-		})
+		groups[groupIndex].Reservations = append(groups[groupIndex].Reservations, toBillingReservation(r))
 	}
 
 	for _, p := range penaltyRows {
@@ -162,4 +134,36 @@ func toCurrencyGroups(
 	}
 
 	return groups
+}
+
+// toBillingReservation computes a reservation's price breakdown and maps it to its billing summary.
+func toBillingReservation(r db.GetPaymentPendingReservationsByBillingEntityRow) reservation_pricing.BillingReservation {
+	price := pricing.NewWithNumerics(pricing.NumericParams{
+		PurchasePrice:      r.PurchasePrice,
+		BrokerErpPrice:     r.BrokerErpPrice,
+		BtErpPrice:         r.BtErpPrice,
+		MarkupPercentage:   r.MarkupPercentage,
+		DiscountPercentage: r.DiscountPercentage,
+		CurrencyCode:       r.CurrencyCode,
+		CurrencyRate:       r.CurrencyRate,
+		TotalPrice:         r.TotalPrice,
+	}).Details()
+
+	return reservation_pricing.BillingReservation{
+		ID:                  r.ID,
+		BrokerReservationID: r.BrokerReservationID,
+		PaymentStatus:       string(r.PaymentStatus),
+		ReservationStatus:   string(r.ReservationStatus),
+		// The invoice is settled to the agora, so the rounded faces go on it.
+		CarPurchasePrice: price.TotalCost.ValueRounded,
+		CarSellingPrice:  price.CarWithBrokerErpWithMarkup.ValueRounded,
+		ERPSellingPrice:  price.BtErpPrice.Value,
+		TotalProfit:      price.TotalProfit.ValueRounded,
+		TotalPrice:       price.TotalPrice.Value,
+		CurrencyCode:     price.CurrencyCode,
+		CurrencyRate:     dbadapters.NumericToFloat64(r.CurrencyRate),
+		CreatedAt:        dbadapters.TimestamptzToString(r.CreatedAt),
+		PickupDate:       dbadapters.DateToString(r.PickupDate),
+		VoucheredAt:      dbadapters.TimestamptzToString(r.VoucheredAt),
+	}
 }

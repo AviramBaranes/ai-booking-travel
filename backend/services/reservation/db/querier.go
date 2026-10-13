@@ -14,6 +14,7 @@ type Querier interface {
 	CountReservationsByUser(ctx context.Context, arg CountReservationsByUserParams) (int64, error)
 	CountReservationsReport(ctx context.Context, arg CountReservationsReportParams) (CountReservationsReportRow, error)
 	GetBillingReservation(ctx context.Context, id int64) (GetBillingReservationRow, error)
+	GetCanceledUnpaidReservationsByBillingEntity(ctx context.Context, arg GetCanceledUnpaidReservationsByBillingEntityParams) ([]GetCanceledUnpaidReservationsByBillingEntityRow, error)
 	GetOpenReservationsPickingUpWithinWeek(ctx context.Context) ([]GetOpenReservationsPickingUpWithinWeekRow, error)
 	GetOutboxByTopic(ctx context.Context, topic string) ([]Outbox, error)
 	GetPaymentPendingPenalties(ctx context.Context) ([]GetPaymentPendingPenaltiesRow, error)

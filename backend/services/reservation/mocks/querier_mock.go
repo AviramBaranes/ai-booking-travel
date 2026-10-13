@@ -114,6 +114,21 @@ func (mr *MockQuerierMockRecorder) GetBillingReservation(ctx, id any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBillingReservation", reflect.TypeOf((*MockQuerier)(nil).GetBillingReservation), ctx, id)
 }
 
+// GetCanceledUnpaidReservationsByBillingEntity mocks base method.
+func (m *MockQuerier) GetCanceledUnpaidReservationsByBillingEntity(ctx context.Context, arg db.GetCanceledUnpaidReservationsByBillingEntityParams) ([]db.GetCanceledUnpaidReservationsByBillingEntityRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCanceledUnpaidReservationsByBillingEntity", ctx, arg)
+	ret0, _ := ret[0].([]db.GetCanceledUnpaidReservationsByBillingEntityRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCanceledUnpaidReservationsByBillingEntity indicates an expected call of GetCanceledUnpaidReservationsByBillingEntity.
+func (mr *MockQuerierMockRecorder) GetCanceledUnpaidReservationsByBillingEntity(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCanceledUnpaidReservationsByBillingEntity", reflect.TypeOf((*MockQuerier)(nil).GetCanceledUnpaidReservationsByBillingEntity), ctx, arg)
+}
+
 // GetOpenReservationsPickingUpWithinWeek mocks base method.
 func (m *MockQuerier) GetOpenReservationsPickingUpWithinWeek(ctx context.Context) ([]db.GetOpenReservationsPickingUpWithinWeekRow, error) {
 	m.ctrl.T.Helper()

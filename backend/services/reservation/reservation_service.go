@@ -47,6 +47,10 @@ type ListOpenReservationsByBillingEntityParams = queries.ListOpenReservationsByB
 type BillingReservation = reservation_pricing.BillingReservation
 type ListOpenReservationsByBillingEntityResponse = queries.ListOpenReservationsByBillingEntityResponse
 type CurrencyGroup = queries.CurrencyGroup
+type FindCanceledUnpaidReservationParams = queries.FindCanceledUnpaidReservationParams
+type FindCanceledUnpaidReservationResponse = queries.FindCanceledUnpaidReservationResponse
+type ListCanceledUnpaidReservationsByIDsParams = queries.ListCanceledUnpaidReservationsByIDsParams
+type ListCanceledUnpaidReservationsByIDsResponse = queries.ListCanceledUnpaidReservationsByIDsResponse
 
 // --- Supplier payments type aliases ---
 
@@ -92,6 +96,7 @@ type BillingPenalty = reservation_pricing.BillingPenalty
 
 var ErrInvalidBillingEntity = queries.ErrInvalidBillingEntity
 var ErrOfficeInOrganicOrg = queries.ErrOfficeInOrganicOrg
+var ErrCanceledReservationNotFound = queries.ErrCanceledReservationNotFound
 var ErrOrgIsInorganic = queries.ErrOrgIsInorganic
 var ErrCancellationWindowExceeded = actions.ErrCancellationWindowExceeded
 var ErrReservationNotVouchered = actions.ErrReservationNotVouchered

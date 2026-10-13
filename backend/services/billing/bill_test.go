@@ -136,6 +136,19 @@ func TestCalculateTotalAmount(t *testing.T) {
 	if got != 2275 {
 		t.Fatalf("expected total 2275, got %v", got)
 	}
+
+	t.Run("subtracts a refund-pending reservation", func(t *testing.T) {
+		refund := billingReservation(2, 200, "USD")
+		refund.PaymentStatus = reservation.PaymentStatusRefundPending
+		refund.ReservationStatus = reservation.ReservationStatusCanceled
+		reservations := reservationSet{1: billingReservation(1, 500, "USD"), 2: refund}
+
+		// 500*3.5 - 200*3.5 = 1050.
+		got := calculateTotalAmount(reservations, penaltySet{}, []int64{1, 2}, nil)
+		if got != 1050 {
+			t.Fatalf("expected total 1050, got %v", got)
+		}
+	})
 }
 
 func TestBuildPenaltyInvoiceItem(t *testing.T) {
@@ -402,6 +415,80 @@ func TestBillPenalties(t *testing.T) {
 			TransferDate:        "2026-08-01",
 			OfficeID:            &officeID,
 		})
+		api_errors.AssertApiError(t, ErrInvalidReservationID, err)
+	})
+}
+
+// TestBillCanceledUnpaidReservations covers a reservation canceled before it was paid for, which
+// the entity paid for anyway. It is not open, so Bill must fetch it before validating the ids.
+func TestBillCanceledUnpaidReservations(t *testing.T) {
+	ctx := context.Background()
+	officeID := int64(1)
+
+	canceled := billingReservation(2, 200, "USD")
+	canceled.ReservationStatus = reservation.ReservationStatusCanceled
+
+	mockBillingEntity := func(t *testing.T, canceledReservations []reservation.BillingReservation) (resolvedReservations *[]int64, balanceChange *float64) {
+		t.Helper()
+		var gotReservations []int64
+		var gotBalanceChange float64
+
+		et.MockEndpoint(accounts.GetIcountClientID, func(_ context.Context, _ contact.GetIcountClientIDParams) (*contact.GetIcountClientIDResponse, error) {
+			return &contact.GetIcountClientIDResponse{ClientID: 1}, nil
+		})
+		et.MockEndpoint(reservation.ListOpenReservationsByBillingEntity, func(_ context.Context, _ *reservation.ListOpenReservationsByBillingEntityParams) (*reservation.ListOpenReservationsByBillingEntityResponse, error) {
+			return &reservation.ListOpenReservationsByBillingEntityResponse{CurrencyGroups: []reservation.CurrencyGroup{{
+				CurrencyCode: "USD",
+				Reservations: []reservation.BillingReservation{billingReservation(1, 500, "USD")},
+				Penalties:    []reservation.BillingPenalty{},
+			}}}, nil
+		})
+		et.MockEndpoint(reservation.ListCanceledUnpaidReservationsByIDs, func(_ context.Context, p *reservation.ListCanceledUnpaidReservationsByIDsParams) (*reservation.ListCanceledUnpaidReservationsByIDsResponse, error) {
+			if p.OfficeID != officeID || len(p.IDs) != 1 || p.IDs[0] != 2 {
+				t.Errorf("expected only the missing id 2 to be looked up for office %d, got %+v", officeID, p)
+			}
+			return &reservation.ListCanceledUnpaidReservationsByIDsResponse{Reservations: canceledReservations}, nil
+		})
+		et.MockEndpoint(reservation.ResolveReservations, func(_ context.Context, p reservation.ResolveReservationsParams) error {
+			gotReservations = p.IDs
+			return nil
+		})
+		et.MockEndpoint(accounts.UpdateOfficeBalanceDue, func(_ context.Context, p office.UpdateOfficeBalanceDueParams) error {
+			gotBalanceChange = p.BalanceChange
+			return nil
+		})
+
+		return &gotReservations, &gotBalanceChange
+	}
+
+	params := BillParams{
+		IDs:                 []int64{1, 2},
+		SkipInvoiceCreation: true,
+		TotalPaid:           2450,
+		TransferDate:        "2026-08-01",
+		OfficeID:            &officeID,
+	}
+
+	t.Run("bills a canceled unpaid reservation as a payment", func(t *testing.T) {
+		gotReservations, gotBalanceChange := mockBillingEntity(t, []reservation.BillingReservation{canceled})
+
+		if _, err := newTestService().Bill(ctx, params); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		if len(*gotReservations) != 2 {
+			t.Errorf("expected reservations 1 and 2 to be resolved, got %v", *gotReservations)
+		}
+		// 500*3.5 + 200*3.5: the canceled reservation was paid for, so it is credited like any other.
+		if *gotBalanceChange != -2450 {
+			t.Errorf("expected balance change -2450, got %v", *gotBalanceChange)
+		}
+	})
+
+	t.Run("rejects an id that is neither open nor canceled and unpaid", func(t *testing.T) {
+		mockBillingEntity(t, []reservation.BillingReservation{})
+
+		_, err := newTestService().Bill(ctx, params)
 		api_errors.AssertApiError(t, ErrInvalidReservationID, err)
 	})
 }

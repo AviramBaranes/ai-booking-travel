@@ -46,6 +46,19 @@ export function listOpenReservations(
   );
 }
 
+/**
+ * findCanceledReservationForBilling looks up, by its supplier reservation id, a reservation of the
+ * billing entity that was canceled before it was paid for, so a payment made for it anyway can be
+ * collected and refunded later.
+ */
+export function findCanceledReservationForBilling(
+  params: queries.FindCanceledUnpaidReservationParams,
+) {
+  return withErrorHandler((client) =>
+    client.reservation.FindCanceledUnpaidReservation(params),
+  );
+}
+
 export function businessReservationReport(params: reports.ReportParams) {
   return withErrorHandler((client) =>
     client.reservation.GetBusinessReport(params),
