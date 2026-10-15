@@ -12,6 +12,8 @@ import { useSearchRequest } from "../../_hooks/useSearchRequest";
 import { useSelectedVehicle } from "../../plans/_hooks/useSelectedVehicle";
 import { useAvailableCars } from "@/shared/hooks/useAvailableCars";
 import { Loading } from "@/shared/components/Loading";
+import { useBookingSessionStore } from "@/shared/store/bookingSessionStore";
+import { trackPurchaseConversion } from "@/shared/analytics/googleAds";
 
 interface PaymentDialogProps {
   pendingPayment: {
@@ -32,6 +34,8 @@ export function PaymentDialog({
   const { searchRequest } = useSearchRequest();
   const vehicle = useSelectedVehicle(searchRequest);
   const { data } = useAvailableCars(searchRequest, { fromCache: true });
+  const selectedPlanIndex = useBookingSessionStore((s) => s.selectedPlanIndex);
+  const isErpSelected = useBookingSessionStore((s) => s.isErpSelected);
 
   const user = useAuthStore((s) => s.user);
   const setSession = useAuthStore((s) => s.setSession);
@@ -67,6 +71,14 @@ export function PaymentDialog({
             isAdminAsAgent: false,
           },
         );
+      }
+      if (paymentStatus?.reservationId && vehicle) {
+        const plan = vehicle.plans[selectedPlanIndex];
+        trackPurchaseConversion({
+          reservationId: paymentStatus.reservationId,
+          value: plan.price + (isErpSelected ? plan.erpPrice : 0),
+          currency: vehicle.priceDetails.currency,
+        });
       }
       router.push(`/${lang}/reservations/${paymentStatus?.reservationId}`);
     },

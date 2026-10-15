@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Toaster } from "@/components/ui/sonner";
 import { setRequestLocale } from "next-intl/server";
 import { WhatsAppButton } from "./_components/WhatsAppButton";
+import { GoogleAdsTag } from "./_components/GoogleAdsTag";
 import { IS_INDEXABLE, SITE_NAME, SITE_URL } from "@/shared/seo/site";
 
 export async function generateMetadata({
@@ -67,6 +68,7 @@ export default async function LangRootLayout({
         {children}
         <WhatsAppButton lang={lang} />
         <Toaster />
+        <GoogleAdsTag />
       </body>
     </html>
   );
