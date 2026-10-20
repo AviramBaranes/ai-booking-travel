@@ -791,6 +791,24 @@ The app uses Payload CMS for managing content. It is located strictly inside the
 **Schema changes.** There are no Payload migrations: `pnpm dev` pushes the schema (drizzle-kit) straight into whatever `DATABASE_URL` points at, and production never pushes. So:
 - **A new `required` field on a collection or global that already has rows needs a static `defaultValue` (e.g. `""`).** `required` makes the column `NOT NULL`, and drizzle-kit can only add a `NOT NULL` column without a default by truncating the table — which wipes the content. A static default becomes a column `DEFAULT`, so the column is added in place. Never remove such a default later: dropping a default from a `NOT NULL` column with rows also truncates.
 - **Never accept a "DATA LOSS WARNING" prompt** in the `pnpm dev` terminal. Answer No and find out what caused it. Renaming a field is a drop plus an add.
+- **Localizing an existing field is a move, and the push cannot do it safely.** The column goes from `<table>` to `<table>_locales`, so the push drops the old column (losing every value), then adds a `NOT NULL` column to `_locales`, which truncates that table when it has rows and no default. Move the data with SQL on each database **before** any push or deploy that carries the config change, after which the push finds nothing to do. Example: the forms' `title` (`required`, so `localized: true, defaultValue: ""` in `formSettings.ts`):
+  ```sql
+  BEGIN;
+  ALTER TABLE forms_locales ADD COLUMN IF NOT EXISTS title varchar NOT NULL DEFAULT '';
+  UPDATE forms_locales fl SET title = f.title FROM forms f WHERE fl._parent_id = f.id;
+  INSERT INTO forms_locales (_locale, _parent_id, title)
+  SELECT 'he', f.id, f.title FROM forms f
+  WHERE NOT EXISTS (SELECT 1 FROM forms_locales fl WHERE fl._parent_id = f.id AND fl._locale = 'he');
+  DO $$ BEGIN  -- abort (and roll back) unless every form has its title in 'he'
+    IF EXISTS (SELECT 1 FROM forms f LEFT JOIN forms_locales fl ON fl._parent_id = f.id AND fl._locale = 'he'
+               WHERE fl.title IS DISTINCT FROM f.title) THEN
+      RAISE EXCEPTION 'title copy mismatch, nothing changed';
+    END IF;
+  END $$;
+  ALTER TABLE forms DROP COLUMN title;
+  COMMIT;
+  ```
+  Until the code with `localized: true` is deployed, the deployed admin and site still read `forms.title` and break, so run the SQL just before that deploy.
 - **Push to the database before deploying the frontend** that reads the new fields; code that selects a missing column crashes every page reading that collection or global. Rehearse on a Neon branch first. For production, prefer adding the columns by hand with the `ALTER TABLE` below over running `pnpm dev` against it: production has drifted from the config (see below), and a push would then offer to truncate.
 
 **Runbook: the CMS breaks after a deploy.** Symptom: the admin shows "לא נמצא כלום" for a global or collection, and every site page reading it fails. Cause: the deployed code has a field whose column doesn't exist in Neon, because production never pushes the schema. Fix it in the Neon SQL Editor, on the production branch:

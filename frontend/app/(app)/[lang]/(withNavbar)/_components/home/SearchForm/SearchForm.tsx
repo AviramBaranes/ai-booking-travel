@@ -38,11 +38,15 @@ interface SearchFormProps extends Partial<SearchFormFields> {
   className?: string;
 }
 
+// Frozen for now: an empty form (home, new order) does not start from the last
+// search. The search is still saved on submit — the no-results page uses it.
+const PREFILL_EMPTY_FORM_FROM_LAST_SEARCH = false;
+
 export function SearchForm({ className, ...fields }: SearchFormProps) {
   const { lastSearch, raw } = useLastSearch();
   const isEmpty = Object.values(fields).every((v) => v === undefined);
 
-  if (!isEmpty) {
+  if (!isEmpty || !PREFILL_EMPTY_FORM_FROM_LAST_SEARCH) {
     return <SearchFormContent className={className} {...fields} />;
   }
 

@@ -167,6 +167,16 @@ export const formSettings = {
       return defaultFields.map((field: any) => {
         const translated = translateFieldDeep(field);
 
+        // Localizing moves the column from `forms` to `forms_locales`. Apply the
+        // SQL in context/project-conventions.md (payload_cms) before pushing.
+        if (field.name === "title") {
+          return {
+            ...translated,
+            localized: true,
+            defaultValue: "",
+          };
+        }
+
         if (field.name === "fields") {
           return {
             ...translated,
