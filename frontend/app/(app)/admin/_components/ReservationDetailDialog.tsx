@@ -250,11 +250,10 @@ export function ReservationDetailDialog({
               <Row label="מחיר רכישה" value={formatPriceFloat(r.purchasePrice, r.currencyCode)} />
               <Row label="מחיר רכישה בש״ח" value={formatPriceFloat(r.purchasePriceInILS, "ILS")} />
               <Row label="אחוז עמלה" value={pct(r.markupPercentage)} />
-              <Row label="מחיר ERP ברוקר" value={formatPriceFloat(r.brokerErpPrice, r.currencyCode)} />
-              <Row label='מחיר מכירה + ERP (מטבע)' value={formatPriceFloat(r.carSellPriceWithBrokerERP, r.currencyCode)} />
-              <Row label='מחיר מכירה + ERP (ש״ח)' value={formatPriceFloat(r.carSellPriceWithBrokerERPInILS, "ILS")} />
-              <Row label="מחיר ERP BT" value={formatPriceFloat(r.btErpPrice, r.currencyCode)} />
-              <Row label="מחיר ERP BT בש״ח" value={formatPriceFloat(r.btErpPriceInILS, "ILS")} />
+              <Row label="מחיר מכירה" value={formatPriceFloat(r.carSellPriceWithBrokerERP, r.currencyCode)} />
+              <Row label="מחיר מכירה בש״ח" value={formatPriceFloat(r.carSellPriceWithBrokerERPInILS, "ILS")} />
+              <Row label="מחיר כיסוי מלא" value={formatPriceFloat(r.btErpPrice, r.currencyCode)} />
+              <Row label="מחיר כיסוי מלא בש״ח" value={formatPriceFloat(r.btErpPriceInILS, "ILS")} />
               <Row label="הנחה" value={pct(r.discountPercentage)} />
               <Row label="מחיר סופי" value={formatPriceFloat(r.totalPrice, r.currencyCode)} />
               <Row label="מחיר סופי בש״ח" value={formatPriceFloat(r.totalPriceInILS, "ILS")} />

@@ -2576,6 +2576,7 @@ export namespace reports {
         organizationName: string
         officeName: string
         userName: string
+        userId: number
         adminName: string
         brokerName: string
         supplierName: string
