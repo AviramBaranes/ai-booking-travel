@@ -12,10 +12,12 @@ import {
 import { getFullReservation } from "@/shared/api/reservations-api";
 import { queries } from "@/shared/client";
 import { formatPrice, formatPriceFloat } from "@/shared/utils/formatPrice";
+import { AdminVoucherForm } from "./AdminVoucherForm";
 import { CancelReservationButton } from "./CancelReservationButton";
 import { CreatePenaltyForm } from "./CreatePenaltyForm";
 
 const RESERVATION_STATUS_CANCELED = "canceled";
+const RESERVATION_STATUS_BOOKED = "booked";
 
 // ---------------------------------------------------------------------------
 // Primitive display helpers
@@ -184,6 +186,12 @@ export function ReservationDetailDialog({
               <Row label="סטטוס תשלום" value={r.paymentStatus} />
               {r.voucherNumber && <Row label="מספר שובר" value={r.voucherNumber} />}
               {r.voucheredAt && <Row label="תאריך כרטוס" value={formatIsraeliDateTime(r.voucheredAt)} />}
+              {/* Only agents voucher by hand; customers are vouchered once they pay. */}
+              {r.reservationStatus === RESERVATION_STATUS_BOOKED && r.officeId && (
+                <div className="pt-2">
+                  <AdminVoucherForm reservationId={r.id} />
+                </div>
+              )}
               {r.reservationStatus !== RESERVATION_STATUS_CANCELED && (
                 <div className="pt-2">
                   <CancelReservationButton reservationId={r.id} />

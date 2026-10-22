@@ -10,10 +10,12 @@ import (
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
 	dbadapters "encore.app/internal/db_adapters"
+	"encore.app/internal/jwt"
 	"encore.app/internal/validation"
 	"encore.app/services/accounts"
 	"encore.app/services/accounts/handlers/office"
 	"encore.app/services/accounts/handlers/organization"
+	"encore.app/services/accounts/handlers/user"
 	"encore.app/services/notifications"
 	emailevents "encore.app/services/notifications/events"
 	"encore.app/services/reservation/db"
@@ -28,6 +30,12 @@ var (
 	})
 	ErrNoObligo = api_errors.NewErrorWithDetail(errs.PermissionDenied, "Organization/office has no oblogo", api_errors.ErrorDetails{
 		Code: api_errors.CodeNoObligo,
+	})
+	ErrReservationNotBooked = api_errors.NewErrorWithDetail(errs.FailedPrecondition, "Only a booked reservation can be vouchered", api_errors.ErrorDetails{
+		Code: api_errors.CodeReservationNotBooked,
+	})
+	ErrNotAgentReservation = api_errors.NewErrorWithDetail(errs.FailedPrecondition, "Only an agent reservation can be vouchered by an admin", api_errors.ErrorDetails{
+		Code: api_errors.CodeNotAgentReservation,
 	})
 )
 
@@ -64,7 +72,7 @@ func (s *ActionService) ApplyVoucher(ctx context.Context, id int64, p ApplyVouch
 		return err
 	}
 
-	err = updateUserBalance(ctx, authData, tp, currencyRate)
+	err = updateUserBalance(ctx, authData.OrganizationContext, tp, currencyRate)
 	if err != nil {
 		notifyVoucherError(ctx, "Update User Balance Failed", reservation.ID, reservation.Broker, p.Voucher, err)
 	}
@@ -72,6 +80,62 @@ func (s *ActionService) ApplyVoucher(ctx context.Context, id int64, p ApplyVouch
 	userEmail, err := accounts.GetUserEmail(ctx, accounts.GetUserEmailParams{UserID: authData.UserID})
 	if err != nil {
 		rlog.Error("getting user email for voucher", "error", err, "id", reservation.ID, "userID", authData.UserID)
+		notifyVoucherError(ctx, "Voucher Send Failed — Could Not Resolve Recipient", reservation.ID, reservation.Broker, p.Voucher, err)
+		return nil
+	}
+
+	return sendReservationVoucherToUser(ctx, reservation, userEmail.Email, p.Voucher)
+}
+
+// ApplyVoucherByAdmin vouchers a booked agent reservation on the agent's behalf. It runs the
+// same credit check and balance due update the agent's own voucher does, against the billing
+// entity of the reservation's owner, and emails the voucher to the owner.
+func (s *ActionService) ApplyVoucherByAdmin(ctx context.Context, id int64, p ApplyVoucherParams) error {
+	reservation, err := s.getReservationForCancellation(ctx, id)
+	if err != nil {
+		return err
+	}
+	if reservation.ReservationStatus != db.ReservationStatusBooked {
+		return ErrReservationNotBooked
+	}
+	// Customer reservations are vouchered once paid, never by hand.
+	if reservation.OfficeID == nil {
+		return ErrNotAgentReservation
+	}
+
+	currencyRate, err := s.currencyCache.GetCurrencyRate(ctx, reservation.CurrencyCode)
+	if err != nil {
+		rlog.Error("failed to get currency rate", "error", err, "currency_code", reservation.CurrencyCode)
+		return api_errors.ErrInternalError
+	}
+
+	balance, err := accounts.GetUserCreditByID(ctx, user.GetUserCreditByIDParams{UserID: reservation.UserID})
+	if err != nil {
+		rlog.Error("getting user credit by id", "error", err, "userID", reservation.UserID)
+		return api_errors.ErrInternalError
+	}
+
+	tp := dbadapters.NumericToFloat64(reservation.TotalPrice)
+	if err := ensureCredit(balance, tp, currencyRate); err != nil {
+		return err
+	}
+
+	if err := s.applyVoucher(ctx, id, reservation.UserID, p.Voucher, currencyRate); err != nil {
+		return err
+	}
+
+	orgCtx := &jwt.OrganizationContext{
+		OfficeID:       balance.OfficeID,
+		OrganizationID: balance.OrganizationID,
+		IsOrganic:      balance.IsOrganic,
+	}
+	if err := updateUserBalance(ctx, orgCtx, tp, currencyRate); err != nil {
+		notifyVoucherError(ctx, "Update User Balance Failed", reservation.ID, reservation.Broker, p.Voucher, err)
+	}
+
+	userEmail, err := accounts.GetUserEmail(ctx, accounts.GetUserEmailParams{UserID: reservation.UserID})
+	if err != nil {
+		rlog.Error("getting user email for voucher", "error", err, "id", reservation.ID, "userID", reservation.UserID)
 		notifyVoucherError(ctx, "Voucher Send Failed — Could Not Resolve Recipient", reservation.ID, reservation.Broker, p.Voucher, err)
 		return nil
 	}
@@ -311,6 +375,12 @@ func checkCredit(ctx context.Context, totalPrice float64, currencyRate float64) 
 		return api_errors.ErrInternalError
 	}
 
+	return ensureCredit(balance, totalPrice, currencyRate)
+}
+
+// ensureCredit checks that the billing entity's remaining credit covers the reservation's total
+// price after applying the currency rate.
+func ensureCredit(balance *user.GetUserCreditResponse, totalPrice float64, currencyRate float64) error {
 	if balance.Obligo <= 0 {
 		return ErrNoObligo
 	}
@@ -325,11 +395,11 @@ func checkCredit(ctx context.Context, totalPrice float64, currencyRate float64) 
 }
 
 // updateUserBalance updates the balance due for the user's billing entity (organization or office) based on the total price of the reservation and the currency rate. It handles both organic and inorganic organizations appropriately.
-func updateUserBalance(ctx context.Context, authData *accounts.AuthData, totalPrice float64, currencyRate float64) error {
+func updateUserBalance(ctx context.Context, orgCtx *jwt.OrganizationContext, totalPrice float64, currencyRate float64) error {
 	adjustedPrice := totalPrice * currencyRate
-	if authData.OrganizationContext.IsOrganic {
+	if orgCtx.IsOrganic {
 		if err := accounts.UpdateOrganizationBalanceDue(ctx, organization.UpdateOrganizationBalanceDueParams{
-			ID:            authData.OrganizationContext.OrganizationID,
+			ID:            orgCtx.OrganizationID,
 			BalanceChange: adjustedPrice,
 		}); err != nil {
 			rlog.Error("updating organization balance due", "error", err)
@@ -338,7 +408,7 @@ func updateUserBalance(ctx context.Context, authData *accounts.AuthData, totalPr
 		return nil
 	}
 	if err := accounts.UpdateOfficeBalanceDue(ctx, office.UpdateOfficeBalanceDueParams{
-		ID:            authData.OrganizationContext.OfficeID,
+		ID:            orgCtx.OfficeID,
 		BalanceChange: adjustedPrice,
 	}); err != nil {
 		rlog.Error("updating office balance due", "error", err)

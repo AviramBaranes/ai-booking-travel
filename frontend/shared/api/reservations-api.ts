@@ -21,6 +21,19 @@ export function applyVoucher(reservationId: number, voucherCode: string) {
   );
 }
 
+/**
+ * applyVoucherByAdmin vouchers a booked agent reservation on the agent's behalf. The backend
+ * runs the agent's credit check and adds the price to their balance due, as if they had
+ * vouchered it themselves.
+ */
+export function applyVoucherByAdmin(reservationId: number, voucherCode: string) {
+  return withErrorHandler((client) =>
+    client.reservation.ApplyVoucherByAdmin(reservationId, {
+      voucher: voucherCode,
+    }),
+  );
+}
+
 export function cancelReservation(reservationId: number) {
   return withErrorHandler((client) =>
     client.reservation.CancelReservation(reservationId),

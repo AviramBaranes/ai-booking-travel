@@ -84,6 +84,15 @@ func (s *Service) GetUserCredit(ctx context.Context) (*user.GetUserCreditRespons
 	return h.GetUserCredit(ctx, authData.UserID)
 }
 
+// GetUserCreditByID returns the credit of a given agent's billing entity, for callers acting
+// on an agent's behalf rather than as the agent.
+//
+// encore:api private
+func (s *Service) GetUserCreditByID(ctx context.Context, p user.GetUserCreditByIDParams) (*user.GetUserCreditResponse, error) {
+	h := user.NewUserService(s.query)
+	return h.GetUserCredit(ctx, p.UserID)
+}
+
 // encore:api private
 func (s *Service) GetUserMarkupGross(ctx context.Context) (*user.GetUserMarkupGrossResponse, error) {
 	authData := auth.Data().(*AuthData)

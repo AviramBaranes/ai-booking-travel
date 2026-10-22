@@ -45,6 +45,8 @@
     "no_obligo": "You do not have a credit limit configured in the system, so this booking must be paid by credit card.",
     "reservation_not_canceled": "A fee can only be charged on a canceled reservation",
     "reservation_not_vouchered": "This reservation has no voucher to download",
+    "reservation_not_booked": "Only a booked reservation can be vouchered",
+    "not_agent_reservation": "Only an agent reservation can be vouchered manually",
     "penalty_already_exists": "This reservation already has a cancellation or no-show fee",
     "canceled_reservation_not_found": "No canceled, unpaid reservation with this supplier number was found for the selected entity"
   },

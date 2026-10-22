@@ -56,6 +56,14 @@ func (s *Service) ApplyVoucher(ctx context.Context, id int64, p actions.ApplyVou
 	return s.newActionService().ApplyVoucher(ctx, id, p)
 }
 
+// ApplyVoucherByAdmin lets an admin voucher a booked agent reservation on the agent's behalf,
+// with the same credit check and balance due update as the agent's own voucher.
+//
+// encore:api auth method=POST path=/admin/reservations/:id/voucher tag:admin
+func (s *Service) ApplyVoucherByAdmin(ctx context.Context, id int64, p actions.ApplyVoucherParams) error {
+	return s.newActionService().ApplyVoucherByAdmin(ctx, id, p)
+}
+
 // DownloadVoucher streams back the voucher PDF of one of the caller's own reservations, so a user
 // can fetch the voucher again without waiting on the email sent when it was first applied.
 //
