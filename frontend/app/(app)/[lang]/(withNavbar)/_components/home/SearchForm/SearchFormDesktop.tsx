@@ -16,6 +16,7 @@ import { useRef } from "react";
 import clsx from "clsx";
 import { CalendarInputRange } from "./CalendarInputRange";
 import useAuthStore from "@/shared/auth/authStore";
+import { History } from "lucide-react";
 
 export type SearchFieldHandle = {
   focus: () => void;
@@ -40,11 +41,14 @@ export interface SearchFormFields {
 
 interface SearchFormDesktopProps extends Partial<SearchFormFields> {
   className?: string;
+  /** Refills the form from the last saved search; the button is hidden without one. */
+  onUseLastSearch?: () => void;
 }
 
 export function SearchFormDesktop({
   className,
   loading,
+  onUseLastSearch,
   ...fields
 }: SearchFormDesktopProps) {
   const t = useTranslations("SearchForm");
@@ -113,6 +117,19 @@ export function SearchFormDesktop({
                 />
               )}
             />
+          </>
+        )}
+        {onUseLastSearch && (
+          <>
+            <div className="h-4 w-px bg-white/40 shrink-0" />
+            <button
+              type="button"
+              onClick={onUseLastSearch}
+              className="flex items-center gap-2 shrink-0 cursor-pointer hover:underline"
+            >
+              <History className="size-3.5" />
+              {t("useLastSearch")}
+            </button>
           </>
         )}
       </div>
