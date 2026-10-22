@@ -13,6 +13,7 @@ export type ReportColumn<T> = {
   headerClassName?: string;
   render: (row: T) => ReactNode;
   exportValue?: (row: T) => string | number;
+  skipExport?: boolean;
 };
 
 const statusLabels: Record<string, string> = {

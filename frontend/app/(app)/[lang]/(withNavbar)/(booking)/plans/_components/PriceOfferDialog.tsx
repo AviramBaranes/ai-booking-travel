@@ -56,6 +56,7 @@ export function PriceOfferDialog({
         snapshotId: data?.snapshotId ?? 0,
         rateQualifier: selectedPlan?.rateQualifier ?? "",
         supplierCode: selectedPlan?.supplierCode ?? "",
+        planId: selectedPlan ? String(selectedPlan.planId) : "",
       }),
     onSuccess: (data) => {
       setPriceOfferId(data.id);

@@ -143,7 +143,10 @@ SELECT (
     THEN org.balance_due
     ELSE offices.balance_due
   END
-)::NUMERIC(10, 2) AS balance_due
+)::NUMERIC(10, 2) AS balance_due,
+offices.id AS office_id,
+org.id AS organization_id,
+org.is_organic
 FROM users AS u
 INNER JOIN offices ON u.office_id = offices.id
 INNER JOIN organizations AS org ON org.id = offices.organization_id

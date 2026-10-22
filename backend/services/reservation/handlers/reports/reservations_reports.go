@@ -26,6 +26,7 @@ type BusinessReservationReportRow struct {
 	OrganizationName               string  `json:"organizationName"`
 	OfficeName                     string  `json:"officeName"`
 	UserName                       string  `json:"userName"`
+	UserID                         int64   `json:"userId"`
 	AdminName                      *string `json:"adminName,omitempty"`
 	BrokerName                     string  `json:"brokerName"`
 	SupplierName                   string  `json:"supplierName"`
@@ -138,6 +139,7 @@ func buildBusinessReportRows(reservations []db.Reservation, accountsLookup *acco
 			OrganizationName:               nameForID(organizationNames, r.OrganizationID),
 			OfficeName:                     nameForID(officeNames, r.OfficeID),
 			UserName:                       userNames[r.UserID],
+			UserID:                         r.UserID,
 			AdminName:                      adminName,
 			BrokerName:                     string(r.Broker),
 			SupplierName:                   carDetails.SupplierName,

@@ -1138,6 +1138,7 @@ export namespace reservation {
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
             this.ApplyVoucher = this.ApplyVoucher.bind(this)
+            this.ApplyVoucherByAdmin = this.ApplyVoucherByAdmin.bind(this)
             this.CancelReservation = this.CancelReservation.bind(this)
             this.CancelReservationByAdmin = this.CancelReservationByAdmin.bind(this)
             this.CreatePenalty = this.CreatePenalty.bind(this)
@@ -1158,6 +1159,14 @@ export namespace reservation {
 
         public async ApplyVoucher(id: number, params: actions.ApplyVoucherParams): Promise<void> {
             await this.baseClient.callTypedAPI("POST", `/reservations/${encodeURIComponent(id)}/voucher`, JSON.stringify(params))
+        }
+
+        /**
+         * ApplyVoucherByAdmin lets an admin voucher a booked agent reservation on the agent's behalf,
+         * with the same credit check and balance due update as the agent's own voucher.
+         */
+        public async ApplyVoucherByAdmin(id: number, params: actions.ApplyVoucherParams): Promise<void> {
+            await this.baseClient.callTypedAPI("POST", `/admin/reservations/${encodeURIComponent(id)}/voucher`, JSON.stringify(params))
         }
 
         public async CancelReservation(id: number): Promise<void> {
@@ -2208,6 +2217,7 @@ export namespace price_offer {
         snapshotId: number
         rateQualifier: string
         supplierCode: string
+        planId: string
         includeERP: boolean
         selectedAddOns: broker.SelectAddOn[]
         name: string
@@ -2576,6 +2586,7 @@ export namespace reports {
         organizationName: string
         officeName: string
         userName: string
+        userId: number
         adminName: string
         brokerName: string
         supplierName: string

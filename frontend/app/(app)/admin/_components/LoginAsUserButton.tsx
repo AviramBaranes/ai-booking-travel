@@ -10,11 +10,13 @@ import useAuthStore, { UserRole } from "@/shared/auth/authStore";
 type LoginAsUserButtonProps = {
   userId: number;
   label: string;
+  compact?: boolean;
 };
 
 export default function LoginAsUserButton({
   userId,
   label,
+  compact = false,
 }: LoginAsUserButtonProps) {
   const store = useAuthStore();
   const router = useRouter();
@@ -35,6 +37,23 @@ export default function LoginAsUserButton({
       router.push("/he");
     },
   });
+
+  if (compact) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => mutate()}
+        loading={isPending}
+        disabled={isSuccess}
+        title={label}
+        aria-label={label}
+        className="size-7 cursor-pointer text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+      >
+        <LogIn size={14} />
+      </Button>
+    );
+  }
 
   return (
     <Button

@@ -138,10 +138,11 @@ export function ReportTableShell<T extends { reservationId: number }>({
   async function handleExport() {
     setIsExporting(true);
     const { reservations } = await exportMutate();
-    const headers = columns.map((col) => col.label).join("\t");
+    const exportColumns = columns.filter((col) => !col.skipExport);
+    const headers = exportColumns.map((col) => col.label).join("\t");
     const rows = reservations
       .map((row) =>
-        columns
+        exportColumns
           .map((col) => {
             const cell = col.exportValue
               ? col.exportValue(row)

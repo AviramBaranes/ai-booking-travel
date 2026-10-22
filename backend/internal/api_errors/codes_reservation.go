@@ -12,6 +12,8 @@ const (
 	CodeReservationNotCanceled  = "reservation_not_canceled"
 	CodePenaltyAlreadyExists    = "penalty_already_exists"
 	CodeReservationNotVouchered = "reservation_not_vouchered"
+	CodeReservationNotBooked    = "reservation_not_booked"
+	CodeNotAgentReservation     = "not_agent_reservation"
 
 	CodeCanceledReservationNotFound = "canceled_reservation_not_found"
 )

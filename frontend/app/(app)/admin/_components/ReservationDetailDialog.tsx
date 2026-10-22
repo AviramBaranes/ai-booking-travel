@@ -12,10 +12,12 @@ import {
 import { getFullReservation } from "@/shared/api/reservations-api";
 import { queries } from "@/shared/client";
 import { formatPrice, formatPriceFloat } from "@/shared/utils/formatPrice";
+import { AdminVoucherForm } from "./AdminVoucherForm";
 import { CancelReservationButton } from "./CancelReservationButton";
 import { CreatePenaltyForm } from "./CreatePenaltyForm";
 
 const RESERVATION_STATUS_CANCELED = "canceled";
+const RESERVATION_STATUS_BOOKED = "booked";
 
 // ---------------------------------------------------------------------------
 // Primitive display helpers
@@ -184,6 +186,12 @@ export function ReservationDetailDialog({
               <Row label="סטטוס תשלום" value={r.paymentStatus} />
               {r.voucherNumber && <Row label="מספר שובר" value={r.voucherNumber} />}
               {r.voucheredAt && <Row label="תאריך כרטוס" value={formatIsraeliDateTime(r.voucheredAt)} />}
+              {/* Only agents voucher by hand; customers are vouchered once they pay. */}
+              {r.reservationStatus === RESERVATION_STATUS_BOOKED && r.officeId && (
+                <div className="pt-2">
+                  <AdminVoucherForm reservationId={r.id} />
+                </div>
+              )}
               {r.reservationStatus !== RESERVATION_STATUS_CANCELED && (
                 <div className="pt-2">
                   <CancelReservationButton reservationId={r.id} />
@@ -250,11 +258,10 @@ export function ReservationDetailDialog({
               <Row label="מחיר רכישה" value={formatPriceFloat(r.purchasePrice, r.currencyCode)} />
               <Row label="מחיר רכישה בש״ח" value={formatPriceFloat(r.purchasePriceInILS, "ILS")} />
               <Row label="אחוז עמלה" value={pct(r.markupPercentage)} />
-              <Row label="מחיר ERP ברוקר" value={formatPriceFloat(r.brokerErpPrice, r.currencyCode)} />
-              <Row label='מחיר מכירה + ERP (מטבע)' value={formatPriceFloat(r.carSellPriceWithBrokerERP, r.currencyCode)} />
-              <Row label='מחיר מכירה + ERP (ש״ח)' value={formatPriceFloat(r.carSellPriceWithBrokerERPInILS, "ILS")} />
-              <Row label="מחיר ERP BT" value={formatPriceFloat(r.btErpPrice, r.currencyCode)} />
-              <Row label="מחיר ERP BT בש״ח" value={formatPriceFloat(r.btErpPriceInILS, "ILS")} />
+              <Row label="מחיר מכירה" value={formatPriceFloat(r.carSellPriceWithBrokerERP, r.currencyCode)} />
+              <Row label="מחיר מכירה בש״ח" value={formatPriceFloat(r.carSellPriceWithBrokerERPInILS, "ILS")} />
+              <Row label="מחיר כיסוי מלא" value={formatPriceFloat(r.btErpPrice, r.currencyCode)} />
+              <Row label="מחיר כיסוי מלא בש״ח" value={formatPriceFloat(r.btErpPriceInILS, "ILS")} />
               <Row label="הנחה" value={pct(r.discountPercentage)} />
               <Row label="מחיר סופי" value={formatPriceFloat(r.totalPrice, r.currencyCode)} />
               <Row label="מחיר סופי בש״ח" value={formatPriceFloat(r.totalPriceInILS, "ILS")} />

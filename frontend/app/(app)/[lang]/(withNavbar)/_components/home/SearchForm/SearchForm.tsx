@@ -44,18 +44,36 @@ const PREFILL_EMPTY_FORM_FROM_LAST_SEARCH = false;
 
 export function SearchForm({ className, ...fields }: SearchFormProps) {
   const { lastSearch, raw } = useLastSearch();
+  // Bumped by the "last search" button, so pressing it again resets the form to that search.
+  const [lastSearchApplied, setLastSearchApplied] = useState(0);
   const isEmpty = Object.values(fields).every((v) => v === undefined);
+  // Only an empty form offers the last search; a prefilled one (no-results page,
+  // edit-search banner) already shows the search the user just ran.
+  const onUseLastSearch =
+    lastSearch && isEmpty
+      ? () => setLastSearchApplied((n) => n + 1)
+      : undefined;
 
-  if (!isEmpty || !PREFILL_EMPTY_FORM_FROM_LAST_SEARCH) {
-    return <SearchFormContent className={className} {...fields} />;
+  if (
+    lastSearchApplied === 0 &&
+    (!isEmpty || !PREFILL_EMPTY_FORM_FROM_LAST_SEARCH)
+  ) {
+    return (
+      <SearchFormContent
+        className={className}
+        onUseLastSearch={onUseLastSearch}
+        {...fields}
+      />
+    );
   }
 
-  // An empty form starts from the user's last search. Storage is only readable
-  // after hydration, so remount on it — the form takes its values on mount.
+  // Fill from the user's last search. Storage is only readable after
+  // hydration, so remount on it — the form takes its values on mount.
   return (
     <SearchFormContent
-      key={raw ?? "none"}
+      key={`${raw ?? "none"}-${lastSearchApplied}`}
       className={className}
+      onUseLastSearch={onUseLastSearch}
       {...(lastSearch ? lastSearchToFields(lastSearch) : {})}
     />
   );
@@ -84,7 +102,11 @@ function lastSearchToFields(search: LastSearch): Partial<SearchFormFields> {
   };
 }
 
-function SearchFormContent({ className, ...fields }: SearchFormProps) {
+function SearchFormContent({
+  className,
+  onUseLastSearch,
+  ...fields
+}: SearchFormProps & { onUseLastSearch?: () => void }) {
   const { lang } = useParams();
   // const router = useRouter();
   // const user = useAuthStore((s) => s.user);
@@ -184,6 +206,7 @@ function SearchFormContent({ className, ...fields }: SearchFormProps) {
       <FormProvider {...formMethods}>
         <div className="hidden lg:block">
           <SearchFormDesktop
+            onUseLastSearch={onUseLastSearch}
             loading={loading}
             className={className}
             {...fields}
