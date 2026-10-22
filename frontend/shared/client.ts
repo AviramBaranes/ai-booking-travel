@@ -2217,6 +2217,7 @@ export namespace price_offer {
         snapshotId: number
         rateQualifier: string
         supplierCode: string
+        planId: string
         includeERP: boolean
         selectedAddOns: broker.SelectAddOn[]
         name: string

@@ -140,6 +140,7 @@ func validCreatePriceOfferParams(snapshotID int64, plan availability.PlanPriceDe
 		SnapshotID:          snapshotID,
 		RateQualifier:       plan.RateQualifier,
 		SupplierCode:        plan.SupplierCode,
+		PlanID:              strconv.Itoa(plan.PlanID),
 		IncludeERP:          true,
 		Name:                "Test Offer",
 		OfferedCurrencyCode: "USD",
@@ -207,6 +208,12 @@ func TestCreatePriceOffer(t *testing.T) {
 		api_errors.AssertApiError(t, invalidValueErr("supplierCode"), p.Validate())
 	})
 
+	t.Run("rejects missing plan id", func(t *testing.T) {
+		p := validCreatePriceOfferParams(snapshotID, plan)
+		p.PlanID = ""
+		api_errors.AssertApiError(t, invalidValueErr("planId"), p.Validate())
+	})
+
 	t.Run("accepts valid params", func(t *testing.T) {
 		p := validCreatePriceOfferParams(snapshotID, plan)
 		if err := p.Validate(); err != nil {
@@ -225,6 +232,36 @@ func TestCreatePriceOffer(t *testing.T) {
 		p.RateQualifier = "DOES-NOT-EXIST"
 		_, err := CreatePriceOffer(ctx, p)
 		api_errors.AssertApiError(t, planNotFoundErr(), err)
+	})
+
+	t.Run("returns plan not found when plan id doesn't match", func(t *testing.T) {
+		p := validCreatePriceOfferParams(snapshotID, plan)
+		p.PlanID = "999"
+		_, err := CreatePriceOffer(ctx, p)
+		api_errors.AssertApiError(t, planNotFoundErr(), err)
+	})
+
+	t.Run("picks the selected plan among plans sharing a rate qualifier", func(t *testing.T) {
+		gold := plan
+		gold.PlanID = 3
+		gold.CarPurchasePrice = 200
+		sharedSnapshotID := seedSnapshot(t, q, []availability.PlanPriceDetails{plan, gold})
+
+		resp, err := CreatePriceOffer(ctx, validCreatePriceOfferParams(sharedSnapshotID, gold))
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		row, err := q.GetPriceOfferById(ctx, db.GetPriceOfferByIdParams{ID: resp.ID, AgentID: agentID})
+		if err != nil {
+			t.Fatalf("failed to fetch created offer: %v", err)
+		}
+		if row.PlanID != "3" {
+			t.Errorf("plan id: got %q, want %q", row.PlanID, "3")
+		}
+		if dbadapters.NumericToFloat64(row.PurchasePrice) != gold.CarPurchasePrice {
+			t.Errorf("purchase price: got %v, want %v", dbadapters.NumericToFloat64(row.PurchasePrice), gold.CarPurchasePrice)
+		}
 	})
 
 	t.Run("creates offer and persists all fields", func(t *testing.T) {

@@ -22,6 +22,7 @@ type CreatePriceOfferParams struct {
 	SnapshotID          int64                `json:"snapshotId" validate:"required"`
 	RateQualifier       string               `json:"rateQualifier" validate:"required"`
 	SupplierCode        string               `json:"supplierCode" validate:"required"`
+	PlanID              string               `json:"planId" validate:"required"`
 	IncludeERP          bool                 `json:"includeERP"`
 	SelectedAddOns      []broker.SelectAddOn `json:"selectedAddOns"`
 	Name                string               `json:"name" validate:"required,notblank"`
@@ -46,7 +47,7 @@ func (s *PriceOfferService) CreatePriceOffer(ctx context.Context, p CreatePriceO
 		return nil, err
 	}
 
-	plan, err := findPlan(snapshot, p.RateQualifier, p.SupplierCode)
+	plan, err := findPlan(snapshot, p.RateQualifier, p.SupplierCode, p.PlanID)
 	if err != nil {
 		return nil, err
 	}
@@ -190,8 +191,10 @@ func (s *PriceOfferService) getSnapshot(ctx context.Context, snapshotID int64) (
 	return snapshot, nil
 }
 
-// findPlan locates the plan matching rateQualifier and supplierCode in the snapshot.
-func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode string) (availability.PlanPriceDetails, error) {
+// findPlan locates the plan matching rateQualifier, supplierCode and planID in the snapshot.
+// The plan ID is needed because a car's plans can share a rate qualifier (Flex's US
+// Inclusive and Gold products do).
+func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode, planID string) (availability.PlanPriceDetails, error) {
 	var plans []availability.PlanPriceDetails
 	if err := json.Unmarshal(snapshot.Plans, &plans); err != nil {
 		rlog.Error("failed to unmarshal plans JSON", "error", err)
@@ -199,7 +202,7 @@ func findPlan(snapshot db.AvailablePlansSnapshot, rateQualifier, supplierCode st
 	}
 
 	for _, plan := range plans {
-		if plan.RateQualifier == rateQualifier && plan.SupplierCode == supplierCode {
+		if plan.RateQualifier == rateQualifier && plan.SupplierCode == supplierCode && strconv.Itoa(plan.PlanID) == planID {
 			return plan, nil
 		}
 	}
