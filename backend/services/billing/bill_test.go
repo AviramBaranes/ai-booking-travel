@@ -58,6 +58,7 @@ func TestBillParamsValidation(t *testing.T) {
 			TotalPaid:    100,
 			TransferDate: "2026-08-01",
 			OfficeID:     &officeID,
+			AccountID:    4,
 		}
 	}
 
@@ -82,6 +83,24 @@ func TestBillParamsValidation(t *testing.T) {
 		p.IDs = []int64{}
 
 		api_errors.AssertApiError(t, ErrNothingToBill, p.Validate())
+	})
+
+	t.Run("rejects a bill without a bank account", func(t *testing.T) {
+		p := validParams()
+		p.AccountID = 0
+
+		if err := p.Validate(); err == nil {
+			t.Fatal("expected an error for a missing bank account")
+		}
+	})
+
+	t.Run("rejects an unknown bank account", func(t *testing.T) {
+		p := validParams()
+		p.AccountID = 7
+
+		if err := p.Validate(); err == nil {
+			t.Fatal("expected an error for an unknown bank account")
+		}
 	})
 }
 

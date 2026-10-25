@@ -19,6 +19,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { SuccessBadge } from "@/shared/components/UI/SuccessBadge";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
@@ -26,6 +33,13 @@ import { bill, isBillingFailedError } from "@/shared/api/bill-api";
 import { formatPriceFloat } from "@/shared/utils/formatPrice";
 import { cn } from "@/lib/utils";
 import type { BillingEntity } from "./BillingEntityCombobox";
+
+// The iCount bank accounts a transfer can land in. The backend accepts only these ids.
+const BANK_ACCOUNTS = [
+  { id: 4, label: "מזרחי-טפחות (20) · 433 · 128555 · ILS (₪)", currency: "ILS" },
+  { id: 5, label: "מזרחי-טפחות (20) · 433 · 128555 · EUR (€)", currency: "EUR" },
+  { id: 10, label: "מזרחי-טפחות (20) · 433 · 128555 · USD ($)", currency: "USD" },
+] as const;
 
 // What was collected, what the authorities withheld and what we gave up must account for the whole
 // bill, so the schema rejects a split that leaves part of the total unexplained.
@@ -42,6 +56,7 @@ const buildSchema = (totalDue: number) =>
         .number({ message: "שדה חובה" })
         .min(0, "הסכום לא יכול להיות שלילי"),
       transfer_date: z.date({ message: "יש לבחור תאריך" }),
+      account_id: z.number({ message: "יש לבחור חשבון בנק" }),
     })
     .refine(
       (v) =>
@@ -58,6 +73,7 @@ type FormValues = {
   deduction: number;
   discount: number;
   transfer_date: Date;
+  account_id: number;
 };
 
 // Editing one amount refills its counterpart so the three keep adding up to the total due: a
@@ -133,6 +149,9 @@ export function BillDialog({
       deduction: 0,
       discount: 0,
       transfer_date: undefined as unknown as Date,
+      // Defaults to the bill's currency account, but any account may be chosen.
+      account_id: BANK_ACCOUNTS.find((b) => b.currency === currencyCode)
+        ?.id as number,
     },
   });
 
@@ -178,6 +197,7 @@ export function BillDialog({
         deduction: values.deduction,
         discount: values.discount,
         transfer_date: format(values.transfer_date, "yyyy-MM-dd"),
+        account_id: values.account_id,
         organization_id: entity.kind === "org" ? entity.id : undefined,
         office_id: entity.kind === "office" ? entity.id : undefined,
       }),
@@ -339,6 +359,35 @@ export function BillDialog({
                 />
                 {errors.transfer_date && (
                   <ErrorDisplay>{errors.transfer_date.message}</ErrorDisplay>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label className="type-label text-navy">חשבון בנק</Label>
+                <Controller
+                  control={control}
+                  name="account_id"
+                  render={({ field }) => (
+                    <Select
+                      dir="rtl"
+                      value={field.value ? String(field.value) : undefined}
+                      onValueChange={(v) => field.onChange(Number(v))}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="בחר חשבון בנק..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {BANK_ACCOUNTS.map((b) => (
+                          <SelectItem key={b.id} value={String(b.id)}>
+                            {b.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.account_id && (
+                  <ErrorDisplay>{errors.account_id.message}</ErrorDisplay>
                 )}
               </div>
 

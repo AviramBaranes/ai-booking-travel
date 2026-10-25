@@ -495,6 +495,10 @@ export namespace billing {
         deduction?: number
 
         discount?: number
+        /**
+         * AccountID is the iCount bank account the transfer was received in.
+         */
+        "account_id": number
     }
 
     export interface BillResponse {

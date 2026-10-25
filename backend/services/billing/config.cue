@@ -29,7 +29,6 @@ MonthlyReport: {
 
 if #Meta.Environment.Type != "production" && #Meta.Environment.Name != "staging" {
 	Icount: {
-		AccountID: 4,
 		AgentsPaypageID: 3,
 		CustomersPaypageID: 4,
 	}
@@ -37,7 +36,6 @@ if #Meta.Environment.Type != "production" && #Meta.Environment.Name != "staging"
 
 if #Meta.Environment.Type == "production" || #Meta.Environment.Name == "staging" {
 	Icount: {
-		AccountID: 4,
 		AgentsPaypageID: 14,
 		CustomersPaypageID: 18,
 	}

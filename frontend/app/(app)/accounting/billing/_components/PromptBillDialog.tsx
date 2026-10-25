@@ -65,6 +65,7 @@ export function PromptBillDialog({
         penalty_ids: selectedPenaltyIds,
         total_paid: 1, //skip validation
         transfer_date: "2006-01-02", //skip validation
+        account_id: 4, //skip validation
         organization_id: entity.kind === "org" ? entity.id : undefined,
         office_id: entity.kind === "office" ? entity.id : undefined,
         skip_invoice_creation: true,

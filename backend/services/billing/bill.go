@@ -49,6 +49,8 @@ type BillParams struct {
 	// billed currency and appear on the invoice only — TotalPaid is already net of both.
 	Deduction float64 `json:"deduction" encore:"optional" validate:"omitempty,gte=0"`
 	Discount  float64 `json:"discount" encore:"optional" validate:"omitempty,gte=0"`
+	// AccountID is the iCount bank account the transfer was received in.
+	AccountID int `json:"account_id" validate:"required,oneof=4 5 10"`
 }
 
 func (r BillParams) Validate() error {
@@ -129,13 +131,13 @@ func (s *Service) Bill(ctx context.Context, p BillParams) (*BillResponse, error)
 		}, nil
 	}
 
-	invcDocNum, err := createInvoiceDoc(p, reservationSet, penaltySet, icountClientRes.ClientID, currency, cfg.Icount.AccountID())
+	invcDocNum, err := createInvoiceDoc(p, reservationSet, penaltySet, icountClientRes.ClientID, currency)
 	if err != nil {
 		rlog.Error("failed to create invoice in iCount", "error", err, "client_id", icountClientRes.ClientID, "currency", currency, "total_paid", p.TotalPaid)
 		return nil, err
 	}
 
-	recptDocNum, err := createReceiptDoc(p, reservationSet, penaltySet, icountClientRes.ClientID, currency, cfg.Icount.AccountID())
+	recptDocNum, err := createReceiptDoc(p, reservationSet, penaltySet, icountClientRes.ClientID, currency)
 	if err != nil {
 		rlog.Error("failed to create receipt in iCount", "error", err, "client_id", icountClientRes.ClientID, "currency", currency, "total_paid", p.TotalPaid)
 		if _, publishErr := emailPublisher.Publish(ctx, emailevents.EmailEventTypeCriticalError, emailevents.CriticalErrorEmailPayload{
@@ -511,13 +513,13 @@ func calculateTotalAmount(reservationSet reservationSet, penaltySet penaltySet, 
 	return total
 }
 
-func createInvoiceDoc(p BillParams, reservationSet reservationSet, penaltySet penaltySet, clientID int32, currency string, accountID int) (string, error) {
+func createInvoiceDoc(p BillParams, reservationSet reservationSet, penaltySet penaltySet, clientID int32, currency string) (string, error) {
 	ic := icount.NewIcount()
 	invoiceItems := buildInvoiceItems(p.IDs, p.PenaltyIDs, reservationSet, penaltySet, p.Discount)
 	res, err := ic.CreateInvoice(icount.CreateDocParams{
 		ClientID:      int(clientID),
 		CurrencyID:    icount.CurrencyIDsMap[currency],
-		PaymentMethod: icount.NewBankTransferPayment(p.TotalPaid, p.TransferDate, accountID),
+		PaymentMethod: icount.NewBankTransferPayment(p.TotalPaid, p.TransferDate, p.AccountID),
 		Items:         invoiceItems,
 	})
 
@@ -539,7 +541,7 @@ func createInvoiceDoc(p BillParams, reservationSet reservationSet, penaltySet pe
 // a receipt's payments to cover its items, so the discount is deducted from the items and the
 // withholding tax is declared as a deduction — leaving exactly TotalPaid to be covered by the
 // transfer.
-func createReceiptDoc(p BillParams, reservationSet reservationSet, penaltySet penaltySet, clientID int32, currency string, accountID int) (string, error) {
+func createReceiptDoc(p BillParams, reservationSet reservationSet, penaltySet penaltySet, clientID int32, currency string) (string, error) {
 	ic := icount.NewIcount()
 	currencyID := icount.CurrencyIDsMap[currency]
 	receiptItems := buildReceiptItems(p.IDs, p.PenaltyIDs, reservationSet, penaltySet)
@@ -550,7 +552,7 @@ func createReceiptDoc(p BillParams, reservationSet reservationSet, penaltySet pe
 	res, err := ic.CreateReceipt(icount.CreateDocParams{
 		ClientID:      int(clientID),
 		CurrencyID:    currencyID,
-		PaymentMethod: icount.NewBankTransferPayment(p.TotalPaid, p.TransferDate, accountID),
+		PaymentMethod: icount.NewBankTransferPayment(p.TotalPaid, p.TransferDate, p.AccountID),
 		Items:         receiptItems,
 		Deductions:    icount.NewWithholdingTaxDeduction(p.Deduction),
 	})

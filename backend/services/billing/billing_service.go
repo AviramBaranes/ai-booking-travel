@@ -52,7 +52,6 @@ type billingConfig struct {
 }
 
 type icountConfig struct {
-	AccountID          config.Int
 	AgentsPaypageID    config.Int
 	CustomersPaypageID config.Int
 }
