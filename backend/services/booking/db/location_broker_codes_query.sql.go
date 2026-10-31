@@ -75,7 +75,7 @@ func (q *Queries) DeleteLocationBrokerCode(ctx context.Context, id int64) (int64
 
 const getAllLocationBrokerCodesByLocationIDs = `-- name: GetAllLocationBrokerCodesByLocationIDs :many
 SELECT
-    lbc.id, lbc.location_id, lbc.broker, lbc.broker_location_id, lbc.enabled, lbc.created_at, lbc.updated_at,
+    lbc.id, lbc.location_id, lbc.broker, lbc.broker_location_id, lbc.enabled, lbc.created_at, lbc.updated_at, lbc.brands,
     l.country_code AS location_country_code,
     l.name AS location_name
 FROM
@@ -93,6 +93,7 @@ type GetAllLocationBrokerCodesByLocationIDsRow struct {
 	Enabled             bool
 	CreatedAt           pgtype.Timestamptz
 	UpdatedAt           pgtype.Timestamptz
+	Brands              []string
 	LocationCountryCode string
 	LocationName        string
 }
@@ -114,6 +115,7 @@ func (q *Queries) GetAllLocationBrokerCodesByLocationIDs(ctx context.Context, lo
 			&i.Enabled,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Brands,
 			&i.LocationCountryCode,
 			&i.LocationName,
 		); err != nil {
@@ -135,7 +137,8 @@ SELECT
     broker_location_id,
     enabled,
     created_at,
-    updated_at
+    updated_at,
+    brands
 FROM
     location_broker_codes
 WHERE
@@ -168,6 +171,7 @@ func (q *Queries) GetLocationBrokerCode(ctx context.Context, arg GetLocationBrok
 		&i.Enabled,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Brands,
 	)
 	return i, err
 }
@@ -205,29 +209,37 @@ func (q *Queries) GetLocationIDByLocationBrokerCodeID(ctx context.Context, id in
 
 const insertLocationBrokerCode = `-- name: InsertLocationBrokerCode :one
 INSERT INTO
-    location_broker_codes (location_id, broker, broker_location_id)
+    location_broker_codes (location_id, broker, broker_location_id, brands)
 VALUES
     (
         $1,
         $2,
-        $3
+        $3,
+        COALESCE($4::text[], '{}')
     ) RETURNING id,
     location_id,
     broker,
     broker_location_id,
     enabled,
     created_at,
-    updated_at
+    updated_at,
+    brands
 `
 
 type InsertLocationBrokerCodeParams struct {
 	LocationID       int64
 	Broker           Broker
 	BrokerLocationID string
+	Brands           []string
 }
 
 func (q *Queries) InsertLocationBrokerCode(ctx context.Context, arg InsertLocationBrokerCodeParams) (LocationBrokerCode, error) {
-	row := q.db.QueryRow(ctx, insertLocationBrokerCode, arg.LocationID, arg.Broker, arg.BrokerLocationID)
+	row := q.db.QueryRow(ctx, insertLocationBrokerCode,
+		arg.LocationID,
+		arg.Broker,
+		arg.BrokerLocationID,
+		arg.Brands,
+	)
 	var i LocationBrokerCode
 	err := row.Scan(
 		&i.ID,
@@ -237,6 +249,7 @@ func (q *Queries) InsertLocationBrokerCode(ctx context.Context, arg InsertLocati
 		&i.Enabled,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Brands,
 	)
 	return i, err
 }
@@ -248,6 +261,7 @@ SELECT
     lbc.broker,
     lbc.broker_location_id,
     lbc.enabled,
+    lbc.brands,
     lbc.created_at,
     lbc.updated_at,
     l.country AS location_country,
@@ -289,6 +303,7 @@ type ListLocationBrokerCodesWithLocationRow struct {
 	Broker              Broker
 	BrokerLocationID    string
 	Enabled             bool
+	Brands              []string
 	CreatedAt           pgtype.Timestamptz
 	UpdatedAt           pgtype.Timestamptz
 	LocationCountry     string
@@ -323,6 +338,7 @@ func (q *Queries) ListLocationBrokerCodesWithLocation(ctx context.Context, arg L
 			&i.Broker,
 			&i.BrokerLocationID,
 			&i.Enabled,
+			&i.Brands,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.LocationCountry,
@@ -375,5 +391,27 @@ type ToggleLocationBrokerCodeParams struct {
 
 func (q *Queries) ToggleLocationBrokerCode(ctx context.Context, arg ToggleLocationBrokerCodeParams) error {
 	_, err := q.db.Exec(ctx, toggleLocationBrokerCode, arg.Enabled, arg.ID)
+	return err
+}
+
+const updateLocationBrokerCodeBrands = `-- name: UpdateLocationBrokerCodeBrands :exec
+UPDATE location_broker_codes
+SET
+    brands = $1::text[],
+    updated_at = CURRENT_TIMESTAMP
+WHERE
+    broker = $2
+    AND broker_location_id = $3
+    AND brands <> $1::text[]
+`
+
+type UpdateLocationBrokerCodeBrandsParams struct {
+	Brands           []string
+	Broker           Broker
+	BrokerLocationID string
+}
+
+func (q *Queries) UpdateLocationBrokerCodeBrands(ctx context.Context, arg UpdateLocationBrokerCodeBrandsParams) error {
+	_, err := q.db.Exec(ctx, updateLocationBrokerCodeBrands, arg.Brands, arg.Broker, arg.BrokerLocationID)
 	return err
 }

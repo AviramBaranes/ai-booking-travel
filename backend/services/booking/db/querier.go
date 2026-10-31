@@ -87,6 +87,7 @@ type Querier interface {
 	UpdateBrokerTranslation(ctx context.Context, arg UpdateBrokerTranslationParams) error
 	UpdateCoupon(ctx context.Context, arg UpdateCouponParams) (Coupon, error)
 	UpdateCurrency(ctx context.Context, arg UpdateCurrencyParams) (Currency, error)
+	UpdateLocationBrokerCodeBrands(ctx context.Context, arg UpdateLocationBrokerCodeBrandsParams) error
 	UpdateLocationFields(ctx context.Context, arg UpdateLocationFieldsParams) (Location, error)
 	UpdateMarkupRate(ctx context.Context, arg UpdateMarkupRateParams) (MarkupRate, error)
 	UpdatePriceOffer(ctx context.Context, arg UpdatePriceOfferParams) error

@@ -14,9 +14,10 @@ import (
 type Broker string
 
 const (
-	BrokerFlex   Broker = "flex"
-	BrokerHertz  Broker = "hertz"
-	BrokerAvance Broker = "avance"
+	BrokerFlex    Broker = "flex"
+	BrokerHertz   Broker = "hertz"
+	BrokerAvance  Broker = "avance"
+	BrokerHertzGr Broker = "hertz_gr"
 )
 
 func (e *Broker) Scan(src interface{}) error {
@@ -212,6 +213,7 @@ type LocationBrokerCode struct {
 	Enabled          bool
 	CreatedAt        pgtype.Timestamptz
 	UpdatedAt        pgtype.Timestamptz
+	Brands           []string
 }
 
 type MarkupRate struct {

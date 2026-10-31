@@ -1045,6 +1045,20 @@ func (mr *MockQuerierMockRecorder) UpdateCurrency(ctx, arg any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCurrency", reflect.TypeOf((*MockQuerier)(nil).UpdateCurrency), ctx, arg)
 }
 
+// UpdateLocationBrokerCodeBrands mocks base method.
+func (m *MockQuerier) UpdateLocationBrokerCodeBrands(ctx context.Context, arg db.UpdateLocationBrokerCodeBrandsParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateLocationBrokerCodeBrands", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateLocationBrokerCodeBrands indicates an expected call of UpdateLocationBrokerCodeBrands.
+func (mr *MockQuerierMockRecorder) UpdateLocationBrokerCodeBrands(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLocationBrokerCodeBrands", reflect.TypeOf((*MockQuerier)(nil).UpdateLocationBrokerCodeBrands), ctx, arg)
+}
+
 // UpdateLocationFields mocks base method.
 func (m *MockQuerier) UpdateLocationFields(ctx context.Context, arg db.UpdateLocationFieldsParams) (db.Location, error) {
 	m.ctrl.T.Helper()

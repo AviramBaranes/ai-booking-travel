@@ -6,7 +6,8 @@ SELECT
     broker_location_id,
     enabled,
     created_at,
-    updated_at
+    updated_at,
+    brands
 FROM
     location_broker_codes
 WHERE
@@ -23,19 +24,31 @@ LIMIT
 
 -- name: InsertLocationBrokerCode :one
 INSERT INTO
-    location_broker_codes (location_id, broker, broker_location_id)
+    location_broker_codes (location_id, broker, broker_location_id, brands)
 VALUES
     (
         sqlc.arg (location_id),
         sqlc.arg (broker),
-        sqlc.arg (broker_location_id)
+        sqlc.arg (broker_location_id),
+        COALESCE(sqlc.narg (brands)::text[], '{}')
     ) RETURNING id,
     location_id,
     broker,
     broker_location_id,
     enabled,
     created_at,
-    updated_at;
+    updated_at,
+    brands;
+
+-- name: UpdateLocationBrokerCodeBrands :exec
+UPDATE location_broker_codes
+SET
+    brands = sqlc.arg (brands)::text[],
+    updated_at = CURRENT_TIMESTAMP
+WHERE
+    broker = sqlc.arg (broker)
+    AND broker_location_id = sqlc.arg (broker_location_id)
+    AND brands <> sqlc.arg (brands)::text[];
 
 -- name: ToggleLocationBrokerCode :exec
 UPDATE location_broker_codes
@@ -63,6 +76,7 @@ SELECT
     lbc.broker,
     lbc.broker_location_id,
     lbc.enabled,
+    lbc.brands,
     lbc.created_at,
     lbc.updated_at,
     l.country AS location_country,
