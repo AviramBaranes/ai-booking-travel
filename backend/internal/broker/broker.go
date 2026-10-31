@@ -6,9 +6,10 @@ import "io"
 type Name string
 
 const (
-	BrokerFlex   Name = "flex"
-	BrokerHertz  Name = "hertz"
-	BrokerAvance Name = "avance"
+	BrokerFlex    Name = "flex"
+	BrokerHertz   Name = "hertz"
+	BrokerAvance  Name = "avance"
+	BrokerHertzGR Name = "hertz_gr"
 )
 
 // secrets hold broker-specific secrets such as API credentials.
@@ -150,6 +151,9 @@ type Location struct {
 	City        string
 	CountryCode string
 	Iata        string
+	// Brands lists the supplier brands the station serves, for a broker that sells several of
+	// them. It is empty for brokers without brands.
+	Brands []string
 }
 
 // SearchAvailabilityParams represents the parameters required to search for available vehicles, such as pickup and return dates, location, and car preferences.

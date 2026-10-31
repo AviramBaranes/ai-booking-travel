@@ -1,0 +1,567 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<AutoHellasLocations>
+<Country Name="Greece" Code="GR">
+<Brand Name="Hertz" Code="ZE">
+<Location Code="GR001" Name="Mykonos A/P" Airport="True" CityID="23" Island="True" AreaType="I">
+<Address>
+<CityName>Mykonos</CityName>
+<AddressLine>Airport</AddressLine>
+</Address>
+<Telephone>(+30) 22890 27511</Telephone>
+<GeoData Longtitude = "37.434389" Latitude = "25.3458388" />
+<OperationSchedules>
+<OperationSchedule Start="20/03/2026 00:00:00" End="31/10/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="00:00-24:00" />
+<OperationTime Mon="00:00-24:00" />
+<OperationTime Tue="00:00-24:00" />
+<OperationTime Wed="00:00-24:00" />
+<OperationTime Thu="00:00-24:00" />
+<OperationTime Fri="00:00-24:00" />
+<OperationTime Sat="00:00-24:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="00:00" End="24:00" />
+</BankHolidays>
+</OperationSchedule>
+<OperationSchedule Start="01/11/2026 00:00:00" End="19/03/2027 23:59:59">
+<OperationTimes>
+<OperationTime Sun="08:00 - 18:00" />
+<OperationTime Mon="08:00 - 18:00" />
+<OperationTime Tue="08:00 - 18:00" />
+<OperationTime Wed="08:00 - 18:00" />
+<OperationTime Thu="08:00 - 18:00" />
+<OperationTime Fri="08:00 - 18:00" />
+<OperationTime Sat="08:00 - 18:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="08:00 " End=" 18:00" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+<Location Code="GR002" Name="Kefalonia D/T" Airport="False" CityID="16" Island="True" AreaType="I">
+<Address>
+<CityName>Kefalonia</CityName>
+<AddressLine>Kefalonia H.O. (100m from Airport’s entrance)</AddressLine>
+</Address>
+<Telephone>(+30) 26710 42058</Telephone>
+<GeoData Longtitude = "38.1200491894179" Latitude = "20.5044438688734" />
+<OperationSchedules>
+<OperationSchedule Start="01/04/2026 00:00:00" End="31/10/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="08:30 - 21:00" />
+<OperationTime Mon="08:30 - 21:00" />
+<OperationTime Tue="08:30 - 21:00" />
+<OperationTime Wed="08:30 - 21:00" />
+<OperationTime Thu="08:30 - 21:00" />
+<OperationTime Fri="08:30 - 21:00" />
+<OperationTime Sat="08:30 - 21:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="08:30 " End=" 21:00" />
+</BankHolidays>
+</OperationSchedule>
+<OperationSchedule Start="01/11/2026 00:00:00" End="31/03/2027 23:59:59">
+<OperationTimes>
+<OperationTime Sun="09:00 - 14:00" />
+<OperationTime Sun="18:00 - 20:00" />
+<OperationTime Mon="09:00 - 14:00" />
+<OperationTime Mon="18:00 - 20:00" />
+<OperationTime Tue="09:00 - 14:00" />
+<OperationTime Tue="18:00 - 20:00" />
+<OperationTime Wed="09:00 - 14:00" />
+<OperationTime Wed="18:00 - 20:00" />
+<OperationTime Thu="09:00 - 14:00" />
+<OperationTime Thu="18:00 - 20:00" />
+<OperationTime Fri="09:00 - 14:00" />
+<OperationTime Fri="18:00 - 20:00" />
+<OperationTime Sat="09:00 - 14:00" />
+<OperationTime Sat="18:00 - 20:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="09:00 " End=" 14:00" />
+<BankHoliday  IsOpen="True" Start="18:00 " End=" 20:00" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+<Location Code="GR021" Name="Hilton" Airport="False" CityID="1" Island="False" AreaType="M">
+<Address>
+<CityName>Athens</CityName>
+<AddressLine>71,Vas.Sofias Avenue (opp.Conrad Athens The Ilisian)</AddressLine>
+</Address>
+<Telephone>(+30) 210 7247071</Telephone>
+<GeoData Longtitude = "37.9777982967167" Latitude = "23.7507669441743" />
+<OperationSchedules>
+<OperationSchedule Start="01/04/2026 00:00:00" End="31/10/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="" />
+<OperationTime Mon="08:00 - 16:00" />
+<OperationTime Tue="08:00 - 16:00" />
+<OperationTime Wed="08:00 - 16:00" />
+<OperationTime Thu="08:00 - 16:00" />
+<OperationTime Fri="08:00 - 16:00" />
+<OperationTime Sat="08:00 - 16:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="False" Start="" End="" />
+</BankHolidays>
+</OperationSchedule>
+<OperationSchedule Start="01/11/2026 00:00:00" End="31/03/2027 23:59:59">
+<OperationTimes>
+<OperationTime Sun="" />
+<OperationTime Mon="08:00 - 18:00" />
+<OperationTime Tue="08:00 - 18:00" />
+<OperationTime Wed="08:00 - 18:00" />
+<OperationTime Thu="08:00 - 18:00" />
+<OperationTime Fri="08:00 - 18:00" />
+<OperationTime Sat="08:00 - 18:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="False" Start="" End="" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+<Location Code="GR030" Name="Athens International Airport" Airport="True" CityID="1" Island="False" AreaType="M">
+<Address>
+<CityName>Athens</CityName>
+<AddressLine>International Airport “El. Venizelos”</AddressLine>
+</Address>
+<Telephone>(+30) 210 3534900</Telephone>
+<GeoData Longtitude = "37.9367664126272" Latitude = "23.9471471976949" />
+<OperationSchedules>
+<OperationSchedule Start="01/01/2026 00:00:00" End="31/12/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="00:00-24:00" />
+<OperationTime Mon="00:00-24:00" />
+<OperationTime Tue="00:00-24:00" />
+<OperationTime Wed="00:00-24:00" />
+<OperationTime Thu="00:00-24:00" />
+<OperationTime Fri="00:00-24:00" />
+<OperationTime Sat="00:00-24:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="00:00" End="24:00" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+<Location Code="GR136" Name="" Airport="False" CityID="37" Island="False" AreaType="M">
+<Address>
+<CityName>Crete, Heraklion</CityName>
+<AddressLine>Heraklion Port terminal</AddressLine>
+</Address>
+<Telephone>(+30) 2811 180050</Telephone>
+<GeoData Longtitude = "35.3420809" Latitude = "25.145235" />
+<OperationSchedules>
+<OperationSchedule Start="01/04/2026 00:00:00" End="31/10/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="06:00 - 20:00" />
+<OperationTime Mon="06:00 - 20:00" />
+<OperationTime Tue="06:00 - 20:00" />
+<OperationTime Wed="06:00 - 20:00" />
+<OperationTime Thu="06:00 - 20:00" />
+<OperationTime Fri="06:00 - 20:00" />
+<OperationTime Sat="06:00 - 20:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="06:00 " End=" 20:00" />
+</BankHolidays>
+</OperationSchedule>
+<OperationSchedule Start="01/11/2026 00:00:00" End="31/03/2027 23:59:59">
+<OperationTimes>
+<OperationTime Sun="06:00 - 20:00" />
+<OperationTime Mon="06:00 - 20:00" />
+<OperationTime Tue="06:00 - 20:00" />
+<OperationTime Wed="06:00 - 20:00" />
+<OperationTime Thu="06:00 - 20:00" />
+<OperationTime Fri="06:00 - 20:00" />
+<OperationTime Sat="06:00 - 20:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="06:00 " End=" 20:00" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+</Brand>
+<Brand Name="Firefly" Code="FF">
+<Location Code="GR030" Name="Athens International Airport" Airport="True" CityID="1" Island="False" AreaType="M">
+<Address>
+<CityName>Athens</CityName>
+<AddressLine>International Airport “El. Venizelos”</AddressLine>
+</Address>
+<Telephone>(+30) 211 1030660, (+30) 698 01 95 319</Telephone>
+<GeoData Longtitude = "37.9367664126272" Latitude = "23.9471471976949" />
+<OperationSchedules>
+<OperationSchedule Start="01/01/2026 00:00:00" End="31/12/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="07:00 - 23:00" />
+<OperationTime Mon="07:00 - 23:00" />
+<OperationTime Tue="07:00 - 23:00" />
+<OperationTime Wed="07:00 - 23:00" />
+<OperationTime Thu="07:00 - 23:00" />
+<OperationTime Fri="07:00 - 23:00" />
+<OperationTime Sat="07:00 - 23:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="07:00 " End=" 23:00" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+</Brand>
+<Brand Name="Thrifty" Code="ZT">
+<Location Code="GR221" Name="Mykonos A/P" Airport="True" CityID="23" Island="True" AreaType="I">
+<Address>
+<CityName>Mykonos</CityName>
+<AddressLine>Airport</AddressLine>
+</Address>
+<Telephone>(+30) 22891 12195</Telephone>
+<GeoData Longtitude = "37.434389" Latitude = "25.3458388" />
+<OperationSchedules>
+<OperationSchedule Start="20/03/2026 00:00:00" End="31/10/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="00:00-24:00" />
+<OperationTime Mon="00:00-24:00" />
+<OperationTime Tue="00:00-24:00" />
+<OperationTime Wed="00:00-24:00" />
+<OperationTime Thu="00:00-24:00" />
+<OperationTime Fri="00:00-24:00" />
+<OperationTime Sat="00:00-24:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="00:00" End="24:00" />
+</BankHolidays>
+</OperationSchedule>
+<OperationSchedule Start="01/11/2026 00:00:00" End="19/03/2027 23:59:59">
+<OperationTimes>
+<OperationTime Sun="08:00 - 18:00" />
+<OperationTime Mon="08:00 - 18:00" />
+<OperationTime Tue="08:00 - 18:00" />
+<OperationTime Wed="08:00 - 18:00" />
+<OperationTime Thu="08:00 - 18:00" />
+<OperationTime Fri="08:00 - 18:00" />
+<OperationTime Sat="08:00 - 18:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="08:00 " End=" 18:00" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+<Location Code="GR002" Name="Kefalonia D/T" Airport="False" CityID="16" Island="True" AreaType="I">
+<Address>
+<CityName>Kefalonia</CityName>
+<AddressLine>Kefalonia H.O. (100m from Airport’s entrance)</AddressLine>
+</Address>
+<Telephone>(+30) 26711 01498</Telephone>
+<GeoData Longtitude = "38.1200491894179" Latitude = "20.5044438688734" />
+<OperationSchedules>
+<OperationSchedule Start="01/04/2026 00:00:00" End="31/10/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="08:30 - 21:00" />
+<OperationTime Mon="08:30 - 21:00" />
+<OperationTime Tue="08:30 - 21:00" />
+<OperationTime Wed="08:30 - 21:00" />
+<OperationTime Thu="08:30 - 21:00" />
+<OperationTime Fri="08:30 - 21:00" />
+<OperationTime Sat="08:30 - 21:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="08:30 " End=" 21:00" />
+</BankHolidays>
+</OperationSchedule>
+<OperationSchedule Start="01/11/2026 00:00:00" End="31/03/2027 23:59:59">
+<OperationTimes>
+<OperationTime Sun="09:00 - 14:00" />
+<OperationTime Sun="18:00 - 20:00" />
+<OperationTime Mon="09:00 - 14:00" />
+<OperationTime Mon="18:00 - 20:00" />
+<OperationTime Tue="09:00 - 14:00" />
+<OperationTime Tue="18:00 - 20:00" />
+<OperationTime Wed="09:00 - 14:00" />
+<OperationTime Wed="18:00 - 20:00" />
+<OperationTime Thu="09:00 - 14:00" />
+<OperationTime Thu="18:00 - 20:00" />
+<OperationTime Fri="09:00 - 14:00" />
+<OperationTime Fri="18:00 - 20:00" />
+<OperationTime Sat="09:00 - 14:00" />
+<OperationTime Sat="18:00 - 20:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="09:00 " End=" 14:00" />
+<BankHoliday  IsOpen="True" Start="18:00 " End=" 20:00" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+<Location Code="GR021" Name="Hilton" Airport="False" CityID="1" Island="False" AreaType="M">
+<Address>
+<CityName>Athens</CityName>
+<AddressLine>71,Vas.Sofias Avenue (opp.Hilton)</AddressLine>
+</Address>
+<Telephone>(+30) 211 1030675</Telephone>
+<GeoData Longtitude = "37.9777982967167" Latitude = "23.7507669441743" />
+<OperationSchedules>
+<OperationSchedule Start="01/04/2026 00:00:00" End="31/10/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="" />
+<OperationTime Mon="08:00 - 16:00" />
+<OperationTime Tue="08:00 - 16:00" />
+<OperationTime Wed="08:00 - 16:00" />
+<OperationTime Thu="08:00 - 16:00" />
+<OperationTime Fri="08:00 - 16:00" />
+<OperationTime Sat="08:00 - 16:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="False" Start="" End="" />
+</BankHolidays>
+</OperationSchedule>
+<OperationSchedule Start="01/11/2026 00:00:00" End="31/03/2027 23:59:59">
+<OperationTimes>
+<OperationTime Sun="" />
+<OperationTime Mon="08:00 - 18:00" />
+<OperationTime Tue="08:00 - 18:00" />
+<OperationTime Wed="08:00 - 18:00" />
+<OperationTime Thu="08:00 - 18:00" />
+<OperationTime Fri="08:00 - 18:00" />
+<OperationTime Sat="08:00 - 18:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="False" Start="" End="" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+<Location Code="GR030" Name="Athens International Airport" Airport="True" CityID="1" Island="False" AreaType="M">
+<Address>
+<CityName>Athens</CityName>
+<AddressLine>International Airport “El. Venizelos”</AddressLine>
+</Address>
+<Telephone>(+30) 211 1030650</Telephone>
+<GeoData Longtitude = "37.9367664126272" Latitude = "23.9471471976949" />
+<OperationSchedules>
+<OperationSchedule Start="01/01/2026 00:00:00" End="31/12/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="00:00-24:00" />
+<OperationTime Mon="00:00-24:00" />
+<OperationTime Tue="00:00-24:00" />
+<OperationTime Wed="00:00-24:00" />
+<OperationTime Thu="00:00-24:00" />
+<OperationTime Fri="00:00-24:00" />
+<OperationTime Sat="00:00-24:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="00:00" End="24:00" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+</Brand>
+<Brand Name="Dollar" Code="ZR">
+<Location Code="GR221" Name="Mykonos A/P" Airport="True" CityID="23" Island="True" AreaType="I">
+<Address>
+<CityName>Mykonos</CityName>
+<AddressLine>Airport</AddressLine>
+</Address>
+<Telephone>(+30) 22891 12196</Telephone>
+<GeoData Longtitude = "37.434389" Latitude = "25.3458388" />
+<OperationSchedules>
+<OperationSchedule Start="01/04/2026 00:00:00" End="31/10/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="09:00 - 20:00" />
+<OperationTime Mon="09:00 - 20:00" />
+<OperationTime Tue="09:00 - 20:00" />
+<OperationTime Wed="09:00 - 20:00" />
+<OperationTime Thu="09:00 - 20:00" />
+<OperationTime Fri="09:00 - 20:00" />
+<OperationTime Sat="09:00 - 20:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="09:00 " End=" 20:00" />
+</BankHolidays>
+</OperationSchedule>
+<OperationSchedule Start="01/11/2026 00:00:00" End="31/03/2027 23:59:59">
+<OperationTimes>
+<OperationTime Sun="09:00 - 20:00" />
+<OperationTime Mon="09:00 - 20:00" />
+<OperationTime Tue="09:00 - 20:00" />
+<OperationTime Wed="09:00 - 20:00" />
+<OperationTime Thu="09:00 - 20:00" />
+<OperationTime Fri="09:00 - 20:00" />
+<OperationTime Sat="09:00 - 20:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="09:00 " End=" 20:00" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+</Brand>
+</Country>
+<Country Name="Cyprus" Code="CY">
+<Brand Name="Hertz" Code="ZE">
+<Location Code="CY040" Name="Larnaca A/P" Airport="True" CityID="47" Island="False" AreaType="M">
+<Address>
+<CityName>Larnaka</CityName>
+<AddressLine>Airport</AddressLine>
+</Address>
+<Telephone>+357 24008692</Telephone>
+<GeoData Longtitude = "34.870485" Latitude = "33.608789" />
+<OperationSchedules>
+<OperationSchedule Start="01/04/2026 00:00:00" End="31/10/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="00:00-24:00" />
+<OperationTime Mon="00:00-24:00" />
+<OperationTime Tue="00:00-24:00" />
+<OperationTime Wed="00:00-24:00" />
+<OperationTime Thu="00:00-24:00" />
+<OperationTime Fri="00:00-24:00" />
+<OperationTime Sat="00:00-24:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="00:00" End="24:00" />
+</BankHolidays>
+</OperationSchedule>
+<OperationSchedule Start="01/11/2026 00:00:00" End="31/03/2027 23:59:59">
+<OperationTimes>
+<OperationTime Sun="00:00-24:00" />
+<OperationTime Mon="00:00-24:00" />
+<OperationTime Tue="00:00-24:00" />
+<OperationTime Wed="00:00-24:00" />
+<OperationTime Thu="00:00-24:00" />
+<OperationTime Fri="00:00-24:00" />
+<OperationTime Sat="00:00-24:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="00:00" End="24:00" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+</Brand>
+<Brand Name="Firefly" Code="FF">
+<Location Code="CY040" Name="Larnaca A/P" Airport="True" CityID="47" Island="False" AreaType="M">
+<Address>
+<CityName>Larnaka</CityName>
+<AddressLine>Airport</AddressLine>
+</Address>
+<Telephone>+357 24008692</Telephone>
+<GeoData Longtitude = "34.88076" Latitude = "33.62641" />
+<OperationSchedules>
+<OperationSchedule Start="01/04/2026 00:00:00" End="31/10/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="00:00-24:00" />
+<OperationTime Mon="00:00-24:00" />
+<OperationTime Tue="00:00-24:00" />
+<OperationTime Wed="00:00-24:00" />
+<OperationTime Thu="00:00-24:00" />
+<OperationTime Fri="00:00-24:00" />
+<OperationTime Sat="00:00-24:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="00:00" End="24:00" />
+</BankHolidays>
+</OperationSchedule>
+<OperationSchedule Start="01/11/2026 00:00:00" End="31/03/2027 23:59:59">
+<OperationTimes>
+<OperationTime Sun="00:00-24:00" />
+<OperationTime Mon="00:00-24:00" />
+<OperationTime Tue="00:00-24:00" />
+<OperationTime Wed="00:00-24:00" />
+<OperationTime Thu="00:00-24:00" />
+<OperationTime Fri="00:00-24:00" />
+<OperationTime Sat="00:00-24:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="00:00" End="24:00" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+</Brand>
+<Brand Name="Thrifty" Code="ZT">
+<Location Code="CY040" Name="Larnaca A/P" Airport="True" CityID="47" Island="False" AreaType="M">
+<Address>
+<CityName>Larnaka</CityName>
+<AddressLine>Airport</AddressLine>
+</Address>
+<Telephone>+357 24008692</Telephone>
+<GeoData Longtitude = "34.870485" Latitude = "33.608789" />
+<OperationSchedules>
+<OperationSchedule Start="01/04/2026 00:00:00" End="31/10/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="00:00-24:00" />
+<OperationTime Mon="00:00-24:00" />
+<OperationTime Tue="00:00-24:00" />
+<OperationTime Wed="00:00-24:00" />
+<OperationTime Thu="00:00-24:00" />
+<OperationTime Fri="00:00-24:00" />
+<OperationTime Sat="00:00-24:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="00:00" End="24:00" />
+</BankHolidays>
+</OperationSchedule>
+<OperationSchedule Start="01/11/2026 00:00:00" End="31/03/2027 23:59:59">
+<OperationTimes>
+<OperationTime Sun="00:00-24:00" />
+<OperationTime Mon="00:00-24:00" />
+<OperationTime Tue="00:00-24:00" />
+<OperationTime Wed="00:00-24:00" />
+<OperationTime Thu="00:00-24:00" />
+<OperationTime Fri="00:00-24:00" />
+<OperationTime Sat="00:00-24:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="00:00" End="24:00" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+</Brand>
+<Brand Name="Dollar" Code="ZR">
+<Location Code="CY040" Name="Larnaca A/P" Airport="True" CityID="47" Island="False" AreaType="M">
+<Address>
+<CityName>Larnaka</CityName>
+<AddressLine>Airport</AddressLine>
+</Address>
+<Telephone>+357 24008692</Telephone>
+<GeoData Longtitude = "34.870485" Latitude = "33.608789" />
+<OperationSchedules>
+<OperationSchedule Start="01/04/2026 00:00:00" End="31/10/2026 23:59:59">
+<OperationTimes>
+<OperationTime Sun="00:00-24:00" />
+<OperationTime Mon="00:00-24:00" />
+<OperationTime Tue="00:00-24:00" />
+<OperationTime Wed="00:00-24:00" />
+<OperationTime Thu="00:00-24:00" />
+<OperationTime Fri="00:00-24:00" />
+<OperationTime Sat="00:00-24:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="00:00" End="24:00" />
+</BankHolidays>
+</OperationSchedule>
+<OperationSchedule Start="01/11/2026 00:00:00" End="31/03/2027 23:59:59">
+<OperationTimes>
+<OperationTime Sun="00:00-24:00" />
+<OperationTime Mon="00:00-24:00" />
+<OperationTime Tue="00:00-24:00" />
+<OperationTime Wed="00:00-24:00" />
+<OperationTime Thu="00:00-24:00" />
+<OperationTime Fri="00:00-24:00" />
+<OperationTime Sat="00:00-24:00" />
+</OperationTimes>
+<BankHolidays>
+<BankHoliday  IsOpen="True" Start="00:00" End="24:00" />
+</BankHolidays>
+</OperationSchedule>
+</OperationSchedules>
+</Location>
+</Brand>
+</Country>
+</AutoHellasLocations>

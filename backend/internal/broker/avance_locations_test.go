@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -67,7 +68,7 @@ func TestAvanceGetLocationsPage(t *testing.T) {
 			Country:     "Greece",
 			Iata:        "ATH",
 		}
-		if got != want {
+		if !reflect.DeepEqual(got, want) {
 			t.Errorf("022 = %+v, want %+v", got, want)
 		}
 	})
