@@ -111,6 +111,59 @@ func TestListLocationMergeSuggestions(t *testing.T) {
 	})
 }
 
+func TestListLocationMergeSuggestionsBrands(t *testing.T) {
+	ctx := context.Background()
+	s, q, _ := mergeTestService()
+	suffix := mergeSuffix()
+
+	seedHertzGRStation(t, q,
+		db.InsertLocationParams{Country: "Greece", CountryCode: "GR", Name: "Suggest Brands " + suffix},
+		"hgr-suggest-a-"+suffix, []string{"ZE"},
+	)
+	disjoint, _ := seedHertzGRStation(t, q,
+		db.InsertLocationParams{Country: "Greece", CountryCode: "GR", Name: "suggest - brands " + suffix},
+		"hgr-suggest-b-"+suffix, []string{"ZR", "ZT"},
+	)
+	seedHertzGRStation(t, q,
+		db.InsertLocationParams{Country: "Greece", CountryCode: "GR", Name: "Suggest Brand Clash " + suffix},
+		"hgr-suggest-c-"+suffix, []string{"ZE", "ZT"},
+	)
+	clashing, _ := seedHertzGRStation(t, q,
+		db.InsertLocationParams{Country: "Greece", CountryCode: "GR", Name: "suggest - brand clash " + suffix},
+		"hgr-suggest-d-"+suffix, []string{"ZT"},
+	)
+
+	resp, err := s.ListLocationMergeSuggestions(ctx)
+	if err != nil {
+		t.Fatalf("ListLocationMergeSuggestions: %v", err)
+	}
+
+	sharedOf := func(t *testing.T, id int64) bool {
+		t.Helper()
+		for _, g := range resp.Groups {
+			for _, l := range g.Locations {
+				if l.ID == id {
+					return g.SharedBroker
+				}
+			}
+		}
+		t.Fatalf("location %d is in no group", id)
+		return false
+	}
+
+	t.Run("stations serving different brands do not block the merge", func(t *testing.T) {
+		if sharedOf(t, disjoint.ID) {
+			t.Error("SharedBroker = true, want false")
+		}
+	})
+
+	t.Run("stations sharing a brand block the merge", func(t *testing.T) {
+		if !sharedOf(t, clashing.ID) {
+			t.Error("SharedBroker = false, want true")
+		}
+	})
+}
+
 func TestMergeLocations(t *testing.T) {
 	ctx := context.Background()
 	s, q, pool := mergeTestService()
@@ -228,6 +281,52 @@ func TestMergeLocations(t *testing.T) {
 		if _, err := q.GetLocationById(ctx, remove.ID); err != nil {
 			t.Errorf("rejected merge deleted the location: %v", err)
 		}
+	})
+
+	t.Run("hertz gr stations serving different brands merge", func(t *testing.T) {
+		suffix := mergeSuffix()
+		keep, keepCode := seedHertzGRStation(t, q,
+			db.InsertLocationParams{Country: "Greece", CountryCode: "GR", Name: "Merge Brands A " + suffix},
+			"hgr-brands-a-"+suffix, []string{"ZE"},
+		)
+		remove, removeCode := seedHertzGRStation(t, q,
+			db.InsertLocationParams{Country: "Greece", CountryCode: "GR", Name: "Merge Brands B " + suffix},
+			"hgr-brands-b-"+suffix, []string{"ZR", "ZT"},
+		)
+
+		resp, err := s.MergeLocations(ctx, location.MergeLocationsParams{
+			KeepID: keep.ID, RemoveID: remove.ID, Name: "Merge Brands A " + suffix, Country: "Greece", CountryCode: "GR",
+		})
+		if err != nil {
+			t.Fatalf("MergeLocations: %v", err)
+		}
+
+		brandsOf := make(map[int64][]string)
+		for _, c := range resp.Location.BrokerCodes {
+			brandsOf[c.ID] = c.Brands
+		}
+		if !slices.Equal(brandsOf[keepCode.ID], []string{"ZE"}) || !slices.Equal(brandsOf[removeCode.ID], []string{"ZR", "ZT"}) {
+			t.Errorf("broker codes = %+v, want both stations with their brands", resp.Location.BrokerCodes)
+		}
+	})
+
+	t.Run("hertz gr stations sharing a brand are rejected", func(t *testing.T) {
+		suffix := mergeSuffix()
+		keep, _ := seedHertzGRStation(t, q,
+			db.InsertLocationParams{Country: "Greece", CountryCode: "GR", Name: "Merge Brand Clash A " + suffix},
+			"hgr-clash-a-"+suffix, []string{"ZE", "ZT"},
+		)
+		remove, _ := seedHertzGRStation(t, q,
+			db.InsertLocationParams{Country: "Greece", CountryCode: "GR", Name: "Merge Brand Clash B " + suffix},
+			"hgr-clash-b-"+suffix, []string{"ZT"},
+		)
+
+		_, err := s.MergeLocations(ctx, location.MergeLocationsParams{
+			KeepID: keep.ID, RemoveID: remove.ID, Name: "Merge Brand Clash A " + suffix, Country: "Greece", CountryCode: "GR",
+		})
+		api_errors.AssertApiError(t, api_errors.NewErrorWithDetail(errs.FailedPrecondition, "both locations have a code of the same broker", api_errors.ErrorDetails{
+			Code: api_errors.CodeLocationsShareBroker,
+		}), err)
 	})
 
 	t.Run("a name taken by a third location is rejected and nothing changes", func(t *testing.T) {

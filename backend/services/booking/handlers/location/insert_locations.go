@@ -93,6 +93,17 @@ func (s *LocationService) InsertAvanceLocations(w http.ResponseWriter, req *http
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// InsertHertzGRLocations fetches the Autohellas station feed and upserts Hertz GR locations.
+func (s *LocationService) InsertHertzGRLocations(ctx context.Context) error {
+	hertzGR := broker.NewHertzGR()
+	err := s.InsertLocations(ctx, hertzGR, "")
+	if err != nil {
+		rlog.Error("failed to insert locations", "broker", hertzGR.Name(), "error", err)
+		return api_errors.ErrInternalError
+	}
+	return nil
+}
+
 // InsertLocations fetches locations from the given broker and inserts them into the database.
 func (s *LocationService) InsertLocations(ctx context.Context, b broker.LocationSearcher, cursor string) error {
 	skippedCursors := make([]string, 0)
@@ -159,11 +170,16 @@ func insertBatch(ctx context.Context, q db.Querier, locs []broker.Location, brok
 	for _, loc := range locs {
 		// A known code keeps the location it points to, so a re-import cannot undo an admin merge
 		// by recreating the station under its supplier name.
-		_, err := q.GetLocationIDByAnyBrokerCode(ctx, db.GetLocationIDByAnyBrokerCodeParams{
+		knownLocationID, err := q.GetLocationIDByAnyBrokerCode(ctx, db.GetLocationIDByAnyBrokerCodeParams{
 			Broker:           dbBroker,
 			BrokerLocationID: loc.ID,
 		})
 		if err == nil {
+			if len(loc.Brands) > 0 {
+				if err := refreshBrands(ctx, q, knownLocationID, dbBroker, loc); err != nil {
+					return err
+				}
+			}
 			continue
 		}
 		if !errors.Is(err, db.ErrNoRows) {
@@ -173,6 +189,13 @@ func insertBatch(ctx context.Context, q db.Querier, locs []broker.Location, brok
 		locationID, err := resolveLocation(ctx, q, loc)
 		if err != nil {
 			return fmt.Errorf("failed to insert for supplier %s, locationId %s: %w", brokerName, loc.ID, err)
+		}
+
+		if len(loc.Brands) > 0 {
+			if err := insertBrandedStation(ctx, q, locationID, dbBroker, loc); err != nil {
+				return err
+			}
+			continue
 		}
 
 		_, err = q.GetLocationBrokerCode(ctx, db.GetLocationBrokerCodeParams{
@@ -193,6 +216,55 @@ func insertBatch(ctx context.Context, q db.Querier, locs []broker.Location, brok
 				return fmt.Errorf("get location broker code: %w", err)
 			}
 		}
+	}
+
+	return nil
+}
+
+// insertBrandedStation attaches a station of a broker with brands to its location. The location
+// may already hold another station of the broker, as long as it serves other brands.
+func insertBrandedStation(ctx context.Context, q db.Querier, locationID int64, dbBroker db.Broker, loc broker.Location) error {
+	codes, err := q.GetAllLocationBrokerCodesByLocationIDs(ctx, []int64{locationID})
+	if err != nil {
+		return fmt.Errorf("get location broker codes: %w", err)
+	}
+	if other := stationConflict(codes, dbBroker, loc.ID, loc.Brands); other != "" {
+		rlog.Warn("skipping station whose brands another station at the location already serves",
+			"broker", dbBroker, "code", loc.ID, "brands", loc.Brands, "location_id", locationID, "other_code", other)
+		return nil
+	}
+
+	if _, err := q.InsertLocationBrokerCode(ctx, db.InsertLocationBrokerCodeParams{
+		LocationID:       locationID,
+		Broker:           dbBroker,
+		BrokerLocationID: loc.ID,
+		Brands:           loc.Brands,
+	}); err != nil {
+		return fmt.Errorf("insert location broker code: %w", err)
+	}
+
+	return nil
+}
+
+// refreshBrands updates the brands of a station we already have, since a supplier can add or drop
+// a brand at a desk. The station stays where it is.
+func refreshBrands(ctx context.Context, q db.Querier, locationID int64, dbBroker db.Broker, loc broker.Location) error {
+	codes, err := q.GetAllLocationBrokerCodesByLocationIDs(ctx, []int64{locationID})
+	if err != nil {
+		return fmt.Errorf("get location broker codes: %w", err)
+	}
+	if other := stationConflict(codes, dbBroker, loc.ID, loc.Brands); other != "" {
+		rlog.Warn("keeping station brands that would clash with another station at the location",
+			"broker", dbBroker, "code", loc.ID, "brands", loc.Brands, "location_id", locationID, "other_code", other)
+		return nil
+	}
+
+	if err := q.UpdateLocationBrokerCodeBrands(ctx, db.UpdateLocationBrokerCodeBrandsParams{
+		Brands:           loc.Brands,
+		Broker:           dbBroker,
+		BrokerLocationID: loc.ID,
+	}); err != nil {
+		return fmt.Errorf("update location broker code brands: %w", err)
 	}
 
 	return nil
@@ -236,6 +308,8 @@ func toDbBroker(sn broker.Name) (db.Broker, error) {
 		return db.BrokerHertz, nil
 	case broker.BrokerAvance:
 		return db.BrokerAvance, nil
+	case broker.BrokerHertzGR:
+		return db.BrokerHertzGr, nil
 	default:
 		return "", fmt.Errorf("unknown broker: %s", sn)
 	}

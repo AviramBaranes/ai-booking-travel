@@ -63,6 +63,14 @@ func (s *Service) InsertAvanceLocations(w http.ResponseWriter, req *http.Request
 	ls.InsertAvanceLocations(w, req)
 }
 
+// InsertHertzGRLocations fetches the Autohellas station feed and upserts Hertz GR locations.
+//
+//encore:api auth method=POST path=/locations/hertz-gr tag:admin
+func (s *Service) InsertHertzGRLocations(ctx context.Context) error {
+	ls := location.NewLocationService(s.query)
+	return ls.InsertHertzGRLocations(ctx)
+}
+
 // ToggleLocation enables or disables a location broker code by ID.
 //
 //encore:api auth method=PATCH path=/locations/:id tag:admin

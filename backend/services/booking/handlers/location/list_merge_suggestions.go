@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"encore.app/internal/api_errors"
+	"encore.app/services/booking/db"
 	"encore.dev/rlog"
 )
 
@@ -49,18 +50,15 @@ func (s *LocationService) ListMergeSuggestions(ctx context.Context) (*ListMergeS
 			NormalizedName: row.NormalizedName,
 			Locations:      make([]MergeLocation, 0, len(row.LocationIds)),
 		}
-		seen := make(map[string]bool)
 		for _, id := range row.LocationIds {
 			l, ok := byID[id]
 			if !ok {
 				continue
 			}
-			// A location has at most one code per broker, so a repeat comes from another location.
-			for _, b := range l.BrokerCodes {
-				if seen[b.Broker] {
+			for _, other := range group.Locations {
+				if mergeLocationsConflict(other, l) {
 					group.SharedBroker = true
 				}
-				seen[b.Broker] = true
 			}
 			group.Locations = append(group.Locations, l)
 		}
@@ -68,4 +66,17 @@ func (s *LocationService) ListMergeSuggestions(ctx context.Context) (*ListMergeS
 	}
 
 	return &ListMergeSuggestionsResponse{Groups: groups}, nil
+}
+
+// mergeLocationsConflict reports whether two locations hold stations that cannot end up in one
+// location, which blocks merging them.
+func mergeLocationsConflict(a, b MergeLocation) bool {
+	for _, ca := range a.BrokerCodes {
+		for _, cb := range b.BrokerCodes {
+			if brokerCodesConflict(db.Broker(ca.Broker), ca.Brands, db.Broker(cb.Broker), cb.Brands) {
+				return true
+			}
+		}
+	}
+	return false
 }

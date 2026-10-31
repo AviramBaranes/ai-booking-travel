@@ -35,10 +35,11 @@ type MergeLocation struct {
 }
 
 type MergeLocationBroker struct {
-	ID               int64  `json:"id"`
-	Broker           string `json:"broker"`
-	BrokerLocationID string `json:"broker_location_id"`
-	Enabled          bool   `json:"enabled"`
+	ID               int64    `json:"id"`
+	Broker           string   `json:"broker"`
+	BrokerLocationID string   `json:"broker_location_id"`
+	Enabled          bool     `json:"enabled"`
+	Brands           []string `json:"brands"`
 }
 
 type MergeLocationsParams struct {
@@ -90,15 +91,14 @@ func (s *LocationService) MergeLocations(ctx context.Context, inTx db.TxRunner, 
 			rlog.Error("failed to load broker codes for merge", "error", err, "ids", ids)
 			return api_errors.ErrInternalError
 		}
-		brokersOf := make(map[int64]map[db.Broker]bool)
+		var kept []db.GetAllLocationBrokerCodesByLocationIDsRow
 		for _, c := range codes {
-			if brokersOf[c.LocationID] == nil {
-				brokersOf[c.LocationID] = make(map[db.Broker]bool)
+			if c.LocationID == p.KeepID {
+				kept = append(kept, c)
 			}
-			brokersOf[c.LocationID][c.Broker] = true
 		}
-		for b := range brokersOf[p.RemoveID] {
-			if brokersOf[p.KeepID][b] {
+		for _, c := range codes {
+			if c.LocationID == p.RemoveID && stationConflict(kept, c.Broker, c.BrokerLocationID, c.Brands) != "" {
 				return errLocationsShareBroker
 			}
 		}
@@ -213,6 +213,7 @@ func withMergeDetails(ctx context.Context, q db.Querier, rows []db.Location) ([]
 			Broker:           string(c.Broker),
 			BrokerLocationID: c.BrokerLocationID,
 			Enabled:          c.Enabled,
+			Brands:           brandsOrEmpty(c.Brands),
 		})
 	}
 	aliasesOf := make(map[int64][]string)
