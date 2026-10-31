@@ -16,7 +16,7 @@ import { location } from "@/shared/client";
 import { mergeLocations } from "@/shared/api/locations-api";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
 import { useTranslatedError } from "@/shared/hooks/useTranslatedError";
-import { BrokerCodeBadge } from "./LocationSummary";
+import { BrokerCodeBadge, codesConflict } from "./LocationSummary";
 
 type Side = "a" | "b";
 
@@ -96,9 +96,10 @@ export default function MergeComparison({
   const removed = picks.id === "a" ? b : a;
   const name = String(valueOf("name"));
 
-  const brokersOfA = new Set(a.broker_codes.map((c) => c.broker));
   const sharedBrokers = uniqueIgnoreCase(
-    b.broker_codes.map((c) => c.broker).filter((br) => brokersOfA.has(br)),
+    b.broker_codes
+      .filter((cb) => a.broker_codes.some((ca) => codesConflict(ca, cb)))
+      .map((c) => c.broker),
   );
 
   const resultAliases = uniqueIgnoreCase([

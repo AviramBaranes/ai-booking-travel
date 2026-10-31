@@ -29,11 +29,19 @@ const columns: ColumnDef<location.LocationRow>[] = [
   { key: "iata", label: "IATA", type: "text", editable: false },
   { key: "enabled", label: "פעיל", type: "checkbox" },
   { key: "isAirport", label: "שדה תעופה", type: "checkbox", editable: true },
+  { key: "broker", label: "ספק", type: "text", editable: false },
   {
     key: "broker_location_id",
     label: "קוד ספק",
     type: "text",
     editable: false,
+  },
+  {
+    key: "brands",
+    label: "מותגים",
+    type: "text",
+    editable: false,
+    format: (v) => (v as string[]).join(", "),
   },
 ];
 
@@ -51,6 +59,13 @@ const updateSchema = z.object({
   enabled: z.boolean(),
   isAirport: z.boolean(),
 });
+
+const BROKER_OPTIONS = [
+  { value: "flex", label: "Flex" },
+  { value: "hertz", label: "Hertz" },
+  { value: "avance", label: "Avance" },
+  { value: "hertz_gr", label: "Hertz Greece" },
+];
 
 interface Filters {
   countryCode: string;
@@ -123,13 +138,18 @@ function FilterBar({
       </div>
       <div>
         <label className="block text-xs text-gray-500 mb-1">ספק</label>
-        <input
-          type="text"
+        <select
           className={inputClass}
           value={filters.broker}
           onChange={(e) => onChange({ ...filters, broker: e.target.value })}
-          placeholder="סינון לפי ספק"
-        />
+        >
+          <option value="">הכל</option>
+          {BROKER_OPTIONS.map((b) => (
+            <option key={b.value} value={b.value}>
+              {b.label}
+            </option>
+          ))}
+        </select>
       </div>
       <div>
         <label className="block text-xs text-gray-500 mb-1">סטטוס</label>

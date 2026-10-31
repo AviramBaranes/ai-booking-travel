@@ -685,6 +685,7 @@ export namespace booking {
             this.GetClientPriceOffer = this.GetClientPriceOffer.bind(this)
             this.GetPendingTranslations = this.GetPendingTranslations.bind(this)
             this.InsertAvanceLocations = this.InsertAvanceLocations.bind(this)
+            this.InsertHertzGRLocations = this.InsertHertzGRLocations.bind(this)
             this.InsertHertzLocations = this.InsertHertzLocations.bind(this)
             this.InsertLocation = this.InsertLocation.bind(this)
             this.InsertLocationAlias = this.InsertLocationAlias.bind(this)
@@ -847,6 +848,13 @@ export namespace booking {
          */
         public async InsertAvanceLocations(method: "POST", body?: RequestInit["body"], options?: CallParameters): Promise<globalThis.Response> {
             return this.baseClient.callAPI(method, `/locations/avance`, body, options)
+        }
+
+        /**
+         * InsertHertzGRLocations fetches the Autohellas station feed and upserts Hertz GR locations.
+         */
+        public async InsertHertzGRLocations(): Promise<void> {
+            await this.baseClient.callTypedAPI("POST", `/locations/hertz-gr`)
         }
 
         /**
@@ -1884,6 +1892,11 @@ export namespace location {
         "country_code": string
         city: string
         iata: string
+        /**
+         * Brands lists the brands the station serves, required for Hertz GR and rejected for brokers
+         * without brands.
+         */
+        brands?: string[]
     }
 
     export interface ListLocationsMissingAliasesParams {
@@ -1932,7 +1945,9 @@ export namespace location {
         city: string
         iata: string
         enabled: boolean
+        broker: string
         "broker_location_id": string
+        brands: string[]
         isAirport: boolean
     }
 
@@ -1956,6 +1971,7 @@ export namespace location {
         broker: string
         "broker_location_id": string
         enabled: boolean
+        brands: string[]
     }
 
     export interface MergeLocationsParams {

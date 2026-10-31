@@ -9,8 +9,20 @@ export function BrokerCodeBadge({ code }: { code: location.MergeLocationBroker }
       dir="ltr"
     >
       {code.broker} · {code.broker_location_id}
+      {code.brands.length > 0 ? ` (${code.brands.join(", ")})` : ""}
     </Badge>
   );
+}
+
+// codesConflict mirrors the backend rule: a broker without brands holds one station per location,
+// and a broker with brands one per brand.
+export function codesConflict(
+  a: location.MergeLocationBroker,
+  b: location.MergeLocationBroker,
+): boolean {
+  if (a.broker !== b.broker) return false;
+  if (a.brands.length === 0 || b.brands.length === 0) return true;
+  return a.brands.some((brand) => b.brands.includes(brand));
 }
 
 export default function LocationSummary({
