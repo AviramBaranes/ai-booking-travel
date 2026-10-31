@@ -778,7 +778,7 @@ The chain, which is the definition the whole app agrees on:
 </reservation_pricing>
 
 <location_imports>
-**Existing locations are the source of truth.** A supplier's location import (`InsertLocations`) never renames or relocates a canonical location: a station whose IATA matches an existing location only attaches its code there and fills fields the location is missing. A station without a match creates a location, marked `is_airport` when it carries an IATA. A station code already attached somewhere stays where it is, so a station imported to the wrong location has to be detached before re-importing. A location holds at most one station per broker.
+**Existing locations are the source of truth.** A supplier's location import (`InsertLocations`) never renames or relocates a canonical location: a station whose IATA matches an existing location only attaches its code there and fills fields the location is missing. A station without a match creates a location, marked `is_airport` when it carries an IATA. A station code already attached somewhere stays where it is, so a station imported to the wrong location has to be detached before re-importing. A location holds at most one station per broker, except a broker that sells several brands (`location_broker_codes.brands`), which holds one station per brand; a re-import refreshes a known station's brands.
 </location_imports>
 
 <localization>

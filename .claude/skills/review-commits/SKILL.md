@@ -81,6 +81,10 @@ Make it. Then:
   added and removed within the branch drops out of the group. Say so and update the file count.
 - Re-show the relevant part of the staged diff (`git diff --cached <path>`) so they see the final
   shape before approving.
+- **Re-brief the whole group**, not just what changed: the full brief from step 3 (what the group
+  is, every file or cluster, "things worth your attention"), rewritten for the current state. The
+  user approves the group as it now stands, so the brief must describe all of it again — a delta
+  alone leaves them reconciling two briefs. Then wait for approval again.
 
 If the change deletes something the *previous* commit referenced (a package, a function), grep for
 every remaining reference before declaring it done; the build is broken until they're all gone.
