@@ -79,6 +79,8 @@ const supplierOptions = [
   { label: "Hertz AutoHellas", value: "HG" },
   { label: "Hertz Balearics", value: "HZ,H1,Z2" },
   { label: "Hertz Canaries", value: "HC,H3,C2" },
+  // Hertz Greece's brands. ZR is also Flex's Dollar Spain code; the broker filter tells them apart.
+  { label: "Hertz Greece", value: "ZE,ZT,ZR,FF" },
   { label: "Hertz Cape Verde", value: "HV" },
   { label: "Hertz Panama", value: "HN" },
   { label: "Hertz Portugal", value: "HP,H7,H8" },

@@ -82,6 +82,7 @@ export const BROKER_LABELS: Record<string, string> = {
   flex: "Flex",
   hertz: "Hertz",
   avance: "Avance",
+  hertz_gr: "Hertz Greece",
 };
 
 /** Status colours are reserved for state and are always paired with the label above. */

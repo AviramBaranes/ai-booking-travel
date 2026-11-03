@@ -204,6 +204,7 @@ export function ReservationsReportFilterBar({
           <option value="flex">Flex</option>
           <option value="hertz">Hertz</option>
           <option value="avance">Avance</option>
+          <option value="hertz_gr">Hertz Greece</option>
         </select>
       </div>
       <div className="min-w-40">
