@@ -143,6 +143,7 @@ func buildPriceOfferBookingParams(offer db.GetPriceOfferByIdRow, p BookPriceOffe
 		PlanID:          offer.PlanID,
 		PickupLocation:  offer.PickupBrokerLocationID,
 		DropoffLocation: offer.DropoffBrokerLocationID,
+		QuotedPrice:     dbadapters.NumericToFloat64(offer.PurchasePrice),
 		IncludeERP:      isPriceOfferBrokerErpIncluded(offer),
 		SelectedAddOns:  getSelectedAddOns(offer.PayAtPickup),
 		DriverTitle:     p.DriverTitle,

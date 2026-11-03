@@ -38,7 +38,7 @@ type CreateReservationParams struct {
 	IsOrganizationOrganic *bool                           `json:"isOrganizationOrganic,omitempty" validate:"omitempty"`
 	AdminRefID            *int64                          `json:"adminRefId,omitempty" validate:"omitempty"`
 	BrokerReservationID   string                          `json:"brokerReservationId" validate:"required,notblank"`
-	Broker                string                          `json:"broker" validate:"required,oneof=flex hertz avance"`
+	Broker                string                          `json:"broker" validate:"required,oneof=flex hertz avance hertz_gr"`
 	SupplierCode          string                          `json:"supplierCode" validate:"required,notblank"`
 	CarDetails            *broker.CarDetails              `json:"carDetails" validate:"required"`
 	PlanInclusions        []string                        `json:"planInclusions" validate:"required"`

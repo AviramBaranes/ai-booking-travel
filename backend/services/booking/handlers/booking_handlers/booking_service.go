@@ -61,6 +61,8 @@ func (s *BookingService) getBroker(dbBroker db.Broker) (broker.Booker, error) {
 		return broker.NewFlex(), nil
 	case db.BrokerAvance:
 		return s.newAvance(), nil
+	case db.BrokerHertzGr:
+		return s.newHertzGR(), nil
 	default:
 		return nil, api_errors.ErrInternalError
 	}
@@ -75,6 +77,8 @@ func (s *BookingService) getCanceler(b db.Broker) (broker.Canceler, error) {
 		return broker.NewFlex(), nil
 	case db.BrokerAvance:
 		return s.newAvance(), nil
+	case db.BrokerHertzGr:
+		return s.newHertzGR(), nil
 	default:
 		return nil, api_errors.ErrInternalError
 	}
@@ -83,4 +87,10 @@ func (s *BookingService) getCanceler(b db.Broker) (broker.Canceler, error) {
 // newAvance builds the Avance broker for booking and cancelling, which need only its base URL.
 func (s *BookingService) newAvance() *broker.Avance {
 	return broker.NewAvance(broker.AvanceConfig{BaseURL: s.cfg.AvanceBaseURL()})
+}
+
+// newHertzGR builds the Hertz GR broker for booking and cancelling, which need only its base URL and
+// the XML logging switch.
+func (s *BookingService) newHertzGR() *broker.HertzGR {
+	return broker.NewHertzGR(broker.HertzGRConfig{BaseURL: s.cfg.HertzGRBaseURL(), LogXML: s.cfg.HertzGRLogXML()})
 }

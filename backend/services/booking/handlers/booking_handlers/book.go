@@ -204,6 +204,7 @@ func (s *BookingService) bookCarAtBroker(ctx context.Context, snapshot db.Availa
 		PlanID:          p.PlanID,
 		PickupLocation:  plan.PickupLocationCode,
 		DropoffLocation: plan.DropoffLocationCode,
+		QuotedPrice:     plan.CarPurchasePrice,
 		IncludeERP:      p.IncludeERP && plan.SupplierErpPrice > 0, // ERP we sell as our own is not bought from the broker
 		SelectedAddOns:  p.SelectedAddOns,
 		DriverTitle:     p.DriverTitle,
@@ -249,6 +250,8 @@ func (s *BookingService) getBrokerByPlan(plan availability.PlanPriceDetails) (br
 		return broker.NewFlex(), nil
 	case broker.BrokerAvance:
 		return s.newAvance(), nil
+	case broker.BrokerHertzGR:
+		return s.newHertzGR(), nil
 	default:
 		return nil, api_errors.ErrInternalError
 	}

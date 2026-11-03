@@ -217,6 +217,8 @@ func getVoucherProvider(b db.Broker) (broker.VoucherProvider, error) {
 		return broker.NewHertz(), nil
 	case db.BrokerAvance:
 		return broker.NewAvance(broker.AvanceConfig{}), nil
+	case db.BrokerHertzGr:
+		return broker.NewHertzGR(broker.HertzGRConfig{}), nil
 	default:
 		return nil, errors.New("unsupported broker")
 	}
