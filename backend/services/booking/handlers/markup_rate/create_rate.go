@@ -11,7 +11,7 @@ import (
 
 type CreateMarkupRateParams struct {
 	CountryCode string  `json:"countryCode" validate:"required"`
-	Broker      string  `json:"broker" validate:"required,oneof=hertz flex avance"`
+	Broker      string  `json:"broker" validate:"required,oneof=hertz flex avance hertz_gr"`
 	MarkUpGross float64 `json:"markUpGross" validate:"required"`
 	MarkUpNet   float64 `json:"markUpNet" validate:"required"`
 }

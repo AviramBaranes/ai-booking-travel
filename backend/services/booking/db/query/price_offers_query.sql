@@ -90,8 +90,12 @@ SELECT
 FROM price_offers
     JOIN locations pl ON price_offers.pickup_location_id = pl.id
     JOIN locations dl ON price_offers.dropoff_location_id = dl.id
+    -- A broker with brands can hold a station per brand at a location; the offer's supplier code is
+    -- its brand, which picks the station.
     JOIN location_broker_codes lbc_pickup ON lbc_pickup.location_id = pl.id AND lbc_pickup.broker = price_offers.broker
+        AND (cardinality(lbc_pickup.brands) = 0 OR price_offers.supplier_code = ANY(lbc_pickup.brands))
     JOIN location_broker_codes lbc_dropoff ON lbc_dropoff.location_id = dl.id AND lbc_dropoff.broker = price_offers.broker
+        AND (cardinality(lbc_dropoff.brands) = 0 OR price_offers.supplier_code = ANY(lbc_dropoff.brands))
 WHERE price_offers.id = sqlc.arg(id) AND price_offers.agent_id = sqlc.arg(agent_id);
 
 -- name: UpdatePriceOffer :exec

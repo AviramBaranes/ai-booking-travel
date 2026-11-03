@@ -21,12 +21,14 @@ func FindSupplierInfo(snapshot db.AvailablePlansSnapshot, plan availability.Plan
 		return broker.SupplierInfo{}
 	}
 
+	// Two brokers can sell a supplier of the same name. A snapshot stored before supplier info
+	// recorded its broker matches on name alone.
 	for _, supplier := range suppliers {
-		if supplier.Name == plan.SupplierName {
+		if supplier.Name == plan.SupplierName && (supplier.Broker == "" || supplier.Broker == plan.Broker) {
 			return supplier
 		}
 	}
 
-	rlog.Warn("no supplier info found for plan", "snapshotID", snapshot.ID, "supplierName", plan.SupplierName)
+	rlog.Warn("no supplier info found for plan", "snapshotID", snapshot.ID, "broker", plan.Broker, "supplierName", plan.SupplierName)
 	return broker.SupplierInfo{}
 }
