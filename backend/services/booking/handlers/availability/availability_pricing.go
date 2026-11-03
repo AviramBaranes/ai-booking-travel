@@ -21,6 +21,13 @@ type availabilityArtifacts struct {
 	plansDetails  []PlanPriceDetails
 }
 
+// supplierKey identifies a supplier within one search: two brokers can sell a supplier of the same
+// name.
+type supplierKey struct {
+	broker broker.Name
+	name   string
+}
+
 const (
 	minLiveViewers       = 25
 	maxLiveViewers       = 112
@@ -51,14 +58,14 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 		grossMarkup = grossMarkupResp.GrossMarkup
 	}
 
-	spMap := make(map[string]*broker.SupplierInfo)
-	translatedSuppliers := make(map[string]bool)
+	// Suppliers are keyed by broker and name, since two brokers can sell a supplier of the same name.
+	spMap := make(map[supplierKey]*broker.SupplierInfo)
+	translatedSuppliers := make(map[supplierKey]bool)
 	// originalInclusions keeps each supplier's inclusions as the broker sent them, before a Hebrew
 	// search translates them in place: vouchers are always in English.
-	originalInclusions := make(map[string][]broker.Inclusions)
+	originalInclusions := make(map[supplierKey][]broker.Inclusions)
 	for i, sp := range avResp.SuppliersInfo {
-		spMap[sp.Name] = &avResp.SuppliersInfo[i]
-		translatedSuppliers[sp.Name] = false
+		spMap[supplierKey{sp.Broker, sp.Name}] = &avResp.SuppliersInfo[i]
 	}
 
 	currenciesMap, err := s.c.GetCurrencyRates(ctx, extractCurrencies(avResp.AvailableVehicles))
@@ -84,9 +91,10 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 		avPlans := make([]Plan, 0, len(v.Plans))
 
 		for _, p := range v.Plans {
-			sp, ok := spMap[p.SupplierName]
+			key := supplierKey{v.Broker, p.SupplierName}
+			sp, ok := spMap[key]
 			if !ok {
-				rlog.Warn("no supplier info found for supplier name, skipping plan details enrichment", "supplierName", p.SupplierName)
+				rlog.Warn("no supplier info found for supplier name, skipping plan details enrichment", "broker", v.Broker, "supplierName", p.SupplierName)
 				continue
 			}
 
@@ -109,14 +117,23 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 			}
 
 			if lang.FromContext(ctx, "en") == "he" {
-				if !translatedSuppliers[sp.Name] {
-					originalInclusions[sp.Name] = slices.Clone(sp.Inclusions)
+				if !translatedSuppliers[key] {
+					originalInclusions[key] = slices.Clone(sp.Inclusions)
 					for i, inc := range sp.Inclusions {
 						sp.Inclusions[i].ProductInclusions = s.translatePlanDetails(ctx, inc.ProductInclusions)
 					}
-					translatedSuppliers[sp.Name] = true
+					translatedSuppliers[key] = true
 				}
 				p.Info = s.translatePlanDetails(ctx, p.Info)
+			}
+
+			// A plan quoted at a brand's own desk carries that station; others use the broker's.
+			pickupCode, dropoffCode := brokerLoc.pickupBrokerLocationID, brokerLoc.dropoffBrokerLocationID
+			if p.PickupLocationCode != "" {
+				pickupCode = p.PickupLocationCode
+			}
+			if p.DropoffLocationCode != "" {
+				dropoffCode = p.DropoffLocationCode
 			}
 
 			incs := productInclusions(sp.Inclusions, p.PlanName)
@@ -127,8 +144,8 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 				SupplierCode:           p.SupplierCode,
 				SupplierName:           p.SupplierName,
 				Broker:                 v.Broker,
-				PickupLocationCode:     brokerLoc.pickupBrokerLocationID,
-				DropoffLocationCode:    brokerLoc.dropoffBrokerLocationID,
+				PickupLocationCode:     pickupCode,
+				DropoffLocationCode:    dropoffCode,
 				CurrencyCode:           v.PriceDetails.Currency,
 				CurrencyRate:           cr,
 				DiscountPercentage:     couponDiscount,
@@ -139,7 +156,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 				ChargedERPPriceWithVat: btErp,
 				CarDetails:             v.CarDetails,
 				Inclusions:             incs,
-				InclusionsEn:           englishIfTranslated(productInclusions(originalInclusions[sp.Name], p.PlanName), incs),
+				InclusionsEn:           englishIfTranslated(productInclusions(originalInclusions[key], p.PlanName), incs),
 				AvailableAddOns:        sp.AddOns,
 				Fees:                   v.PriceDetails.Fees,
 				Deposit:                p.Deposit,
@@ -192,6 +209,7 @@ func (s *AvailabilityService) buildAvailabilityArtifacts(ctx context.Context, lo
 		artifacts.availableCars = append(artifacts.availableCars, av)
 	}
 
+	artifacts = dropDuplicateCars(artifacts, currenciesMap)
 	assignRandomBookingSignals(artifacts.availableCars)
 
 	return artifacts, nil

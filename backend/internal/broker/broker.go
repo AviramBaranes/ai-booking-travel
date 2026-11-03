@@ -26,6 +26,11 @@ var secrets struct {
 	// Avance secrets, packed into a single value because Encore bills per secret.
 	// Format: "<accountNo>,<linkCode>,<agentCode>", e.g. "10268,TBAVA,ABTAV".
 	avanceCredentials string
+
+	// Hertz GR (Autohellas) secrets, packed the same way. The user name and password go in the SOAP
+	// header; the customer code number (CCN) and validation code (VC) in every message's POS.
+	// Format: "<userName>,<password>,<ccn>,<vc>".
+	hertzGRCredentials string
 }
 
 const (
@@ -158,15 +163,27 @@ type Location struct {
 
 // SearchAvailabilityParams represents the parameters required to search for available vehicles, such as pickup and return dates, location, and car preferences.
 type SearchAvailabilityParams struct {
-	CountryCode          string
-	PickupLocation       string
-	DropoffLocation      string
+	CountryCode     string
+	PickupLocation  string
+	DropoffLocation string
+	// PickupStations and DropoffStations list every enabled station the broker has at each
+	// location. A broker selling several brands may have one per brand there; PickupLocation and
+	// DropoffLocation hold the first of each.
+	PickupStations       []Station
+	DropoffStations      []Station
 	PickupDate           string
 	DropoffDate          string
 	PickupTime           string
 	DropoffTime          string
 	DriverAge            int
 	IsRestrictionApplied bool
+}
+
+// Station is one of a broker's stations at a location, with the brands it serves. Brands is empty
+// for brokers without brands.
+type Station struct {
+	Code   string
+	Brands []string
 }
 
 // AvailableVehicle represents a vehicle that is available for rent, including details about the car, the rental plans, add-ons, location details, and price details.
@@ -232,6 +249,11 @@ type Plan struct {
 	ExcessCurrency         string
 	TheftExcess            int
 	TheftExcessCurrency    string
+	// PickupLocationCode and DropoffLocationCode are the stations the plan was quoted at, when they
+	// differ from the broker's first station at the location (a brand with its own desk). Empty
+	// means the broker's station.
+	PickupLocationCode  string
+	DropoffLocationCode string
 }
 
 // AddOn represents an additional service or product that can be added to a rental, including its ID, name, price, allowed quantity, and rental period.
@@ -246,7 +268,10 @@ type AddOn struct {
 
 // SupplierInfo represents information about a supplier, including its name, code, and any additional details.
 type SupplierInfo struct {
-	Name               string                   `json:"name"`
+	Name string `json:"name"`
+	// Broker is set by the availability search, since two brokers can sell a supplier of the same
+	// name. Supplier info is matched by broker and name.
+	Broker             Name                     `json:"broker"`
 	AddOns             []AddOn                  `json:"addOns"`
 	Inclusions         []Inclusions             `json:"inclusions"`
 	TermsAndConditions []TermsAndConditionsItem `json:"termsAndConditions"`

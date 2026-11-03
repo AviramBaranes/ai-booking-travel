@@ -31,12 +31,18 @@ func searchAvailabilityAcrossBrokers(cfg *AvailableVehiclesConfig, p SearchAvail
 				return
 			}
 
-			result, err := searchCars(b, p, loc.pickupBrokerLocationID, loc.dropoffBrokerLocationID, loc.pickupCountryCode, isAgent)
+			result, err := searchCars(b, p, loc, isAgent)
 			if err != nil {
 				errOnce.Do(func() {
 					firstErr = err
 				})
 				return
+			}
+
+			// Two brokers can sell a supplier of the same name, so supplier info is told apart by
+			// broker.
+			for i := range result.SuppliersInfo {
+				result.SuppliersInfo[i].Broker = bn
 			}
 
 			mu.Lock()
@@ -63,11 +69,14 @@ func searchAvailabilityAcrossBrokers(cfg *AvailableVehiclesConfig, p SearchAvail
 }
 
 // searchCars calls the given broker to search for available vehicles with the supplied location and date parameters.
-func searchCars(b broker.AvailabilitySearcher, p SearchAvailabilityParams, plID, dlID, countryCode string, isAgent bool) (*broker.AvailabilityResponse, error) {
+func searchCars(b broker.AvailabilitySearcher, p SearchAvailabilityParams, loc availabilityLocationQuery, isAgent bool) (*broker.AvailabilityResponse, error) {
+	plID, dlID := loc.pickupBrokerLocationID, loc.dropoffBrokerLocationID
 	vs, err := b.SearchAvailability(broker.SearchAvailabilityParams{
-		CountryCode:          countryCode,
+		CountryCode:          loc.pickupCountryCode,
 		PickupLocation:       plID,
 		DropoffLocation:      dlID,
+		PickupStations:       loc.pickupStations,
+		DropoffStations:      loc.dropoffStations,
 		PickupTime:           p.PickupTime,
 		DropoffTime:          p.DropoffTime,
 		PickupDate:           p.PickupDate,
@@ -97,8 +106,23 @@ func getBrokerByName(cfg *AvailableVehiclesConfig, name broker.Name) (broker.Ava
 			ZeroExcessErpDayCharge: cfg.AvanceErpDayChargeZeroExcess(),
 		}), nil
 	case broker.BrokerHertzGR:
-		return broker.NewHertzGR(), nil
+		return broker.NewHertzGR(broker.HertzGRConfig{
+			BaseURL: cfg.HertzGRBaseURL(),
+			Rates:   hertzGRRates(cfg),
+			LogXML:  cfg.HertzGRLogXML(),
+		}), nil
 	default:
 		return nil, api_errors.ErrInternalError
 	}
+}
+
+// hertzGRRates converts the configured rate codes into the broker's own type, which keeps
+// internal/broker free of Encore config.
+func hertzGRRates(cfg *AvailableVehiclesConfig) []broker.HertzGRRate {
+	configured := cfg.HertzGRRates()
+	rates := make([]broker.HertzGRRate, len(configured))
+	for i, r := range configured {
+		rates[i] = broker.HertzGRRate{Code: r.Code, PlanName: r.PlanName, ErpDayCharge: r.ErpDayCharge}
+	}
+	return rates
 }

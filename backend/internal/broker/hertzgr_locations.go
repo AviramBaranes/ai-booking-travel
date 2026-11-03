@@ -90,15 +90,27 @@ type hertzGRLocationsFeed struct {
 	} `xml:"Country"`
 }
 
-// hertzGRStation holds the station fields we import. The feed also carries coordinates (with
-// Longtitude and Latitude holding each other's values), phone and seasonal opening hours, which
-// broker.Location has no place for.
+// hertzGRStation holds the station fields we read. The import uses the first five; the phone and
+// the seasonal opening hours describe the station on search results. The feed also carries
+// coordinates, with Longtitude and Latitude holding each other's values, which we don't use.
 type hertzGRStation struct {
-	Code        string `xml:"Code,attr"`
-	Name        string `xml:"Name,attr"`
-	Airport     string `xml:"Airport,attr"`
-	City        string `xml:"Address>CityName"`
-	AddressLine string `xml:"Address>AddressLine"`
+	Code        string            `xml:"Code,attr"`
+	Name        string            `xml:"Name,attr"`
+	Airport     string            `xml:"Airport,attr"`
+	City        string            `xml:"Address>CityName"`
+	AddressLine string            `xml:"Address>AddressLine"`
+	Telephone   string            `xml:"Telephone"`
+	Schedules   []hertzGRSchedule `xml:"OperationSchedules>OperationSchedule"`
+}
+
+// hertzGRSchedule is a station's opening hours for one season. Each OperationTime carries a single
+// day attribute holding a time range, such as Mon="08:30 - 21:00"; a day open twice has two.
+type hertzGRSchedule struct {
+	Start string `xml:"Start,attr"`
+	End   string `xml:"End,attr"`
+	Times []struct {
+		Days []xml.Attr `xml:",any,attr"`
+	} `xml:"OperationTimes>OperationTime"`
 }
 
 // GetLocationsPage retrieves the stations of the countries we import from the Autohellas feed. The

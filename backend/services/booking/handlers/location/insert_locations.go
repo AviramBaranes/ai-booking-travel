@@ -95,7 +95,7 @@ func (s *LocationService) InsertAvanceLocations(w http.ResponseWriter, req *http
 
 // InsertHertzGRLocations fetches the Autohellas station feed and upserts Hertz GR locations.
 func (s *LocationService) InsertHertzGRLocations(ctx context.Context) error {
-	hertzGR := broker.NewHertzGR()
+	hertzGR := broker.NewHertzGR(broker.HertzGRConfig{})
 	err := s.InsertLocations(ctx, hertzGR, "")
 	if err != nil {
 		rlog.Error("failed to insert locations", "broker", hertzGR.Name(), "error", err)

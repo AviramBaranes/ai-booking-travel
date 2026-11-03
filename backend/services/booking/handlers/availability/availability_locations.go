@@ -2,6 +2,7 @@ package availability
 
 import (
 	"context"
+	"sort"
 
 	"encore.app/internal/api_errors"
 	"encore.app/internal/broker"
@@ -30,8 +31,13 @@ type availabilityLocationQuery struct {
 	pickupCountryCode       string
 	pickupBrokerLocationID  string
 	dropoffBrokerLocationID string
-	pickupLocationName      string
-	dropoffLocationName     string
+	// pickupStations and dropoffStations are every station the broker has at each location; the
+	// broker location IDs above are the first of each. A broker selling several brands may have
+	// one station per brand.
+	pickupStations      []broker.Station
+	dropoffStations     []broker.Station
+	pickupLocationName  string
+	dropoffLocationName string
 }
 
 // availabilityLocations maps each broker to the location query details needed to call its API.
@@ -71,17 +77,26 @@ func getLocations(ctx context.Context, query db.Querier, params SearchAvailabili
 	return al, nil
 }
 
-// brokerLocation pairs a broker-specific location ID with the location's country code and canonical name.
+// brokerLocation holds a broker's stations at a location with the location's country code and canonical name.
 type brokerLocation struct {
-	locationID  string
+	stations    []broker.Station
 	countryCode string
 	name        string
 }
 
-// createBrokersMap splits location rows into pickup and dropoff maps keyed by broker.
+// createBrokersMap splits location rows into pickup and dropoff maps keyed by broker, collecting
+// every enabled station a broker has at each location, ordered by code.
 func createBrokersMap(locs []db.GetAllLocationBrokerCodesByLocationIDsRow, params SearchAvailabilityParams, dropoffLocationRowID int64) (map[db.Broker]brokerLocation, map[db.Broker]brokerLocation) {
 	pickupsByBroker := make(map[db.Broker]brokerLocation)
 	dropoffsByBroker := make(map[db.Broker]brokerLocation)
+
+	add := func(m map[db.Broker]brokerLocation, loc db.GetAllLocationBrokerCodesByLocationIDsRow) {
+		bl := m[loc.Broker]
+		bl.stations = append(bl.stations, broker.Station{Code: loc.BrokerLocationID, Brands: loc.Brands})
+		bl.countryCode = loc.LocationCountryCode
+		bl.name = loc.LocationName
+		m[loc.Broker] = bl
+	}
 
 	for _, loc := range locs {
 		if !loc.Enabled {
@@ -89,19 +104,17 @@ func createBrokersMap(locs []db.GetAllLocationBrokerCodesByLocationIDsRow, param
 		}
 
 		if loc.LocationID == params.PickupLocationID {
-			pickupsByBroker[loc.Broker] = brokerLocation{
-				locationID:  loc.BrokerLocationID,
-				countryCode: loc.LocationCountryCode,
-				name:        loc.LocationName,
-			}
+			add(pickupsByBroker, loc)
 		}
 
 		if loc.LocationID == dropoffLocationRowID {
-			dropoffsByBroker[loc.Broker] = brokerLocation{
-				locationID:  loc.BrokerLocationID,
-				countryCode: loc.LocationCountryCode,
-				name:        loc.LocationName,
-			}
+			add(dropoffsByBroker, loc)
+		}
+	}
+
+	for _, m := range []map[db.Broker]brokerLocation{pickupsByBroker, dropoffsByBroker} {
+		for _, bl := range m {
+			sort.Slice(bl.stations, func(i, j int) bool { return bl.stations[i].Code < bl.stations[j].Code })
 		}
 	}
 
@@ -123,8 +136,10 @@ func buildAvailabilityLocations(pickupsByBroker, dropoffsByBroker map[db.Broker]
 		}
 
 		al[broker.Name(brokerName)] = availabilityLocationQuery{
-			pickupBrokerLocationID:  pickupBrokerLoc.locationID,
-			dropoffBrokerLocationID: dropoffBrokerLoc.locationID,
+			pickupBrokerLocationID:  pickupBrokerLoc.stations[0].Code,
+			dropoffBrokerLocationID: dropoffBrokerLoc.stations[0].Code,
+			pickupStations:          pickupBrokerLoc.stations,
+			dropoffStations:         dropoffBrokerLoc.stations,
 			pickupCountryCode:       pickupBrokerLoc.countryCode,
 			pickupLocationName:      pickupBrokerLoc.name,
 			dropoffLocationName:     dropoffBrokerLoc.name,

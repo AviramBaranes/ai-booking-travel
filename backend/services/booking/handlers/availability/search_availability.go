@@ -56,11 +56,26 @@ type AvailableVehiclesConfig struct {
 	AvanceErpDayChargeStandard   config.Float64
 	AvanceErpDayChargeZeroExcess config.Float64
 	AvanceBaseURL                config.String
-	MarkUpGross                  config.Float64
-	MarkUpNet                    config.Float64
+	HertzGRBaseURL               config.String
+	// HertzGRRates are the rate codes Autohellas assigned us. Each one becomes a plan on every car
+	// of the brand its 4th letter selects, carrying its own ERP day charge.
+	HertzGRRates config.Values[HertzGRRateConfig]
+	// HertzGRLogXML logs every Autohellas request and response, for the exchanges Autohellas
+	// certifies us from.
+	HertzGRLogXML config.Bool
+	MarkUpGross   config.Float64
+	MarkUpNet     config.Float64
 	// SellBrokerErpAsOwn resells the broker's ERP as part of ours: its price, with markup, moves
 	// into the BT ERP and the broker's ERP is left at 0, so it is not bought from the broker.
 	SellBrokerErpAsOwn config.Bool
+}
+
+// HertzGRRateConfig is one Hertz GR rate code and the plan it becomes. PlanName must be one the
+// frontend translates (planNames in messages/*.json).
+type HertzGRRateConfig struct {
+	Code         string
+	PlanName     string
+	ErpDayCharge float64
 }
 
 // SearchAvailabilityRequest represents the request for searching availability of vehicles.
