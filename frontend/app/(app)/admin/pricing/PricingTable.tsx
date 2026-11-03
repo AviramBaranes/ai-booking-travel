@@ -27,6 +27,7 @@ const columns: ColumnDef<markup_rate.MarkupRateResponse>[] = [
       { label: "Flex", value: "flex" },
       { label: "Hertz", value: "hertz" },
       { label: "Avance", value: "avance" },
+      { label: "Hertz Greece", value: "hertz_gr" },
     ],
   },
   { key: "markUpGross", label: "מרווח ברוטו", type: "number", sortable: true },

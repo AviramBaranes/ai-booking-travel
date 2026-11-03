@@ -216,8 +216,8 @@ function StationInfoTab({ stationInfo }: { stationInfo: broker.StationInfo }) {
               {t("station.openingHours")}
             </span>
             <div className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1">
-              {openingHours.map(({ day, openTime, closeTime }) => (
-                <Fragment key={day}>
+              {openingHours.map(({ day, openTime, closeTime }, i) => (
+                <Fragment key={`${day}-${i}`}>
                   <span className="type-paragraph font-medium text-navy">
                     {t(`station.days.${day}`)}
                   </span>

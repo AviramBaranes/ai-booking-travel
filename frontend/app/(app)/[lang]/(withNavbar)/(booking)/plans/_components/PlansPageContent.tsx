@@ -48,11 +48,17 @@ export function PlansPageContent() {
 
   const selectedCarCardRef = useRef<HTMLDivElement>(null);
 
+  // Two brokers can sell a supplier of the same name, so only the vehicle's broker's suppliers apply.
+  const suppliersInfo = useMemo(
+    () => (data?.suppliersInfo ?? []).filter((s) => s.broker === vehicle?.broker),
+    [data, vehicle],
+  );
+
   const { addOns, planInclusions } = useMemo(() => {
     if (!data) {
       return { planInclusions: [], addOns: [] };
     }
-    const supplier = data.suppliersInfo.find(
+    const supplier = suppliersInfo.find(
       (s) => s.name === vehicle?.plans[selectedPlan].supplierName,
     );
 
@@ -65,7 +71,7 @@ export function PlansPageContent() {
       planInclusions: selectedPlanInclusions ?? [],
       addOns: supplier?.addOns ?? [],
     };
-  }, [data, selectedPlan, vehicle]);
+  }, [data, suppliersInfo, selectedPlan, vehicle]);
 
   if (!vehicle) {
     return <Loading />;
@@ -79,7 +85,7 @@ export function PlansPageContent() {
             {vehicle.plans.length > 1 && (
               <OtherPlansButton
                 plans={vehicle.plans}
-                suppliersInfo={data?.suppliersInfo ?? []}
+                suppliersInfo={suppliersInfo}
                 selectedPlan={selectedPlan}
                 onSelectPlan={setSelectedPlan}
                 currency={vehicle.priceDetails.currency}
@@ -88,7 +94,7 @@ export function PlansPageContent() {
             )}
             <ImportantInfoButton
               plans={vehicle.plans}
-              suppliersInfo={data?.suppliersInfo ?? []}
+              suppliersInfo={suppliersInfo}
               selectedPlanIndex={selectedPlan}
             />
           </div>

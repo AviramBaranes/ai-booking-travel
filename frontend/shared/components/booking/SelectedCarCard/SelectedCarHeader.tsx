@@ -24,13 +24,17 @@ export function SelectedCarHeader({
           </Suspense>
         </div>
 
-        <Image
-          src={carDetails.imageUrl}
-          alt={carDetails.model}
-          width={176}
-          height={100}
-          className="w-30 lg:w-44 h-25 object-contain"
-        />
+        {carDetails.imageUrl ? (
+          <Image
+            src={carDetails.imageUrl}
+            alt={carDetails.model}
+            width={176}
+            height={100}
+            className="w-30 lg:w-44 h-25 object-contain"
+          />
+        ) : (
+          <div className="w-30 lg:w-44 h-25" />
+        )}
       </div>
       <div>
         <div className="flex gap-2 flex-col items-start">

@@ -1689,6 +1689,12 @@ export namespace broker {
      */
     export interface SupplierInfo {
         name: string
+        /**
+         * Broker is set by the availability search, since two brokers can sell a supplier of the same
+         * name. Supplier info is matched by broker and name.
+         */
+        broker: Name
+
         addOns: AddOn[]
         inclusions: Inclusions[]
         termsAndConditions: TermsAndConditionsItem[]

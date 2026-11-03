@@ -76,6 +76,9 @@ export const CAR_GROUPS_FILTERS: CarGroupFilter[] = [
       "HCAR",
       "HDMR",
       "HDAR",
+
+      // Hertz Greece
+      "MBAE",
     ],
   },
   {
@@ -186,6 +189,15 @@ export const CAR_GROUPS_FILTERS: CarGroupFilter[] = [
       "SDAC",
       "SDAU",
       "SDAV",
+
+      // Hertz Greece crossovers, also under SUV
+      "CGAV",
+      "CGBR",
+      "CGMV",
+      "IGAC",
+      "IGAV",
+      "JGAC",
+      "SGBR",
     ],
   },
   {
@@ -370,6 +382,18 @@ export const CAR_GROUPS_FILTERS: CarGroupFilter[] = [
       "XFAC",
       "XJAR",
       "XJMR",
+
+      // Hertz Greece
+      "CFNR",
+      "CGAV",
+      "CGBR",
+      "CGMV",
+      "IGAC",
+      "IGAV",
+      "JGAC",
+      "RGAR",
+      "SGBR",
+      "UGDC",
     ],
   },
   {
@@ -559,6 +583,12 @@ export const CAR_GROUPS_FILTERS: CarGroupFilter[] = [
       "FMAR",
       "PMMR",
       "PMAR",
+
+      // Hertz Greece commercial vans (K), the closest group we have
+      "CKMR",
+      "FKMR",
+      "GKMR",
+      "SKMR",
     ],
   },
   {
@@ -707,6 +737,9 @@ export const CAR_GROUPS_FILTERS: CarGroupFilter[] = [
       "GWSR",
       "UFSR",
       "WFDR",
+
+      // Hertz Greece
+      "UGDC",
     ],
   },
 ];
