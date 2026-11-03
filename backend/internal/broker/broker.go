@@ -319,6 +319,9 @@ type BookingParams struct {
 	PlanID          string
 	PickupLocation  string
 	DropoffLocation string
+	// QuotedPrice is what the broker quoted for the car (the snapshot's purchase price), for brokers
+	// that re-price at booking and must not book at a higher price.
+	QuotedPrice float64
 
 	// request:
 	IncludeERP      bool

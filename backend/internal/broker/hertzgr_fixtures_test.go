@@ -187,3 +187,78 @@ const hertzGRFaultFixture = `<?xml version="1.0" encoding="utf-8"?>
 </s:Fault>
 </s:Body>
 </s:Envelope>`
+
+// hertzGRReservationFixture is the guide's confirmed reservation (section 6.1), trimmed and
+// wrapped in the SOAP envelope. Its grand total is 164.01 EUR.
+const hertzGRReservationFixture = `<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+<s:Body>
+<VehicleReservationResult xmlns="http://www.hertz.gr/xml">
+<OTA_VehResRS Target="Test" TimeStamp="2007-12-11T00:45:32" Version="1.0" xmlns="http://www.opentravel.org/OTA/2003/05">
+	<Success/>
+	<VehResRSCore ReservationStatus="Committed">
+		<VehReservation>
+			<Customer>
+				<Primary>
+					<PersonName>
+						<GivenName>John</GivenName>
+						<Surname>Last</Surname>
+					</PersonName>
+				</Primary>
+			</Customer>
+			<VehSegmentCore>
+				<ConfID ID="GR400454846" Type="14"/>
+				<VehRentalCore PickUpDateTime="2008-06-01T10:00:00" ReturnDateTime="2008-06-07T10:00:00">
+					<PickUpLocation LocationCode="030">Athens - International Airport "El. Venizelos"</PickUpLocation>
+					<ReturnLocation LocationCode="030">Athens - International Airport "El. Venizelos"</ReturnLocation>
+				</VehRentalCore>
+				<Vehicle AirConditionInd="true" TransmissionType="Manual">
+					<VehType VehicleCategory="1"/>
+					<VehClass Size="3"/>
+					<VehMakeModel Code="ECMR" Name="HYUNDAI ATOS A/C"/>
+				</Vehicle>
+				<RentalRate>
+					<RateDistance DistUnitName="Km" Unlimited="true" VehiclePeriodUnitName="RentalPeriod"/>
+					<RateQualifier RateQualifier="ITRH000"/>
+				</RentalRate>
+				<TotalCharge CurrencyCode="EUR" EstimatedTotalAmount="164.01" RateTotalAmount="137.82"/>
+				<TPA_Extensions>
+					<VehGroup Code=" A"/>
+				</TPA_Extensions>
+			</VehSegmentCore>
+		</VehReservation>
+	</VehResRSCore>
+</OTA_VehResRS>
+</VehicleReservationResult>
+</s:Body>
+</s:Envelope>`
+
+// hertzGRCancelFixture is the guide's cancellation response (section 12.0).
+const hertzGRCancelFixture = `<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+<s:Body>
+<VehicleCancelReservationResult xmlns="http://www.hertz.gr/xml">
+<OTA_VehCancelRS Target="Test" TimeStamp="2007-12-11T01:32:27" Version="1.0" xmlns="http://www.opentravel.org/OTA/2003/05">
+	<Success/>
+	<VehCancelRSCore CancelStatus="Cancelled">
+		<UniqueID ID="GR400454846" Type="14"/>
+	</VehCancelRSCore>
+	<VehCancelRSInfo/>
+</OTA_VehCancelRS>
+</VehicleCancelReservationResult>
+</s:Body>
+</s:Envelope>`
+
+// hertzGRCancelErrorFixture is a cancellation refused with an OTA error.
+const hertzGRCancelErrorFixture = `<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+<s:Body>
+<VehicleCancelReservationResult xmlns="http://www.hertz.gr/xml">
+<OTA_VehCancelRS Version="1.0" xmlns="http://www.opentravel.org/OTA/2003/05">
+	<Errors>
+		<Error Type="3" Code="CODE" ShortText="TEXT"/>
+	</Errors>
+</OTA_VehCancelRS>
+</VehicleCancelReservationResult>
+</s:Body>
+</s:Envelope>`

@@ -151,3 +151,87 @@ type hertzGRPricedCoverage struct {
 	} `xml:"Coverage"`
 	Charge hertzGRCharge `xml:"Charge"`
 }
+
+// hertzGRVehResRQ books one car: a car group of the brand the rate code selects.
+type hertzGRVehResRQ struct {
+	XMLName xml.Name             `xml:"OTA_VehResRQ"`
+	Xmlns   string               `xml:"xmlns,attr"`
+	Version string               `xml:"Version,attr"`
+	POS     hertzGRPOS           `xml:"POS"`
+	Core    hertzGRVehResRQCore  `xml:"VehResRQCore"`
+	Info    *hertzGRVehResRQInfo `xml:"VehResRQInfo,omitempty"`
+}
+
+type hertzGRVehResRQCore struct {
+	Status        string               `xml:"Status,attr"`
+	RentalCore    hertzGRVehRentalCore `xml:"VehRentalCore"`
+	Customer      hertzGRCustomer      `xml:"Customer"`
+	VehPref       hertzGRVehPref       `xml:"VehPref"`
+	DriverType    *hertzGRDriverType   `xml:"DriverType,omitempty"`
+	RateQualifier hertzGRRateQualifier `xml:"RateQualifier"`
+}
+
+type hertzGRCustomer struct {
+	PersonName hertzGRPersonName `xml:"Primary>PersonName"`
+}
+
+type hertzGRPersonName struct {
+	GivenName string `xml:"GivenName,omitempty"`
+	Surname   string `xml:"Surname"`
+}
+
+// hertzGRVehPref asks for a car group by Autohellas' own group code, the option Autohellas
+// recommends.
+type hertzGRVehPref struct {
+	VendorCarType string `xml:"VendorCarType,attr"`
+}
+
+type hertzGRVehResRQInfo struct {
+	ArrivalDetails *hertzGRArrivalDetails `xml:"ArrivalDetails,omitempty"`
+}
+
+// hertzGRArrivalDetails carries the flight number; transportation code 14 is air.
+type hertzGRArrivalDetails struct {
+	TransportationCode string `xml:"TransportationCode,attr"`
+	Number             string `xml:"Number,attr"`
+}
+
+type hertzGRVehResRS struct {
+	Errors []hertzGRError `xml:"Errors>Error"`
+	Core   struct {
+		// ReservationStatus is "Committed" for a confirmed booking and "On Hold" for one waiting
+		// for Autohellas' reservations desk.
+		ReservationStatus string `xml:"ReservationStatus,attr"`
+		Segment           struct {
+			ConfID      hertzGRUniqueID    `xml:"ConfID"`
+			TotalCharge hertzGRTotalCharge `xml:"TotalCharge"`
+			Fees        []hertzGRCharge    `xml:"Fees>Fee"`
+		} `xml:"VehReservation>VehSegmentCore"`
+	} `xml:"VehResRSCore"`
+}
+
+// hertzGRUniqueID identifies a reservation: type 14 is Autohellas' reservation number, type 16 our
+// own reference.
+type hertzGRUniqueID struct {
+	Type string `xml:"Type,attr"`
+	ID   string `xml:"ID,attr"`
+}
+
+type hertzGRVehCancelRQ struct {
+	XMLName xml.Name `xml:"OTA_VehCancelRQ"`
+	Xmlns   string   `xml:"xmlns,attr"`
+	Version string   `xml:"Version,attr"`
+	POS     hertzGRPOS
+	Core    struct {
+		CancelType string            `xml:"CancelType,attr"`
+		UniqueID   hertzGRUniqueID   `xml:"UniqueID"`
+		PersonName hertzGRPersonName `xml:"PersonName"`
+	} `xml:"VehCancelRQCore"`
+}
+
+type hertzGRVehCancelRS struct {
+	Errors []hertzGRError `xml:"Errors>Error"`
+	Core   struct {
+		CancelStatus string `xml:"CancelStatus,attr"`
+	} `xml:"VehCancelRSCore"`
+}
