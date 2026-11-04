@@ -39,8 +39,8 @@ type HertzGR struct {
 
 // HertzGRConfig configures the Hertz GR broker. The station import needs none of it.
 type HertzGRConfig struct {
-	// BaseURL is per-environment: production calls Autohellas directly, while every other
-	// environment goes through the egress proxy, since Autohellas allow-lists our static address.
+	// BaseURL is per-environment: production calls Autohellas' production service, every other
+	// environment calls UAT.
 	BaseURL string
 	// Rates are the rate codes Autohellas assigned us. Each is quoted as one plan on every car of
 	// its brand, which the code's 4th letter selects.

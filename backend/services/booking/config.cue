@@ -21,14 +21,11 @@ AvanceBaseURL: [
 	"https://ai-booking-egress-proxy-jurknw5msa-zf.a.run.app/wheelsys",
 ][0]
 
-// Autohellas (Hertz GR) allow-lists the static address production and the proxy egress through,
-// plus our office address. Production calls its production service directly. Local runs, from the
-// office, call UAT directly; every other environment reaches UAT through the proxy, which forwards
-// /hertzgr/* to https://uatota.hertz.gr.
+// Autohellas (Hertz GR): production calls its production service, every other environment calls
+// UAT directly.
 HertzGRBaseURL: [
 	if #Meta.Environment.Type == "production" {"https://prdota01.hertz.gr/OTAServices/AutohellasService.svc"},
-	if #Meta.Environment.Cloud == "local" {"https://uatota.hertz.gr/OTAServices/AutohellasService.svc"},
-	"https://ai-booking-egress-proxy-jurknw5msa-zf.a.run.app/hertzgr/OTAServices/AutohellasService.svc",
+	"https://uatota.hertz.gr/OTAServices/AutohellasService.svc",
 ][0]
 
 // The rate codes Autohellas assigned us for Greece, one plan each: the code's 4th letter selects the
@@ -41,5 +38,6 @@ HertzGRRates: [
 ]
 
 // HertzGRLogXML logs every Autohellas request and response, with the password and validation code
-// masked. Autohellas certifies us from these exchanges before giving production access.
-HertzGRLogXML: #Meta.Environment.Type != "production"
+// masked. Autohellas certifies us from these exchanges before giving production access. Off now
+// in every environment; turn it on again if Autohellas asks for exchanges.
+HertzGRLogXML: false
