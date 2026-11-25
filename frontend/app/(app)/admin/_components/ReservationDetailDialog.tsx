@@ -216,6 +216,9 @@ export function ReservationDetailDialog({
             <Section title="נהג">
               <Row label="שם" value={`${r.driverTitle} ${r.driverFirstName} ${r.driverLastName}`} />
               <Row label="גיל" value={r.driverAge} />
+              {r.driverPhone && (
+                <Row label="טלפון נייד" value={<span dir="ltr">{r.driverPhone}</span>} />
+              )}
             </Section>
 
             <Section title="פרטי נסיעה">

@@ -89,10 +89,11 @@ type GetFullReservationResponse struct {
 	DropoffLocationName string  `json:"dropoffLocationName"`
 
 	// Driver
-	DriverTitle     string `json:"driverTitle"`
-	DriverFirstName string `json:"driverFirstName"`
-	DriverLastName  string `json:"driverLastName"`
-	DriverAge       int32  `json:"driverAge"`
+	DriverTitle     string  `json:"driverTitle"`
+	DriverFirstName string  `json:"driverFirstName"`
+	DriverLastName  string  `json:"driverLastName"`
+	DriverAge       int32   `json:"driverAge"`
+	DriverPhone     *string `json:"driverPhone,omitempty"` //absent on reservations made before the phone was collected
 
 	// Voucher
 	VoucherNumber *string `json:"voucherNumber,omitempty"`
@@ -194,6 +195,7 @@ func buildReservationResponse(reservation db.Reservation) *GetFullReservationRes
 		DriverFirstName:                reservation.DriverFirstName,
 		DriverLastName:                 reservation.DriverLastName,
 		DriverAge:                      reservation.DriverAge,
+		DriverPhone:                    reservation.DriverPhone,
 		VoucherNumber:                  reservation.VoucherNumber,
 		VoucheredAt:                    dbadapters.TimestamptzToString(reservation.VoucheredAt),
 		CreatedAt:                      dbadapters.TimestamptzToString(reservation.CreatedAt),

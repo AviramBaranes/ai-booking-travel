@@ -2494,6 +2494,11 @@ export namespace queries {
         driverLastName: string
         driverAge: number
         /**
+         * absent on reservations made before the phone was collected
+         */
+        driverPhone: string
+
+        /**
          * Voucher
          */
         voucherNumber: string
