@@ -5,7 +5,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ErrorDisplay } from "@/shared/components/ErrorDisplay";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Info } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { OrderFormValues } from "./orderFormSchema";
 import { useTranslations } from "next-intl";
 import { Controller, useFormContext } from "react-hook-form";
@@ -90,15 +95,33 @@ export function BookingForm({
         <ErrorDisplay>{errors.driverLastName?.message}</ErrorDisplay>
       </div>
       <div className="flex-1">
-        <OrderFormInput
-          type="tel"
-          dir={dir}
-          placeholder={t(isDriverPhoneRequired ? "driverPhone" : "driverPhoneOptional")}
-          aria-invalid={!!errors.driverPhone}
-          {...register("driverPhone", {
-            setValueAs: normalizePhone,
-          })}
-        />
+        <div className="relative">
+          <OrderFormInput
+            type="tel"
+            dir={dir}
+            className="pe-11"
+            placeholder={t(isDriverPhoneRequired ? "driverPhone" : "driverPhoneOptional")}
+            aria-invalid={!!errors.driverPhone}
+            {...register("driverPhone", {
+              setValueAs: normalizePhone,
+            })}
+          />
+          {/* A popover rather than a hover tooltip, so it also opens with a tap on mobile. */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                aria-label={t("driverPhoneInfoLabel")}
+                className="absolute end-3 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-navy cursor-pointer"
+              >
+                <Info className="w-4 h-4" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent side="top" className="w-64 type-paragraph text-text-secondary">
+              {t("driverPhoneInfo")}
+            </PopoverContent>
+          </Popover>
+        </div>
         <ErrorDisplay>{errors.driverPhone?.message}</ErrorDisplay>
       </div>
       <div className="flex-1">
