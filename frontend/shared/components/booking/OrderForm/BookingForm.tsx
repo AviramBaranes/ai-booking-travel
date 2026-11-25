@@ -95,7 +95,7 @@ export function BookingForm() {
           <OrderFormInput
             type="tel"
             dir={dir}
-            className="pe-11"
+            className="pe-10"
             placeholder={t("driverPhone")}
             aria-invalid={!!errors.driverPhone}
             {...register("driverPhone", {
