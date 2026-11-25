@@ -10,9 +10,11 @@ import { OrderFormValues } from "./orderFormSchema";
 import { useTranslations } from "next-intl";
 import { Controller, useFormContext } from "react-hook-form";
 import { OrderFormInput } from "./OrderFormInput";
+import { useDirection } from "@/shared/hooks/useDirection";
 
 export function BookingForm() {
   const t = useTranslations("booking.orderPage");
+  const dir = useDirection();
   const {
     control,
     register,
@@ -86,6 +88,7 @@ export function BookingForm() {
       <div className="flex-1">
         <OrderFormInput
           type="tel"
+          dir={dir}
           placeholder={t("driverPhone")}
           aria-invalid={!!errors.driverPhone}
           {...register("driverPhone", {
