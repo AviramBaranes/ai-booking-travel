@@ -31,11 +31,17 @@ HertzGRBaseURL: [
 // The rate codes Autohellas assigned us for Greece, one plan each: the code's 4th letter selects the
 // brand (H Hertz, T Thrifty, D Dollar, F Firefly). Append new codes at the end: a code's position is
 // its plan id, which price offers are renewed by. The ERP day charges are placeholders until decided.
+//
+// Production has none until Hertz GR goes live there: with no rate codes the broker returns no cars
+// and calls Autohellas for nothing, so it can't be searched, offered or booked.
 HertzGRRates: [
-	{Code: "ITRHABT", PlanName: "Standard", ErpDayCharge: 3.0},
-	{Code: "ITRTABT", PlanName: "Standard", ErpDayCharge: 3.0},
-	{Code: "ITRDABT", PlanName: "Standard", ErpDayCharge: 3.0},
-]
+	if #Meta.Environment.Type == "production" {[]},
+	[
+		{Code: "ITRHABT", PlanName: "Standard", ErpDayCharge: 3.0},
+		{Code: "ITRTABT", PlanName: "Standard", ErpDayCharge: 3.0},
+		{Code: "ITRDABT", PlanName: "Standard", ErpDayCharge: 3.0},
+	],
+][0]
 
 // HertzGRLogXML logs every Autohellas request and response, with the password and validation code
 // masked. Autohellas certifies us from these exchanges before giving production access. Off now
