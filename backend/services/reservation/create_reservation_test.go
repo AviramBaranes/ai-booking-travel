@@ -61,6 +61,7 @@ func validCreateReservationParams() *CreateReservationParams {
 		DriverFirstName:     "John",
 		DriverLastName:      "Doe",
 		DriverAge:           30,
+		DriverPhone:         "+12125551234",
 		PickupLocationName:  "Airport Terminal 1",
 		DropoffLocationName: "City Center Office",
 		PickupLocationCode:  "JFK01",
@@ -218,6 +219,16 @@ func TestCreateReservationValidation(t *testing.T) {
 			name:    "rejects driver age below 18",
 			modify:  func(p *CreateReservationParams) { p.DriverAge = 17 },
 			wantErr: invalidValueErr("driverAge"),
+		},
+		{
+			name:    "rejects missing driver phone",
+			modify:  func(p *CreateReservationParams) { p.DriverPhone = "" },
+			wantErr: invalidValueErr("driverPhone"),
+		},
+		{
+			name:    "rejects malformed driver phone",
+			modify:  func(p *CreateReservationParams) { p.DriverPhone = "052-123-4567" },
+			wantErr: invalidValueErr("driverPhone"),
 		},
 	}
 

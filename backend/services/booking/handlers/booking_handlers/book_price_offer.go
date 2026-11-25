@@ -22,6 +22,7 @@ type BookPriceOfferParams struct {
 	DriverTitle     string  `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Mrs' 'Ms' 'Miss' 'Dr'"`
 	DriverFirstName string  `json:"driverFirstName" validate:"required,uppercase_only"`
 	DriverLastName  string  `json:"driverLastName" validate:"required,uppercase_only"`
+	DriverPhone     string  `json:"driverPhone" validate:"required,phone"`
 	FlightNumber    *string `json:"flightNumber,omitempty" encore:"optional"`
 }
 
@@ -201,6 +202,7 @@ func buildPriceOfferReservationRequest(
 		DriverFirstName:       p.DriverFirstName,
 		DriverLastName:        p.DriverLastName,
 		DriverAge:             driverAge,
+		DriverPhone:           p.DriverPhone,
 		CountryCode:           offer.CountryCode,
 		CurrencyCode:          offer.CurrencyCode,
 		CurrencyRate:          dbadapters.NumericToFloat64(offer.CurrencyRate),

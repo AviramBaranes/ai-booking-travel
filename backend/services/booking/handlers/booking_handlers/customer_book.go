@@ -89,6 +89,7 @@ func (s *BookingService) buildCreateCustomerReservationParams(
 		DriverFirstName:     p.DriverFirstName,
 		DriverLastName:      p.DriverLastName,
 		DriverAge:           driverAge,
+		DriverPhone:         p.DriverPhone,
 		CountryCode:         snapshot.CountryCode,
 		CurrencyCode:        plan.CurrencyCode,
 		CurrencyRate:        plan.CurrencyRate,

@@ -54,6 +54,11 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 		rlog.Error("failed to unmarshal selected addons", "error", err, "pendingPaymentID", reqData.ID)
 	}
 
+	var driverPhone string
+	if pp.DriverPhone != nil {
+		driverPhone = *pp.DriverPhone
+	}
+
 	resp, err := booking.CustomerBook(ctx, booking_handlers.CustomerBookParams{
 		BookParams: booking_handlers.BookParams{
 			SnapshotID:      pp.SnapshotID,
@@ -66,6 +71,7 @@ func (s *Service) CustomerPaymentIPNGateway(w http.ResponseWriter, r *http.Reque
 			DriverFirstName: pp.DriverFirstName,
 			DriverLastName:  pp.DriverLastName,
 			FlightNumber:    pp.FlightNumber,
+			DriverPhone:     driverPhone,
 		},
 		UserID: pp.UserID,
 	})

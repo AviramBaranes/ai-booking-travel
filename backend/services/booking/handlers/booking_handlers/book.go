@@ -30,6 +30,7 @@ type BookParams struct {
 	DriverTitle     string               `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Mrs' 'Ms' 'Miss' 'Dr'"`
 	DriverFirstName string               `json:"driverFirstName" validate:"required,uppercase_only"`
 	DriverLastName  string               `json:"driverLastName" validate:"required,uppercase_only"`
+	DriverPhone     string               `json:"driverPhone" validate:"required,phone"`
 	FlightNumber    *string              `json:"flightNumber" encore:"optional" validate:"omitempty"`
 }
 
@@ -124,6 +125,7 @@ func (s *BookingService) buildCreateReservationParams(
 		DriverFirstName:       p.DriverFirstName,
 		DriverLastName:        p.DriverLastName,
 		DriverAge:             driverAge,
+		DriverPhone:           p.DriverPhone,
 		CountryCode:           snapshot.CountryCode,
 		CurrencyCode:          plan.CurrencyCode,
 		CurrencyRate:          plan.CurrencyRate,
