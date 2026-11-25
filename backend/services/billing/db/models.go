@@ -72,4 +72,5 @@ type PendingCustomerPayment struct {
 	ReservationID   *int64
 	ExpiresAt       pgtype.Timestamptz
 	CreatedAt       pgtype.Timestamptz
+	DriverPhone     *string
 }

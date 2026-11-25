@@ -13,9 +13,10 @@ INSERT INTO pending_customer_payments (
     driver_title,
     driver_first_name,
     driver_last_name,
-    flight_number
+    flight_number,
+    driver_phone
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
 ) RETURNING id, token;
 
 -- name: ResolvePendingPayment :exec

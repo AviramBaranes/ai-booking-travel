@@ -249,6 +249,7 @@ type Reservation struct {
 	TheftExcess             int32
 	TheftExcessCurrency     string
 	PlanInclusionsEn        []string
+	DriverPhone             *string
 }
 
 type ReservationPenalty struct {

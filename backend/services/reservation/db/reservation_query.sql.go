@@ -582,7 +582,7 @@ func (q *Queries) GetPaymentPendingReservationsByBillingEntity(ctx context.Conte
 }
 
 const getReservationByID = `-- name: GetReservationByID :one
-SELECT id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num, invoice_doc_num, excess, excess_currency, supplier_terms_id, pickup_details, dropoff_details, pickup_location_code, dropoff_location_code, supplier_paid_at, supplier_expense_id, payment_received_at, coupon_name, theft_excess, theft_excess_currency, plan_inclusions_en
+SELECT id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num, invoice_doc_num, excess, excess_currency, supplier_terms_id, pickup_details, dropoff_details, pickup_location_code, dropoff_location_code, supplier_paid_at, supplier_expense_id, payment_received_at, coupon_name, theft_excess, theft_excess_currency, plan_inclusions_en, driver_phone
 FROM reservations
 WHERE id = $1
 `
@@ -648,6 +648,7 @@ func (q *Queries) GetReservationByID(ctx context.Context, id int64) (Reservation
 		&i.TheftExcess,
 		&i.TheftExcessCurrency,
 		&i.PlanInclusionsEn,
+		&i.DriverPhone,
 	)
 	return i, err
 }
@@ -685,6 +686,7 @@ INSERT INTO reservations (
     driver_first_name,
     driver_last_name,
     driver_age,
+    driver_phone,
     pickup_location_name,
     dropoff_location_name,
     flight_number,
@@ -742,7 +744,8 @@ INSERT INTO reservations (
     $41,
     $42,
     $43,
-    $44
+    $44,
+    $45
 ) RETURNING id
 `
 
@@ -778,6 +781,7 @@ type InsertReservationParams struct {
 	DriverFirstName       string
 	DriverLastName        string
 	DriverAge             int32
+	DriverPhone           *string
 	PickupLocationName    string
 	DropoffLocationName   string
 	FlightNumber          *string
@@ -826,6 +830,7 @@ func (q *Queries) InsertReservation(ctx context.Context, arg InsertReservationPa
 		arg.DriverFirstName,
 		arg.DriverLastName,
 		arg.DriverAge,
+		arg.DriverPhone,
 		arg.PickupLocationName,
 		arg.DropoffLocationName,
 		arg.FlightNumber,
@@ -1200,7 +1205,7 @@ func (q *Queries) ListReservationsForDashboard(ctx context.Context, arg ListRese
 }
 
 const listReservationsReport = `-- name: ListReservationsReport :many
-SELECT id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num, invoice_doc_num, excess, excess_currency, supplier_terms_id, pickup_details, dropoff_details, pickup_location_code, dropoff_location_code, supplier_paid_at, supplier_expense_id, payment_received_at, coupon_name, theft_excess, theft_excess_currency, plan_inclusions_en
+SELECT id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num, invoice_doc_num, excess, excess_currency, supplier_terms_id, pickup_details, dropoff_details, pickup_location_code, dropoff_location_code, supplier_paid_at, supplier_expense_id, payment_received_at, coupon_name, theft_excess, theft_excess_currency, plan_inclusions_en, driver_phone
 FROM reservations
 WHERE
     ($1::TEXT IS NULL OR broker_reservation_id ILIKE '%' || $1::TEXT || '%')
@@ -1328,6 +1333,7 @@ func (q *Queries) ListReservationsReport(ctx context.Context, arg ListReservatio
 			&i.TheftExcess,
 			&i.TheftExcessCurrency,
 			&i.PlanInclusionsEn,
+			&i.DriverPhone,
 		); err != nil {
 			return nil, err
 		}
@@ -1559,7 +1565,7 @@ AND
     reservation_status = 'booked'
 AND
     payment_status = 'unpaid'
-RETURNING id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num, invoice_doc_num, excess, excess_currency, supplier_terms_id, pickup_details, dropoff_details, pickup_location_code, dropoff_location_code, supplier_paid_at, supplier_expense_id, payment_received_at, coupon_name, theft_excess, theft_excess_currency, plan_inclusions_en
+RETURNING id, broker_reservation_id, user_id, office_id, organization_id, is_organization_organic, admin_ref_id, reservation_status, payment_status, broker, supplier_code, car_details, plan_inclusions, pay_at_pickup, currency_code, currency_rate, vat_percentage, purchase_price, markup_percentage, broker_erp_price, bt_erp_price, discount_percentage, total_price, flight_number, country_code, pickup_date, dropoff_date, pickup_time, dropoff_time, rental_days, pickup_location_name, dropoff_location_name, driver_title, driver_first_name, driver_last_name, driver_age, voucher_number, vouchered_at, created_at, updated_at, payment_confirmation_code, payment_doc_num, invoice_doc_num, excess, excess_currency, supplier_terms_id, pickup_details, dropoff_details, pickup_location_code, dropoff_location_code, supplier_paid_at, supplier_expense_id, payment_received_at, coupon_name, theft_excess, theft_excess_currency, plan_inclusions_en, driver_phone
 `
 
 type VoucherReservationAfterPaymentParams struct {
@@ -1629,6 +1635,7 @@ func (q *Queries) VoucherReservationAfterPayment(ctx context.Context, arg Vouche
 		&i.TheftExcess,
 		&i.TheftExcessCurrency,
 		&i.PlanInclusionsEn,
+		&i.DriverPhone,
 	)
 	return i, err
 }

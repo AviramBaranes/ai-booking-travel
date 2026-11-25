@@ -23,9 +23,10 @@ INSERT INTO pending_customer_payments (
     driver_title,
     driver_first_name,
     driver_last_name,
-    flight_number
+    flight_number,
+    driver_phone
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
 ) RETURNING id, token
 `
 
@@ -41,6 +42,7 @@ type CreatePendingPaymentParams struct {
 	DriverFirstName string
 	DriverLastName  string
 	FlightNumber    *string
+	DriverPhone     *string
 }
 
 type CreatePendingPaymentRow struct {
@@ -61,6 +63,7 @@ func (q *Queries) CreatePendingPayment(ctx context.Context, arg CreatePendingPay
 		arg.DriverFirstName,
 		arg.DriverLastName,
 		arg.FlightNumber,
+		arg.DriverPhone,
 	)
 	var i CreatePendingPaymentRow
 	err := row.Scan(&i.ID, &i.Token)
@@ -68,7 +71,7 @@ func (q *Queries) CreatePendingPayment(ctx context.Context, arg CreatePendingPay
 }
 
 const getPendingPaymentByID = `-- name: GetPendingPaymentByID :one
-SELECT id, token, user_id, snapshot_id, rate_qualifier, supplier_code, plan_id, include_erp, selected_addons, driver_title, driver_first_name, driver_last_name, flight_number, status, reservation_id, expires_at, created_at FROM pending_customer_payments WHERE id = $1 AND status = 'pending'
+SELECT id, token, user_id, snapshot_id, rate_qualifier, supplier_code, plan_id, include_erp, selected_addons, driver_title, driver_first_name, driver_last_name, flight_number, status, reservation_id, expires_at, created_at, driver_phone FROM pending_customer_payments WHERE id = $1 AND status = 'pending'
 `
 
 func (q *Queries) GetPendingPaymentByID(ctx context.Context, id int64) (PendingCustomerPayment, error) {
@@ -92,6 +95,7 @@ func (q *Queries) GetPendingPaymentByID(ctx context.Context, id int64) (PendingC
 		&i.ReservationID,
 		&i.ExpiresAt,
 		&i.CreatedAt,
+		&i.DriverPhone,
 	)
 	return i, err
 }
