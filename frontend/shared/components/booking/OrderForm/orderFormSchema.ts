@@ -2,6 +2,8 @@ import z from "zod";
 
 const ENGLISH_ONLY_REGEX = /^[A-Z\s]+$/;
 const PHONE_REGEX = /^05\d{8}$/;
+// The driver may not be Israeli, so an international number in E.164 (+ and country code) is accepted too, as the backend's `phone` validator does.
+const DRIVER_PHONE_REGEX = /^(05\d{8}|\+[1-9]\d{6,14})$/;
 
 export function orderFormSchema(t: (key: string) => string, requiresCustomerDetails = false) {
   return z.object({
@@ -14,6 +16,10 @@ export function orderFormSchema(t: (key: string) => string, requiresCustomerDeta
       .string({ error: t("validation.required") })
       .min(1, t("validation.required"))
       .regex(ENGLISH_ONLY_REGEX, t("validation.englishOnly")),
+    driverPhone: z
+      .string({ error: t("validation.required") })
+      .min(1, t("validation.required"))
+      .regex(DRIVER_PHONE_REGEX, t("validation.invalidDriverPhone")),
     flightNumber: z.string().optional(),
     customerFirstName: requiresCustomerDetails
       ? z.string().min(1, t("validation.required"))

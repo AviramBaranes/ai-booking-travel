@@ -211,6 +211,7 @@
       "customerPhone": "טלפון נייד *",
       "firstName": "שם פרטי (אנגלית)*",
       "lastName": "שם משפחה (אנגלית)*",
+      "driverPhone": "טלפון נייד של הנהג*",
       "flightNumber": "מספר טיסה",
       "erpRecommendation": "אנחנו ממליצים את הכיסויים הבאים:",
       "confirmCta": "תזמין לי!",
@@ -226,6 +227,7 @@
         "englishOnly": "אותיות באנגלית בלבד",
         "mustAcceptTerms": "יש לאשר את התנאים",
         "invalidPhone": "יש להזין מספר נייד תקין",
+        "invalidDriverPhone": "יש להזין מספר נייד: 05XXXXXXXX, או מספר בינלאומי שמתחיל ב-+",
         "invalidEmail": "יש להזין כתובת אימייל תקינה"
       }
     },

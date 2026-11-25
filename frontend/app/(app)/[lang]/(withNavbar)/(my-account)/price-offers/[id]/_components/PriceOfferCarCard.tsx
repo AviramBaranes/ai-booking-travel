@@ -46,6 +46,7 @@ export function PriceOfferCarCard({ priceOfferId }: { priceOfferId: number }) {
       driverTitle: "" as unknown as "Mr",
       driverFirstName: "",
       driverLastName: "",
+      driverPhone: "",
       termsAccepted: false as unknown as true,
     },
   });

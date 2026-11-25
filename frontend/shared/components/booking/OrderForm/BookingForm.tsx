@@ -24,6 +24,10 @@ export function BookingForm() {
       .replace(/[^a-zA-Z\s]/g, "")
       .toUpperCase();
 
+  // People type phones with spaces, dashes and brackets; the backend accepts digits and a leading + only.
+  const normalizePhone = (value: unknown) =>
+    String(value ?? "").replace(/[\s\-()]/g, "");
+
   return (
     <>
       <div className="flex-1">
@@ -78,6 +82,17 @@ export function BookingForm() {
           })}
         />
         <ErrorDisplay>{errors.driverLastName?.message}</ErrorDisplay>
+      </div>
+      <div className="flex-1">
+        <OrderFormInput
+          type="tel"
+          placeholder={t("driverPhone")}
+          aria-invalid={!!errors.driverPhone}
+          {...register("driverPhone", {
+            setValueAs: normalizePhone,
+          })}
+        />
+        <ErrorDisplay>{errors.driverPhone?.message}</ErrorDisplay>
       </div>
       <div className="flex-1">
         <OrderFormInput

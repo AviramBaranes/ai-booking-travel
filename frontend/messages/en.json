@@ -211,6 +211,7 @@
       "customerPhone": "Mobile Phone *",
       "firstName": "First Name (English)*",
       "lastName": "Last Name (English)*",
+      "driverPhone": "Driver Mobile Phone*",
       "flightNumber": "Flight Number",
       "erpRecommendation": "We recommend the following coverages:",
       "confirmCta": "Book for me!",
@@ -226,6 +227,7 @@
         "englishOnly": "English letters only",
         "mustAcceptTerms": "You must accept the terms",
         "invalidPhone": "Please enter a valid phone number",
+        "invalidDriverPhone": "Please enter a mobile number: 05XXXXXXXX, or international starting with +",
         "invalidEmail": "Please enter a valid email address"
       }
     },

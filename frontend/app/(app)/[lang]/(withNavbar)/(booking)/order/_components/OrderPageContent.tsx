@@ -66,6 +66,7 @@ export function OrderPageContent() {
       driverTitle: "" as unknown as "Mr",
       driverFirstName: "",
       driverLastName: "",
+      driverPhone: "",
       customerFirstName: isAgent ? "" : (user?.firstName ?? ""),
       customerLastName: isAgent ? "" : (user?.lastName ?? ""),
       customerPhone: isAgent ? "" : (user?.phoneNumber ?? ""),
@@ -115,6 +116,7 @@ export function OrderPageContent() {
       driverTitle: formData.driverTitle,
       driverFirstName: formData.driverFirstName,
       driverLastName: formData.driverLastName,
+      driverPhone: formData.driverPhone,
       flightNumber: formData.flightNumber,
     };
 
