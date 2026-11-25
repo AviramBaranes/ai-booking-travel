@@ -61,7 +61,7 @@ type CreateReservationParams struct {
 	DriverFirstName       string                          `json:"driverFirstName" validate:"required,notblank"`
 	DriverLastName        string                          `json:"driverLastName" validate:"required,notblank"`
 	DriverAge             int                             `json:"driverAge" validate:"required,gte=18"`
-	DriverPhone           string                          `json:"driverPhone" encore:"optional" validate:"omitempty,phone"` //required from customers, optional for agents
+	DriverPhone           string                          `json:"driverPhone" validate:"required,phone"`
 	PickupLocationName    string                          `json:"pickupBrokerLocationId" validate:"required,notblank"`
 	DropoffLocationName   string                          `json:"dropoffBrokerLocationId" validate:"required,notblank"`
 	FlightNumber          *string                         `json:"flightNumber,omitempty" validate:"omitempty"`
@@ -114,11 +114,6 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 
 	supplierTermsID := s.upsertSupplierTerms(ctx, p)
 
-	var driverPhone *string
-	if p.DriverPhone != "" {
-		driverPhone = &p.DriverPhone
-	}
-
 	price := pricing.New(pricing.Params{
 		PurchasePrice:      p.PurchasePrice,
 		BrokerErpPrice:     p.BrokerErpPrice,
@@ -161,7 +156,7 @@ func (s *ActionService) CreateReservation(ctx context.Context, p CreateReservati
 		DriverFirstName:       p.DriverFirstName,
 		DriverLastName:        p.DriverLastName,
 		DriverAge:             int32(p.DriverAge),
-		DriverPhone:           driverPhone,
+		DriverPhone:           &p.DriverPhone,
 		PickupLocationName:    p.PickupLocationName,
 		DropoffLocationName:   p.DropoffLocationName,
 		FlightNumber:          p.FlightNumber,

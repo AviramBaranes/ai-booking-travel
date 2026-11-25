@@ -124,7 +124,6 @@ export function OrderPageContent() {
 
     getPaymentIframe({
       ...basePayload,
-      driverPhone: formData.driverPhone ?? "",
       phone: formData.customerPhone ?? "",
       email: formData.customerEmail ?? "",
       firstName: formData.customerFirstName ?? "",
@@ -167,7 +166,7 @@ export function OrderPageContent() {
               )}
               <h5 className="type-h5 text-navy mb-6">{t("driverDetails")}</h5>
               <div className="flex flex-col lg:flex-row gap-4">
-                <BookingForm isDriverPhoneRequired={!isAgent} />
+                <BookingForm />
                 <div className="lg:hidden">
                   <TermsCheckbox href={termsHref} />
                 </div>

@@ -212,7 +212,6 @@
       "firstName": "First Name (English)*",
       "lastName": "Last Name (English)*",
       "driverPhone": "Driver Mobile Phone*",
-      "driverPhoneOptional": "Driver Mobile Phone",
       "driverPhoneInfo": "We'll use this number to send the driver reminders and updates about the rental.",
       "driverPhoneInfoLabel": "Why we ask for this",
       "flightNumber": "Flight Number",

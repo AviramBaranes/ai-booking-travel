@@ -212,7 +212,6 @@
       "firstName": "שם פרטי (אנגלית)*",
       "lastName": "שם משפחה (אנגלית)*",
       "driverPhone": "טלפון נייד של הנהג*",
-      "driverPhoneOptional": "טלפון נייד של הנהג",
       "driverPhoneInfo": "נשתמש במספר זה כדי לשלוח לנהג תזכורות ועדכונים על ההשכרה.",
       "driverPhoneInfoLabel": "למה אנחנו מבקשים את זה",
       "flightNumber": "מספר טיסה",

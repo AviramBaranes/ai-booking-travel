@@ -22,7 +22,7 @@ type BookPriceOfferParams struct {
 	DriverTitle     string  `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Mrs' 'Ms' 'Miss' 'Dr'"`
 	DriverFirstName string  `json:"driverFirstName" validate:"required,uppercase_only"`
 	DriverLastName  string  `json:"driverLastName" validate:"required,uppercase_only"`
-	DriverPhone     string  `json:"driverPhone" encore:"optional" validate:"omitempty,phone"` //price offers are booked by agents, for whom it is optional
+	DriverPhone     string  `json:"driverPhone" validate:"required,phone"`
 	FlightNumber    *string `json:"flightNumber,omitempty" encore:"optional"`
 }
 
