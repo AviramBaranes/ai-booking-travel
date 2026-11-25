@@ -212,6 +212,7 @@
       "firstName": "שם פרטי (אנגלית)*",
       "lastName": "שם משפחה (אנגלית)*",
       "driverPhone": "טלפון נייד של הנהג*",
+      "driverPhoneOptional": "טלפון נייד של הנהג",
       "flightNumber": "מספר טיסה",
       "erpRecommendation": "אנחנו ממליצים את הכיסויים הבאים:",
       "confirmCta": "תזמין לי!",

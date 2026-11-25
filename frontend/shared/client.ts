@@ -1576,7 +1576,11 @@ export namespace booking_handlers {
         driverTitle: string
         driverFirstName: string
         driverLastName: string
-        driverPhone: string
+        /**
+         * optional for agents; customer checkout requires it before payment
+         */
+        driverPhone?: string
+
         flightNumber?: string
     }
 
@@ -1585,7 +1589,11 @@ export namespace booking_handlers {
         driverTitle: string
         driverFirstName: string
         driverLastName: string
-        driverPhone: string
+        /**
+         * price offers are booked by agents, for whom it is optional
+         */
+        driverPhone?: string
+
         flightNumber?: string
     }
 

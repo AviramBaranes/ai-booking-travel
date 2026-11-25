@@ -221,11 +221,6 @@ func TestCreateReservationValidation(t *testing.T) {
 			wantErr: invalidValueErr("driverAge"),
 		},
 		{
-			name:    "rejects missing driver phone",
-			modify:  func(p *CreateReservationParams) { p.DriverPhone = "" },
-			wantErr: invalidValueErr("driverPhone"),
-		},
-		{
 			name:    "rejects malformed driver phone",
 			modify:  func(p *CreateReservationParams) { p.DriverPhone = "052-123-4567" },
 			wantErr: invalidValueErr("driverPhone"),
@@ -242,6 +237,14 @@ func TestCreateReservationValidation(t *testing.T) {
 
 	t.Run("accepts valid params", func(t *testing.T) {
 		if err := validCreateReservationParams().Validate(); err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+	})
+
+	t.Run("accepts a missing driver phone", func(t *testing.T) {
+		p := validCreateReservationParams()
+		p.DriverPhone = ""
+		if err := p.Validate(); err != nil {
 			t.Fatalf("expected no error, got %v", err)
 		}
 	})
@@ -307,6 +310,26 @@ func TestCreateReservation(t *testing.T) {
 		if r.IsOrganizationOrganic != nil {
 			t.Fatalf("expected nil IsOrganizationOrganic, got %v", r.IsOrganizationOrganic)
 		}
+		if r.DriverPhone == nil || *r.DriverPhone != "+12125551234" {
+			t.Fatalf("expected driver phone +12125551234, got %v", r.DriverPhone)
+		}
 	})
 
+	t.Run("stores a missing driver phone as NULL", func(t *testing.T) {
+		p := validCreateReservationParams()
+		p.DriverPhone = ""
+
+		resp, err := s.CreateReservation(ctx, *p)
+		if err != nil {
+			t.Fatalf("expected no error, got %v", err)
+		}
+
+		r, err := s.query.GetReservationByID(ctx, resp.ID)
+		if err != nil {
+			t.Fatalf("failed to get reservation: %v", err)
+		}
+		if r.DriverPhone != nil {
+			t.Fatalf("expected nil driver phone, got %q", *r.DriverPhone)
+		}
+	})
 }

@@ -12,7 +12,11 @@ import { Controller, useFormContext } from "react-hook-form";
 import { OrderFormInput } from "./OrderFormInput";
 import { useDirection } from "@/shared/hooks/useDirection";
 
-export function BookingForm() {
+export function BookingForm({
+  isDriverPhoneRequired = false,
+}: {
+  isDriverPhoneRequired?: boolean;
+}) {
   const t = useTranslations("booking.orderPage");
   const dir = useDirection();
   const {
@@ -89,7 +93,7 @@ export function BookingForm() {
         <OrderFormInput
           type="tel"
           dir={dir}
-          placeholder={t("driverPhone")}
+          placeholder={t(isDriverPhoneRequired ? "driverPhone" : "driverPhoneOptional")}
           aria-invalid={!!errors.driverPhone}
           {...register("driverPhone", {
             setValueAs: normalizePhone,
