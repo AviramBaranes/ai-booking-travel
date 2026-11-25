@@ -211,7 +211,7 @@
       "customerPhone": "טלפון נייד *",
       "firstName": "שם פרטי (אנגלית)*",
       "lastName": "שם משפחה (אנגלית)*",
-      "driverPhone": "טלפון נייד*",
+      "driverPhone": "טלפון נייד",
       "driverPhoneInfo": "נשתמש במספר זה כדי לשלוח לנהג תזכורות ועדכונים על ההשכרה.",
       "driverPhoneInfoLabel": "למה אנחנו מבקשים את זה",
       "flightNumber": "מספר טיסה",

@@ -520,7 +520,11 @@ export namespace billing {
         driverTitle: string
         driverFirstName: string
         driverLastName: string
-        driverPhone: string
+        /**
+         * optional for now; checked only when given
+         */
+        driverPhone?: string
+
         flightNumber?: string
     }
 
@@ -1576,7 +1580,11 @@ export namespace booking_handlers {
         driverTitle: string
         driverFirstName: string
         driverLastName: string
-        driverPhone: string
+        /**
+         * optional for now; checked only when given
+         */
+        driverPhone?: string
+
         flightNumber?: string
     }
 
@@ -1585,7 +1593,11 @@ export namespace booking_handlers {
         driverTitle: string
         driverFirstName: string
         driverLastName: string
-        driverPhone: string
+        /**
+         * optional for now; checked only when given
+         */
+        driverPhone?: string
+
         flightNumber?: string
     }
 

@@ -34,7 +34,7 @@ type GenerateCustomerPaymentIframeParams struct {
 	DriverTitle     string               `json:"driverTitle" validate:"required,notblank,oneof='Mr' 'Mrs' 'Ms' 'Miss' 'Dr'"`
 	DriverFirstName string               `json:"driverFirstName" validate:"required,uppercase_only"`
 	DriverLastName  string               `json:"driverLastName" validate:"required,uppercase_only"`
-	DriverPhone     string               `json:"driverPhone" validate:"required,phone"`
+	DriverPhone     string               `json:"driverPhone" encore:"optional" validate:"omitempty,phone"` //optional for now; checked only when given
 	FlightNumber    *string              `json:"flightNumber" encore:"optional" validate:"omitempty"`
 }
 
@@ -83,6 +83,11 @@ func (s *Service) GenerateCustomerPaymentIframe(ctx context.Context, p GenerateC
 		return nil, err
 	}
 
+	var driverPhone *string
+	if p.DriverPhone != "" {
+		driverPhone = &p.DriverPhone
+	}
+
 	row, err := s.query.CreatePendingPayment(ctx, db.CreatePendingPaymentParams{
 		UserID:          userID,
 		SnapshotID:      p.SnapshotID,
@@ -95,7 +100,7 @@ func (s *Service) GenerateCustomerPaymentIframe(ctx context.Context, p GenerateC
 		DriverFirstName: p.DriverFirstName,
 		DriverLastName:  p.DriverLastName,
 		FlightNumber:    p.FlightNumber,
-		DriverPhone:     &p.DriverPhone,
+		DriverPhone:     driverPhone,
 	})
 	if err != nil {
 		rlog.Error("failed to create pending customer payment", "error", err)

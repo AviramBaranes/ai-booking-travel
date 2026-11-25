@@ -16,10 +16,11 @@ export function orderFormSchema(t: (key: string) => string, requiresCustomerDeta
       .string({ error: t("validation.required") })
       .min(1, t("validation.required"))
       .regex(ENGLISH_ONLY_REGEX, t("validation.englishOnly")),
+    // Optional for now; a number that is given must still be valid.
     driverPhone: z
-      .string({ error: t("validation.required") })
-      .min(1, t("validation.required"))
-      .regex(DRIVER_PHONE_REGEX, t("validation.invalidDriverPhone")),
+      .string()
+      .optional()
+      .refine((v) => !v || DRIVER_PHONE_REGEX.test(v), t("validation.invalidDriverPhone")),
     flightNumber: z.string().optional(),
     customerFirstName: requiresCustomerDetails
       ? z.string().min(1, t("validation.required"))
