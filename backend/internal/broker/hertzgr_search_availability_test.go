@@ -148,6 +148,13 @@ func TestBuildHertzGRAvailability(t *testing.T) {
 			SupplierCode:           "ZT",
 			PickupLocationCode:     "GR221",
 			DropoffLocationCode:    "GR221",
+			Info:                   []string{hertzGRFuelPolicy, "Excess: 850 EUR"},
+			Deposit:                850,
+			DepositCurrency:        "EUR",
+			Excess:                 850,
+			ExcessCurrency:         "EUR",
+			TheftExcess:            850,
+			TheftExcessCurrency:    "EUR",
 		}}
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("plans = %+v, want %+v", got, want)
@@ -221,8 +228,10 @@ func TestBuildHertzGRAvailabilityOneWay(t *testing.T) {
 	if v.PriceDetails.Fees.DropCharge != 150 || v.PriceDetails.Fees.DropChargeCurrency != "EUR" {
 		t.Errorf("fees = %+v, want a 150 EUR drop charge", v.PriceDetails.Fees)
 	}
-	if len(v.Plans[0].Info) != 0 {
-		t.Errorf("info = %v, want none: the drop charge is all that is paid on arrival", v.Plans[0].Info)
+	for _, line := range v.Plans[0].Info {
+		if strings.HasPrefix(line, "Pay on arrival") {
+			t.Errorf("info = %v, want no pay-on-arrival line: the drop charge is all that is paid on arrival", v.Plans[0].Info)
+		}
 	}
 	if v.Plans[0].DropoffLocationCode != "GR030" {
 		t.Errorf("dropoff = %q, want GR030", v.Plans[0].DropoffLocationCode)
@@ -484,4 +493,103 @@ func TestHertzGRFleetImages(t *testing.T) {
 			t.Errorf("image = %q, want the fleet picture", got)
 		}
 	})
+}
+
+func TestHertzGRRentalRules(t *testing.T) {
+	p := hertzGRTestParams()
+	quotes := hertzGRQuotes(hertzGRTestRates[:1], p) // Hertz
+	sameStation := hertzGRTestResponse(t, hertzGRSameStationFixture)
+	build := func(age, days int) *AvailabilityResponse {
+		p := p
+		p.DriverAge = age
+		return buildHertzGRAvailability(p, days, quotes, []*hertzGRVehAvailRateRS{sameStation}, nil, nil)
+	}
+	groups := func(resp *AvailabilityResponse) []string {
+		var out []string
+		for _, v := range resp.AvailableVehicles {
+			out = append(out, v.CarDetails.CarGroup)
+		}
+		return out
+	}
+
+	t.Run("a driver of 25 or more pays no surcharge", func(t *testing.T) {
+		resp := build(30, 7)
+		if got := groups(resp); !reflect.DeepEqual(got, []string{"A", "K"}) {
+			t.Fatalf("groups = %v, want A and K", got)
+		}
+		for _, v := range resp.AvailableVehicles {
+			if v.PriceDetails.Fees.YoungDriverFee != 0 {
+				t.Errorf("group %s young driver fee = %d, want 0", v.CarDetails.CarGroup, v.PriceDetails.Fees.YoungDriverFee)
+			}
+		}
+	})
+
+	t.Run("a driver of 21 to 24 pays by group", func(t *testing.T) {
+		resp := build(22, 7)
+		fees := map[string]int{}
+		for _, v := range resp.AvailableVehicles {
+			fees[v.CarDetails.CarGroup] = v.PriceDetails.Fees.YoungDriverFee
+		}
+		// A is free; K is 10 EUR a day plus 24% VAT for 7 days.
+		if fees["A"] != 0 || fees["K"] != 87 {
+			t.Errorf("fees = %v, want A 0 and K 87", fees)
+		}
+	})
+
+	t.Run("a driver of 19 or 20 only rents the small groups", func(t *testing.T) {
+		resp := build(19, 7)
+		if got := groups(resp); !reflect.DeepEqual(got, []string{"A"}) {
+			t.Errorf("groups = %v, want only A", got)
+		}
+		if fee := resp.AvailableVehicles[0].PriceDetails.Fees; fee.YoungDriverFee != 87 || fee.YoungDriverFeeCurrency != "EUR" {
+			t.Errorf("fees = %+v, want an 87 EUR young driver fee", fee)
+		}
+	})
+
+	t.Run("a driver under 19 rents nothing", func(t *testing.T) {
+		if got := groups(build(18, 7)); len(got) != 0 {
+			t.Errorf("groups = %v, want none", got)
+		}
+	})
+
+	t.Run("a one-day rental states its mileage limit", func(t *testing.T) {
+		info := build(30, 1).AvailableVehicles[0].Plans[0].Info
+		if !reflect.DeepEqual(info, []string{hertzGRFuelPolicy, "Excess: 650 EUR", hertzGROneDayMileage}) {
+			t.Errorf("info = %v", info)
+		}
+	})
+
+	t.Run("each brand's supplier carries its own terms", func(t *testing.T) {
+		resp := build(30, 7)
+		if len(resp.SuppliersInfo) != 1 || !reflect.DeepEqual(resp.SuppliersInfo[0].TermsAndConditions, hertzGRTerms["ZE"]) {
+			t.Fatalf("terms = %+v, want Hertz's", resp.SuppliersInfo)
+		}
+		for _, brand := range []string{"ZE", "ZT", "ZR"} {
+			if len(hertzGRTerms[brand]) == 0 {
+				t.Errorf("no terms for %s", brand)
+			}
+		}
+	})
+}
+
+func TestHertzGRYoungDriverFee(t *testing.T) {
+	cases := []struct {
+		brand, group string
+		age          int
+		fee          float64
+		ok           bool
+	}{
+		{"ZE", "A", 30, 0, true},
+		{"ZE", "E", 23, 15 * 1.24 * 3, true},
+		{"ZE", "E", 20, 0, false},
+		{"ZT", "8", 23, 0, false},
+		{"ZR", "N", 24, 15 * 1.24 * 3, true},
+		{"ZR", "A", 18, 0, false},
+	}
+	for _, c := range cases {
+		fee, ok := hertzGRYoungDriverFee(c.brand, c.group, c.age, 3)
+		if ok != c.ok || fee != c.fee {
+			t.Errorf("%s %s age %d = %v, %v; want %v, %v", c.brand, c.group, c.age, fee, ok, c.fee, c.ok)
+		}
+	}
 }

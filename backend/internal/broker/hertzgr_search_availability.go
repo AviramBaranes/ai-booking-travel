@@ -242,7 +242,17 @@ func buildHertzGRAvailability(p SearchAvailabilityParams, days int, quotes []her
 					continue
 				}
 
-				plan, fees, ok := hertzGRPlan(q, a, days)
+				// A brand rents some groups to young drivers for a surcharge and others not at all.
+				youngDriverFee := 0.0
+				if p.DriverAge > 0 {
+					fee, allowed := hertzGRYoungDriverFee(q.brand, strings.TrimSpace(a.Core.Vehicle.VendorCarType), p.DriverAge, days)
+					if !allowed {
+						continue
+					}
+					youngDriverFee = fee
+				}
+
+				plan, fees, ok := hertzGRPlan(q, a, days, youngDriverFee)
 				if !ok {
 					continue
 				}
@@ -275,9 +285,10 @@ func buildHertzGRAvailability(p SearchAvailabilityParams, days int, quotes []her
 		sp, ok := suppliers[q.brand]
 		if !ok {
 			sp = &SupplierInfo{
-				Name:           name,
-				PickupDetails:  stations[q.pickup].stationInfo(p.PickupDate),
-				DropoffDetails: stations[q.dropoff].stationInfo(p.DropoffDate),
+				Name:               name,
+				TermsAndConditions: hertzGRTerms[q.brand],
+				PickupDetails:      stations[q.pickup].stationInfo(p.PickupDate),
+				DropoffDetails:     stations[q.dropoff].stationInfo(p.DropoffDate),
 			}
 			suppliers[q.brand] = sp
 			supplierOrder = append(supplierOrder, q.brand)
@@ -306,9 +317,10 @@ func buildHertzGRAvailability(p SearchAvailabilityParams, days int, quotes []her
 	return &AvailabilityResponse{AvailableVehicles: out, SuppliersInfo: infos}
 }
 
-// hertzGRPlan prices one car under one rate code. It returns false for a car with nothing to
-// charge, which a malformed response could produce.
-func hertzGRPlan(q hertzGRQuote, a *hertzGRVehAvail, days int) (Plan, Fees, bool) {
+// hertzGRPlan prices one car under one rate code. youngDriverFee is the surcharge for the whole
+// rental, paid at the station. It returns false for a car with nothing to charge, which a malformed
+// response could produce.
+func hertzGRPlan(q hertzGRQuote, a *hertzGRVehAvail, days int, youngDriverFee float64) (Plan, Fees, bool) {
 	total := a.Core.TotalCharge
 	currency := total.CurrencyCode
 
@@ -337,12 +349,27 @@ func hertzGRPlan(q hertzGRQuote, a *hertzGRVehAvail, days int) (Plan, Fees, bool
 		fees.DropCharge = pricing.RoundToInt(dropOff)
 		fees.DropChargeCurrency = currency
 	}
+	if youngDriverFee > 0 {
+		fees.YoungDriverFee = pricing.RoundToInt(youngDriverFee)
+		fees.YoungDriverFeeCurrency = currency
+	}
+
+	// The excess and the deposit come from Autohellas' terms; the response carries neither.
+	group := strings.TrimSpace(a.Core.Vehicle.VendorCarType)
+	excess := hertzGRExcess[q.brand][group]
 
 	var info []string
 	// The fees tell the customer only about a one-way fee, so anything else due at the station is
 	// spelled out.
 	if payOnArrival > 0 && pricing.RoundToInt(payOnArrival) != fees.DropCharge {
 		info = append(info, fmt.Sprintf("Pay on arrival: %.2f %s", payOnArrival, currency))
+	}
+	info = append(info, hertzGRFuelPolicy)
+	if excess > 0 {
+		info = append(info, fmt.Sprintf("Excess: %d %s", excess, currency))
+	}
+	if days == 1 {
+		info = append(info, hertzGROneDayMileage)
 	}
 
 	return Plan{
@@ -357,6 +384,12 @@ func hertzGRPlan(q hertzGRQuote, a *hertzGRVehAvail, days int) (Plan, Fees, bool
 		SupplierCode:           q.brand,
 		PickupLocationCode:     q.pickup,
 		DropoffLocationCode:    q.dropoff,
+		Deposit:                excess,
+		DepositCurrency:        currency,
+		Excess:                 excess,
+		ExcessCurrency:         currency,
+		TheftExcess:            excess,
+		TheftExcessCurrency:    currency,
 	}, fees, true
 }
 
